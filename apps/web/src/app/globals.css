@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --color-orbit-black: #000000;
+  --color-orbit-electric: #00D4FF;
+  --color-orbit-white: #FFFFFF;
+  --color-orbit-purple: #8B5CF6;
+}
+
+/* Gradientes da Orbitamos */
+.gradient-orbit {
+  background: linear-gradient(135deg, #00D4FF 0%, #8B5CF6 100%);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #00D4FF 0%, #8B5CF6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Animações customizadas da Orbitamos */
+@keyframes orbit {
+  0% { transform: rotate(0deg) translateX(20px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(20px) rotate(-360deg); }
+}
+
+.animate-orbit {
+  animation: orbit 3s linear infinite;
+}
+
+/* Estilos básicos para garantir funcionamento */
+body {
+  font-family: 'Inter', sans-serif;
+}

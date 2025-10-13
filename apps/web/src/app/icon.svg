@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00D4FF"/>
+      <stop offset="1" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+  </defs>
+  <!-- badge background -->
+  <rect width="128" height="128" rx="28" ry="28" fill="#0B0B0F"/>
+  <!-- planet (filled) -->
+  <circle cx="62" cy="72" r="30" fill="url(#grad)"/>
+  <!-- orbit ring -->
+  <ellipse cx="62" cy="72" rx="46" ry="14" fill="none" stroke="#ffffff40" stroke-width="3" transform="rotate(-12 62 72)"/>
+  <ellipse cx="62" cy="72" rx="46" ry="14" fill="none" stroke="#ffffff22" stroke-width="2"/>
+  <!-- rocket solid with glow -->
+  <g transform="translate(86 40) rotate(28)">
+    <path d="M0 14 L12 -2 L18 4 L8 20 Z" fill="#ffffff"/>
+    <path d="M8 20 L18 4 L20 12 Z" fill="#00D4FF"/>
+    <path d="M-3 26 L8 20 L2 30 Z" fill="#FF6B6B"/>
+  </g>
+  <!-- stars -->
+  <circle cx="26" cy="26" r="2.2" fill="#fff" filter="url(#glow)"/>
+  <circle cx="102" cy="30" r="1.8" fill="#fff" filter="url(#glow)"/>
+</svg>
+
