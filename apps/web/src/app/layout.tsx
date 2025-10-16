@@ -11,8 +11,24 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Orbitamos - Portal da Quebrada que Orbita Tecnologia",
-  description: "Da quebrada pra tecnologia — A gente sobe junto. Transforme sua vida através da tecnologia com nossos programas de mentoria.",
-  keywords: "tecnologia, programação, quebrada, periferia, educação, mentoria, desenvolvimento",
+  description: "Da quebrada pra tecnologia — A gente sobe junto. Transforme sua vida através da tecnologia com nossos programas de mentoria gratuitos. Do subemprego à T.I. em 9 meses.",
+  keywords: "tecnologia, programação, quebrada, periferia, educação, mentoria, desenvolvimento, curso gratuito, T.I., programação, carreira",
+  authors: [{ name: "Douglas Vinicius Alves da Silva" }],
+  creator: "Orbitamos",
+  publisher: "Orbitamos",
+  robots: "index, follow",
+  openGraph: {
+    title: "Orbitamos - Portal da Quebrada que Orbita Tecnologia",
+    description: "Da quebrada pra tecnologia — A gente sobe junto. Transforme sua vida através da tecnologia com nossos programas de mentoria gratuitos.",
+    type: "website",
+    locale: "pt_BR",
+    siteName: "Orbitamos",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Orbitamos - Portal da Quebrada que Orbita Tecnologia",
+    description: "Da quebrada pra tecnologia — A gente sobe junto. Transforme sua vida através da tecnologia com nossos programas de mentoria gratuitos.",
+  },
 };
 
 export default function RootLayout({
