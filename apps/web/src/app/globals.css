@@ -1,11 +1,6 @@
-@import "tailwindcss";
-
-@theme {
-  --color-orbit-black: #000000;
-  --color-orbit-electric: #00D4FF;
-  --color-orbit-white: #FFFFFF;
-  --color-orbit-purple: #8B5CF6;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Gradientes da Orbitamos */
 .gradient-orbit {

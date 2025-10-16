@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function Mentorias() {
   return (
@@ -63,9 +64,11 @@ export default function Mentorias() {
                     </ul>
                   </div>
                   
-                  <Button className="w-full mt-6 bg-gradient-to-r from-orbit-electric to-orbit-purple hover:from-orbit-purple hover:to-orbit-electric text-black font-bold">
-                    Quero começar minha jornada
-                  </Button>
+                  <Link href="/entrar">
+                    <Button className="w-full mt-6 bg-gradient-to-r from-orbit-electric to-orbit-purple hover:from-orbit-purple hover:to-orbit-electric text-black font-bold">
+                      Quero começar minha jornada
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -107,9 +110,11 @@ export default function Mentorias() {
                     <p className="mt-2 text-xs text-white/70">Obs.: Alocação em projetos depende de performance e disponibilidade de demandas.</p>
                   </div>
                   
-                  <Button className="w-full mt-6 bg-gradient-to-r from-orbit-purple to-orbit-electric hover:from-orbit-electric hover:to-orbit-purple text-white font-bold">
-                    Quero começar minha jornada
-                  </Button>
+                  <Link href="/entrar">
+                    <Button className="w-full mt-6 bg-gradient-to-r from-orbit-purple to-orbit-electric hover:from-orbit-electric hover:to-orbit-purple text-white font-bold">
+                      Quero começar minha jornada
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -149,9 +154,11 @@ export default function Mentorias() {
                     <p className="mt-2 text-xs text-white/70">Teremos uma área dedicada no site com todos os conteúdos da Academy.</p>
                   </div>
                   
-                  <Button className="w-full mt-6 bg-gradient-to-r from-orbit-electric to-orbit-purple hover:from-orbit-purple hover:to-orbit-electric text-black font-bold">
-                    Quero começar minha jornada
-                  </Button>
+                  <Link href="/entrar">
+                    <Button className="w-full mt-6 bg-gradient-to-r from-orbit-electric to-orbit-purple hover:from-orbit-purple hover:to-orbit-electric text-black font-bold">
+                      Quero começar minha jornada
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -293,12 +300,14 @@ export default function Mentorias() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:from-orbit-purple hover:to-orbit-electric text-black font-bold px-12 py-6 text-xl"
-            >
-              🚀 Quero começar minha jornada
-            </Button>
+            <Link href="/entrar">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:from-orbit-purple hover:to-orbit-electric text-black font-bold px-12 py-6 text-xl"
+              >
+                🚀 Quero começar minha jornada
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

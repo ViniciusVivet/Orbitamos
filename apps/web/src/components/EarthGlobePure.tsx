@@ -21,8 +21,8 @@ export default function EarthGlobePure() {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     // Garantir cores corretas (mais vivas/azuladas)
-    // @ts-ignore
-    renderer.outputColorSpace = (THREE as any).SRGBColorSpace || (THREE as any).sRGBEncoding;
+    // @ts-expect-error - Three.js version compatibility
+    renderer.outputColorSpace = (THREE as { SRGBColorSpace?: string }).SRGBColorSpace || (THREE as { sRGBEncoding?: string }).sRGBEncoding;
     renderer.setClearColor(0x000000, 0);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(width, height);

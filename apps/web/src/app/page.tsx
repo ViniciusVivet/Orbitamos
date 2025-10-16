@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 import Tilt from "@/components/Tilt";
 import Parallax from "@/components/Parallax";
 import Magnetic from "@/components/Magnetic";
@@ -181,10 +182,10 @@ export default function Home() {
                 <div className="h-full w-full rounded-full bg-black/90 grid place-items-center text-2xl">🚀</div>
               </div>
               <div className="space-y-2">
-                <h3 className="text-2xl font-bold">Primeiro case real</h3>
+                <h3 className="text-2xl font-bold">Primeira vida salva</h3>
                 <p className="text-white/80">
-                  Estudando há <strong className="text-white">10 meses</strong>, já está estagiando na <strong className="text-white">Prepara Cursos</strong>
-                  como <strong className="text-white">Instrutor técnico de informática</strong>.
+                  \"Estudando há <strong className="text-white">10 meses</strong>, já está estagiando na <strong className="text-white"> Prepara Cursos </strong>
+                  como <strong className="text-white">Instrutor técnico de informática</strong>.\"
                 </p>
                 <p className="text-white/70 text-sm">— Nosso ponto de partida. Agora, vamos escalar esse impacto para muita gente.</p>
               </div>
@@ -203,8 +204,8 @@ export default function Home() {
         <div className="mx-auto max-w-4xl space-y-6">
           <div>
             <div className="mb-2 flex items-center justify-between text-sm text-white/80">
-              <span>2025 • Transformar 120 vidas</span>
-              <span>1/120</span>
+              <span>2025 • Transformar 10 vidas</span>
+              <span>1/10</span>
             </div>
             <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/10">
               <div className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple" style={{ width: `${(1/120)*100}%` }} />
@@ -246,9 +247,11 @@ export default function Home() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-gradient-to-r from-orbit-electric to-orbit-purple text-black hover:from-orbit-purple hover:to-orbit-electric font-bold px-12 py-6 text-xl">
-              🚀 Começar Minha Jornada
-            </Button>
+            <Link href="/mentorias">
+              <Button size="lg" className="bg-gradient-to-r from-orbit-electric to-orbit-purple text-black hover:from-orbit-purple hover:to-orbit-electric font-bold px-12 py-6 text-xl">
+                🚀 Começar Minha Jornada
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
