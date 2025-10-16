@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import emailjs from '@emailjs/browser';
 
 export default function Contato() {
   const [formData, setFormData] = useState({
@@ -12,27 +13,61 @@ export default function Contato() {
     email: "",
     message: ""
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError("");
+    setIsSuccess(false);
     
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        alert('Mensagem enviada com sucesso! Entraremos em contato em breve.');
-        setFormData({ name: "", email: "", message: "" });
+      // Configurações do EmailJS
+      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || 'service_iq6m9yr';
+      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || 'template_tq3qtzp';
+      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || 'r-ZyAFqKXXBrfMNHd';
+      
+      // Verificar se as chaves estão configuradas
+      if (publicKey === 'YOUR_PUBLIC_KEY') {
+        // Modo fallback para desenvolvimento
+        console.log('📧 EmailJS não configurado - modo simulação');
+        console.log('Dados que seriam enviados:', {
+          from_name: formData.name,
+          from_email: formData.email,
+          message: formData.message,
+          to_email: 'contato@orbitamos.com'
+        });
+        
+        // Simular delay de envio
+        await new Promise(resolve => setTimeout(resolve, 1500));
       } else {
-        alert('Erro ao enviar mensagem. Tente novamente.');
+        // Envio real via EmailJS
+        const templateParams = {
+          from_name: formData.name,
+          from_email: formData.email,
+          message: formData.message,
+          to_email: 'contato@orbitamos.com',
+        };
+        
+        await emailjs.send(serviceId, templateId, templateParams, publicKey);
+        console.log('📧 Email enviado com sucesso via EmailJS!');
       }
-    } catch {
-      alert('Erro ao enviar mensagem. Tente novamente.');
+      
+      setIsSuccess(true);
+      setFormData({ name: "", email: "", message: "" });
+      
+      // Reset success message after 5 seconds
+      setTimeout(() => {
+        setIsSuccess(false);
+      }, 5000);
+      
+    } catch (err) {
+      console.error('Erro ao enviar email:', err);
+      setError('Erro ao enviar mensagem. Tente novamente.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -120,10 +155,25 @@ export default function Contato() {
 
                   <Button 
                     type="submit"
-                    className="w-full bg-gradient-to-r from-orbit-electric to-orbit-purple hover:from-orbit-purple hover:to-orbit-electric text-black font-bold py-3"
+                    disabled={isLoading}
+                    className="w-full bg-gradient-to-r from-orbit-electric to-orbit-purple hover:from-orbit-purple hover:to-orbit-electric text-black font-bold py-3 disabled:opacity-50"
                   >
-                    🚀 Enviar Mensagem
+                    {isLoading ? "⏳ Enviando..." : "🚀 Enviar Mensagem"}
                   </Button>
+                  
+                  {/* Success Message */}
+                  {isSuccess && (
+                    <div className="mt-4 p-4 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 text-center">
+                      ✅ Mensagem enviada com sucesso! Entraremos em contato em breve.
+                    </div>
+                  )}
+                  
+                  {/* Error Message */}
+                  {error && (
+                    <div className="mt-4 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-center">
+                      ❌ {error}
+                    </div>
+                  )}
                 </form>
               </CardContent>
             </Card>

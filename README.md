@@ -146,6 +146,7 @@ orbitamos/
 - **Linguagem**: TypeScript 5
 - **Styling**: TailwindCSS + shadcn/ui
 - **Componentes**: React 18 + hooks
+- **Email**: EmailJS para envio de emails
 - **Deploy**: Vercel
 
 ### **Backend**
@@ -189,7 +190,9 @@ orbitamos/
 - Depoimentos de transformação
 
 #### 📞 **Contato - "Entre em Órbita"**
-- Formulário de contato funcional
+- Formulário de contato funcional com EmailJS
+- Envio real de emails para contato@orbitamos.com
+- Estados visuais (loading, success, error)
 - Informações de contato direto
 - Seção para parcerias empresariais
 - FAQ com perguntas frequentes
@@ -268,6 +271,11 @@ mvn spring-boot:run
 #### **Frontend (Web)**
 ```bash
 cd apps/web
+
+# Configurar variáveis de ambiente
+cp .env.example .env.local
+# Edite .env.local com suas chaves do EmailJS
+
 npm install
 npm run dev
 # Site rodando em http://localhost:3000
