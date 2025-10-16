@@ -184,8 +184,8 @@ export default function Home() {
               <div className="space-y-2">
                 <h3 className="text-2xl font-bold">Primeira vida salva</h3>
                 <p className="text-white/80">
-                  \"Estudando há <strong className="text-white">10 meses</strong>, já está estagiando na <strong className="text-white"> Prepara Cursos </strong>
-                  como <strong className="text-white">Instrutor técnico de informática</strong>.\"
+                  &ldquo;Estudando há <strong className="text-white">10 meses</strong>, já está estagiando na <strong className="text-white"> Prepara Cursos </strong>
+                  como <strong className="text-white">Instrutor técnico de informática</strong>.&rdquo;
                 </p>
                 <p className="text-white/70 text-sm">— Nosso ponto de partida. Agora, vamos escalar esse impacto para muita gente.</p>
               </div>
