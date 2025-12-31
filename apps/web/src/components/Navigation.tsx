@@ -81,11 +81,11 @@ export default function Navigation() {
                 Mentorias
               </Link>
               <Link 
-                href="/comunidade" 
+                href="/orbitacademy" 
                 className="text-white/90 hover:text-orbit-electric transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Comunidade
+                OrbitAcademy
               </Link>
               <Link 
                 href="/contato" 

@@ -1,5 +1,5 @@
 # Dockerfile para a API Spring Boot da Orbitamos
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jdk
 
 # Define o diretório de trabalho
 WORKDIR /app

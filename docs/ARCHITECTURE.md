@@ -67,7 +67,7 @@ orbitamos/
 │   │   │   │   │   └── 📄 page.tsx
 │   │   │   │   ├── 📁 mentorias/     # Mentorias - "Do Subemprego à T.I."
 │   │   │   │   │   └── 📄 page.tsx
-│   │   │   │   ├── 📁 comunidade/    # Comunidade - "Orbiters em Ação"
+│   │   │   │   ├── 📁 orbitacademy/  # OrbitAcademy - Cursos e Conteúdos
 │   │   │   │   │   └── 📄 page.tsx
 │   │   │   │   ├── 📁 blog/          # Blog - "Diário da Órbita"
 │   │   │   │   │   └── 📄 page.tsx

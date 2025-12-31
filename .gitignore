@@ -16,7 +16,7 @@ node_modules/
 coverage/
 *.lcov
 
-# Next.js
+# Next.jsimage.png
 .next/
 out/
 

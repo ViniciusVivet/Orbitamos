@@ -201,7 +201,7 @@ export default function Mentorias() {
 
               <Card className="bg-gray-900/50 border-orbit-electric/20">
                 <CardHeader>
-                  <CardTitle className="text-orbit-electric text-xl">🤝 Comunidade</CardTitle>
+                  <CardTitle className="text-orbit-electric text-xl">🤝 Apoio Coletivo</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-300">

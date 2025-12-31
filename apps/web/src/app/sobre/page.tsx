@@ -179,7 +179,7 @@ export default function Sobre() {
             <Card className="bg-gray-900/50 border-orbit-electric/20 text-center">
               <CardHeader>
                 <div className="w-24 h-24 bg-gradient-to-r from-orbit-electric to-orbit-purple rounded-full mx-auto mb-4"></div>
-                <CardTitle className="text-orbit-electric">Comunidade</CardTitle>
+                <CardTitle className="text-orbit-electric">Orbiters</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-300">

@@ -8,7 +8,8 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instala as dependências (incluindo devDependencies para build)
-RUN npm ci
+# Aumenta timeout para evitar erros de rede
+RUN npm ci --timeout=600000
 
 # Copia o código fonte
 COPY . .

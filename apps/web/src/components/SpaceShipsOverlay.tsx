@@ -42,17 +42,26 @@ export default function SpaceShipsOverlay() {
       return ship;
     };
 
-    const s1 = makeShip(18, 14, "#ff6b6b", 0, "triangle");
-    const s2 = makeShip(26, 18, "#7c3aed", 6, "ufo");
-    const s3 = makeShip(22, 10, "#3b82f6", 3, "triangle");
+    // Triplicando o número de naves (3→9) com variações
+    const ships = [
+      makeShip(18, 14, "#ff6b6b", 0, "triangle"),      // vermelha
+      makeShip(26, 18, "#7c3aed", 6, "ufo"),           // roxa
+      makeShip(22, 10, "#3b82f6", 3, "triangle"),      // azul
+      makeShip(20, 12, "#10b981", 9, "triangle"),      // verde
+      makeShip(24, 16, "#f59e0b", 12, "ufo"),          // laranja
+      makeShip(16, 8, "#ef4444", 15, "triangle"),      // vermelha pequena
+      makeShip(28, 20, "#8b5cf6", 18, "ufo"),          // roxa grande
+      makeShip(19, 11, "#06b6d4", 21, "triangle"),     // ciano
+      makeShip(25, 15, "#f97316", 24, "ufo"),          // laranja escura
+    ];
 
     return () => {
-      [s1, s2, s3].forEach((n) => n && n.remove());
+      ships.forEach((n) => n && n.remove());
     };
   }, []);
 
   return (
-    <div ref={ref} className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div ref={ref} className="pointer-events-none absolute inset-0 overflow-hidden z-20">
       <style>{`
         @keyframes ship-fly {
           0% { transform: translateX(0) translateY(0) rotate(5deg); opacity: 0; }
