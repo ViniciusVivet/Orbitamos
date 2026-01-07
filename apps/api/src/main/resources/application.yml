@@ -9,13 +9,20 @@ spring:
   
   # Configuração do banco de dados
   datasource:
-    url: jdbc:postgresql://localhost:5432/orbitamos
-    username: orbitamos
-    password: orbitamos123
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/orbitamos}
+    username: ${SPRING_DATASOURCE_USERNAME:orbitamos}
+    password: ${SPRING_DATASOURCE_PASSWORD:orbitamos123}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 30000
+      idle-timeout: 300000
+      max-lifetime: 600000
   
   # Configuração do JPA
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     show-sql: true
@@ -23,6 +30,8 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+        temp:
+          use_jdbc_metadata_defaults: false
   
   # CORS para permitir requisições do frontend
   web:

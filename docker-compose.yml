@@ -1,22 +1,6 @@
 version: '3.8'
 
 services:
-  # Banco de dados PostgreSQL
-  postgres:
-    image: postgres:15-alpine
-    container_name: orbitamos-postgres
-    environment:
-      POSTGRES_DB: orbitamos
-      POSTGRES_USER: orbitamos
-      POSTGRES_PASSWORD: orbitamos123
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - orbitamos-network
-
-  # API Spring Boot
   api:
     build:
       context: ./apps/api
@@ -25,15 +9,12 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/orbitamos
-      SPRING_DATASOURCE_USERNAME: orbitamos
-      SPRING_DATASOURCE_PASSWORD: orbitamos123
-    depends_on:
-      - postgres
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
     networks:
       - orbitamos-network
 
-  # Frontend Next.js
   web:
     build:
       context: ./apps/web
@@ -47,9 +28,6 @@ services:
       - api
     networks:
       - orbitamos-network
-
-volumes:
-  postgres_data:
 
 networks:
   orbitamos-network:

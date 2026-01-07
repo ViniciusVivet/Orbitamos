@@ -1,9 +1,12 @@
 package com.orbitamos.api.controller;
 
+import com.orbitamos.api.entity.Contact;
+import com.orbitamos.api.service.ContactService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -12,26 +15,54 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "*")
 public class ContactController {
+
+    @Autowired
+    private ContactService contactService;
 
     @PostMapping("/contact")
     public ResponseEntity<Map<String, Object>> contact(@RequestBody Map<String, String> contactData) {
-        // Aqui seria salvo no banco de dados
-        // Por enquanto, apenas retorna confirmação
-        
-        String name = contactData.get("name");
-        String email = contactData.get("email");
-        String message = contactData.get("message");
-        
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "message", "Mensagem recebida com sucesso! Entraremos em contato em breve.",
-            "timestamp", LocalDateTime.now(),
-            "data", Map.of(
-                "name", name,
-                "email", email,
-                "message", message
-            )
-        ));
+        try {
+            Contact contact = new Contact(
+                contactData.get("name"),
+                contactData.get("email"),
+                contactData.get("message")
+            );
+            
+            Contact saved = contactService.save(contact);
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Mensagem recebida com sucesso! Entraremos em contato em breve.",
+                "id", saved.getId()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", "Erro ao salvar mensagem: " + e.getMessage()
+            ));
+        }
+    }
+    
+    @GetMapping("/contacts")
+    public ResponseEntity<List<Contact>> getAllContacts() {
+        return ResponseEntity.ok(contactService.findAll());
+    }
+    
+    @GetMapping("/contacts/unread")
+    public ResponseEntity<List<Contact>> getUnreadContacts() {
+        return ResponseEntity.ok(contactService.findUnread());
+    }
+    
+    @PutMapping("/contacts/{id}/read")
+    public ResponseEntity<Map<String, Object>> markAsRead(@PathVariable Long id) {
+        return contactService.markAsRead(id)
+            .map(contact -> ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Contato marcado como lido",
+                "contact", contact
+            )))
+            .orElse(ResponseEntity.notFound().build());
     }
 }

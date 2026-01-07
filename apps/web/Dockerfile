@@ -1,5 +1,6 @@
 # Dockerfile para o Frontend Next.js da Orbitamos
-FROM node:18-alpine
+FROM node:20.11-alpine
+
 
 # Define o diretório de trabalho
 WORKDIR /app
