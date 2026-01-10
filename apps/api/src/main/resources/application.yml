@@ -14,11 +14,15 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:orbitamos123}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 5
+      maximum-pool-size: 3
       minimum-idle: 1
       connection-timeout: 30000
-      idle-timeout: 300000
-      max-lifetime: 600000
+      validation-timeout: 5000
+      idle-timeout: 60000
+      max-lifetime: 300000
+      connection-test-query: SELECT 1
+      keepalive-time: 30000
+      leak-detection-threshold: 60000
   
   # Configuração do JPA
   jpa:

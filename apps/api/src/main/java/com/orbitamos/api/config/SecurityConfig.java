@@ -30,15 +30,17 @@ public class SecurityConfig {
             // Configura CORS
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             
-            // Permite acesso público a todos os endpoints da API (MVP)
+            // Permite acesso público a todos os endpoints (MVP)
             // TODO: Adicionar autenticação JWT no futuro
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/**").permitAll()
                 .requestMatchers("/api-docs/**").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/swagger-ui.html").permitAll()
+                .requestMatchers("/error").permitAll()
+                .requestMatchers("/").permitAll()
                 // Todos os outros endpoints requerem autenticação (para o futuro)
-                .anyRequest().authenticated()
+                .anyRequest().permitAll()
             )
             
             // Desabilita sessões (stateless - melhor para APIs)
