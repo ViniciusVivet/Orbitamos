@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import emailjs from '@emailjs/browser';
+import { sendContact } from "@/lib/api";
 
 export default function Contato() {
   const [formData, setFormData] = useState({
@@ -24,35 +25,40 @@ export default function Contato() {
     setIsSuccess(false);
     
     try {
-      // Configurações do EmailJS
-      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || 'service_iq6m9yr';
-      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || 'template_tq3qtzp';
-      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || 'r-ZyAFqKXXBrfMNHd';
-      
-      // Verificar se as chaves estão configuradas
-      if (publicKey === 'YOUR_PUBLIC_KEY') {
-        // Modo fallback para desenvolvimento
-        console.log('📧 EmailJS não configurado - modo simulação');
-        console.log('Dados que seriam enviados:', {
-          from_name: formData.name,
-          from_email: formData.email,
+      // 1. Salvar no banco de dados via backend
+      try {
+        const response = await sendContact({
+          name: formData.name,
+          email: formData.email,
           message: formData.message,
-          to_email: 'contato@orbitamos.com'
         });
         
-        // Simular delay de envio
-        await new Promise(resolve => setTimeout(resolve, 1500));
-      } else {
-        // Envio real via EmailJS
-        const templateParams = {
-          from_name: formData.name,
-          from_email: formData.email,
-          message: formData.message,
-          to_email: 'contato@orbitamos.com',
-        };
+        console.log('✅ Contato salvo no banco:', response);
+      } catch (apiError) {
+        console.warn('⚠️ Erro ao salvar no banco (continuando com EmailJS):', apiError);
+        // Continua mesmo se o backend falhar
+      }
+      
+      // 2. Enviar email via EmailJS (notificação)
+      try {
+        const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || 'service_iq6m9yr';
+        const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || 'template_tq3qtzp';
+        const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || 'r-ZyAFqKXXBrfMNHd';
         
-        await emailjs.send(serviceId, templateId, templateParams, publicKey);
-        console.log('📧 Email enviado com sucesso via EmailJS!');
+        if (publicKey && publicKey !== 'YOUR_PUBLIC_KEY') {
+          const templateParams = {
+            from_name: formData.name,
+            from_email: formData.email,
+            message: formData.message,
+            to_email: 'contato@orbitamos.com',
+          };
+          
+          await emailjs.send(serviceId, templateId, templateParams, publicKey);
+          console.log('📧 Email enviado com sucesso via EmailJS!');
+        }
+      } catch (emailError) {
+        console.warn('⚠️ Erro ao enviar email (mas dados foram salvos no banco):', emailError);
+        // Não bloqueia o sucesso se o email falhar
       }
       
       setIsSuccess(true);
@@ -64,7 +70,7 @@ export default function Contato() {
       }, 5000);
       
     } catch (err) {
-      console.error('Erro ao enviar email:', err);
+      console.error('❌ Erro geral:', err);
       setError('Erro ao enviar mensagem. Tente novamente.');
     } finally {
       setIsLoading(false);
