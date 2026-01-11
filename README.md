@@ -197,7 +197,7 @@ orbitamos/
 - Seção para parcerias empresariais
 - FAQ com perguntas frequentes
 
-### 🔧 **Backend (3 Endpoints)**
+### 🔧 **Backend (6 Endpoints)**
 
 #### 🏥 **Health Check**
 ```http
@@ -232,6 +232,20 @@ Content-Type: application/json
   "message": "Quero participar do programa!"
 }
 ```
+
+#### 🔐 **Autenticação**
+```http
+POST /api/auth/register
+POST /api/auth/login
+```
+Sistema completo de autenticação com JWT para cadastro e login de usuários.
+
+#### 👤 **Dashboard (Protegido)**
+```http
+GET /api/dashboard/me
+Authorization: Bearer <token>
+```
+Endpoint protegido para área do aluno.
 
 ---
 
@@ -377,8 +391,8 @@ Douglas é um desenvolvedor apaixonado por tecnologia e impacto social. Nascido 
 
 **Sua Jornada:**
 - 🏠 **Origem**: Periferia de São Paulo
-- 💻 **Formação**: Autodidata + cursos online
-- 🚀 **Carreira**: 10 meses na faculdade e já estagiando como Instrutor Técnico de informatica 
+- 💻 **Formação**: Analise e Desenvolvimento de Sistemas 
+- 🚀 **Carreira**: Com 8 meses na faculdade entrei no meu primeiro estágio como Intrutor de Informatática  
 - 🎯 **Missão**: Democratizar o acesso à tecnologia
 - 🌟 **Visão**: Transformar vidas através da programação
 

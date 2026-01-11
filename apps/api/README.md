@@ -8,8 +8,9 @@ A API da Orbitamos é responsável por gerenciar:
 - ✅ Health checks da aplicação
 - ✅ Dados dos programas de mentoria
 - ✅ Formulários de contato
-- ✅ Autenticação e autorização (futuro)
-- ✅ Gestão de usuários (futuro)
+- ✅ Autenticação e autorização com JWT
+- ✅ Gestão de usuários (cadastro e login)
+- ✅ Área do aluno (dashboard protegido)
 
 ## 🛠️ **Stack Tecnológica**
 
@@ -100,6 +101,58 @@ Content-Type: application/json
   "name": "João Silva",
   "email": "joao@email.com",
   "message": "Quero participar do programa!"
+}
+```
+
+### **Autenticação**
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "name": "João Silva",
+  "email": "joao@email.com",
+  "password": "senha123"
+}
+```
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "joao@email.com",
+  "password": "senha123"
+}
+```
+
+**Resposta (ambos endpoints):**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "email": "joao@email.com",
+  "name": "João Silva",
+  "id": 1,
+  "message": "Login realizado com sucesso!"
+}
+```
+
+### **Dashboard (Protegido - requer JWT)**
+```http
+GET /api/dashboard/me
+Authorization: Bearer <token>
+```
+
+**Resposta:**
+```json
+{
+  "success": true,
+  "user": {
+    "id": 1,
+    "name": "João Silva",
+    "email": "joao@email.com",
+    "createdAt": "2025-01-11T00:00:00"
+  }
 }
 ```
 

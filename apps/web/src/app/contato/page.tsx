@@ -41,11 +41,11 @@ export default function Contato() {
       
       // 2. Enviar email via EmailJS (notificação)
       try {
-        const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || 'service_iq6m9yr';
-        const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || 'template_tq3qtzp';
-        const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || 'r-ZyAFqKXXBrfMNHd';
+        const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+        const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+        const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
         
-        if (publicKey && publicKey !== 'YOUR_PUBLIC_KEY') {
+        if (serviceId && templateId && publicKey && publicKey !== 'YOUR_PUBLIC_KEY') {
           const templateParams = {
             from_name: formData.name,
             from_email: formData.email,

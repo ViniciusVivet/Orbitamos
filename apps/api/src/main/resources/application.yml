@@ -60,7 +60,7 @@ springdoc:
 
 # Configuração JWT
 jwt:
-  secret: ${JWT_SECRET:orbitamos-secret-key-very-secure-change-in-production-2025-must-be-at-least-256-bits-long-for-hmac-sha-256}
+  secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:86400000} # 24 horas em millisegundos
 
 # Logging
