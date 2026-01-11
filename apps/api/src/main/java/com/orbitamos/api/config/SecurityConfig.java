@@ -1,11 +1,15 @@
 package com.orbitamos.api.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -21,6 +25,9 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -30,18 +37,27 @@ public class SecurityConfig {
             // Configura CORS
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             
-            // Permite acesso público a todos os endpoints (MVP)
-            // TODO: Adicionar autenticação JWT no futuro
+            // Configura autorização de endpoints
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/**").permitAll()
+                // Endpoints públicos (não precisam autenticação)
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/contact").permitAll()
+                .requestMatchers("/api/health").permitAll()
+                .requestMatchers("/api/mentorships").permitAll()
                 .requestMatchers("/api-docs/**").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/swagger-ui.html").permitAll()
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/").permitAll()
-                // Todos os outros endpoints requerem autenticação (para o futuro)
+                // Endpoints protegidos (precisam de autenticação JWT)
+                .requestMatchers("/api/dashboard/**").authenticated()
+                .requestMatchers("/api/contacts").authenticated()
+                // Todos os outros endpoints requerem autenticação
                 .anyRequest().permitAll()
             )
+            
+            // Adiciona filtro JWT antes do filtro de autenticação padrão
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             
             // Desabilita sessões (stateless - melhor para APIs)
             .sessionManagement(session -> session
@@ -49,6 +65,11 @@ public class SecurityConfig {
             );
         
         return http.build();
+    }
+    
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
