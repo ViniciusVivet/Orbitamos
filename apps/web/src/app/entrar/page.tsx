@@ -154,11 +154,11 @@ export default function Entrar() {
       {/* Nebula */}
       <div className="absolute -top-40 left-1/2 h-[700px] w-[1200px] -translate-x-1/2 rounded-full blur-3xl opacity-40 bg-[conic-gradient(from_120deg,theme(colors.orbit-electric/.7),theme(colors.orbit-purple/.6),transparent_70%)]" />
 
-      <div className="relative container mx-auto grid min-h-[calc(100vh-4rem)] place-items-center px-4 py-16">
-        <div className="w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-2xl">
-          <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 h-12 w-12 animate-orbit rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple" />
-            <h1 className="bg-gradient-to-br from-orbit-electric via-white to-orbit-purple bg-clip-text text-3xl font-extrabold text-transparent">
+      <div className="relative container mx-auto grid min-h-[calc(100vh-4rem)] place-items-center px-4 py-8 sm:py-16">
+        <div className="w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-8 backdrop-blur-2xl">
+          <div className="mb-6 sm:mb-8 text-center">
+            <div className="mx-auto mb-3 sm:mb-4 h-10 w-10 sm:h-12 sm:w-12 animate-orbit rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple" />
+            <h1 className="bg-gradient-to-br from-orbit-electric via-white to-orbit-purple bg-clip-text text-2xl sm:text-3xl font-extrabold text-transparent">
               {isLogin ? "Entrar na Órbita" : "Criar Conta"}
             </h1>
             <p className="mt-2 text-white/70">
