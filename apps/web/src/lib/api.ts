@@ -78,13 +78,19 @@ export interface User {
  */
 export async function register(data: RegisterData): Promise<AuthResponse> {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
+
     const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     const result = await response.json();
 
@@ -95,6 +101,9 @@ export async function register(data: RegisterData): Promise<AuthResponse> {
     return result;
   } catch (error) {
     if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        throw new Error('Tempo de espera esgotado. Verifique sua conexão e tente novamente.');
+      }
       throw error;
     }
     throw new Error('Erro desconhecido ao criar conta');
@@ -106,13 +115,19 @@ export async function register(data: RegisterData): Promise<AuthResponse> {
  */
 export async function login(data: LoginData): Promise<AuthResponse> {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
+
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     const result = await response.json();
 
@@ -123,6 +138,9 @@ export async function login(data: LoginData): Promise<AuthResponse> {
     return result;
   } catch (error) {
     if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        throw new Error('Tempo de espera esgotado. Verifique sua conexão e tente novamente.');
+      }
       throw error;
     }
     throw new Error('Erro desconhecido ao fazer login');

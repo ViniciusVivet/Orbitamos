@@ -28,15 +28,38 @@ public class AuthService {
     private PasswordEncoder passwordEncoder;
     
     public AuthResponse register(RegisterRequest request) {
+        // Validações básicas
+        if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+            throw new RuntimeException("E-mail é obrigatório!");
+        }
+        
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
+            throw new RuntimeException("Nome é obrigatório!");
+        }
+        
+        if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+            throw new RuntimeException("Senha é obrigatória!");
+        }
+        
+        if (request.getPassword().length() < 6) {
+            throw new RuntimeException("A senha deve ter no mínimo 6 caracteres!");
+        }
+        
+        // Validação básica de email
+        String email = request.getEmail().trim().toLowerCase();
+        if (!email.contains("@") || !email.contains(".")) {
+            throw new RuntimeException("E-mail inválido!");
+        }
+        
         // Verifica se email já existe
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email já cadastrado!");
+        if (userRepository.existsByEmail(email)) {
+            throw new RuntimeException("Este e-mail já está cadastrado. Tente fazer login.");
         }
         
         // Cria novo usuário
         User user = new User();
-        user.setEmail(request.getEmail());
-        user.setName(request.getName());
+        user.setEmail(email);
+        user.setName(request.getName().trim());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         
         User savedUser = userRepository.save(user);
@@ -54,10 +77,20 @@ public class AuthService {
     }
     
     public AuthResponse login(LoginRequest request) {
-        Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
+        // Validações básicas
+        if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+            throw new RuntimeException("E-mail é obrigatório!");
+        }
+        
+        if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+            throw new RuntimeException("Senha é obrigatória!");
+        }
+        
+        String email = request.getEmail().trim().toLowerCase();
+        Optional<User> userOpt = userRepository.findByEmail(email);
         
         if (userOpt.isEmpty() || !passwordEncoder.matches(request.getPassword(), userOpt.get().getPassword())) {
-            throw new RuntimeException("Email ou senha incorretos!");
+            throw new RuntimeException("E-mail ou senha incorretos!");
         }
         
         User user = userOpt.get();

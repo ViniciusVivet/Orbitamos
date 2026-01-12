@@ -24,18 +24,54 @@ export default function Entrar() {
     setLoading(true);
 
     try {
+      // Validações básicas
+      if (!email.trim()) {
+        setError("E-mail é obrigatório");
+        setLoading(false);
+        return;
+      }
+
+      if (!password.trim()) {
+        setError("Senha é obrigatória");
+        setLoading(false);
+        return;
+      }
+
+      if (password.length < 6) {
+        setError("A senha deve ter no mínimo 6 caracteres");
+        setLoading(false);
+        return;
+      }
+
       if (isLogin) {
-        await login(email, password);
+        await login(email.trim(), password);
       } else {
         if (!name.trim()) {
           setError("Nome é obrigatório");
           setLoading(false);
           return;
         }
-        await registerUser(name, email, password);
+        await registerUser(name.trim(), email.trim(), password);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao fazer login/cadastro");
+      let errorMessage = "Erro ao fazer login/cadastro";
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
+      
+      // Melhorar mensagens de erro comuns
+      if (errorMessage.includes("fetch") || errorMessage.includes("network") || errorMessage.includes("Failed to fetch")) {
+        errorMessage = "Erro de conexão. Verifique sua internet e tente novamente.";
+      } else if (errorMessage.includes("timeout") || errorMessage.includes("timed out")) {
+        errorMessage = "Tempo de espera esgotado. Tente novamente.";
+      } else if (errorMessage.includes("Email já cadastrado") || errorMessage.includes("already")) {
+        errorMessage = "Este e-mail já está cadastrado. Tente fazer login.";
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -86,6 +122,9 @@ export default function Entrar() {
                   placeholder="Seu nome completo"
                   className="bg-black/40 border-white/20 text-white placeholder:text-white/40"
                   required={!isLogin}
+                  autoComplete="name"
+                  autoCapitalize="words"
+                  autoCorrect="on"
                 />
               </div>
             )}
@@ -100,6 +139,10 @@ export default function Entrar() {
                 placeholder="voce@email.com"
                 className="bg-black/40 border-white/20 text-white placeholder:text-white/40"
                 required
+                autoComplete="email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                inputMode="email"
               />
             </div>
 
@@ -113,7 +156,14 @@ export default function Entrar() {
                 placeholder="••••••••"
                 className="bg-black/40 border-white/20 text-white placeholder:text-white/40"
                 required
+                autoComplete={isLogin ? "current-password" : "new-password"}
+                autoCapitalize="none"
+                autoCorrect="off"
+                minLength={6}
               />
+              {!isLogin && (
+                <p className="mt-1 text-xs text-white/50">Mínimo de 6 caracteres</p>
+              )}
             </div>
 
             {error && (
