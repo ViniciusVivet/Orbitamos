@@ -2,10 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import RocketProgress from "@/components/RocketProgress";
 
 export default function Entrar() {
   const [isLogin, setIsLogin] = useState(true);
@@ -14,34 +15,75 @@ export default function Entrar() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fakeProgress, setFakeProgress] = useState(0);
+  const [showProgress, setShowProgress] = useState(false);
   
   const { login, register: registerUser } = useAuth();
   const router = useRouter();
+
+  // Progresso fake inteligente (não depende do backend)
+  useEffect(() => {
+    if (!loading || !showProgress) return;
+
+    let progress = 0;
+    const interval = setInterval(() => {
+      // 0-20%: rápido (instantâneo)
+      if (progress < 20) {
+        progress += 5;
+      }
+      // 20-60%: lento
+      else if (progress < 60) {
+        progress += 1.5;
+      }
+      // 60-90%: bem lento
+      else if (progress < 90) {
+        progress += 0.8;
+      }
+      // 90-100%: só quando o backend responder (controlado externamente)
+      else {
+        // Para aqui, espera resposta do backend
+        clearInterval(interval);
+        return;
+      }
+
+      setFakeProgress(Math.min(90, progress));
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [loading, showProgress]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
+    setShowProgress(true);
+    setFakeProgress(0);
 
     try {
       // Validações básicas
       if (!email.trim()) {
         setError("E-mail é obrigatório");
         setLoading(false);
+        setShowProgress(false);
         return;
       }
 
       if (!password.trim()) {
         setError("Senha é obrigatória");
         setLoading(false);
+        setShowProgress(false);
         return;
       }
 
       if (password.length < 6) {
         setError("A senha deve ter no mínimo 6 caracteres");
         setLoading(false);
+        setShowProgress(false);
         return;
       }
+
+      // Aguarda um pouco para o progresso fake começar
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       if (isLogin) {
         await login(email.trim(), password);
@@ -49,10 +91,16 @@ export default function Entrar() {
         if (!name.trim()) {
           setError("Nome é obrigatório");
           setLoading(false);
+          setShowProgress(false);
           return;
         }
         await registerUser(name.trim(), email.trim(), password);
       }
+
+      // Quando o backend responde, completa o progresso
+      setFakeProgress(100);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
     } catch (err) {
       let errorMessage = "Erro ao fazer login/cadastro";
       
@@ -69,11 +117,19 @@ export default function Entrar() {
         errorMessage = "Tempo de espera esgotado. Tente novamente.";
       } else if (errorMessage.includes("Email já cadastrado") || errorMessage.includes("already")) {
         errorMessage = "Este e-mail já está cadastrado. Tente fazer login.";
+      } else if (errorMessage.includes("iniciando")) {
+        errorMessage = "Servidor está iniciando. Aguarde alguns segundos e tente novamente.";
       }
       
       setError(errorMessage);
+      setFakeProgress(0);
     } finally {
       setLoading(false);
+      // Mantém o progresso visível por um pouco antes de esconder
+      setTimeout(() => {
+        setShowProgress(false);
+        setFakeProgress(0);
+      }, 1000);
     }
   };
 
@@ -166,9 +222,24 @@ export default function Entrar() {
               )}
             </div>
 
+            {/* Barra de progresso gamificada */}
+            {showProgress && (
+              <div className="py-4">
+                <RocketProgress 
+                  progress={fakeProgress} 
+                  message={isLogin ? "Conectando à sua conta..." : "Criando sua conta..."}
+                />
+              </div>
+            )}
+
             {error && (
               <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm text-center">
                 {error}
+                {error.includes('iniciando') && (
+                  <p className="mt-2 text-xs text-white/60">
+                    💡 Dica: Serviços gratuitos podem levar alguns segundos para iniciar. Aguarde e tente novamente.
+                  </p>
+                )}
               </div>
             )}
 

@@ -77,74 +77,110 @@ export interface User {
  * Registra um novo usuário
  */
 export async function register(data: RegisterData): Promise<AuthResponse> {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
+  const maxRetries = 2;
+  let lastError: Error | null = null;
 
-    const response = await fetch(`${API_URL}/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-      signal: controller.signal,
-    });
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      // Timeout maior para serviços gratuitos que "acordam" devagar
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos
 
-    clearTimeout(timeoutId);
+      const response = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+        signal: controller.signal,
+      });
 
-    const result = await response.json();
+      clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      throw new Error(result.message || 'Erro ao criar conta');
-    }
+      const result = await response.json();
 
-    return result;
-  } catch (error) {
-    if (error instanceof Error) {
-      if (error.name === 'AbortError') {
-        throw new Error('Tempo de espera esgotado. Verifique sua conexão e tente novamente.');
+      if (!response.ok) {
+        throw new Error(result.message || 'Erro ao criar conta');
       }
-      throw error;
+
+      return result;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Erro desconhecido');
+      
+      // Se não for timeout ou erro de rede, não tenta novamente
+      if (lastError.name !== 'AbortError' && !lastError.message.includes('fetch')) {
+        throw lastError;
+      }
+
+      // Se for a última tentativa, lança o erro
+      if (attempt === maxRetries) {
+        if (lastError.name === 'AbortError' || lastError.message.includes('fetch')) {
+          throw new Error('Servidor demorou para responder. O serviço pode estar iniciando. Tente novamente em alguns segundos.');
+        }
+        throw lastError;
+      }
+
+      // Aguarda antes de tentar novamente (exponential backoff)
+      await new Promise(resolve => setTimeout(resolve, 2000 * (attempt + 1)));
     }
-    throw new Error('Erro desconhecido ao criar conta');
   }
+
+  throw lastError || new Error('Erro ao criar conta');
 }
 
 /**
  * Faz login de um usuário
  */
 export async function login(data: LoginData): Promise<AuthResponse> {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
+  const maxRetries = 2;
+  let lastError: Error | null = null;
 
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-      signal: controller.signal,
-    });
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      // Timeout maior para serviços gratuitos que "acordam" devagar
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos
 
-    clearTimeout(timeoutId);
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+        signal: controller.signal,
+      });
 
-    const result = await response.json();
+      clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      throw new Error(result.message || 'Erro ao fazer login');
-    }
+      const result = await response.json();
 
-    return result;
-  } catch (error) {
-    if (error instanceof Error) {
-      if (error.name === 'AbortError') {
-        throw new Error('Tempo de espera esgotado. Verifique sua conexão e tente novamente.');
+      if (!response.ok) {
+        throw new Error(result.message || 'Erro ao fazer login');
       }
-      throw error;
+
+      return result;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Erro desconhecido');
+      
+      // Se não for timeout ou erro de rede, não tenta novamente
+      if (lastError.name !== 'AbortError' && !lastError.message.includes('fetch')) {
+        throw lastError;
+      }
+
+      // Se for a última tentativa, lança o erro
+      if (attempt === maxRetries) {
+        if (lastError.name === 'AbortError' || lastError.message.includes('fetch')) {
+          throw new Error('Servidor demorou para responder. O serviço pode estar iniciando. Tente novamente em alguns segundos.');
+        }
+        throw lastError;
+      }
+
+      // Aguarda antes de tentar novamente (exponential backoff)
+      await new Promise(resolve => setTimeout(resolve, 2000 * (attempt + 1)));
     }
-    throw new Error('Erro desconhecido ao fazer login');
   }
+
+  throw lastError || new Error('Erro ao fazer login');
 }
 
 /**
