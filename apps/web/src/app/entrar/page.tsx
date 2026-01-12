@@ -224,7 +224,7 @@ export default function Entrar() {
 
             {/* Barra de progresso gamificada */}
             {showProgress && (
-              <div className="py-4">
+              <div className="py-2 sm:py-4">
                 <RocketProgress 
                   progress={fakeProgress} 
                   message={isLogin ? "Conectando à sua conta..." : "Criando sua conta..."}

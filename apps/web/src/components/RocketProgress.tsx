@@ -46,9 +46,9 @@ export default function RocketProgress({
   };
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-4 sm:space-y-6">
       {/* Container do foguete e planeta */}
-      <div className="relative h-32 w-full overflow-hidden rounded-lg bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900">
+      <div className="relative h-24 sm:h-32 w-full overflow-hidden rounded-lg bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900">
         {/* Estrelas de fundo */}
         <div className="absolute inset-0">
           {Array.from({ length: 30 }).map((_, i) => (
@@ -70,7 +70,7 @@ export default function RocketProgress({
         {/* Planeta Marte (direita) */}
         {showPlanet && (
           <div
-            className="absolute bottom-4 right-8 transition-all duration-500"
+            className="absolute bottom-2 sm:bottom-4 right-4 sm:right-8 transition-all duration-500"
             style={{
               transform: `scale(${0.5 + displayProgress / 200})`,
               opacity: displayProgress / 100,
@@ -78,11 +78,11 @@ export default function RocketProgress({
           >
             <div className="relative">
               {/* Planeta */}
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-600 via-red-600 to-orange-800 shadow-2xl">
+              <div className="w-12 h-12 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-orange-600 via-red-600 to-orange-800 shadow-2xl">
                 {/* Crateras */}
-                <div className="absolute top-4 left-4 w-4 h-4 rounded-full bg-orange-800/50" />
-                <div className="absolute top-8 right-6 w-3 h-3 rounded-full bg-orange-800/50" />
-                <div className="absolute bottom-6 left-8 w-5 h-5 rounded-full bg-orange-800/50" />
+                <div className="absolute top-2 left-2 sm:top-4 sm:left-4 w-2 h-2 sm:w-4 sm:h-4 rounded-full bg-orange-800/50" />
+                <div className="absolute top-4 right-3 sm:top-8 sm:right-6 w-1.5 h-1.5 sm:w-3 sm:h-3 rounded-full bg-orange-800/50" />
+                <div className="absolute bottom-3 left-4 sm:bottom-6 sm:left-8 w-2.5 h-2.5 sm:w-5 sm:h-5 rounded-full bg-orange-800/50" />
               </div>
               {/* Brilho do planeta */}
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-transparent via-white/20 to-transparent" />
@@ -92,7 +92,7 @@ export default function RocketProgress({
 
         {/* Foguete (esquerda, move para direita) */}
         <div
-          className="absolute bottom-8 transition-all duration-300 ease-out"
+          className="absolute bottom-4 sm:bottom-8 transition-all duration-300 ease-out"
           style={{
             left: `${8 + (displayProgress / 100) * 70}%`,
             transform: `translateY(${Math.sin(displayProgress / 10) * 5}px) rotate(${displayProgress > 80 ? -10 : 0}deg)`,
@@ -102,29 +102,29 @@ export default function RocketProgress({
             {/* Corpo do foguete */}
             <div className="relative">
               {/* Corpo principal */}
-              <div className="w-12 h-16 bg-gradient-to-b from-orbit-electric via-blue-500 to-orbit-purple rounded-t-lg shadow-lg">
+              <div className="w-8 h-10 sm:w-12 sm:h-16 bg-gradient-to-b from-orbit-electric via-blue-500 to-orbit-purple rounded-t-lg shadow-lg">
                 {/* Janela */}
-                <div className="absolute top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-white/20 border-2 border-white/30" />
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-4 h-4 sm:top-3 sm:w-6 sm:h-6 rounded-full bg-white/20 border-2 border-white/30" />
                 {/* Linhas decorativas */}
-                <div className="absolute top-8 left-2 right-2 h-0.5 bg-white/20" />
-                <div className="absolute top-10 left-2 right-2 h-0.5 bg-white/20" />
+                <div className="absolute top-5 left-1 right-1 sm:top-8 sm:left-2 sm:right-2 h-0.5 bg-white/20" />
+                <div className="absolute top-6 left-1 right-1 sm:top-10 sm:left-2 sm:right-2 h-0.5 bg-white/20" />
               </div>
               
               {/* Asas */}
-              <div className="absolute -bottom-2 -left-2 w-4 h-6 bg-gradient-to-br from-orbit-electric to-blue-600 transform -rotate-45 rounded-sm" />
-              <div className="absolute -bottom-2 -right-2 w-4 h-6 bg-gradient-to-br from-orbit-purple to-blue-600 transform rotate-45 rounded-sm" />
+              <div className="absolute -bottom-1 -left-1 sm:-bottom-2 sm:-left-2 w-3 h-4 sm:w-4 sm:h-6 bg-gradient-to-br from-orbit-electric to-blue-600 transform -rotate-45 rounded-sm" />
+              <div className="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 w-3 h-4 sm:w-4 sm:h-6 bg-gradient-to-br from-orbit-purple to-blue-600 transform rotate-45 rounded-sm" />
               
               {/* Chama (animada) */}
-              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2">
+              <div className="absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2">
                 <div className="relative">
                   {/* Chama principal */}
-                  <div className="w-6 h-8 bg-gradient-to-t from-orange-500 via-yellow-400 to-transparent rounded-full blur-sm animate-pulse" />
-                  <div className="absolute inset-0 w-4 h-6 bg-gradient-to-t from-red-500 via-orange-400 to-transparent rounded-full blur-sm animate-pulse" style={{ animationDelay: '0.2s' }} />
+                  <div className="w-4 h-5 sm:w-6 sm:h-8 bg-gradient-to-t from-orange-500 via-yellow-400 to-transparent rounded-full blur-sm animate-pulse" />
+                  <div className="absolute inset-0 w-3 h-4 sm:w-4 sm:h-6 bg-gradient-to-t from-red-500 via-orange-400 to-transparent rounded-full blur-sm animate-pulse" style={{ animationDelay: '0.2s' }} />
                   {/* Partículas */}
                   {Array.from({ length: 3 }).map((_, i) => (
                     <div
                       key={i}
-                      className="absolute w-1 h-1 bg-yellow-400 rounded-full animate-ping"
+                      className="absolute w-0.5 h-0.5 sm:w-1 sm:h-1 bg-yellow-400 rounded-full animate-ping"
                       style={{
                         left: `${Math.random() * 100}%`,
                         bottom: `${Math.random() * 50}%`,
@@ -141,25 +141,31 @@ export default function RocketProgress({
         {/* Rastro do foguete */}
         {displayProgress > 10 && (
           <div
-            className="absolute bottom-12 transition-all duration-300"
+            className="absolute bottom-8 sm:bottom-12 transition-all duration-300"
             style={{
               left: '8%',
               width: `${(displayProgress / 100) * 70}%`,
-              height: '2px',
-              background: `linear-gradient(to right, transparent, ${displayProgress > 50 ? '#00D4FF' : '#8B5CF6'}, transparent)`,
-              opacity: displayProgress / 100,
+              height: '1px',
             }}
-          />
+          >
+            <div 
+              className="h-full w-full"
+              style={{
+                background: `linear-gradient(to right, transparent, ${displayProgress > 50 ? '#00D4FF' : '#8B5CF6'}, transparent)`,
+                opacity: displayProgress / 100,
+              }}
+            />
+          </div>
         )}
       </div>
 
       {/* Barra de progresso */}
       <div className="space-y-2">
-        <div className="flex justify-between items-center text-sm">
+        <div className="flex justify-between items-center text-xs sm:text-sm">
           <span className="text-white/80 font-medium">{getGameMessage()}</span>
           <span className="text-orbit-electric font-bold">{Math.round(displayProgress)}%</span>
         </div>
-        <div className="relative h-3 w-full bg-white/10 rounded-full overflow-hidden">
+        <div className="relative h-2 sm:h-3 w-full bg-white/10 rounded-full overflow-hidden">
           {/* Fundo animado */}
           <div className="absolute inset-0 bg-gradient-to-r from-orbit-electric/20 via-orbit-purple/20 to-orbit-electric/20 animate-pulse" />
           {/* Barra de progresso */}
