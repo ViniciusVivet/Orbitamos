@@ -21,21 +21,21 @@ export default function Entrar() {
   
   // Obtém o contexto de autenticação
   const authContext = useAuth();
-  const login = authContext?.login ?? null;
-  const registerUser = authContext?.register ?? null;
+  const login = authContext?.login;
+  const registerUser = authContext?.register;
   
   const router = useRouter();
 
   // Verificação de segurança - atualiza authReady quando contexto estiver pronto
   useEffect(() => {
-    if (authContext && login && registerUser) {
+    if (authContext && login !== undefined && registerUser !== undefined) {
       console.log("✅ AuthContext carregado com sucesso!");
       setAuthReady(true);
     } else {
       console.warn("⚠️ AuthContext não está totalmente disponível ainda...", { 
         hasContext: !!authContext, 
-        hasLogin: !!login, 
-        hasRegister: !!registerUser 
+        hasLogin: login !== undefined, 
+        hasRegister: registerUser !== undefined 
       });
       setAuthReady(false);
     }
@@ -296,13 +296,14 @@ export default function Entrar() {
 
             <Button 
               type="submit" 
-              disabled={loading || !authReady}
+              disabled={loading || !authReady || !authContext}
               onClick={(e) => {
                 console.log("🖱️ Botão clicado!", { 
                   loading, 
                   authReady,
-                  hasLogin: !!login, 
-                  hasRegister: !!registerUser,
+                  hasContext: !!authContext,
+                  hasLogin: login !== undefined, 
+                  hasRegister: registerUser !== undefined,
                   isLogin,
                   email: email.trim(),
                   passwordLength: password.length
