@@ -52,35 +52,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response: AuthResponse = await loginApi({ email, password });
-    localStorage.setItem("token", response.token);
-    setToken(response.token);
-    
-    // Usa dados diretamente da resposta (não precisa fazer chamada extra)
-    setUser({
-      id: response.id,
-      name: response.name,
-      email: response.email,
-      createdAt: new Date().toISOString(),
-    });
-    
-    router.push("/dashboard");
+    try {
+      console.log("🔐 AuthContext: Iniciando login...");
+      const response: AuthResponse = await loginApi({ email, password });
+      console.log("✅ AuthContext: Login API respondeu:", response);
+      
+      localStorage.setItem("token", response.token);
+      setToken(response.token);
+      
+      // Usa dados diretamente da resposta (não precisa fazer chamada extra)
+      setUser({
+        id: response.id,
+        name: response.name,
+        email: response.email,
+        createdAt: new Date().toISOString(),
+      });
+      
+      console.log("🚀 AuthContext: Redirecionando para dashboard...");
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("❌ AuthContext: Erro no login:", error);
+      throw error; // Re-lança o erro para ser capturado no componente
+    }
   };
 
   const register = async (name: string, email: string, password: string) => {
-    const response: AuthResponse = await registerApi({ name, email, password });
-    localStorage.setItem("token", response.token);
-    setToken(response.token);
-    
-    // Usa dados diretamente da resposta (não precisa fazer chamada extra)
-    setUser({
-      id: response.id,
-      name: response.name,
-      email: response.email,
-      createdAt: new Date().toISOString(),
-    });
-    
-    router.push("/dashboard");
+    try {
+      console.log("📝 AuthContext: Iniciando registro...");
+      const response: AuthResponse = await registerApi({ name, email, password });
+      console.log("✅ AuthContext: Registro API respondeu:", response);
+      
+      localStorage.setItem("token", response.token);
+      setToken(response.token);
+      
+      // Usa dados diretamente da resposta (não precisa fazer chamada extra)
+      setUser({
+        id: response.id,
+        name: response.name,
+        email: response.email,
+        createdAt: new Date().toISOString(),
+      });
+      
+      console.log("🚀 AuthContext: Redirecionando para dashboard...");
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("❌ AuthContext: Erro no registro:", error);
+      throw error; // Re-lança o erro para ser capturado no componente
+    }
   };
 
   const logout = () => {

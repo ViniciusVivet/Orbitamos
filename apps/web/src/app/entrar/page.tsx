@@ -23,9 +23,15 @@ export default function Entrar() {
 
   // Progresso fake inteligente (não depende do backend)
   useEffect(() => {
-    if (!loading || !showProgress) return;
+    if (!loading || !showProgress) {
+      console.log("⏸️ Progresso pausado:", { loading, showProgress });
+      return;
+    }
 
+    console.log("🚀 Iniciando progresso fake...");
     let progress = 0;
+    setFakeProgress(0); // Reset para garantir que começa do zero
+    
     const interval = setInterval(() => {
       // 0-20%: rápido (instantâneo)
       if (progress < 20) {
@@ -42,24 +48,32 @@ export default function Entrar() {
       // 90-100%: só quando o backend responder (controlado externamente)
       else {
         // Para aqui, espera resposta do backend
+        console.log("⏸️ Progresso fake parou em 90%, esperando backend...");
         clearInterval(interval);
         return;
       }
 
-      setFakeProgress(Math.min(90, progress));
+      const newProgress = Math.min(90, progress);
+      setFakeProgress(newProgress);
+      console.log("📊 Progresso fake:", newProgress.toFixed(1) + "%");
     }, 100);
 
-    return () => clearInterval(interval);
+    return () => {
+      console.log("🧹 Limpando intervalo do progresso fake");
+      clearInterval(interval);
+    };
   }, [loading, showProgress]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("🚀 Formulário submetido!");
     setError("");
     setLoading(true);
     setShowProgress(true);
     setFakeProgress(0);
 
     try {
+      console.log("📝 Validações iniciadas...", { isLogin, email: email.trim(), passwordLength: password.length });
       // Validações básicas
       if (!email.trim()) {
         setError("E-mail é obrigatório");
@@ -85,8 +99,12 @@ export default function Entrar() {
       // Aguarda um pouco para o progresso fake começar
       await new Promise(resolve => setTimeout(resolve, 200));
 
+      console.log("🔄 Iniciando autenticação...", { isLogin });
+      
       if (isLogin) {
+        console.log("🔐 Tentando fazer login...");
         await login(email.trim(), password);
+        console.log("✅ Login bem-sucedido!");
       } else {
         if (!name.trim()) {
           setError("Nome é obrigatório");
@@ -94,7 +112,9 @@ export default function Entrar() {
           setShowProgress(false);
           return;
         }
+        console.log("📝 Tentando criar conta...");
         await registerUser(name.trim(), email.trim(), password);
+        console.log("✅ Conta criada com sucesso!");
       }
 
       // Quando o backend responde, completa o progresso
@@ -102,10 +122,12 @@ export default function Entrar() {
       await new Promise(resolve => setTimeout(resolve, 500));
       
     } catch (err) {
+      console.error("❌ Erro capturado:", err);
       let errorMessage = "Erro ao fazer login/cadastro";
       
       if (err instanceof Error) {
         errorMessage = err.message;
+        console.error("❌ Erro detalhado:", err.message, err.stack);
       } else if (typeof err === 'string') {
         errorMessage = err;
       }
@@ -121,6 +143,7 @@ export default function Entrar() {
         errorMessage = "Servidor está iniciando. Aguarde alguns segundos e tente novamente.";
       }
       
+      console.error("❌ Mensagem de erro final:", errorMessage);
       setError(errorMessage);
       setFakeProgress(0);
     } finally {
