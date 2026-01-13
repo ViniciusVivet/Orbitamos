@@ -19,27 +19,14 @@ export default function Entrar() {
   const [showProgress, setShowProgress] = useState(false);
   const [authReady, setAuthReady] = useState(false);
   
-  // Tenta obter o contexto de forma segura
-  let authContext;
-  let login: ((email: string, password: string) => Promise<void>) | null = null;
-  let registerUser: ((name: string, email: string, password: string) => Promise<void>) | null = null;
-  
-  try {
-    authContext = useAuth();
-    if (authContext) {
-      login = authContext.login;
-      registerUser = authContext.register;
-      if (login && registerUser) {
-        setAuthReady(true);
-      }
-    }
-  } catch (error) {
-    console.error("❌ Erro ao obter AuthContext:", error);
-  }
+  // Obtém o contexto de autenticação
+  const authContext = useAuth();
+  const login = authContext?.login ?? null;
+  const registerUser = authContext?.register ?? null;
   
   const router = useRouter();
 
-  // Verificação de segurança
+  // Verificação de segurança - atualiza authReady quando contexto estiver pronto
   useEffect(() => {
     if (authContext && login && registerUser) {
       console.log("✅ AuthContext carregado com sucesso!");
@@ -50,6 +37,7 @@ export default function Entrar() {
         hasLogin: !!login, 
         hasRegister: !!registerUser 
       });
+      setAuthReady(false);
     }
   }, [authContext, login, registerUser]);
 
@@ -334,12 +322,16 @@ export default function Entrar() {
             <div className="flex items-center justify-center text-sm text-white/70">
               <button
                 type="button"
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
+                  console.log("🔄 Alternando modo:", isLogin ? "Login → Registro" : "Registro → Login");
                   setIsLogin(!isLogin);
                   setError("");
                   setName("");
                   setEmail("");
                   setPassword("");
+                  setShowProgress(false);
+                  setFakeProgress(0);
                 }}
                 className="hover:text-white transition-colors underline"
               >
