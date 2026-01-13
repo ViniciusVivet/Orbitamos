@@ -285,7 +285,23 @@ export default function Entrar() {
 
             <Button 
               type="submit" 
-              disabled={loading}
+              disabled={loading || !login || !registerUser}
+              onClick={(e) => {
+                console.log("🖱️ Botão clicado!", { 
+                  loading, 
+                  hasLogin: !!login, 
+                  hasRegister: !!registerUser,
+                  isLogin,
+                  email: email.trim(),
+                  passwordLength: password.length
+                });
+                // Se o formulário não submeter, força a submissão
+                if (e.currentTarget.form && !loading) {
+                  const form = e.currentTarget.form;
+                  const formEvent = new Event('submit', { bubbles: true, cancelable: true });
+                  form.dispatchEvent(formEvent);
+                }
+              }}
               className="mt-2 w-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-black hover:from-orbit-purple hover:to-orbit-electric font-bold disabled:opacity-50"
             >
               {loading ? "⏳ Processando..." : isLogin ? "🚀 Entrar" : "✨ Criar Conta"}
