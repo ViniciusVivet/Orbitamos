@@ -17,41 +17,15 @@ export default function Entrar() {
   const [loading, setLoading] = useState(false);
   const [fakeProgress, setFakeProgress] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
-  const [authReady, setAuthReady] = useState(false);
   
-  // Obtém o contexto de autenticação
-  const authContext = useAuth();
-  const login = authContext?.login;
-  const registerUser = authContext?.register;
-  
+  const { login, register: registerUser } = useAuth();
   const router = useRouter();
-
-  // Verificação de segurança - atualiza authReady quando contexto estiver pronto
-  useEffect(() => {
-    if (authContext && login !== undefined && registerUser !== undefined) {
-      console.log("✅ AuthContext carregado com sucesso!");
-      setAuthReady(true);
-    } else {
-      console.warn("⚠️ AuthContext não está totalmente disponível ainda...", { 
-        hasContext: !!authContext, 
-        hasLogin: login !== undefined, 
-        hasRegister: registerUser !== undefined 
-      });
-      setAuthReady(false);
-    }
-  }, [authContext, login, registerUser]);
 
   // Progresso fake inteligente (não depende do backend)
   useEffect(() => {
-    if (!loading || !showProgress) {
-      console.log("⏸️ Progresso pausado:", { loading, showProgress });
-      return;
-    }
+    if (!loading || !showProgress) return;
 
-    console.log("🚀 Iniciando progresso fake...");
     let progress = 0;
-    setFakeProgress(0); // Reset para garantir que começa do zero
-    
     const interval = setInterval(() => {
       // 0-20%: rápido (instantâneo)
       if (progress < 20) {
@@ -67,41 +41,24 @@ export default function Entrar() {
       }
       // 90-100%: só quando o backend responder (controlado externamente)
       else {
-        // Para aqui, espera resposta do backend
-        console.log("⏸️ Progresso fake parou em 90%, esperando backend...");
         clearInterval(interval);
         return;
       }
 
-      const newProgress = Math.min(90, progress);
-      setFakeProgress(newProgress);
-      console.log("📊 Progresso fake:", newProgress.toFixed(1) + "%");
+      setFakeProgress(Math.min(90, progress));
     }, 100);
 
-    return () => {
-      console.log("🧹 Limpando intervalo do progresso fake");
-      clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, [loading, showProgress]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("🚀 Formulário submetido!");
-    
-    // Verificação de segurança
-    if (!login || !registerUser) {
-      console.error("❌ Funções de autenticação não disponíveis!");
-      setError("Sistema de autenticação não está pronto. Aguarde alguns segundos e tente novamente.");
-      return;
-    }
-    
     setError("");
     setLoading(true);
     setShowProgress(true);
     setFakeProgress(0);
 
     try {
-      console.log("📝 Validações iniciadas...", { isLogin, email: email.trim(), passwordLength: password.length });
       // Validações básicas
       if (!email.trim()) {
         setError("E-mail é obrigatório");
@@ -127,12 +84,8 @@ export default function Entrar() {
       // Aguarda um pouco para o progresso fake começar
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      console.log("🔄 Iniciando autenticação...", { isLogin });
-      
       if (isLogin) {
-        console.log("🔐 Tentando fazer login...");
         await login(email.trim(), password);
-        console.log("✅ Login bem-sucedido!");
       } else {
         if (!name.trim()) {
           setError("Nome é obrigatório");
@@ -140,9 +93,7 @@ export default function Entrar() {
           setShowProgress(false);
           return;
         }
-        console.log("📝 Tentando criar conta...");
         await registerUser(name.trim(), email.trim(), password);
-        console.log("✅ Conta criada com sucesso!");
       }
 
       // Quando o backend responde, completa o progresso
@@ -150,12 +101,10 @@ export default function Entrar() {
       await new Promise(resolve => setTimeout(resolve, 500));
       
     } catch (err) {
-      console.error("❌ Erro capturado:", err);
       let errorMessage = "Erro ao fazer login/cadastro";
       
       if (err instanceof Error) {
         errorMessage = err.message;
-        console.error("❌ Erro detalhado:", err.message, err.stack);
       } else if (typeof err === 'string') {
         errorMessage = err;
       }
@@ -171,12 +120,10 @@ export default function Entrar() {
         errorMessage = "Servidor está iniciando. Aguarde alguns segundos e tente novamente.";
       }
       
-      console.error("❌ Mensagem de erro final:", errorMessage);
       setError(errorMessage);
       setFakeProgress(0);
     } finally {
       setLoading(false);
-      // Mantém o progresso visível por um pouco antes de esconder
       setTimeout(() => {
         setShowProgress(false);
         setFakeProgress(0);
@@ -296,36 +243,16 @@ export default function Entrar() {
 
             <Button 
               type="submit" 
-              disabled={loading || !authReady || !authContext}
-              onClick={(e) => {
-                console.log("🖱️ Botão clicado!", { 
-                  loading, 
-                  authReady,
-                  hasContext: !!authContext,
-                  hasLogin: login !== undefined, 
-                  hasRegister: registerUser !== undefined,
-                  isLogin,
-                  email: email.trim(),
-                  passwordLength: password.length
-                });
-              }}
-              className="mt-2 w-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-black hover:from-orbit-purple hover:to-orbit-electric font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
+              className="mt-2 w-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-black hover:from-orbit-purple hover:to-orbit-electric font-bold disabled:opacity-50"
             >
-              {!authReady ? "⏳ Carregando..." : loading ? "⏳ Processando..." : isLogin ? "🚀 Entrar" : "✨ Criar Conta"}
+              {loading ? "⏳ Processando..." : isLogin ? "🚀 Entrar" : "✨ Criar Conta"}
             </Button>
-            
-            {!authReady && (
-              <p className="text-center text-xs text-white/50 mt-2">
-                Aguardando sistema de autenticação...
-              </p>
-            )}
 
             <div className="flex items-center justify-center text-sm text-white/70">
               <button
                 type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  console.log("🔄 Alternando modo:", isLogin ? "Login → Registro" : "Registro → Login");
+                onClick={() => {
                   setIsLogin(!isLogin);
                   setError("");
                   setName("");
