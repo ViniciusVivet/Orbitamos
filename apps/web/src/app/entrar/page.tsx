@@ -17,18 +17,41 @@ export default function Entrar() {
   const [loading, setLoading] = useState(false);
   const [fakeProgress, setFakeProgress] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
   
-  const authContext = useAuth();
-  const { login, register: registerUser } = authContext || { login: null, register: null };
+  // Tenta obter o contexto de forma segura
+  let authContext;
+  let login: ((email: string, password: string) => Promise<void>) | null = null;
+  let registerUser: ((name: string, email: string, password: string) => Promise<void>) | null = null;
+  
+  try {
+    authContext = useAuth();
+    if (authContext) {
+      login = authContext.login;
+      registerUser = authContext.register;
+      if (login && registerUser) {
+        setAuthReady(true);
+      }
+    }
+  } catch (error) {
+    console.error("❌ Erro ao obter AuthContext:", error);
+  }
+  
   const router = useRouter();
 
   // Verificação de segurança
   useEffect(() => {
-    if (!authContext) {
-      console.error("❌ AuthContext não está disponível!");
-      setError("Erro ao carregar sistema de autenticação. Recarregue a página.");
+    if (authContext && login && registerUser) {
+      console.log("✅ AuthContext carregado com sucesso!");
+      setAuthReady(true);
+    } else {
+      console.warn("⚠️ AuthContext não está totalmente disponível ainda...", { 
+        hasContext: !!authContext, 
+        hasLogin: !!login, 
+        hasRegister: !!registerUser 
+      });
     }
-  }, [authContext]);
+  }, [authContext, login, registerUser]);
 
   // Progresso fake inteligente (não depende do backend)
   useEffect(() => {
@@ -285,27 +308,28 @@ export default function Entrar() {
 
             <Button 
               type="submit" 
-              disabled={loading || !login || !registerUser}
+              disabled={loading || !authReady}
               onClick={(e) => {
                 console.log("🖱️ Botão clicado!", { 
                   loading, 
+                  authReady,
                   hasLogin: !!login, 
                   hasRegister: !!registerUser,
                   isLogin,
                   email: email.trim(),
                   passwordLength: password.length
                 });
-                // Se o formulário não submeter, força a submissão
-                if (e.currentTarget.form && !loading) {
-                  const form = e.currentTarget.form;
-                  const formEvent = new Event('submit', { bubbles: true, cancelable: true });
-                  form.dispatchEvent(formEvent);
-                }
               }}
-              className="mt-2 w-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-black hover:from-orbit-purple hover:to-orbit-electric font-bold disabled:opacity-50"
+              className="mt-2 w-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-black hover:from-orbit-purple hover:to-orbit-electric font-bold disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "⏳ Processando..." : isLogin ? "🚀 Entrar" : "✨ Criar Conta"}
+              {!authReady ? "⏳ Carregando..." : loading ? "⏳ Processando..." : isLogin ? "🚀 Entrar" : "✨ Criar Conta"}
             </Button>
+            
+            {!authReady && (
+              <p className="text-center text-xs text-white/50 mt-2">
+                Aguardando sistema de autenticação...
+              </p>
+            )}
 
             <div className="flex items-center justify-center text-sm text-white/70">
               <button
