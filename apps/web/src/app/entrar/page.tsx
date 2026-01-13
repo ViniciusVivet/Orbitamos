@@ -18,7 +18,18 @@ export default function Entrar() {
   const [fakeProgress, setFakeProgress] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
   
-  const { login, register: registerUser } = useAuth();
+  let authContext;
+  let login: ((email: string, password: string) => Promise<void>) | undefined;
+  let registerUser: ((name: string, email: string, password: string) => Promise<void>) | undefined;
+  
+  try {
+    authContext = useAuth();
+    login = authContext?.login;
+    registerUser = authContext?.register;
+  } catch (error) {
+    console.error("❌ Erro ao obter AuthContext:", error);
+  }
+  
   const router = useRouter();
 
   // Progresso fake inteligente (não depende do backend)
@@ -53,6 +64,14 @@ export default function Entrar() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("🚀 Formulário submetido!");
+    
+    if (!login || !registerUser) {
+      console.error("❌ Funções de autenticação não disponíveis!");
+      setError("Sistema de autenticação não está pronto. Aguarde alguns segundos e tente novamente.");
+      return;
+    }
+    
     setError("");
     setLoading(true);
     setShowProgress(true);
@@ -84,8 +103,12 @@ export default function Entrar() {
       // Aguarda um pouco para o progresso fake começar
       await new Promise(resolve => setTimeout(resolve, 200));
 
+      console.log("🔄 Iniciando autenticação...", { isLogin, email: email.trim() });
+      
       if (isLogin) {
+        console.log("🔐 Tentando fazer login...");
         await login(email.trim(), password);
+        console.log("✅ Login bem-sucedido!");
       } else {
         if (!name.trim()) {
           setError("Nome é obrigatório");
@@ -93,7 +116,9 @@ export default function Entrar() {
           setShowProgress(false);
           return;
         }
+        console.log("📝 Tentando criar conta...");
         await registerUser(name.trim(), email.trim(), password);
+        console.log("✅ Conta criada com sucesso!");
       }
 
       // Quando o backend responde, completa o progresso
