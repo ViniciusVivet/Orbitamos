@@ -18,8 +18,17 @@ export default function Entrar() {
   const [fakeProgress, setFakeProgress] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
   
-  const { login, register: registerUser } = useAuth();
+  const authContext = useAuth();
+  const { login, register: registerUser } = authContext || { login: null, register: null };
   const router = useRouter();
+
+  // Verificação de segurança
+  useEffect(() => {
+    if (!authContext) {
+      console.error("❌ AuthContext não está disponível!");
+      setError("Erro ao carregar sistema de autenticação. Recarregue a página.");
+    }
+  }, [authContext]);
 
   // Progresso fake inteligente (não depende do backend)
   useEffect(() => {
@@ -67,6 +76,14 @@ export default function Entrar() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("🚀 Formulário submetido!");
+    
+    // Verificação de segurança
+    if (!login || !registerUser) {
+      console.error("❌ Funções de autenticação não disponíveis!");
+      setError("Sistema de autenticação não está pronto. Aguarde alguns segundos e tente novamente.");
+      return;
+    }
+    
     setError("");
     setLoading(true);
     setShowProgress(true);
