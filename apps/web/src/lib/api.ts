@@ -130,6 +130,13 @@ export interface DashboardSummary {
   achievements: string[];
 }
 
+export interface ForumMessage {
+  id: number;
+  content: string;
+  author: string;
+  createdAt: string;
+}
+
 /**
  * Registra um novo usuário
  */
@@ -293,6 +300,62 @@ export async function getDashboardSummary(token: string): Promise<DashboardSumma
       throw error;
     }
     throw new Error('Erro desconhecido ao buscar resumo do dashboard');
+  }
+}
+
+/**
+ * Lista mensagens do forum
+ */
+export async function getForumMessages(): Promise<ForumMessage[]> {
+  try {
+    const response = await fetch(`${API_URL}/forum/messages`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error('Erro ao carregar mensagens');
+    }
+
+    return result;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Erro desconhecido ao carregar mensagens');
+  }
+}
+
+/**
+ * Envia nova mensagem no forum (requer autenticação)
+ */
+export async function postForumMessage(token: string, content: string): Promise<ForumMessage> {
+  try {
+    const response = await fetch(`${API_URL}/forum/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ content }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Erro ao enviar mensagem');
+    }
+
+    return result;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Erro desconhecido ao enviar mensagem');
   }
 }
 

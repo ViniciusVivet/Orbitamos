@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import emailjs from '@emailjs/browser';
 import { sendContact } from "@/lib/api";
 import Link from "next/link";
+import { whatsappMentoriaUrl } from "@/lib/social";
 
 export default function Contato() {
   const instagramUrl = "https://www.instagram.com/orbitamosbr/";
@@ -247,12 +248,14 @@ export default function Contato() {
                     Quer contratar nossos alunos ou fazer uma parceria? 
                     Temos talentos prontos para o mercado!
                   </p>
-                  <Button 
-                    variant="outline"
-                    className="border-orbit-electric text-orbit-electric hover:bg-orbit-electric hover:text-black"
-                  >
-                    🤝 Falar sobre Parceria
-                  </Button>
+                  <Link href={whatsappMentoriaUrl} target="_blank" rel="noreferrer">
+                    <Button 
+                      variant="outline"
+                      className="border-orbit-electric text-orbit-electric hover:bg-orbit-electric hover:text-black"
+                    >
+                      🤝 Falar sobre Parceria
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
 
@@ -268,12 +271,14 @@ export default function Contato() {
                     Profissionais experientes que querem compartilhar conhecimento 
                     e transformar vidas.
                   </p>
-                  <Button 
-                    variant="outline"
-                    className="border-orbit-purple text-orbit-purple hover:bg-orbit-purple hover:text-white"
-                  >
-                    🎓 Ser Mentor
-                  </Button>
+                  <Link href={whatsappMentoriaUrl} target="_blank" rel="noreferrer">
+                    <Button 
+                      variant="outline"
+                      className="border-orbit-purple text-orbit-purple hover:bg-orbit-purple hover:text-white"
+                    >
+                      🎓 Ser Mentor
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             </div>
@@ -355,12 +360,14 @@ export default function Contato() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:from-orbit-purple hover:to-orbit-electric text-black font-bold px-12 py-6 text-xl"
-            >
-              🚀 Começar Agora
-            </Button>
+            <Link href="/entrar">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:from-orbit-purple hover:to-orbit-electric text-black font-bold px-12 py-6 text-xl"
+              >
+                🚀 Começar Agora
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

@@ -5,6 +5,7 @@ import Navigation from "@/components/Navigation";
 import CursorOrbit from "@/components/CursorOrbit";
 import { ClientAuthProvider } from "@/components/AuthProvider";
 import PreWakeProvider from "@/components/PreWakeProvider";
+import ForumWidget from "@/components/ForumWidget";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -45,6 +46,7 @@ export default function RootLayout({
           <PreWakeProvider>
         <CursorOrbit />
         <Navigation />
+        <ForumWidget />
         <main className="pt-16">
           {children}
         </main>
