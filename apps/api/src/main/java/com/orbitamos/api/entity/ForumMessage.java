@@ -18,15 +18,23 @@ public class ForumMessage {
     @Column(nullable = false, length = 500)
     private String content;
 
+    @Column(length = 80)
+    private String city;
+
+    @Column(length = 80)
+    private String neighborhood;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     public ForumMessage() {
     }
 
-    public ForumMessage(User user, String content) {
+    public ForumMessage(User user, String content, String city, String neighborhood) {
         this.user = user;
         this.content = content;
+        this.city = city;
+        this.neighborhood = neighborhood;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -53,6 +61,22 @@ public class ForumMessage {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getNeighborhood() {
+        return neighborhood;
+    }
+
+    public void setNeighborhood(String neighborhood) {
+        this.neighborhood = neighborhood;
     }
 
     public LocalDateTime getCreatedAt() {

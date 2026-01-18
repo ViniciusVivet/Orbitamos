@@ -134,6 +134,9 @@ export interface ForumMessage {
   id: number;
   content: string;
   author: string;
+  userId: number;
+  city?: string | null;
+  neighborhood?: string | null;
   createdAt: string;
 }
 
@@ -330,10 +333,40 @@ export async function getForumMessages(): Promise<ForumMessage[]> {
   }
 }
 
+export async function searchForumMessages(query: string): Promise<ForumMessage[]> {
+  try {
+    const params = new URLSearchParams({ q: query });
+    const response = await fetch(`${API_URL}/forum/messages?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error('Erro ao carregar mensagens');
+    }
+
+    return result;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Erro desconhecido ao carregar mensagens');
+  }
+}
+
 /**
  * Envia nova mensagem no forum (requer autenticação)
  */
-export async function postForumMessage(token: string, content: string): Promise<ForumMessage> {
+export async function postForumMessage(
+  token: string,
+  content: string,
+  city?: string,
+  neighborhood?: string
+): Promise<ForumMessage> {
   try {
     const response = await fetch(`${API_URL}/forum/messages`, {
       method: 'POST',
@@ -341,7 +374,7 @@ export async function postForumMessage(token: string, content: string): Promise<
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ content, city, neighborhood }),
     });
 
     const result = await response.json();
@@ -356,6 +389,61 @@ export async function postForumMessage(token: string, content: string): Promise<
       throw error;
     }
     throw new Error('Erro desconhecido ao enviar mensagem');
+  }
+}
+
+export async function updateForumMessage(
+  token: string,
+  id: number,
+  content: string,
+  city?: string,
+  neighborhood?: string
+): Promise<ForumMessage> {
+  try {
+    const response = await fetch(`${API_URL}/forum/messages/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ content, city, neighborhood }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Erro ao atualizar mensagem');
+    }
+
+    return result;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Erro desconhecido ao atualizar mensagem');
+  }
+}
+
+export async function deleteForumMessage(token: string, id: number): Promise<void> {
+  try {
+    const response = await fetch(`${API_URL}/forum/messages/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Erro ao excluir mensagem');
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Erro desconhecido ao excluir mensagem');
   }
 }
 
