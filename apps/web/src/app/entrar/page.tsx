@@ -274,7 +274,17 @@ export default function Entrar() {
               {loading ? "⏳ Processando..." : isLogin ? "🚀 Entrar" : "✨ Criar Conta"}
             </Button>
 
-            <div className="flex items-center justify-center text-sm text-white/70">
+            <div className="flex items-center justify-between text-xs sm:text-sm text-white/70">
+              {isLogin ? (
+                <Link
+                  href="/contato"
+                  className="hover:text-white transition-colors underline"
+                >
+                  Esqueci minha senha
+                </Link>
+              ) : (
+                <span className="text-white/50">Mínimo de 6 caracteres</span>
+              )}
               <button
                 type="button"
                 onClick={() => {
@@ -288,7 +298,7 @@ export default function Entrar() {
                 }}
                 className="hover:text-white transition-colors underline"
               >
-                {isLogin ? "Não tem conta? Criar conta" : "Já tem conta? Fazer login"}
+                {isLogin ? "Criar conta" : "Já tem conta? Fazer login"}
               </button>
             </div>
           </form>

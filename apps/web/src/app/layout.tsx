@@ -43,11 +43,11 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <ClientAuthProvider>
           <PreWakeProvider>
-            <CursorOrbit />
-            <Navigation />
-            <main className="pt-16">
-              {children}
-            </main>
+        <CursorOrbit />
+        <Navigation />
+        <main className="pt-16">
+          {children}
+        </main>
           </PreWakeProvider>
         </ClientAuthProvider>
       </body>

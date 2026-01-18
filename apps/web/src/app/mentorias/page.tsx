@@ -21,12 +21,14 @@ export default function Mentorias() {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center text-white mb-16">
-            Nossos <span className="gradient-text">Programas</span>
+            <span className="inline-flex items-center rounded-xl border border-white/15 bg-white/5 px-5 py-2 shadow-[0_8px_0_rgba(0,0,0,0.35)] transition-all duration-200 hover:bg-orbit-purple/20 hover:border-orbit-purple/40 hover:-translate-y-0.5">
+              Nossos Programas
+            </span>
           </h2>
           
           <div className="grid md:grid-cols-3 gap-8">
             {/* Mentoria Tech 9 Meses */}
-            <Card className="bg-gray-900/50 border-orbit-electric/20 hover:border-orbit-electric/40 transition-all duration-300 relative overflow-hidden">
+            <Card className="bg-gray-900/50 border-orbit-electric/20 hover:border-orbit-electric/40 transition-all duration-300 relative overflow-hidden transform-gpu shadow-[0_12px_0_rgba(0,0,0,0.35)] hover:-translate-y-1 hover:shadow-[0_16px_0_rgba(0,0,0,0.45)]">
               <div className="absolute top-0 right-0 bg-gradient-to-l from-orbit-electric to-transparent w-32 h-32 opacity-20"></div>
               <CardHeader>
                 <CardTitle className="text-orbit-electric text-2xl">🚀 Mentoria Tech 9 Meses</CardTitle>
@@ -74,7 +76,7 @@ export default function Mentorias() {
             </Card>
 
             {/* Programa Quebrada Dev */}
-            <Card className="bg-gray-900/50 border-orbit-purple/20 hover:border-orbit-purple/40 transition-all duration-300 relative overflow-hidden">
+            <Card className="bg-gray-900/50 border-orbit-purple/20 hover:border-orbit-purple/40 transition-all duration-300 relative overflow-hidden transform-gpu shadow-[0_12px_0_rgba(0,0,0,0.35)] hover:-translate-y-1 hover:shadow-[0_16px_0_rgba(0,0,0,0.45)]">
               <div className="absolute top-0 right-0 bg-gradient-to-l from-orbit-purple to-transparent w-32 h-32 opacity-20"></div>
               <CardHeader>
                 <CardTitle className="text-orbit-purple text-2xl">💻 Programa Quebrada Dev</CardTitle>
@@ -120,7 +122,7 @@ export default function Mentorias() {
             </Card>
 
             {/* Orbitamos Academy */}
-            <Card className="bg-gray-900/50 border-orbit-electric/20 hover:border-orbit-electric/40 transition-all duration-300 relative overflow-hidden">
+            <Card className="bg-gray-900/50 border-orbit-electric/20 hover:border-orbit-electric/40 transition-all duration-300 relative overflow-hidden transform-gpu shadow-[0_12px_0_rgba(0,0,0,0.35)] hover:-translate-y-1 hover:shadow-[0_16px_0_rgba(0,0,0,0.45)]">
               <div className="absolute top-0 right-0 bg-gradient-to-l from-orbit-electric to-transparent w-32 h-32 opacity-20"></div>
               <CardHeader>
                 <CardTitle className="text-orbit-electric text-2xl">🎓 Orbitamos Academy</CardTitle>
@@ -277,11 +279,11 @@ export default function Mentorias() {
               <div className="text-white/80 text-sm">Estagiário (Douglas)</div>
             </div>
             <div>
-              <div className="text-3xl md:text-4xl font-extrabold text-orbit-purple">R$ 3.5k+</div>
+              <div className="text-3xl md:text-4xl font-extrabold text-orbit-purple">R$ 4k</div>
               <div className="text-white/80 text-sm">Quality Assurance (Samuel)</div>
             </div>
             <div>
-              <div className="text-3xl md:text-4xl font-extrabold text-orbit-electric">+10k/mês</div>
+              <div className="text-3xl md:text-4xl font-extrabold text-orbit-electric">R$ 15k</div>
               <div className="text-white/80 text-sm">Digital Analytics (Estefanny)</div>
             </div>
           </div>

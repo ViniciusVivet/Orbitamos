@@ -54,7 +54,10 @@ export default function Home() {
           {/* CTAs */}
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Magnetic>
-              <Button size="lg" className="px-8 py-6 text-base font-bold bg-gradient-to-r from-orbit-electric to-orbit-purple text-black hover:from-orbit-purple hover:to-orbit-electric">
+              <Button
+                size="lg"
+                className="px-8 py-6 text-base font-bold bg-gradient-to-r from-orbit-electric to-orbit-purple text-black hover:from-orbit-purple hover:to-orbit-electric transform-gpu transition-all duration-200 shadow-[0_10px_0_0_rgba(0,0,0,0.35)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_4px_0_0_rgba(0,0,0,0.35)]"
+              >
                 🚀 Começar minha jornada
               </Button>
             </Magnetic>
@@ -204,7 +207,7 @@ export default function Home() {
         <div className="mx-auto max-w-4xl space-y-6">
           <div>
             <div className="mb-2 flex items-center justify-between text-sm text-white/80">
-              <span>2025 • Transformar 10 vidas</span>
+              <span>2026 • Transformar 10 vidas</span>
               <span>1/10</span>
             </div>
             <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/10">
@@ -214,7 +217,7 @@ export default function Home() {
 
           <div>
             <div className="mb-2 flex items-center justify-between text-sm text-white/80">
-              <span>2026 • Alcançar 500 vidas</span>
+              <span>2027 • Alcançar 500 vidas</span>
               <span>1/500</span>
             </div>
             <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/10">
@@ -248,7 +251,10 @@ export default function Home() {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/mentorias">
-              <Button size="lg" className="bg-gradient-to-r from-orbit-electric to-orbit-purple text-black hover:from-orbit-purple hover:to-orbit-electric font-bold px-12 py-6 text-xl">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-orbit-electric to-orbit-purple text-black hover:from-orbit-purple hover:to-orbit-electric font-bold px-12 py-6 text-xl transform-gpu transition-all duration-200 shadow-[0_10px_0_0_rgba(0,0,0,0.35)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_4px_0_0_rgba(0,0,0,0.35)]"
+              >
                 🚀 Começar Minha Jornada
               </Button>
             </Link>
