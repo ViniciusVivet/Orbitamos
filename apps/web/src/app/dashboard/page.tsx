@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { DashboardSummary, getDashboardSummary } from "@/lib/api";
+import { discordUrl, whatsappMentoriaUrl } from "@/lib/social";
 
 export default function Dashboard() {
   const { user, token, isAuthenticated, loading, logout } = useAuth();
@@ -14,8 +15,7 @@ export default function Dashboard() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [summaryError, setSummaryError] = useState("");
-  const discordUrl = "https://discord.gg/SEU-GRUPO";
-  const whatsappUrl = "https://wa.me/5511949138973?text=Quero%20falar%20sobre%20as%20mentorias%20da%20Orbitamos";
+  const whatsappUrl = whatsappMentoriaUrl;
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {

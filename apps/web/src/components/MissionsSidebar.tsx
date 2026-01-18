@@ -9,10 +9,12 @@ export default function MissionsSidebar() {
   const [open, setOpen] = useState(true);
   const { token, isAuthenticated } = useAuth();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated || !token) return;
     let isMounted = true;
+    setLoading(true);
     getDashboardSummary(token)
       .then((result) => {
         if (!isMounted) return;
@@ -21,6 +23,10 @@ export default function MissionsSidebar() {
       .catch(() => {
         if (!isMounted) return;
         setSummary(null);
+      })
+      .finally(() => {
+        if (!isMounted) return;
+        setLoading(false);
       });
 
     return () => {
@@ -76,16 +82,20 @@ export default function MissionsSidebar() {
             </div>
 
             {/* lista */}
-            <ul className="space-y-2">
-              {checklist.map((it) => (
-                <li key={it.id} className="group">
-                  <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-2 py-2 text-sm hover:bg-white/10">
-                    <span>{it.icon}</span>
-                    <span className="truncate">{it.label}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            {loading ? (
+              <p className="text-xs text-white/60">Carregando missões...</p>
+            ) : (
+              <ul className="space-y-2">
+                {checklist.map((it) => (
+                  <li key={it.id} className="group">
+                    <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-2 py-2 text-sm hover:bg-white/10">
+                      <span>{it.icon}</span>
+                      <span className="truncate">{it.label}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
 
             {/* cofre */}
             <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs animate-constPulse">🔒 Cofre da Semana</div>

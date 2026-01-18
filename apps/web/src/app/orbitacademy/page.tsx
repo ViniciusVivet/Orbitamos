@@ -6,6 +6,12 @@ import { useEffect, useMemo, useState } from "react";
 import StudyTools from "@/components/StudyTools";
 import { useAuth } from "@/contexts/AuthContext";
 import { getDashboardSummary } from "@/lib/api";
+import {
+  discordUrl,
+  instagramUrl,
+  youtubeChannelUrl,
+  youtubeFeaturedEmbed,
+} from "@/lib/social";
 
 export default function OrbitAcademy() {
   // Estado mockado (até integrar backend)
@@ -71,10 +77,8 @@ export default function OrbitAcademy() {
     (format === "all" || c.format === format)
   ), [track, levelFilter, format]);
 
-  const quickVideo = "https://www.youtube.com/embed/b7re8uY8Pf4?start=8";
-  const youtubeChannel = "https://www.youtube.com/@VivetTv";
-  const instagramUrl = "https://www.instagram.com/orbitamosbr/";
-  const discordUrl = "https://discord.gg/SEU-GRUPO";
+  const quickVideo = youtubeFeaturedEmbed;
+  const youtubeChannel = youtubeChannelUrl;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white">
