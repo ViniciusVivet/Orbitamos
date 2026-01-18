@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Parallax from "@/components/Parallax";
+import Link from "next/link";
 
 export default function Sobre() {
   const instagramUrl = "https://www.instagram.com/orbitamosbr/";
