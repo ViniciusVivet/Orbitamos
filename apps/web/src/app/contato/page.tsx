@@ -9,6 +9,8 @@ import emailjs from '@emailjs/browser';
 import { sendContact } from "@/lib/api";
 
 export default function Contato() {
+  const instagramUrl = "https://www.instagram.com/orbitamosbr/";
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -220,6 +222,15 @@ export default function Contato() {
                       <p className="text-gray-300">Comunidade Orbitamos</p>
                     </div>
                   </div>
+
+                  <Link
+                    href={instagramUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 py-2 text-sm font-semibold text-black"
+                  >
+                    📸 Seguir no Instagram
+                  </Link>
                 </CardContent>
               </Card>
 

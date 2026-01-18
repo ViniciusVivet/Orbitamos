@@ -4,6 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import StudyTools from "@/components/StudyTools";
+import { useAuth } from "@/contexts/AuthContext";
+import { getDashboardSummary } from "@/lib/api";
 
 export default function OrbitAcademy() {
   // Estado mockado (até integrar backend)
@@ -11,8 +13,11 @@ export default function OrbitAcademy() {
   const [xp, setXp] = useState(40); // de 0 a 100
   const [streak, setStreak] = useState(0);
   const [lastLesson, setLastLesson] = useState("HTML básico • Seletores CSS");
+  const { token, isAuthenticated } = useAuth();
+  const isLocked = !isAuthenticated;
 
   useEffect(() => {
+    if (isAuthenticated) return;
     // Carregar do localStorage para simular persistência local
     const ls = localStorage.getItem("orbitacademy-state");
     if (ls) {
@@ -22,7 +27,25 @@ export default function OrbitAcademy() {
       setStreak(s.streak ?? 0);
       setLastLesson(s.lastLesson ?? lastLesson);
     }
-  }, []);
+  }, [isAuthenticated, lastLesson]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !token) return;
+    let isMounted = true;
+    getDashboardSummary(token)
+      .then((result) => {
+        if (!isMounted) return;
+        setLevel(result.progress.level);
+        setXp(result.progress.xp);
+        setStreak(result.progress.streakDays);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated, token]);
 
   useEffect(() => {
     localStorage.setItem("orbitacademy-state", JSON.stringify({ level, xp, streak, lastLesson }));
@@ -48,12 +71,10 @@ export default function OrbitAcademy() {
     (format === "all" || c.format === format)
   ), [track, levelFilter, format]);
 
-  const feed = [
-    { type: "youtube", url: "https://www.youtube.com/embed/dQw4w9WgXcQ" },
-    { type: "youtube", url: "https://www.youtube.com/embed/3fumBcKC6RE" },
-    { type: "instagram", url: "https://www.instagram.com/p/CxZ0t8yJYxR/embed" },
-    { type: "instagram", url: "https://www.instagram.com/p/CwZqJYUpJ7d/embed" },
-  ];
+  const quickVideo = "https://www.youtube.com/embed/b7re8uY8Pf4?start=8";
+  const youtubeChannel = "https://www.youtube.com/@VivetTv";
+  const instagramUrl = "https://www.instagram.com/orbitamosbr/";
+  const discordUrl = "https://discord.gg/SEU-GRUPO";
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white">
@@ -83,8 +104,14 @@ export default function OrbitAcademy() {
         <h1 className="text-4xl font-extrabold mb-6"><span className="gradient-text">OrbitAcademy</span> — aprendizado em órbita</h1>
         <p className="text-white/80 mb-10">Cursos e bootcamps, conteúdos rápidos e mapa de missões. Crie sua conta para liberar todo o potencial.</p>
 
+        {isLocked && (
+          <div className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-4 text-center text-sm text-white/80">
+            🔒 Cadastre-se já para liberar todos os cursos, XP e missões do OrbitAcademy.
+          </div>
+        )}
+
         {/* Filtros */}
-        <div className="mb-6 flex flex-wrap items-center gap-3 text-sm">
+        <div className={`mb-6 flex flex-wrap items-center gap-3 text-sm ${isLocked ? "pointer-events-none select-none blur-[1.5px]" : ""}`}>
           <label className="text-white/70">Trilha</label>
           <select className="rounded-md bg-white/10 px-2 py-1" value={track} onChange={e=>setTrack(e.target.value)}>
             <option value="all">Todas</option>
@@ -107,8 +134,13 @@ export default function OrbitAcademy() {
         </div>
 
         {/* Grid: Cursos/Bootcamps */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <Card className="bg-white/5 border-white/10 md:col-span-2">
+        <div className={`grid md:grid-cols-3 gap-6 mb-12 ${isLocked ? "pointer-events-none select-none blur-[1.5px]" : ""}`}>
+          <Card className="relative bg-white/5 border-white/10 md:col-span-2">
+            {isLocked && (
+              <span className="absolute right-3 top-3 rounded-full bg-white/10 px-3 py-1 text-[10px] uppercase tracking-widest text-white/70">
+                Cadastre-se já
+              </span>
+            )}
             <CardHeader>
               <CardTitle>Trilhas e Cursos</CardTitle>
               <CardDescription>HTML/CSS/JS, React, QA, Dados…</CardDescription>
@@ -129,7 +161,12 @@ export default function OrbitAcademy() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/5 border-white/10">
+          <Card className="relative bg-white/5 border-white/10">
+            {isLocked && (
+              <span className="absolute right-3 top-3 rounded-full bg-white/10 px-3 py-1 text-[10px] uppercase tracking-widest text-white/70">
+                Cadastre-se já
+              </span>
+            )}
             <CardHeader>
               <CardTitle>Bootcamps</CardTitle>
               <CardDescription>Imersões com prática intensiva</CardDescription>
@@ -143,26 +180,81 @@ export default function OrbitAcademy() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/5 border-white/10">
+          <Card className="relative bg-white/5 border-white/10">
+            {isLocked && (
+              <span className="absolute right-3 top-3 rounded-full bg-white/10 px-3 py-1 text-[10px] uppercase tracking-widest text-white/70">
+                Cadastre-se já
+              </span>
+            )}
             <CardHeader>
               <CardTitle>Conteúdos Rápidos</CardTitle>
               <CardDescription>Instagram • YouTube • Facebook</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="overflow-x-auto whitespace-nowrap no-scrollbar">
-                  {feed.map((f, i) => (
-                    <iframe key={i} className="mr-4 inline-block h-40 w-72 rounded-lg border border-white/10" src={f.url} title={`embed-${i}`} allowFullScreen></iframe>
-                  ))}
+                <iframe
+                  className="h-44 w-full rounded-lg border border-white/10"
+                  src={quickVideo}
+                  title="OrbitAcademy Video"
+                  allowFullScreen
+                ></iframe>
+                <div className="flex items-center justify-between text-sm text-white/70">
+                  <span>Curadoria oficial do canal.</span>
+                  <Link href={youtubeChannel} className="text-orbit-electric hover:underline" target="_blank" rel="noreferrer">
+                    Ir para o YouTube
+                  </Link>
                 </div>
-                <div className="text-sm text-white/70">Faça login para salvar vídeos e acompanhar sua lista.</div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Instagram + Comunidade */}
+        <div className="grid md:grid-cols-2 gap-6 mb-12">
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader>
+              <CardTitle>Instagram oficial</CardTitle>
+              <CardDescription>Conteúdos e bastidores da Orbitamos</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <iframe
+                className="h-72 w-full rounded-lg border border-white/10"
+                src="https://www.instagram.com/orbitamosbr/embed"
+                title="Orbitamos Instagram"
+              ></iframe>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader>
+              <CardTitle>Siga a Orbitamos</CardTitle>
+              <CardDescription>Receba novidades e avisos de vagas</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-white/70">
+              <p>Nos acompanhe para conteúdos rápidos, lives e novidades da comunidade.</p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href={instagramUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 py-2 text-black font-bold"
+                >
+                  Seguir no Instagram
+                </Link>
+                <Link
+                  href={discordUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-white/20 px-4 py-2 text-sm text-white/80"
+                >
+                  Comunidade (Discord)
+                </Link>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Mapa básico de missões */}
-        <div className="rounded-2xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl">
+        <div className={`rounded-2xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl ${isLocked ? "pointer-events-none select-none blur-[1.5px]" : ""}`}>
           <div className="mb-4 text-sm text-white/80">Mapa de Missões (preview)</div>
           <div className="relative h-56">
             <svg className="absolute inset-0 h-full w-full" viewBox="0 0 600 220">
@@ -191,7 +283,7 @@ export default function OrbitAcademy() {
         </div>
 
         {/* Ferramentas de Estudo */}
-        <div className="mt-12">
+        <div className={`mt-12 ${isLocked ? "pointer-events-none select-none blur-[1.5px]" : ""}`}>
           <h2 className="mb-4 text-2xl font-bold">Ferramentas de Estudo</h2>
           <StudyTools />
         </div>

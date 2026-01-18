@@ -77,6 +77,59 @@ export interface User {
   createdAt: string;
 }
 
+export interface DashboardProgress {
+  percent: number;
+  phase: string;
+  nextGoal: string;
+  level: number;
+  xp: number;
+  streakDays: number;
+}
+
+export interface DashboardNextAction {
+  title: string;
+  description: string;
+  cta: string;
+}
+
+export interface DashboardChecklistItem {
+  label: string;
+  done: boolean;
+}
+
+export interface DashboardMentorship {
+  nextSession: string;
+  totalSessions: number;
+}
+
+export interface DashboardProjects {
+  current: string;
+  status: string;
+}
+
+export interface DashboardCommunity {
+  unreadMessages: number;
+  channel: string;
+}
+
+export interface DashboardOpportunity {
+  title: string;
+  type: string;
+}
+
+export interface DashboardSummary {
+  success: boolean;
+  user: User;
+  progress: DashboardProgress;
+  nextAction: DashboardNextAction;
+  weeklyChecklist: DashboardChecklistItem[];
+  mentorship: DashboardMentorship;
+  projects: DashboardProjects;
+  community: DashboardCommunity;
+  opportunities: DashboardOpportunity[];
+  achievements: string[];
+}
+
 /**
  * Registra um novo usuário
  */
@@ -212,6 +265,34 @@ export async function getCurrentUser(token: string): Promise<{ success: boolean;
       throw error;
     }
     throw new Error('Erro desconhecido ao buscar dados do usuário');
+  }
+}
+
+/**
+ * Busca o resumo do dashboard do usuário autenticado
+ */
+export async function getDashboardSummary(token: string): Promise<DashboardSummary> {
+  try {
+    const response = await fetch(`${API_URL}/dashboard/summary`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Erro ao buscar resumo do dashboard');
+    }
+
+    return result;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Erro desconhecido ao buscar resumo do dashboard');
   }
 }
 

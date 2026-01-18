@@ -12,6 +12,8 @@ import ConstellationStepper from "@/components/ConstellationStepper";
 import MissionsSidebar from "@/components/MissionsSidebar";
 
 export default function Home() {
+  const instagramUrl = "https://www.instagram.com/orbitamosbr/";
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* HERO CÓSMICO */}
@@ -66,6 +68,14 @@ export default function Home() {
                 👨‍💻 Ver mentorias
               </Button>
             </Magnetic>
+            <Link
+              href={instagramUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full border border-white/20 px-6 py-3 text-base font-semibold text-white hover:bg-white/10"
+            >
+              📸 Seguir no Instagram
+            </Link>
           </div>
 
           <div className="relative">
