@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import emailjs from '@emailjs/browser';
 import { sendContact } from "@/lib/api";
+import Link from "next/link";
 
 export default function Contato() {
   const instagramUrl = "https://www.instagram.com/orbitamosbr/";
