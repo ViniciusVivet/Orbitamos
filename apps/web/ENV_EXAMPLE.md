@@ -19,7 +19,7 @@ NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=r-ZyAFqKXXBrfMNHd
 No dashboard do Vercel, vá em:
 1. **Settings** → **Environment Variables**
 2. Adicione `NEXT_PUBLIC_API_URL` com a URL do seu backend hospedado
-3. Exemplo: `https://orbitamos-api.onrender.com/api`
+3. Exemplo: `https://orbitamos-backend.onrender.com/api`
 
 **Importante:** Variáveis que começam com `NEXT_PUBLIC_` ficam visíveis no navegador.
 

@@ -273,35 +273,36 @@ export default function Entrar() {
             >
               {loading ? "⏳ Processando..." : isLogin ? "🚀 Entrar" : "✨ Criar Conta"}
             </Button>
+          </form>
 
-            <div className="flex items-center justify-between text-xs sm:text-sm text-white/70">
-              {isLogin ? (
-                <Link
-                  href="/contato"
-                  className="hover:text-white transition-colors underline"
-                >
-                  Esqueci minha senha
-                </Link>
-              ) : (
-                <span className="text-white/50">Mínimo de 6 caracteres</span>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setError("");
-                  setName("");
-                  setEmail("");
-                  setPassword("");
-                  setShowProgress(false);
-                  setFakeProgress(0);
-                }}
+          {/* Fora do form para não interferir com validação/submit ao clicar */}
+          <div className="mt-4 flex items-center justify-between text-xs sm:text-sm text-white/70">
+            {isLogin ? (
+              <Link
+                href="/contato"
                 className="hover:text-white transition-colors underline"
               >
-                {isLogin ? "Criar conta" : "Já tem conta? Fazer login"}
-              </button>
-            </div>
-          </form>
+                Esqueci minha senha
+              </Link>
+            ) : (
+              <span className="text-white/50">Mínimo de 6 caracteres</span>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setError("");
+                setName("");
+                setEmail("");
+                setPassword("");
+                setShowProgress(false);
+                setFakeProgress(0);
+              }}
+              className="hover:text-white transition-colors underline bg-transparent border-0 cursor-pointer p-0 font-inherit"
+            >
+              {isLogin ? "Criar conta" : "Já tem conta? Fazer login"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

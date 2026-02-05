@@ -249,15 +249,21 @@ Endpoint protegido para área do aluno.
 
 ---
 
+## ☁️ **Produção (sem sua máquina ligada)**
+
+Com o backend no **Render**, o banco no **Supabase** e o front na **Vercel**, o projeto roda 100% na nuvem. **Não é preciso deixar seu PC ligado** — tudo funciona nos servidores de cada serviço. O Render usa o Dockerfile apenas para build/deploy do backend; você não precisa ter Docker instalado para o site estar no ar.
+
+---
+
 ## 🛠️ **Como Executar Localmente**
 
 ### **Pré-requisitos**
 - Node.js 18+
 - Java 21+
-- Docker e Docker Compose
 - Maven 3.6+
+- (Opcional) Docker e Docker Compose — só se quiser subir backend/front em containers
 
-### **Opção 1: Docker Compose (Recomendado)**
+### **Opção 1: Docker Compose (opcional)**
 
 ```bash
 # Clone o repositório
