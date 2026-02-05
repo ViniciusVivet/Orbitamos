@@ -27,7 +27,8 @@ Não use o arquivo `.env` do projeto para produção: o Render não lê esse arq
 - **Host**: algo como `db.nvptikymbvqrjdvxcaor.supabase.co` (o seu projeto tem esse ID na URL do dashboard).
 - **Porta**: use **5432** (Session). Se der "Connect timed out" no Render, tente **6543** (Transaction pooler).
 - **Banco**: `postgres`.
-- **SSL**: o Supabase exige SSL. Sempre adicione no final da URL: `?sslmode=require`.
+- **SSL**: o Supabase exige SSL. Sempre adicione: `?sslmode=require`.
+- Os timeouts de conexão são **adicionados automaticamente pelo código** — não precisa colocar na URL no Render.
 
 Exemplo (troque o host pelo do seu projeto):
 
@@ -51,7 +52,7 @@ Configure estas variáveis na aba **Environment** do **orbitamos-backend**:
 
 | Variável | Onde pegar | Exemplo (não use esses valores reais) |
 |----------|------------|----------------------------------------|
-| `SPRING_DATASOURCE_URL` | Supabase → Settings → Database → Connection string → montar JDBC com `?sslmode=require` | `jdbc:postgresql://db.xxx.supabase.co:5432/postgres?sslmode=require` |
+| `SPRING_DATASOURCE_URL` | Supabase → Settings → Database → montar JDBC com `?sslmode=require` | `jdbc:postgresql://db.xxx.supabase.co:5432/postgres?sslmode=require` |
 | `SPRING_DATASOURCE_USERNAME` | Supabase → Database → User | `postgres` |
 | `SPRING_DATASOURCE_PASSWORD` | Supabase → Database → Password | (sua senha do banco) |
 | `JWT_SECRET` | Gerar uma chave forte (ex.: `openssl rand -base64 32`) | string de 32+ caracteres |
@@ -68,7 +69,7 @@ Depois de salvar, faça um **Manual Deploy** para aplicar.
 ## 4. Se ainda der "Connect timed out"
 
 1. **URL com SSL**  
-   Confirme que a URL termina com `?sslmode=require`.
+   Confirme que a URL termina com `?sslmode=require`. O código já adiciona timeouts na URL automaticamente.
 
 2. **Usar porta 6543 (Transaction pooler)**  
    No Supabase → Database, use a connection string do **Transaction** (porta 6543) e monte a URL JDBC com essa porta. Às vezes o Render conecta melhor pelo pooler.
