@@ -94,7 +94,7 @@ export default function PerfilForm({
         <div className="flex items-center gap-4">
           <Avatar
             user={{
-              name: editName || user?.name ?? "",
+              name: (editName || user?.name) ?? "",
               avatarUrl: editAvatarUrl || user?.avatarUrl,
             }}
           />
