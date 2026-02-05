@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -114,6 +115,25 @@ public class DashboardController {
         return map;
     }
 
+    /**
+     * Usa API_BASE_URL quando configurado; senão, se a config for localhost e houver request
+     * (ex.: atrás do Render), monta a URL a partir de X-Forwarded-Proto/Host para a foto carregar em HTTPS.
+     */
+    private String resolveApiBaseUrl(HttpServletRequest request) {
+        if (apiBaseUrl != null && !apiBaseUrl.contains("localhost")) {
+            return apiBaseUrl.endsWith("/") ? apiBaseUrl.substring(0, apiBaseUrl.length() - 1) : apiBaseUrl;
+        }
+        if (request == null) return apiBaseUrl;
+        String scheme = request.getHeader("X-Forwarded-Proto");
+        if (scheme == null || scheme.isBlank()) scheme = request.getScheme();
+        String host = request.getHeader("X-Forwarded-Host");
+        if (host == null || host.isBlank()) host = request.getServerName();
+        int port = request.getServerPort();
+        boolean defaultPort = ("https".equals(scheme) && port == 443) || ("http".equals(scheme) && port == 80);
+        if (defaultPort) return scheme + "://" + host;
+        return scheme + "://" + host + ":" + port;
+    }
+
     @PutMapping("/me")
     public ResponseEntity<?> updateProfile(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
@@ -175,7 +195,8 @@ public class DashboardController {
     @PostMapping(value = "/me/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadAvatar(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam("file") MultipartFile file) {
+            @RequestParam("file") MultipartFile file,
+            HttpServletRequest request) {
         try {
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return ResponseEntity.status(401).body(Map.of(
@@ -213,7 +234,8 @@ public class DashboardController {
             Files.createDirectories(dir);
             Path target = dir.resolve(filename);
             file.transferTo(target.toFile());
-            String avatarUrl = apiBaseUrl + "/api/uploads/avatars/" + user.getId() + "/" + filename;
+            String baseUrl = resolveApiBaseUrl(request);
+            String avatarUrl = baseUrl + "/api/uploads/avatars/" + user.getId() + "/" + filename;
             user.setAvatarUrl(avatarUrl);
             userRepository.save(user);
             return ResponseEntity.ok(Map.of(

@@ -29,3 +29,22 @@ No **Vercel** (ou `.env.local`):
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: chave anon (Settings → API → anon public).
 
 Sem essas variáveis, o usuário continua podendo usar **URL da imagem** no editar perfil (colar link); o upload por arquivo só funciona com o bucket e as variáveis configurados.
+
+---
+
+## 4. Foto de perfil via backend (upload na API)
+
+O backend também oferece upload de avatar em `POST /api/dashboard/me/avatar`. A URL da foto é montada com a **URL base da API**. Em produção (Render):
+
+- Se **`API_BASE_URL`** estiver definido no Render (ex.: `https://orbitamos-backend.onrender.com`), essa URL é usada e a foto carrega em HTTPS.
+- Se não estiver definido, o backend usa o host do request (headers `X-Forwarded-Proto` e `X-Forwarded-Host`), então no Render a foto também passa a carregar em HTTPS.
+
+Se a foto não aparecer e no console aparecer **Mixed Content** (página HTTPS pedindo `http://localhost:8080/...`), defina **`API_BASE_URL`** no Render com a URL pública do backend. Quem já subiu foto antes pode precisar **trocar a foto de novo** para gerar uma URL correta.
+
+### Como testar o fluxo da foto
+
+1. Fazer login no site (Vercel).
+2. Ir em **Conta** (ou **Configurações** / perfil).
+3. Clicar em alterar foto e enviar uma imagem (JPG, PNG, GIF ou WebP).
+4. Conferir se a nova foto aparece no cabeçalho/sidebar.
+5. Recarregar a página e ver se a foto continua aparecendo (sem erro de Mixed Content no console).

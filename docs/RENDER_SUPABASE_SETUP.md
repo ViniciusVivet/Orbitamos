@@ -61,6 +61,7 @@ Opcional:
 
 - `JWT_EXPIRATION` – em ms (padrão: 86400000 = 24h).
 - `SPRING_WEB_CORS_ALLOWED_ORIGINS` – se precisar de outros domínios no CORS.
+- **`API_BASE_URL`** – URL pública do backend (ex.: `https://orbitamos-backend.onrender.com`). Usada para montar a URL da **foto de perfil**; se não definir, o backend tenta usar o host do request (funciona atrás do Render). Se a foto não carregar em produção (Mixed Content / localhost), defina esta variável.
 
 Depois de salvar, faça um **Manual Deploy** para aplicar.
 
@@ -82,7 +83,28 @@ Depois de salvar, faça um **Manual Deploy** para aplicar.
 
 ---
 
-## 5. Resumo
+## 5. Se der erro "column role of relation users does not exist"
+
+Esse erro aparece ao **cadastrar conta** ou **entrar** quando a tabela `users` no Supabase foi criada sem a coluna `role` (por exemplo, por uma versão antiga do app ou schema manual).
+
+**Solução:** rodar a migração SQL no Supabase para criar a coluna:
+
+1. Acesse [Supabase](https://supabase.com/dashboard) → seu projeto → **SQL Editor**.
+2. Abra o arquivo `docs/migrations/001_add_role_to_users.sql` do repositório (ou copie o conteúdo abaixo).
+3. Cole no editor e clique em **Run**.
+
+```sql
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'STUDENT';
+```
+
+4. Depois disso, tente **Criar conta** e **Entrar** de novo no site.
+
+Outras migrações futuras ficarão em `docs/migrations/` com numeração (002_, 003_, …).
+
+---
+
+## 6. Resumo
 
 - **Código**: não coloque URL, usuário ou senha do banco. Só variáveis tipo `${SPRING_DATASOURCE_URL}`.
 - **Render**: configure tudo em **Environment**.

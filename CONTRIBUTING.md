@@ -36,7 +36,7 @@ git checkout -b fix/seu-bug-fix
 
 ### **4. Desenvolver**
 - Faça suas alterações
-- Teste localmente
+- Teste localmente (incluindo **testes automatizados**: `cd apps/api && mvn test` — veja [docs/TESTES_AUTOMATIZADOS.md](docs/TESTES_AUTOMATIZADOS.md))
 - Siga os padrões de código
 - Documente se necessário
 
