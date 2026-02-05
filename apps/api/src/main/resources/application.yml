@@ -7,7 +7,7 @@ spring:
   application:
     name: orbitamos-api
   
-  # Configuração do banco de dados
+  # Configuração do banco de dados (URL/usuário/senha vêm de variáveis de ambiente - nunca no código)
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/orbitamos}
     username: ${SPRING_DATASOURCE_USERNAME:orbitamos}
@@ -16,14 +16,16 @@ spring:
     hikari:
       maximum-pool-size: 2
       minimum-idle: 0
-      connection-timeout: 45000
-      validation-timeout: 5000
+      # Timeouts maiores para Render + Supabase (conexão entre regiões pode demorar)
+      connection-timeout: 60000
+      validation-timeout: 10000
       idle-timeout: 300000
       max-lifetime: 600000
       connection-test-query: SELECT 1
       keepalive-time: 30000
       leak-detection-threshold: 60000
-      initialization-fail-timeout: 1
+      # Esperar até 60s na primeira conexão (evita "Connect timed out" no deploy)
+      initialization-fail-timeout: 60000
   
   # Configuração do JPA
   jpa:
@@ -59,9 +61,9 @@ springdoc:
     path: /swagger-ui.html
     operationsSorter: method
 
-# Configuração JWT
+# Configuração JWT (em produção defina JWT_SECRET no .env / variáveis de ambiente)
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:orbitamos-dev-secret-trocar-em-producao}
   expiration: ${JWT_EXPIRATION:86400000} # 24 horas em millisegundos
 
 # Logging
