@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import RocketProgress from "@/components/RocketProgress";
+import { getFriendlyApiErrorMessage } from "@/lib/utils";
 
 export default function Entrar() {
   const [isLogin, setIsLogin] = useState(true);
@@ -127,26 +128,10 @@ export default function Entrar() {
       await new Promise(resolve => setTimeout(resolve, 500));
       
     } catch (err) {
-      let errorMessage = "Erro ao fazer login/cadastro";
-      
-      if (err instanceof Error) {
-        errorMessage = err.message;
-      } else if (typeof err === 'string') {
-        errorMessage = err;
+      if (process.env.NODE_ENV !== "production") {
+        console.error("[Entrar] Erro na autenticação:", err);
       }
-      
-      // Melhorar mensagens de erro comuns
-      if (errorMessage.includes("fetch") || errorMessage.includes("network") || errorMessage.includes("Failed to fetch")) {
-        errorMessage = "Erro de conexão. Verifique sua internet e tente novamente.";
-      } else if (errorMessage.includes("timeout") || errorMessage.includes("timed out")) {
-        errorMessage = "Tempo de espera esgotado. Tente novamente.";
-      } else if (errorMessage.includes("Email já cadastrado") || errorMessage.includes("already")) {
-        errorMessage = "Este e-mail já está cadastrado. Tente fazer login.";
-      } else if (errorMessage.includes("iniciando")) {
-        errorMessage = "Servidor está iniciando. Aguarde alguns segundos e tente novamente.";
-      }
-      
-      setError(errorMessage);
+      setError(getFriendlyApiErrorMessage(err));
       setFakeProgress(0);
     } finally {
       setLoading(false);

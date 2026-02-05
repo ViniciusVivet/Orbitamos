@@ -11,6 +11,7 @@ import {
   deleteForumMessage,
   searchForumMessages,
 } from "@/lib/api";
+import { getFriendlyApiErrorMessage } from "@/lib/utils";
 
 export default function ForumWidget() {
   const { token, isAuthenticated, user } = useAuth();
@@ -34,8 +35,10 @@ export default function ForumWidget() {
         : await getForumMessages();
       setMessages(data);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Erro ao carregar mensagens";
-      setError(message);
+      if (process.env.NODE_ENV !== "production") {
+        console.error("[ForumWidget] Erro ao carregar mensagens:", err);
+      }
+      setError(getFriendlyApiErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -63,8 +66,10 @@ export default function ForumWidget() {
       setCity("");
       setNeighborhood("");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Erro ao enviar mensagem";
-      setError(message);
+      if (process.env.NODE_ENV !== "production") {
+        console.error("[ForumWidget] Erro ao enviar mensagem:", err);
+      }
+      setError(getFriendlyApiErrorMessage(err));
     } finally {
       setSending(false);
     }
@@ -85,8 +90,10 @@ export default function ForumWidget() {
       await deleteForumMessage(token, id);
       setMessages((prev) => prev.filter((item) => item.id !== id));
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Erro ao excluir mensagem";
-      setError(message);
+      if (process.env.NODE_ENV !== "production") {
+        console.error("[ForumWidget] Erro ao excluir mensagem:", err);
+      }
+      setError(getFriendlyApiErrorMessage(err));
     } finally {
       setSending(false);
     }

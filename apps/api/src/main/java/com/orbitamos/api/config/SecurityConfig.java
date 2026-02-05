@@ -80,11 +80,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Origens permitidas
-        configuration.setAllowedOrigins(Arrays.asList(
+        // Origens permitidas: localhost + qualquer preview/produção Vercel (*.vercel.app)
+        configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:3000",
-            "https://orbitamos.vercel.app",
-            "https://orbitamos-jsglwhqw-viniciusviets-projects.vercel.app"
+            "https://*.vercel.app"
         ));
         
         // Métodos HTTP permitidos
@@ -101,6 +100,7 @@ public class SecurityConfig {
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);
+        source.registerCorsConfiguration("/ws/**", configuration);
         
         return source;
     }
