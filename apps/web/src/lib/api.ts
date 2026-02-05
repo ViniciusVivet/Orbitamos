@@ -55,6 +55,7 @@ export interface RegisterData {
   name: string;
   email: string;
   password: string;
+  role?: UserRole;
 }
 
 export interface LoginData {
@@ -62,12 +63,16 @@ export interface LoginData {
   password: string;
 }
 
+export type UserRole = "STUDENT" | "FREELANCER";
+
 export interface AuthResponse {
   token: string;
   email: string;
   name: string;
   id: number;
   message: string;
+  avatarUrl?: string | null;
+  role?: UserRole;
 }
 
 export interface User {
@@ -75,6 +80,14 @@ export interface User {
   name: string;
   email: string;
   createdAt: string;
+  avatarUrl?: string | null;
+  role?: UserRole;
+  phone?: string | null;
+  birthDate?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipCode?: string | null;
 }
 
 export interface DashboardProgress {
@@ -140,6 +153,23 @@ export interface ForumMessage {
   createdAt: string;
 }
 
+export interface Project {
+  id: number;
+  title: string;
+  description: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface Job {
+  id: number;
+  title: string;
+  description: string;
+  type: string;
+  status: string;
+  createdAt: string;
+}
+
 /**
  * Registra um novo usuário
  */
@@ -158,7 +188,7 @@ export async function register(data: RegisterData): Promise<AuthResponse> {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, role: data.role ?? 'STUDENT' }),
         signal: controller.signal,
       });
 
@@ -279,6 +309,71 @@ export async function getCurrentUser(token: string): Promise<{ success: boolean;
 }
 
 /**
+ * Atualiza perfil do usuário (nome, foto, endereço, telefone, data de nascimento, etc.)
+ */
+export async function updateProfile(
+  token: string,
+  data: {
+    name?: string;
+    avatarUrl?: string | null;
+    phone?: string | null;
+    birthDate?: string | null;
+    address?: string | null;
+    city?: string | null;
+    state?: string | null;
+    zipCode?: string | null;
+  }
+): Promise<{ success: boolean; user: User }> {
+  try {
+    const response = await fetch(`${API_URL}/dashboard/me`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Erro ao atualizar perfil');
+    }
+
+    return result;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Erro desconhecido ao atualizar perfil');
+  }
+}
+
+/**
+ * Envia foto de perfil (imagem) pela própria plataforma.
+ * POST multipart para o backend; retorna a nova URL e o usuário atualizado.
+ */
+export async function uploadAvatarViaApi(
+  token: string,
+  file: File
+): Promise<{ success: boolean; avatarUrl: string; user: User }> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await fetch(`${API_URL}/dashboard/me/avatar`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  });
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || 'Erro ao enviar foto');
+  }
+  return result;
+}
+
+/**
  * Busca o resumo do dashboard do usuário autenticado
  */
 export async function getDashboardSummary(token: string): Promise<DashboardSummary> {
@@ -303,6 +398,52 @@ export async function getDashboardSummary(token: string): Promise<DashboardSumma
       throw error;
     }
     throw new Error('Erro desconhecido ao buscar resumo do dashboard');
+  }
+}
+
+/**
+ * Lista projetos do usuário (área do colaborador)
+ */
+export async function getMyProjects(token: string): Promise<Project[]> {
+  try {
+    const response = await fetch(`${API_URL}/projects`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'Erro ao carregar projetos');
+    }
+    return result.projects ?? [];
+  } catch (error) {
+    if (error instanceof Error) throw error;
+    throw new Error('Erro ao carregar projetos');
+  }
+}
+
+/**
+ * Lista vagas (área do colaborador)
+ */
+export async function getJobs(token: string): Promise<Job[]> {
+  try {
+    const response = await fetch(`${API_URL}/jobs`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'Erro ao carregar vagas');
+    }
+    return result.jobs ?? [];
+  } catch (error) {
+    if (error instanceof Error) throw error;
+    throw new Error('Erro ao carregar vagas');
   }
 }
 
@@ -445,5 +586,120 @@ export async function deleteForumMessage(token: string, id: number): Promise<voi
     }
     throw new Error('Erro desconhecido ao excluir mensagem');
   }
+}
+
+// ==================== CHAT (MENSAGENS) ====================
+
+export interface ChatUser {
+  id: number;
+  name: string;
+  email: string;
+  avatarUrl: string;
+  role: string;
+}
+
+export interface ChatLastMessage {
+  content: string;
+  senderId: number;
+  createdAt: string;
+}
+
+export interface ChatConversation {
+  id: number;
+  type: "DIRECT" | "GROUP";
+  name: string | null;
+  displayName: string;
+  createdAt: string;
+  participants: ChatUser[];
+  lastMessage: ChatLastMessage | null;
+}
+
+export interface ChatMessageItem {
+  id: number;
+  content: string;
+  senderId: number;
+  senderName: string;
+  senderAvatarUrl: string;
+  createdAt: string;
+}
+
+export async function getChatConversations(token: string): Promise<ChatConversation[]> {
+  const response = await fetch(`${API_URL}/chat/conversations`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || "Erro ao carregar conversas");
+  return result.conversations ?? [];
+}
+
+export async function getChatConversation(token: string, id: number): Promise<ChatConversation | null> {
+  const response = await fetch(`${API_URL}/chat/conversations/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const result = await response.json();
+  if (!response.ok) return null;
+  return result.conversation ?? null;
+}
+
+export async function getChatMessages(token: string, conversationId: number): Promise<ChatMessageItem[]> {
+  const response = await fetch(`${API_URL}/chat/conversations/${conversationId}/messages`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || "Erro ao carregar mensagens");
+  return result.messages ?? [];
+}
+
+export async function sendChatMessage(
+  token: string,
+  conversationId: number,
+  content: string
+): Promise<ChatMessageItem> {
+  const response = await fetch(`${API_URL}/chat/conversations/${conversationId}/messages`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ content: content.trim() }),
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || "Erro ao enviar mensagem");
+  return result.message;
+}
+
+export async function createDirectConversation(
+  token: string,
+  otherUserId: number
+): Promise<{ conversation: ChatConversation; alreadyExists?: boolean }> {
+  const response = await fetch(`${API_URL}/chat/conversations`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ type: "DIRECT", otherUserId }),
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || "Erro ao criar conversa");
+  return result;
+}
+
+export async function createGroupConversation(
+  token: string,
+  name: string,
+  userIds: number[]
+): Promise<{ conversation: ChatConversation }> {
+  const response = await fetch(`${API_URL}/chat/conversations`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ type: "GROUP", name, userIds }),
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || "Erro ao criar grupo");
+  return result;
+}
+
+export async function getChatUsers(token: string): Promise<ChatUser[]> {
+  const response = await fetch(`${API_URL}/chat/users`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || "Erro ao carregar usuários");
+  return result.users ?? [];
 }
 

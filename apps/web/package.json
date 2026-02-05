@@ -13,6 +13,8 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@react-three/drei": "^9.114.6",
     "@react-three/fiber": "^8.17.10",
+    "@stomp/stompjs": "^7.3.0",
+    "@supabase/supabase-js": "^2.95.0",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.19",
     "autoprefixer": "^10.4.21",
@@ -22,6 +24,7 @@
     "next": "^16.1.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "sockjs-client": "^1.6.1",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.160.0"

@@ -2,15 +2,26 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { login as loginApi, register as registerApi, getCurrentUser, AuthResponse, User } from "@/lib/api";
+import { login as loginApi, register as registerApi, getCurrentUser, updateProfile as updateProfileApi, AuthResponse, User } from "@/lib/api";
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, role?: "STUDENT" | "FREELANCER") => Promise<void>;
   logout: () => void;
+  updateProfile: (data: {
+    name?: string;
+    avatarUrl?: string | null;
+    phone?: string | null;
+    birthDate?: string | null;
+    address?: string | null;
+    city?: string | null;
+    state?: string | null;
+    zipCode?: string | null;
+  }) => Promise<void>;
+  setUserFromResponse: (user: User) => void;
   isAuthenticated: boolean;
 }
 
@@ -66,38 +77,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         name: response.name,
         email: response.email,
         createdAt: new Date().toISOString(),
+        avatarUrl: response.avatarUrl ?? null,
+        role: response.role ?? "STUDENT",
       });
       
-      console.log("🚀 AuthContext: Redirecionando para dashboard...");
-      router.push("/dashboard");
+      console.log("🚀 AuthContext: Redirecionando...");
+      router.push(response.role === "FREELANCER" ? "/colaborador" : "/estudante");
     } catch (error) {
       console.error("❌ AuthContext: Erro no login:", error);
       throw error; // Re-lança o erro para ser capturado no componente
     }
   };
 
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (name: string, email: string, password: string, role?: "STUDENT" | "FREELANCER") => {
     try {
       console.log("📝 AuthContext: Iniciando registro...");
-      const response: AuthResponse = await registerApi({ name, email, password });
+      const response: AuthResponse = await registerApi({ name, email, password, role });
       console.log("✅ AuthContext: Registro API respondeu:", response);
       
       localStorage.setItem("token", response.token);
       setToken(response.token);
       
-      // Usa dados diretamente da resposta (não precisa fazer chamada extra)
       setUser({
         id: response.id,
         name: response.name,
         email: response.email,
         createdAt: new Date().toISOString(),
+        avatarUrl: response.avatarUrl ?? null,
+        role: response.role ?? "STUDENT",
       });
       
-      console.log("🚀 AuthContext: Redirecionando para dashboard...");
-      router.push("/dashboard");
+      console.log("🚀 AuthContext: Redirecionando...");
+      router.push(response.role === "FREELANCER" ? "/colaborador" : "/estudante");
     } catch (error) {
       console.error("❌ AuthContext: Erro no registro:", error);
-      throw error; // Re-lança o erro para ser capturado no componente
+      throw error;
     }
   };
 
@@ -106,6 +120,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null);
     setUser(null);
     router.push("/entrar");
+  };
+
+  const updateProfile = async (data: {
+    name?: string;
+    avatarUrl?: string | null;
+    phone?: string | null;
+    birthDate?: string | null;
+    address?: string | null;
+    city?: string | null;
+    state?: string | null;
+    zipCode?: string | null;
+  }) => {
+    if (!token) return;
+    const result = await updateProfileApi(token, data);
+    if (result.success && result.user) {
+      setUser(result.user);
+    }
   };
 
   return (
@@ -117,6 +148,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         logout,
+        updateProfile,
+        setUserFromResponse: setUser,
         isAuthenticated: !!token && !!user,
       }}
     >

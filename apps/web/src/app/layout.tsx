@@ -4,8 +4,10 @@ import "./globals.css";
 import Navigation from "@/components/Navigation";
 import CursorOrbit from "@/components/CursorOrbit";
 import { ClientAuthProvider } from "@/components/AuthProvider";
+import { ChatProvider } from "@/contexts/ChatContext";
 import PreWakeProvider from "@/components/PreWakeProvider";
 import ForumWidget from "@/components/ForumWidget";
+import FloatingChat from "@/components/chat/FloatingChat";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -43,14 +45,17 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={`${inter.variable} font-sans antialiased`}>
         <ClientAuthProvider>
+          <ChatProvider>
           <PreWakeProvider>
         <CursorOrbit />
         <Navigation />
         <ForumWidget />
+        <FloatingChat />
         <main className="pt-16">
           {children}
         </main>
           </PreWakeProvider>
+          </ChatProvider>
         </ClientAuthProvider>
       </body>
     </html>

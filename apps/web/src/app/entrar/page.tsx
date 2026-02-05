@@ -13,6 +13,7 @@ export default function Entrar() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [registerRole, setRegisterRole] = useState<"STUDENT" | "FREELANCER">("STUDENT");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [fakeProgress, setFakeProgress] = useState(0);
@@ -20,7 +21,7 @@ export default function Entrar() {
   
   let authContext;
   let login: ((email: string, password: string) => Promise<void>) | undefined;
-  let registerUser: ((name: string, email: string, password: string) => Promise<void>) | undefined;
+  let registerUser: ((name: string, email: string, password: string, role?: "STUDENT" | "FREELANCER") => Promise<void>) | undefined;
   
   try {
     authContext = useAuth();
@@ -117,7 +118,7 @@ export default function Entrar() {
           return;
         }
         console.log("📝 Tentando criar conta...");
-        await registerUser(name.trim(), email.trim(), password);
+        await registerUser(name.trim(), email.trim(), password, registerRole);
         console.log("✅ Conta criada com sucesso!");
       }
 
@@ -191,20 +192,53 @@ export default function Entrar() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {!isLogin && (
+            <div>
+              <label htmlFor="name" className="mb-2 block text-sm text-white/80">Nome Completo</label>
+              <Input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Seu nome completo"
+                className="bg-black/40 border-white/20 text-white placeholder:text-white/40"
+                required={!isLogin}
+                autoComplete="name"
+                autoCapitalize="words"
+                autoCorrect="on"
+              />
+            </div>
+            )}
+
+            {!isLogin && (
               <div>
-                <label htmlFor="name" className="mb-2 block text-sm text-white/80">Nome Completo</label>
-                <Input
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Seu nome completo"
-                  className="bg-black/40 border-white/20 text-white placeholder:text-white/40"
-                  required={!isLogin}
-                  autoComplete="name"
-                  autoCapitalize="words"
-                  autoCorrect="on"
-                />
+                <label className="mb-2 block text-sm text-white/80">Tipo de conta</label>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setRegisterRole("STUDENT")}
+                    className={`flex-1 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                      registerRole === "STUDENT"
+                        ? "border-orbit-electric bg-orbit-electric/20 text-orbit-electric"
+                        : "border-white/20 text-white/70 hover:bg-white/5"
+                    }`}
+                  >
+                    🎓 Estudante
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRegisterRole("FREELANCER")}
+                    className={`flex-1 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                      registerRole === "FREELANCER"
+                        ? "border-orbit-purple bg-orbit-purple/20 text-orbit-purple"
+                        : "border-white/20 text-white/70 hover:bg-white/5"
+                    }`}
+                  >
+                    💼 Colaborador
+                  </button>
+                </div>
+                <p className="mt-1 text-xs text-white/50">
+                  {registerRole === "STUDENT" ? "Acesso a vídeo-aulas e mentorias." : "Projetos reais, vagas e contato com o squad."}
+                </p>
               </div>
             )}
 

@@ -49,10 +49,14 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui.html").permitAll()
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/").permitAll()
+                .requestMatchers("/ws/**").permitAll()
                 // Endpoints protegidos (precisam de autenticação JWT)
+                .requestMatchers("/api/uploads/**").permitAll()
                 .requestMatchers("/api/dashboard/**").authenticated()
                 .requestMatchers("/api/contacts").authenticated()
-                // Todos os outros endpoints requerem autenticação
+                .requestMatchers("/api/projects/**").authenticated()
+                .requestMatchers("/api/jobs/**").authenticated()
+                .requestMatchers("/api/chat/**").authenticated()
                 .anyRequest().permitAll()
             )
             

@@ -53,6 +53,13 @@ spring:
       allowed-headers: "*"
       allow-credentials: true
 
+  # Upload de arquivos (foto de perfil)
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 5MB
+
 # Configuração do OpenAPI/Swagger
 springdoc:
   api-docs:
@@ -65,6 +72,11 @@ springdoc:
 jwt:
   secret: ${JWT_SECRET:orbitamos-dev-secret-trocar-em-producao}
   expiration: ${JWT_EXPIRATION:86400000} # 24 horas em millisegundos
+
+# Upload de avatar pela plataforma (pasta e URL base da API)
+app:
+  upload-dir: ${UPLOAD_DIR:./uploads}
+  api-base-url: ${API_BASE_URL:http://localhost:8080}
 
 # Logging
 logging:

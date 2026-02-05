@@ -4,6 +4,8 @@ public class RegisterRequest {
     private String name;
     private String email;
     private String password;
+    /** Papel: STUDENT (estudante) ou FREELANCER (colaborador). Opcional; default STUDENT. */
+    private String role;
     
     public RegisterRequest() {
     }
@@ -12,6 +14,14 @@ public class RegisterRequest {
         this.name = name;
         this.email = email;
         this.password = password;
+    }
+    
+    public String getRole() {
+        return role;
+    }
+    
+    public void setRole(String role) {
+        this.role = role;
     }
     
     public String getName() {

@@ -4,9 +4,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import LogoOrbitamos from "@/components/LogoOrbitamos";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, isAuthenticated, loading } = useAuth();
+
+  const initials = user?.name?.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase() ?? "?";
 
   return (
     <nav className="fixed top-0 w-full z-50 border-b border-white/10 bg-black/40 backdrop-blur-xl">
@@ -35,13 +39,29 @@ export default function Navigation() {
               Contato
             </Link>
             
-            <Button 
-              size="sm"
-              className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:from-orbit-purple hover:to-orbit-electric text-black font-bold shadow-[0_0_20px_theme(colors.orbit-electric/.35)]"
-              asChild
-            >
-              <Link href="/entrar">🚀 Entrar</Link>
-            </Button>
+            {!loading && isAuthenticated && user ? (
+              <Link
+                href={user.role === "FREELANCER" ? "/colaborador" : "/estudante"}
+                className="flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-white/90 hover:bg-white/10 transition-colors"
+              >
+                {user.avatarUrl ? (
+                  <img src={user.avatarUrl} alt={user.name} className="h-8 w-8 rounded-full object-cover" />
+                ) : (
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-xs font-bold text-black">
+                    {initials}
+                  </span>
+                )}
+                <span className="hidden sm:inline text-sm font-medium">{user.role === "FREELANCER" ? "Área Colaborador" : "Área do Estudante"}</span>
+              </Link>
+            ) : (
+              <Button 
+                size="sm"
+                className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:from-orbit-purple hover:to-orbit-electric text-black font-bold shadow-[0_0_20px_theme(colors.orbit-electric/.35)]"
+                asChild
+              >
+                <Link href="/entrar">🚀 Entrar</Link>
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -95,13 +115,30 @@ export default function Navigation() {
                 Contato
               </Link>
               
-              <Button 
-                size="sm"
-                className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:from-orbit-purple hover:to-orbit-electric text-black font-bold w-full shadow-[0_0_20px_theme(colors.orbit-electric/.35)]"
-                asChild
-              >
-                <Link href="/entrar">🚀 Entrar</Link>
-              </Button>
+              {!loading && isAuthenticated && user ? (
+                <Link
+                  href={user.role === "FREELANCER" ? "/colaborador" : "/estudante"}
+                  className="flex items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-white/90 hover:bg-white/10"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt={user.name} className="h-8 w-8 rounded-full object-cover" />
+                  ) : (
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-xs font-bold text-black">
+                      {initials}
+                    </span>
+                  )}
+                  {user.role === "FREELANCER" ? "Área Colaborador" : "Área do Estudante"}
+                </Link>
+              ) : (
+                <Button 
+                  size="sm"
+                  className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:from-orbit-purple hover:to-orbit-electric text-black font-bold w-full shadow-[0_0_20px_theme(colors.orbit-electric/.35)]"
+                  asChild
+                >
+                  <Link href="/entrar">🚀 Entrar</Link>
+                </Button>
+              )}
             </div>
           </div>
         )}

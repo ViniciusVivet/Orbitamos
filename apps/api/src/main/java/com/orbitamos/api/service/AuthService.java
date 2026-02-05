@@ -4,6 +4,7 @@ import com.orbitamos.api.dto.AuthResponse;
 import com.orbitamos.api.dto.LoginRequest;
 import com.orbitamos.api.dto.RegisterRequest;
 import com.orbitamos.api.entity.User;
+import com.orbitamos.api.entity.UserRole;
 import com.orbitamos.api.repository.UserRepository;
 import com.orbitamos.api.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,11 +57,18 @@ public class AuthService {
             throw new RuntimeException("Este e-mail já está cadastrado. Tente fazer login.");
         }
         
+        // Papel: STUDENT (padrão) ou FREELANCER
+        UserRole role = UserRole.STUDENT;
+        if (request.getRole() != null && request.getRole().trim().equalsIgnoreCase("FREELANCER")) {
+            role = UserRole.FREELANCER;
+        }
+        
         // Cria novo usuário
         User user = new User();
         user.setEmail(email);
         user.setName(request.getName().trim());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(role);
         
         User savedUser = userRepository.save(user);
         
@@ -72,7 +80,9 @@ public class AuthService {
             savedUser.getEmail(),
             savedUser.getName(),
             savedUser.getId(),
-            "Cadastro realizado com sucesso!"
+            "Cadastro realizado com sucesso!",
+            savedUser.getAvatarUrl(),
+            savedUser.getRole().name()
         );
     }
     
@@ -103,7 +113,9 @@ public class AuthService {
             user.getEmail(),
             user.getName(),
             user.getId(),
-            "Login realizado com sucesso!"
+            "Login realizado com sucesso!",
+            user.getAvatarUrl(),
+            user.getRole().name()
         );
     }
 }
