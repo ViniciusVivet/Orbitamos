@@ -55,6 +55,24 @@ export default function EstudanteInicio() {
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
+          {/* Continuar de onde parou */}
+          {progress.lastLesson && (
+            <Card className="border-orbit-electric/30 bg-gradient-to-br from-orbit-electric/10 to-orbit-purple/10 md:col-span-2">
+              <CardHeader>
+                <CardTitle className="text-orbit-electric">▶ Continuar de onde parou</CardTitle>
+                <CardDescription>Última aula vista</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-white/90 font-medium">{progress.lastLesson}</p>
+                <Link href="/estudante/aulas">
+                  <Button className="w-full sm:w-auto bg-gradient-to-r from-orbit-electric to-orbit-purple text-black font-bold hover:opacity-90">
+                    Ir para as aulas
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          )}
+
           <Card className="border-orbit-electric/20 bg-gray-900/50">
             <CardHeader>
               <CardTitle className="text-orbit-electric">📊 Seu progresso</CardTitle>
@@ -73,10 +91,19 @@ export default function EstudanteInicio() {
                   />
                 </div>
               </div>
+              {/* Streak em destaque */}
+              <div className="flex items-center gap-2 rounded-lg border border-orange-500/30 bg-orange-500/10 px-3 py-2 text-sm">
+                <span className="text-xl">🔥</span>
+                <span className="text-white/90 font-medium">
+                  {progress.streakDays === 0
+                    ? "Comece hoje para iniciar sua sequência!"
+                    : `${progress.streakDays} dia${progress.streakDays !== 1 ? "s" : ""} seguidos`}
+                </span>
+              </div>
               <div className="rounded-lg border border-white/10 bg-white/5 p-3 text-sm">
                 <p className="text-white/80">Fase: <span className="font-semibold text-orbit-electric">{progress.phase}</span></p>
                 <p className="mt-1 text-white/60">Próxima meta: {progress.nextGoal}</p>
-                <p className="mt-1 text-white/50 text-xs">Nível {progress.level} • {progress.xp} XP • Sequência: {progress.streakDays} dias</p>
+                <p className="mt-1 text-white/50 text-xs">Nível {progress.level} • {progress.xp} XP</p>
               </div>
             </CardContent>
           </Card>
@@ -93,6 +120,29 @@ export default function EstudanteInicio() {
                   Ir para as aulas
                 </Button>
               </Link>
+            </CardContent>
+          </Card>
+
+          {/* Próximo na agenda / mentoria */}
+          <Card className="border-orbit-purple/20 bg-gray-900/50 md:col-span-2">
+            <CardHeader>
+              <CardTitle className="text-orbit-purple">📅 Próximo na sua agenda</CardTitle>
+              <CardDescription>Mentorias e eventos</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-white/70 text-sm">Nenhum evento agendado no momento.</p>
+              <div className="flex flex-wrap gap-2">
+                <Link href="/estudante/mentorias">
+                  <Button variant="outline" size="sm" className="border-orbit-purple text-orbit-purple hover:bg-orbit-purple hover:text-white">
+                    Ver mentorias
+                  </Button>
+                </Link>
+                <a href={whatsappMentoriaUrl} target="_blank" rel="noreferrer">
+                  <Button variant="outline" size="sm" className="border-white/30 text-white hover:bg-white/10">
+                    Agendar pelo WhatsApp
+                  </Button>
+                </a>
+              </div>
             </CardContent>
           </Card>
 
@@ -137,19 +187,24 @@ export default function EstudanteInicio() {
               👨‍🏫 Mentorias
             </Button>
           </Link>
+          <Link href="/mensagens">
+            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+              💬 Enviar dúvida
+            </Button>
+          </Link>
+          <Link href="/estudante/comunidade">
+            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+              🌐 Fórum / Comunidade
+            </Button>
+          </Link>
           <Link href="/estudante/progresso">
             <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
               📊 Progresso
             </Button>
           </Link>
-          <Link href="/estudante/comunidade">
-            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-              🌐 Comunidade
-            </Button>
-          </Link>
           <Link href={whatsappMentoriaUrl} target="_blank" rel="noreferrer">
             <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-              💬 Solicitar mentoria
+              📱 Solicitar mentoria
             </Button>
           </Link>
         </CardContent>
