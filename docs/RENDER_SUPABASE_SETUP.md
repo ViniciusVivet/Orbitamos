@@ -24,8 +24,10 @@ Não use o arquivo `.env` do projeto para produção: o Render não lê esse arq
 
 ### Montar a URL JDBC
 
-- **Host**: algo como `db.nvptikymbvqrjdvxcaor.supabase.co` (o seu projeto tem esse ID na URL do dashboard).
-- **Porta**: use **5432** (Session). Se der "Connect timed out" no Render, tente **6543** (Transaction pooler).
+- **Host**: algo como `db.nvptikymbvqrjdvxcaor.supabase.co` (conexão direta) ou `aws-0-us-west-2.pooler.supabase.com` (pooler).
+- **Porta**:
+  - Se o host for **pooler** (`*.pooler.supabase.com`): use **6543**. Nunca use 5432 no pooler — conexão será recusada/timeout.
+  - Se o host for **direto** (`db.xxx.supabase.co`): use **5432**. Se der timeout no Render, troque para o host do pooler com porta **6543**.
 - **Banco**: `postgres`.
 - **SSL**: o Supabase exige SSL. Sempre adicione: `?sslmode=require`.
 - Os timeouts de conexão são **adicionados automaticamente pelo código** — não precisa colocar na URL no Render.
@@ -36,11 +38,13 @@ Exemplo (troque o host pelo do seu projeto):
 jdbc:postgresql://db.nvptikymbvqrjdvxcaor.supabase.co:5432/postgres?sslmode=require
 ```
 
-Se usar a porta **6543** (pooler):
+Se usar o **pooler** (host `*.pooler.supabase.com`), use sempre porta **6543**:
 
 ```text
-jdbc:postgresql://db.nvptikymbvqrjdvxcaor.supabase.co:6543/postgres?sslmode=require
+jdbc:postgresql://aws-0-us-west-2.pooler.supabase.com:6543/postgres?sslmode=require
 ```
+
+(Troque o host pelo do seu projeto em Settings → Database → Connection string → **Transaction**.)
 
 O **usuário** costuma ser `postgres`. A **senha** é a que aparece em Database (ou a que você definiu ao criar o projeto).
 
@@ -62,28 +66,51 @@ Opcional:
 - `JWT_EXPIRATION` – em ms (padrão: 86400000 = 24h).
 - `SPRING_WEB_CORS_ALLOWED_ORIGINS` – se precisar de outros domínios no CORS.
 - **`API_BASE_URL`** – URL pública do backend (ex.: `https://orbitamos-backend.onrender.com`). Usada para montar a URL da **foto de perfil**; se não definir, o backend tenta usar o host do request (funciona atrás do Render). Se a foto não carregar em produção (Mixed Content / localhost), defina esta variável.
+- **`APP_DATASOURCE_APPEND_TIMEOUT_PARAMS`** – por padrão o código **não** altera a URL do banco. Se precisar de timeouts na URL JDBC (ex.: Connect timed out entre regiões), defina `APP_DATASOURCE_APPEND_TIMEOUT_PARAMS=true` no Render.
 
 Depois de salvar, faça um **Manual Deploy** para aplicar.
 
 ---
 
-## 4. Se ainda der "Connect timed out"
+## 4. O que o código faz pela URL do banco (evitar quebrar de novo)
 
-1. **URL com SSL**  
-   Confirme que a URL termina com `?sslmode=require`. O código já adiciona timeouts na URL automaticamente.
+**Não é obrigatório mudar nada no Render.** O backend já ajusta a URL sozinho:
 
-2. **Usar porta 6543 (Transaction pooler)**  
-   No Supabase → Database, use a connection string do **Transaction** (porta 6543) e monte a URL JDBC com essa porta. Às vezes o Render conecta melhor pelo pooler.
+| Situação | O que o código faz |
+|----------|---------------------|
+| URL com **pooler** do Supabase (`*.pooler.supabase.com`) e **porta 5432** | Troca automaticamente para **porta 6543**, porque o pooler só aceita 6543. Mesmo que no Render esteja `:5432`, a aplicação usa `:6543` e a conexão funciona. |
+| Parâmetros de timeout na URL | **Por padrão não altera** a URL. Só acrescenta `connectTimeout`/`socketTimeout` se você definir `APP_DATASOURCE_APPEND_TIMEOUT_PARAMS=true` no Render. |
 
-3. **Senha**  
-   Verifique se a senha no Render é exatamente a do Supabase (sem espaço no início/fim). Se tiver dúvida, resete a senha em Settings → Database e atualize no Render.
+**Resumo:** Se o deploy quebrar com "Connection refused" ou "Connection timed out" ao conectar no banco:
 
-4. **Rede**  
-   O Supabase está em "West US (Oregon)". O free tier do Render pode estar em outra região; a primeira conexão pode demorar. O backend já está com timeouts maiores (60s) para aguentar isso.
+1. **Não altere** `SPRING_DATASOURCE_URL` nem outras variáveis de infra para “consertar” — o código já corrige a porta do pooler.
+2. Faça um **novo deploy** (Deploy latest commit) com o código atual; na maioria dos casos isso resolve.
+3. Só mexa em variáveis (por exemplo porta 6543 na URL) se você tiver lido esta doc e o problema for outro.
+
+Quem mexer no código da conexão (ex.: `DatasourceUrlEnvironmentPostProcessor` em `apps/api`) deve manter esse comportamento para não quebrar de novo.
 
 ---
 
-## 5. Se der erro "column role of relation users does not exist"
+## 5. Se ainda der "Connect timed out" ou "Connection refused"
+
+1. **Pooler com porta errada**  
+   Se a URL usar host **`*.pooler.supabase.com`**, a porta tem que ser **6543**, não 5432. Ex.: `jdbc:postgresql://aws-0-us-west-2.pooler.supabase.com:6543/postgres?sslmode=require`.
+
+2. **URL com SSL**  
+   Confirme que a URL termina com `?sslmode=require`.
+
+3. **Pooler: porta 6543**  
+   Se usar host `*.pooler.supabase.com`, o código já troca 5432 por 6543. Se mesmo assim falhar, confira no Supabase → Database a connection string do modo **Transaction** (porta 6543).
+
+4. **Senha**  
+   Verifique se a senha no Render é exatamente a do Supabase (sem espaço no início/fim). Se tiver dúvida, resete a senha em Settings → Database e atualize no Render.
+
+5. **Rede**  
+   O Supabase está em "West US (Oregon)". O free tier do Render pode estar em outra região; a primeira conexão pode demorar. O backend já está com timeouts maiores (60s) no HikariCP.
+
+---
+
+## 6. Se der erro "column role of relation users does not exist"
 
 Esse erro aparece ao **cadastrar conta** ou **entrar** quando a tabela `users` no Supabase foi criada sem a coluna `role` (por exemplo, por uma versão antiga do app ou schema manual).
 
@@ -104,7 +131,7 @@ Outras migrações futuras ficarão em `docs/migrations/` com numeração (002_,
 
 ---
 
-## 6. Resumo
+## 7. Resumo
 
 - **Código**: não coloque URL, usuário ou senha do banco. Só variáveis tipo `${SPRING_DATASOURCE_URL}`.
 - **Render**: configure tudo em **Environment**.

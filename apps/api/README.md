@@ -57,6 +57,10 @@ mvn clean package
 java -jar target/api-0.0.1-SNAPSHOT.jar
 ```
 
+### **Deploy no Render + Supabase**
+Variáveis de ambiente e URL do banco: **[docs/RENDER_SUPABASE_SETUP.md](../../docs/RENDER_SUPABASE_SETUP.md)** (na raiz do repositório).  
+Se o deploy quebrar com "Connection refused" ou "Connection timed out" ao conectar no banco, **não mude variáveis no Render** — o código já corrige a porta do pooler Supabase (5432→6543). Faça um novo deploy e veja a seção *"O que o código faz pela URL do banco"* na mesma doc.
+
 ## 📡 **Endpoints Disponíveis**
 
 ### **Health Check**

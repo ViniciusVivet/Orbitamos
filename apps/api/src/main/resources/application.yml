@@ -77,6 +77,9 @@ jwt:
 app:
   upload-dir: ${UPLOAD_DIR:./uploads}
   api-base-url: ${API_BASE_URL:http://localhost:8080}
+  # Para acrescentar timeouts na URL JDBC (só se precisar), defina APP_DATASOURCE_APPEND_TIMEOUT_PARAMS=true no Render. Padrão: não altera a URL.
+  datasource:
+    append-timeout-params: ${APP_DATASOURCE_APPEND_TIMEOUT_PARAMS:false}
 
 # Logging
 logging:
