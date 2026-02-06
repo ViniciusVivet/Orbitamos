@@ -248,12 +248,6 @@ export default function OrbitAcademy() {
             <div className="absolute top-1/2 right-0 -translate-y-1/2 rounded-md bg-white/10 px-2 py-1 text-xs">Missão 3 (cadeado)</div>
           </div>
           <div className="mt-3 text-sm text-orbit-electric">Entre para desbloquear missões e ganhar XP</div>
-          {/* Controles de simulação (visíveis apenas como mock) */}
-          <div className="mt-4 flex gap-3 text-xs text-white/70">
-            <button className="rounded-md bg-white/10 px-2 py-1 hover:bg-white/20" onClick={() => setXp((v)=> Math.min(100, v+10))}>+10 XP</button>
-            <button className="rounded-md bg-white/10 px-2 py-1 hover:bg-white/20" onClick={() => setStreak((v)=> v+1)}>+1 Streak</button>
-            <button className="rounded-md bg-white/10 px-2 py-1 hover:bg-white/20" onClick={() => setLevel((v)=> v+1)}>Subir Level</button>
-          </div>
         </div>
 
         {/* Ferramentas de Estudo */}
