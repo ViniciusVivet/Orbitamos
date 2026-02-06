@@ -56,7 +56,7 @@ export default function EstudanteSidebar() {
       <div className="border-t border-white/10 p-3">
         <div className="mb-2 flex items-center gap-3 rounded-lg px-3 py-2">
           {getDisplayAvatarUrl(user?.avatarUrl) ? (
-            <img src={getDisplayAvatarUrl(user?.avatarUrl)!} alt={user.name} className="h-9 w-9 rounded-full object-cover" />
+            <img src={getDisplayAvatarUrl(user?.avatarUrl)!} alt={user?.name ?? ""} className="h-9 w-9 rounded-full object-cover" />
           ) : (
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-xs font-bold text-black">
               {initials}

@@ -21,7 +21,7 @@ export default function ColaboradorSquad() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-white/70">
-            Enquanto isso, use o canal de contato ou o mural para falar com a gente.
+            Enquanto isso, use o canal de contato ou o fórum para falar com a gente.
           </p>
           <div className="flex gap-3">
             <Link href="/mensagens">
@@ -34,9 +34,9 @@ export default function ColaboradorSquad() {
                 Ir para Contato
               </Button>
             </Link>
-            <Link href="/mural">
+            <Link href="/forum">
               <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-                Ir para Mural
+                Ir para o Fórum
               </Button>
             </Link>
           </div>

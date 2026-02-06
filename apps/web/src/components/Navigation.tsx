@@ -36,6 +36,9 @@ export default function Navigation() {
             <Link href="/orbitacademy" className="text-white/90 hover:text-orbit-electric transition-colors">
               OrbitAcademy
             </Link>
+            <Link href="/forum" className="text-white/90 hover:text-orbit-electric transition-colors">
+              Fórum
+            </Link>
             <Link href="/contato" className="text-white/90 hover:text-orbit-electric transition-colors">
               Contato
             </Link>
@@ -107,6 +110,13 @@ export default function Navigation() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 OrbitAcademy
+              </Link>
+              <Link 
+                href="/forum" 
+                className="text-white/90 hover:text-orbit-electric transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Fórum
               </Link>
               <Link 
                 href="/contato" 

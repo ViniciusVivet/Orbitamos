@@ -10,24 +10,24 @@ export default function EstudanteComunidade() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-white">Comunidade</h1>
-        <p className="mt-1 text-white/60">Mural, fórum e conexão com a galera</p>
+        <p className="mt-1 text-white/60">Fórum e conexão com a galera</p>
       </div>
 
       <Card className="border-orbit-purple/20 bg-gray-900/50 max-w-2xl">
         <CardHeader>
           <CardTitle className="text-orbit-purple">🌐 Comunidade</CardTitle>
           <CardDescription>
-            Troque ideia com outros alunos, tire dúvidas e acompanhe o mural.
+            Troque ideia com outros alunos, tire dúvidas e participe do fórum.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-white/70">
-            O mural é o espaço para dúvidas, dicas e troca de experiências.
+            O fórum é o espaço para dúvidas, dicas e troca de experiências.
           </p>
           <div className="flex flex-wrap gap-3">
-            <Link href="/mural">
+            <Link href="/forum">
               <Button variant="outline" className="border-orbit-purple text-orbit-purple hover:bg-orbit-purple hover:text-white">
-                Ir ao mural
+                Ir ao fórum
               </Button>
             </Link>
             <Link href={discordUrl} target="_blank" rel="noreferrer">

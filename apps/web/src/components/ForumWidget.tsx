@@ -118,19 +118,19 @@ export default function ForumWidget() {
           onClick={() => setOpen(true)}
           className="rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 py-3 text-black font-semibold shadow-lg"
         >
-          🛰️ Rede Global
+          💬 Fórum
         </button>
       )}
 
       {open && (
         <div className="resize both overflow-auto rounded-2xl border border-white/10 bg-black/85 backdrop-blur-xl shadow-xl w-96 h-[520px] min-w-[280px] min-h-[360px]">
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-2">
-            <div className="text-sm font-semibold text-white">Rede Global</div>
+            <div className="text-sm font-semibold text-white">Fórum</div>
             <div className="flex items-center gap-2 text-xs text-white/60">
               <button type="button" onClick={loadMessages} className="hover:text-white">
                 Atualizar
               </button>
-              <Link href="/mural" className="hover:text-white">
+              <Link href="/forum" className="hover:text-white">
                 Abrir
               </Link>
               <button type="button" onClick={() => setOpen(false)} className="hover:text-white">
