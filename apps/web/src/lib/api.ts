@@ -97,6 +97,7 @@ export interface DashboardProgress {
   level: number;
   xp: number;
   streakDays: number;
+  lastLesson?: string;
 }
 
 export interface DashboardNextAction {
@@ -399,6 +400,34 @@ export async function getDashboardSummary(token: string): Promise<DashboardSumma
     }
     throw new Error('Erro desconhecido ao buscar resumo do dashboard');
   }
+}
+
+export interface AddProgressLessonBody {
+  xpGained?: number;
+  lessonTitle?: string;
+}
+
+/**
+ * Registra conclusão de aula: adiciona XP e opcionalmente atualiza lastLesson.
+ * Reflete em todos os pontos que usam getDashboardSummary (progresso real por usuário).
+ */
+export async function addProgressLesson(
+  token: string,
+  body: AddProgressLessonBody = {}
+): Promise<{ success: boolean; progress: DashboardProgress }> {
+  const response = await fetch(`${API_URL}/dashboard/me/progress/lesson`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+  });
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || 'Erro ao registrar progresso da aula');
+  }
+  return result;
 }
 
 /**

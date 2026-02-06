@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { useProgress, defaultProgress } from "@/contexts/ProgressContext";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { whatsappMentoriaUrl } from "@/lib/social";
 
 export default function EstudanteInicio() {
   const { user, token } = useAuth();
+  const { progress: progressFromContext } = useProgress();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -24,14 +26,7 @@ export default function EstudanteInicio() {
       .finally(() => setLoading(false));
   }, [token]);
 
-  const progress = summary?.progress ?? {
-    percent: 0,
-    phase: "Planeta Terra — Fundação",
-    nextGoal: "Finalizar o Módulo 1",
-    level: 1,
-    xp: 0,
-    streakDays: 0,
-  };
+  const progress = progressFromContext ?? defaultProgress;
   const nextAction = summary?.nextAction ?? {
     title: "Continuar o Módulo 1",
     description: "Registrar a primeira dúvida",

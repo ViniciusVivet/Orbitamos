@@ -5,6 +5,7 @@ import Navigation from "@/components/Navigation";
 import CursorOrbit from "@/components/CursorOrbit";
 import { ClientAuthProvider } from "@/components/AuthProvider";
 import { ChatProvider } from "@/contexts/ChatContext";
+import { ProgressProviderWithAuth } from "@/contexts/ProgressContext";
 import PreWakeProvider from "@/components/PreWakeProvider";
 import ForumWidget from "@/components/ForumWidget";
 import FloatingChat from "@/components/chat/FloatingChat";
@@ -45,6 +46,7 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={`${inter.variable} font-sans antialiased`}>
         <ClientAuthProvider>
+          <ProgressProviderWithAuth>
           <ChatProvider>
           <PreWakeProvider>
         <CursorOrbit />
@@ -56,6 +58,7 @@ export default function RootLayout({
         </main>
           </PreWakeProvider>
           </ChatProvider>
+          </ProgressProviderWithAuth>
         </ClientAuthProvider>
       </body>
     </html>

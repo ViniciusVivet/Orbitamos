@@ -311,6 +311,7 @@ public class DashboardController {
             progressMap.put("level", progress.getLevel());
             progressMap.put("xp", progress.getXp());
             progressMap.put("streakDays", progress.getStreakDays());
+            progressMap.put("lastLesson", progress.getLastLesson() != null ? progress.getLastLesson() : "");
             response.put("progress", progressMap);
 
             Map<String, Object> nextActionMap = new HashMap<>();
@@ -368,6 +369,62 @@ public class DashboardController {
             error.put("success", false);
             error.put("message", "Token inválido ou expirado");
             return ResponseEntity.status(401).body(error);
+        }
+    }
+
+    /**
+     * Registra conclusao de aula: adiciona XP e opcionalmente atualiza lastLesson.
+     * Reflete em todos os pontos que usam getDashboardSummary (progresso real por usuario).
+     */
+    @PostMapping("/me/progress/lesson")
+    public ResponseEntity<?> addProgressLesson(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestBody Map<String, Object> body) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(401).body(Map.of("success", false, "message", "Token nao fornecido"));
+            }
+            String token = authHeader.substring(7);
+            String email = jwtUtil.extractEmail(token);
+            Optional<User> userOpt = userRepository.findByEmail(email);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of("success", false, "message", "Usuario nao encontrado"));
+            }
+            User user = userOpt.get();
+            UserProgress progress = userProgressRepository.findByUserId(user.getId())
+                    .orElseGet(() -> {
+                        UserProgress created = new UserProgress();
+                        created.setUser(user);
+                        return userProgressRepository.save(created);
+                    });
+
+            int xpGained = body.containsKey("xpGained") ? ((Number) body.get("xpGained")).intValue() : 10;
+            if (xpGained > 0) {
+                int newXp = progress.getXp() + xpGained;
+                int newLevel = progress.getLevel();
+                while (newXp >= 100) {
+                    newXp -= 100;
+                    newLevel++;
+                }
+                progress.setXp(newXp);
+                progress.setLevel(newLevel);
+            }
+            if (body.containsKey("lessonTitle") && body.get("lessonTitle") != null) {
+                progress.setLastLesson(body.get("lessonTitle").toString());
+            }
+            userProgressRepository.save(progress);
+
+            Map<String, Object> progressMap = new HashMap<>();
+            progressMap.put("percent", progress.getPercent());
+            progressMap.put("phase", progress.getPhase());
+            progressMap.put("nextGoal", progress.getNextGoal());
+            progressMap.put("level", progress.getLevel());
+            progressMap.put("xp", progress.getXp());
+            progressMap.put("streakDays", progress.getStreakDays());
+            progressMap.put("lastLesson", progress.getLastLesson() != null ? progress.getLastLesson() : "");
+            return ResponseEntity.ok(Map.of("success", true, "progress", progressMap));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Token invalido ou expirado"));
         }
     }
 }

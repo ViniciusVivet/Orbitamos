@@ -1,12 +1,14 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { useProgress, defaultProgress } from "@/contexts/ProgressContext";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDashboardSummary } from "@/lib/api";
 
 export default function EstudanteProgresso() {
   const { token } = useAuth();
+  const { progress: progressFromContext } = useProgress();
   const [summary, setSummary] = useState<Awaited<ReturnType<typeof getDashboardSummary>> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -21,7 +23,7 @@ export default function EstudanteProgresso() {
       .finally(() => setLoading(false));
   }, [token]);
 
-  const progress = summary?.progress ?? { percent: 0, phase: "", nextGoal: "", level: 1, xp: 0, streakDays: 0 };
+  const progress = progressFromContext ?? defaultProgress;
   const checklist = summary?.weeklyChecklist ?? [];
   const achievements = summary?.achievements ?? [];
   const opportunities = summary?.opportunities ?? [];

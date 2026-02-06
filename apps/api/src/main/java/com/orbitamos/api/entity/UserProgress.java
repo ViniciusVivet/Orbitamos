@@ -33,6 +33,10 @@ public class UserProgress {
     @Column(name = "streak_days", nullable = false)
     private Integer streakDays = 0;
 
+    /** Ultima aula vista (para "Continuar: X") */
+    @Column(name = "last_lesson", length = 255)
+    private String lastLesson;
+
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
@@ -104,5 +108,13 @@ public class UserProgress {
 
     public void setStreakDays(Integer streakDays) {
         this.streakDays = streakDays;
+    }
+
+    public String getLastLesson() {
+        return lastLesson;
+    }
+
+    public void setLastLesson(String lastLesson) {
+        this.lastLesson = lastLesson;
     }
 }

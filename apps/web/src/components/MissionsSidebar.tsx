@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProgress, defaultProgress } from "@/contexts/ProgressContext";
 import { DashboardSummary, getDashboardSummary } from "@/lib/api";
 
 export default function MissionsSidebar() {
   const [open, setOpen] = useState(true);
   const { token, isAuthenticated } = useAuth();
+  const { progress } = useProgress();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -34,6 +36,9 @@ export default function MissionsSidebar() {
     };
   }, [isAuthenticated, token]);
 
+  const progressPercent = progress?.percent ?? defaultProgress.percent;
+  const xpAtual = progress?.xp ?? defaultProgress.xp;
+
   const checklist = summary?.weeklyChecklist?.length
     ? summary.weeklyChecklist.map((item, index) => ({
         id: `${index}-${item.label}`,
@@ -46,8 +51,6 @@ export default function MissionsSidebar() {
         { id: "normal", label: "Normal • Atualizar LinkedIn", icon: "🟣", done: false },
         { id: "epic", label: "Épica • Projeto no GitHub", icon: "🔵", done: false },
       ];
-  const progressPercent = summary?.progress?.percent ?? 20;
-  const xpAtual = summary?.progress?.xp ?? 0;
 
   return (
     <aside className={`fixed left-4 top-28 z-40 transition-all ${open ? "w-64" : "w-12"}`}>

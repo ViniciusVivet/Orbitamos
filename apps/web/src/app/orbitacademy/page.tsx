@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import StudyTools from "@/components/StudyTools";
 import { useAuth } from "@/contexts/AuthContext";
-import { getDashboardSummary } from "@/lib/api";
+import { useProgress, defaultProgress } from "@/contexts/ProgressContext";
 import {
   discordUrl,
   instagramUrl,
@@ -14,48 +14,14 @@ import {
 } from "@/lib/social";
 
 export default function OrbitAcademy() {
-  // Estado mockado (até integrar backend)
-  const [level, setLevel] = useState(3);
-  const [xp, setXp] = useState(40); // de 0 a 100
-  const [streak, setStreak] = useState(0);
-  const [lastLesson, setLastLesson] = useState("HTML básico • Seletores CSS");
-  const { token, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const { progress } = useProgress();
   const isLocked = !isAuthenticated;
 
-  useEffect(() => {
-    if (isAuthenticated) return;
-    // Carregar do localStorage para simular persistência local
-    const ls = localStorage.getItem("orbitacademy-state");
-    if (ls) {
-      const s = JSON.parse(ls);
-      setLevel(s.level ?? 3);
-      setXp(s.xp ?? 40);
-      setStreak(s.streak ?? 0);
-      setLastLesson(s.lastLesson ?? lastLesson);
-    }
-  }, [isAuthenticated, lastLesson]);
-
-  useEffect(() => {
-    if (!isAuthenticated || !token) return;
-    let isMounted = true;
-    getDashboardSummary(token)
-      .then((result) => {
-        if (!isMounted) return;
-        setLevel(result.progress.level);
-        setXp(result.progress.xp);
-        setStreak(result.progress.streakDays);
-      })
-      .catch(() => {
-        if (!isMounted) return;
-      });
-    return () => {
-      isMounted = false;
-    };
-  }, [isAuthenticated, token]);
-
-  useEffect(() => {
-    localStorage.setItem("orbitacademy-state", JSON.stringify({ level, xp, streak, lastLesson }));
-  }, [level, xp, streak, lastLesson]);
+  const level = progress?.level ?? defaultProgress.level;
+  const xp = progress?.xp ?? defaultProgress.xp;
+  const streak = progress?.streakDays ?? defaultProgress.streakDays;
+  const lastLesson = progress?.lastLesson ?? defaultProgress.lastLesson ?? "";
 
   // Filtros e cursos (mock)
   const [track, setTrack] = useState("all");
@@ -64,11 +30,11 @@ export default function OrbitAcademy() {
   const [showLogin, setShowLogin] = useState(false);
 
   const courses = [
-    { id: 1, title: "HTML/CSS Básico", track: "frontend", level: "iniciante", format: "curso", progress: 0 },
-    { id: 2, title: "JS Essencial", track: "frontend", level: "iniciante", format: "curso", progress: 0 },
-    { id: 3, title: "React para Iniciantes", track: "frontend", level: "intermediario", format: "curso", progress: 0 },
-    { id: 4, title: "Fundamentos de QA", track: "qa", level: "iniciante", format: "curso", progress: 0 },
-    { id: 5, title: "Bootcamp Portfólio", track: "geral", level: "intermediario", format: "bootcamp", progress: 0 },
+    { slug: "html-css-basico", title: "HTML/CSS Basico", track: "frontend", level: "iniciante", format: "curso" },
+    { slug: "js-essencial", title: "JS Essencial", track: "frontend", level: "iniciante", format: "curso" },
+    { slug: "react-iniciantes", title: "React para Iniciantes", track: "frontend", level: "intermediario", format: "curso" },
+    { slug: "html-css-basico", title: "Fundamentos de QA", track: "qa", level: "iniciante", format: "curso" },
+    { slug: "html-css-basico", title: "Bootcamp Portfolio", track: "geral", level: "intermediario", format: "bootcamp" },
   ];
 
   const filtered = useMemo(() => courses.filter(c =>
@@ -151,14 +117,18 @@ export default function OrbitAcademy() {
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 gap-3">
-                {filtered.map(c => (
-                  <div key={c.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                {filtered.map((c, i) => (
+                  <div key={`${c.slug}-${i}`} className="rounded-xl border border-white/10 bg-white/5 p-3">
                     <div className="mb-1 text-sm font-semibold">{c.title}</div>
                     <div className="mb-2 text-xs text-white/60">{c.track} • {c.level} • {c.format}</div>
                     <div className="mb-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
                       <div className="h-full w-0 rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple" />
                     </div>
-                    <button onClick={()=>setShowLogin(true)} className="text-xs text-orbit-electric hover:underline">Iniciar / Retomar (entrar)</button>
+                    {isAuthenticated ? (
+                      <Link href={`/estudante/cursos/${c.slug}`} className="text-xs text-orbit-electric hover:underline">Iniciar / Retomar</Link>
+                    ) : (
+                      <button onClick={()=>setShowLogin(true)} className="text-xs text-orbit-electric hover:underline">Iniciar / Retomar (entrar)</button>
+                    )}
                   </div>
                 ))}
               </div>
