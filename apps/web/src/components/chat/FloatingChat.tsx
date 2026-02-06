@@ -8,6 +8,7 @@ import { useChatWebSocket } from "@/hooks/useChatWebSocket";
 import {
   getChatMessages,
   sendChatMessage,
+  getDisplayAvatarUrl,
   type ChatMessageItem,
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -104,8 +105,8 @@ export default function FloatingChat() {
           className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-orbit-electric to-orbit-purple shadow-xl shadow-orbit-electric/40 ring-2 ring-white/20 transition hover:scale-110 hover:shadow-2xl active:scale-95"
           aria-label="Abrir chat"
         >
-          {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
+          {getDisplayAvatarUrl(avatarUrl) ? (
+            <img src={getDisplayAvatarUrl(avatarUrl)!} alt="" className="h-full w-full rounded-full object-cover" />
           ) : (
             <MessageCircle className="h-8 w-8 text-black" />
           )}
@@ -125,8 +126,8 @@ export default function FloatingChat() {
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/10 bg-black/40 px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
           <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-orbit-electric to-orbit-purple">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+            {getDisplayAvatarUrl(avatarUrl) ? (
+              <img src={getDisplayAvatarUrl(avatarUrl)!} alt="" className="h-full w-full object-cover" />
             ) : (
               <span className="flex h-full w-full items-center justify-center text-lg font-bold text-black">👥</span>
             )}

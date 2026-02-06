@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { getDisplayAvatarUrl } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -50,8 +51,8 @@ export default function ColaboradorSidebar() {
       </nav>
       <div className="border-t border-white/10 p-3">
         <div className="mb-2 flex items-center gap-3 rounded-lg px-3 py-2">
-          {user?.avatarUrl ? (
-            <img src={user.avatarUrl} alt={user.name} className="h-9 w-9 rounded-full object-cover" />
+          {getDisplayAvatarUrl(user?.avatarUrl) ? (
+            <img src={getDisplayAvatarUrl(user?.avatarUrl)!} alt={user.name} className="h-9 w-9 rounded-full object-cover" />
           ) : (
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-xs font-bold text-black">
               {initials}

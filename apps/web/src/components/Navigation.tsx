@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import LogoOrbitamos from "@/components/LogoOrbitamos";
 import { useAuth } from "@/contexts/AuthContext";
+import { getDisplayAvatarUrl } from "@/lib/api";
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -44,8 +45,8 @@ export default function Navigation() {
                 href={user.role === "FREELANCER" ? "/colaborador" : "/estudante"}
                 className="flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-white/90 hover:bg-white/10 transition-colors"
               >
-                {user.avatarUrl ? (
-                  <img src={user.avatarUrl} alt={user.name} className="h-8 w-8 rounded-full object-cover" />
+                {getDisplayAvatarUrl(user.avatarUrl) ? (
+                  <img src={getDisplayAvatarUrl(user.avatarUrl)!} alt={user.name} className="h-8 w-8 rounded-full object-cover" />
                 ) : (
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-xs font-bold text-black">
                     {initials}
@@ -121,8 +122,8 @@ export default function Navigation() {
                   className="flex items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-white/90 hover:bg-white/10"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  {user.avatarUrl ? (
-                    <img src={user.avatarUrl} alt={user.name} className="h-8 w-8 rounded-full object-cover" />
+                  {getDisplayAvatarUrl(user.avatarUrl) ? (
+                    <img src={getDisplayAvatarUrl(user.avatarUrl)!} alt={user.name} className="h-8 w-8 rounded-full object-cover" />
                   ) : (
                     <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-xs font-bold text-black">
                       {initials}

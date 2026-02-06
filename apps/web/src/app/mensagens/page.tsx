@@ -12,6 +12,7 @@ import {
   getChatUsers,
   createDirectConversation,
   createGroupConversation,
+  getDisplayAvatarUrl,
   type ChatConversation,
   type ChatMessageItem,
   type ChatUser,
@@ -220,8 +221,8 @@ export default function MensagensPage() {
                     ) : (
                       (() => {
                         const other = c.participants.find((p) => p.id !== user.id);
-                        return other?.avatarUrl ? (
-                          <img src={other.avatarUrl} alt="" className="h-full w-full object-cover" />
+                        return getDisplayAvatarUrl(other?.avatarUrl) ? (
+                          <img src={getDisplayAvatarUrl(other?.avatarUrl)!} alt="" className="h-full w-full object-cover" />
                         ) : (
                           <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-orbit-electric to-orbit-purple text-xl font-bold text-black">
                             {(other?.name ?? "?").slice(0, 1).toUpperCase()}
@@ -289,8 +290,8 @@ export default function MensagensPage() {
                   ) : (
                     (() => {
                       const other = selectedConv?.participants.find((p) => p.id !== user.id);
-                      return other?.avatarUrl ? (
-                        <img src={other.avatarUrl} alt="" className="h-full w-full object-cover" />
+                      return getDisplayAvatarUrl(other?.avatarUrl) ? (
+                        <img src={getDisplayAvatarUrl(other?.avatarUrl)!} alt="" className="h-full w-full object-cover" />
                       ) : (
                         <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-orbit-electric to-orbit-purple text-lg font-bold text-black">
                           {(other?.name ?? "?").slice(0, 1).toUpperCase()}
@@ -396,8 +397,8 @@ export default function MensagensPage() {
                   )}
                 >
                   <div className="h-10 w-10 shrink-0 rounded-full bg-white/10 overflow-hidden">
-                    {u.avatarUrl ? (
-                      <img src={u.avatarUrl} alt="" className="h-full w-full object-cover" />
+                    {getDisplayAvatarUrl(u.avatarUrl) ? (
+                      <img src={getDisplayAvatarUrl(u.avatarUrl)!} alt="" className="h-full w-full object-cover" />
                     ) : (
                       <span className="flex h-full w-full items-center justify-center text-orbit-electric font-medium">
                         {u.name.slice(0, 1).toUpperCase()}
@@ -445,8 +446,8 @@ export default function MensagensPage() {
                     className="rounded border-white/30"
                   />
                   <div className="h-8 w-8 shrink-0 rounded-full bg-white/10 overflow-hidden">
-                    {u.avatarUrl ? (
-                      <img src={u.avatarUrl} alt="" className="h-full w-full object-cover" />
+                    {getDisplayAvatarUrl(u.avatarUrl) ? (
+                      <img src={getDisplayAvatarUrl(u.avatarUrl)!} alt="" className="h-full w-full object-cover" />
                     ) : (
                       <span className="flex h-full w-full items-center justify-center text-xs text-orbit-electric">{u.name.slice(0, 1).toUpperCase()}</span>
                     )}

@@ -5,14 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { uploadAvatar } from "@/lib/supabase";
-import { uploadAvatarViaApi, type User } from "@/lib/api";
+import { uploadAvatarViaApi, getDisplayAvatarUrl, type User } from "@/lib/api";
 
 function Avatar({ user }: { user: { name: string; avatarUrl?: string | null } }) {
   const initials = user.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
-  if (user.avatarUrl) {
+  const displayUrl = getDisplayAvatarUrl(user.avatarUrl);
+  if (displayUrl) {
     return (
       <img
-        src={user.avatarUrl}
+        src={displayUrl}
         alt={user.name}
         className="h-20 w-20 rounded-full object-cover border-2 border-orbit-electric/50"
       />

@@ -8,6 +8,21 @@ const API_URL =
     ? "https://orbitamos-backend.onrender.com/api"
     : "http://localhost:8080/api");
 
+/** Base da API sem /api (para montar URLs de upload/avatar em produção). */
+export const API_BASE_URL = API_URL.replace(/\/api\/?$/, "");
+
+/**
+ * URL de avatar para exibição. Se a API devolveu localhost (ex.: upload feito em dev),
+ * reescreve para a base da API em produção para a foto carregar na Vercel.
+ */
+export function getDisplayAvatarUrl(avatarUrl: string | null | undefined): string | null | undefined {
+  if (!avatarUrl) return avatarUrl;
+  if (avatarUrl.includes("localhost") || avatarUrl.includes("127.0.0.1")) {
+    return API_BASE_URL + avatarUrl.replace(/^https?:\/\/[^/]+/, "");
+  }
+  return avatarUrl;
+}
+
 export interface ContactData {
   name: string;
   email: string;
