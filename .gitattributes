@@ -1,0 +1,2 @@
+# Scripts shell: sempre LF para rodar na Linux (EC2)
+*.sh text eol=lf
