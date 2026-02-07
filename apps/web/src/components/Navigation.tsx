@@ -42,7 +42,14 @@ export default function Navigation() {
             <Link href="/contato" className="text-white/90 hover:text-orbit-electric transition-colors">
               Contato
             </Link>
-            
+            {!loading && isAuthenticated && user?.role === "STUDENT" && (
+              <Link
+                href="/estudante/aulas"
+                className="text-white/90 hover:text-orbit-electric transition-colors font-medium"
+              >
+                Ir para sala de aula
+              </Link>
+            )}
             {!loading && isAuthenticated && user ? (
               <Link
                 href={user.role === "FREELANCER" ? "/colaborador" : "/estudante"}
@@ -125,7 +132,15 @@ export default function Navigation() {
               >
                 Contato
               </Link>
-              
+              {!loading && isAuthenticated && user?.role === "STUDENT" && (
+                <Link
+                  href="/estudante/aulas"
+                  className="text-white/90 hover:text-orbit-electric transition-colors font-medium"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Ir para sala de aula
+                </Link>
+              )}
               {!loading && isAuthenticated && user ? (
                 <Link
                   href={user.role === "FREELANCER" ? "/colaborador" : "/estudante"}

@@ -48,6 +48,7 @@ public class ChatController {
         m.put("email", u.getEmail());
         m.put("avatarUrl", u.getAvatarUrl() != null ? u.getAvatarUrl() : "");
         m.put("role", u.getRole().name());
+        m.put("lastSeenAt", u.getUpdatedAt() != null ? u.getUpdatedAt().format(ISO) : null);
         return m;
     }
 
