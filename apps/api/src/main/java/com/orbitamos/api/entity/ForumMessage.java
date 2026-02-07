@@ -107,13 +107,4 @@ public class ForumMessage {
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
-
-    public Long getParentId() { return parentId; }
-    public void setParentId(Long parentId) { this.parentId = parentId; }
-    public String getTopicTitle() { return topicTitle; }
-    public void setTopicTitle(String topicTitle) { this.topicTitle = topicTitle; }
-    public String getTopicColor() { return topicColor; }
-    public void setTopicColor(String topicColor) { this.topicColor = topicColor; }
-    public String getTopicEmoji() { return topicEmoji; }
-    public void setTopicEmoji(String topicEmoji) { this.topicEmoji = topicEmoji; }
 }
