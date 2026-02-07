@@ -9,8 +9,8 @@
 
 Conectar o backend Spring Boot ao frontend Next.js usando:
 - ✅ **Banco de dados**: Supabase (PostgreSQL gratuito)
-- ✅ **Hospedagem**: Render ou Railway (gratuito)
-- ✅ **Zero custo**: Tudo gratuito para começar
+- ✅ **Hospedagem**: Render ou Railway (gratuito); ou **EC2 + CloudFront** (ver [docs/EC2_CLOUDFRONT_HTTPS.md](EC2_CLOUDFRONT_HTTPS.md))
+- ✅ **Zero custo**: Tudo gratuito para começar (ou créditos AWS para EC2)
 
 ---
 

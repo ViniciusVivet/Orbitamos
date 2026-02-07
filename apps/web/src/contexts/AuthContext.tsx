@@ -70,8 +70,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       localStorage.setItem("token", response.token);
       setToken(response.token);
-      
-      // Usa dados diretamente da resposta (não precisa fazer chamada extra)
       setUser({
         id: response.id,
         name: response.name,
@@ -80,7 +78,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         avatarUrl: response.avatarUrl ?? null,
         role: response.role ?? "STUDENT",
       });
-      
+      // Garante perfil completo (telefone, endereço, etc.) na área logada
+      getCurrentUser(response.token).then((r) => { if (r.success && r.user) setUser(r.user); });
       console.log("🚀 AuthContext: Redirecionando...");
       router.push(response.role === "FREELANCER" ? "/colaborador" : "/estudante");
     } catch (error) {
@@ -97,7 +96,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       localStorage.setItem("token", response.token);
       setToken(response.token);
-      
       setUser({
         id: response.id,
         name: response.name,
@@ -106,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         avatarUrl: response.avatarUrl ?? null,
         role: response.role ?? "STUDENT",
       });
-      
+      getCurrentUser(response.token).then((r) => { if (r.success && r.user) setUser(r.user); });
       console.log("🚀 AuthContext: Redirecionando...");
       router.push(response.role === "FREELANCER" ? "/colaborador" : "/estudante");
     } catch (error) {

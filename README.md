@@ -62,15 +62,16 @@ orbitamos/
 │   │   │   ├── 📁 app/               # App Router (Next.js 14)
 │   │   │   │   ├── 📄 page.tsx       # Home - "O Movimento"
 │   │   │   │   ├── 📁 sobre/         # Sobre - "Nosso Propósito"
-│   │   │   │   │   └── 📄 page.tsx
 │   │   │   │   ├── 📁 mentorias/     # Mentorias - "Do Subemprego à T.I."
-│   │   │   │   │   └── 📄 page.tsx
 │   │   │   │   ├── 📁 orbitacademy/  # OrbitAcademy - Cursos e Conteúdos
-│   │   │   │   │   └── 📄 page.tsx
-│   │   │   │   ├── 📁 blog/          # Blog - "Diário da Órbita"
-│   │   │   │   │   └── 📄 page.tsx
 │   │   │   │   ├── 📁 contato/       # Contato - "Entre em Órbita"
-│   │   │   │   │   └── 📄 page.tsx
+│   │   │   │   ├── 📁 entrar/        # Login
+│   │   │   │   ├── 📁 dashboard/     # Dashboard
+│   │   │   │   ├── 📁 estudante/     # Área do estudante (aulas, cursos, mentorias, etc.)
+│   │   │   │   ├── 📁 colaborador/   # Área do colaborador (vagas, projetos, squad, etc.)
+│   │   │   │   ├── 📁 forum/         # Fórum
+│   │   │   │   ├── 📁 mural/         # Mural
+│   │   │   │   ├── 📁 mensagens/     # Mensagens
 │   │   │   │   ├── 📄 layout.tsx     # Layout principal com navegação
 │   │   │   │   └── 📄 globals.css    # Estilos globais + paleta Orbitamos
 │   │   │   ├── 📁 components/        # Componentes reutilizáveis
@@ -105,6 +106,9 @@ orbitamos/
 ├── 📁 docs/                           # Documentação
 │   ├── 📄 API.md                      # Documentação da API
 │   ├── 📄 DEPLOYMENT.md               # Guia de deploy
+│   ├── 📄 VARIAVEIS_AMBIENTE.md       # Variáveis: Render vs EC2
+│   ├── 📄 EC2_CLOUDFRONT_HTTPS.md    # Deploy API na EC2 + CloudFront
+│   ├── 📄 RENDER_SUPABASE_SETUP.md   # Deploy API no Render + Supabase
 │   └── 📄 CONTRIBUTING.md             # Guia de contribuição
 ├── 📄 docker-compose.yml              # Orquestração local
 ├── 📄 .github/                        # GitHub Actions
@@ -155,7 +159,7 @@ orbitamos/
 - **Segurança**: Spring Security + JWT
 - **Banco**: PostgreSQL 15
 - **ORM**: Spring Data JPA
-- **Deploy**: Render/Fly.io
+- **Deploy**: Render ou EC2 + CloudFront (HTTPS)
 
 ### **Infraestrutura**
 - **Containerização**: Docker + Docker Compose
@@ -167,7 +171,7 @@ orbitamos/
 
 ## 🎯 **Funcionalidades Implementadas**
 
-### 📱 **Frontend (4 Páginas MVP)**
+### 📱 **Frontend (páginas públicas + área estudante + área colaborador)**
 
 #### 🏠 **Home - "O Movimento"**
 - Hero section com manifesto da Orbitamos
@@ -251,7 +255,12 @@ Endpoint protegido para área do aluno.
 
 ## ☁️ **Produção (sem sua máquina ligada)**
 
-Com o backend no **Render**, o banco no **Supabase** e o front na **Vercel**, o projeto roda 100% na nuvem. **Não é preciso deixar seu PC ligado** — tudo funciona nos servidores de cada serviço. O Render usa o Dockerfile apenas para build/deploy do backend; você não precisa ter Docker instalado para o site estar no ar.
+O projeto roda 100% na nuvem: front na **Vercel**, banco no **Supabase** e backend em uma destas opções:
+
+- **Render** — deploy automático; variáveis em Dashboard → Environment. Veja [docs/RENDER_SUPABASE_SETUP.md](docs/RENDER_SUPABASE_SETUP.md).
+- **EC2 + CloudFront** — API na AWS com HTTPS via CloudFront; variáveis em `scripts/ec2-env.sh` (não commitar). Veja [docs/EC2_CLOUDFRONT_HTTPS.md](docs/EC2_CLOUDFRONT_HTTPS.md).
+
+**Não é preciso deixar seu PC ligado** — tudo funciona nos servidores de cada serviço. Variáveis de ambiente (Render vs EC2): [docs/VARIAVEIS_AMBIENTE.md](docs/VARIAVEIS_AMBIENTE.md).
 
 ---
 
@@ -294,7 +303,7 @@ cd apps/web
 
 # Configurar variáveis de ambiente
 cp .env.example .env.local
-# Edite .env.local com suas chaves do EmailJS
+# Edite .env.local: EmailJS e NEXT_PUBLIC_API_URL (em produção use a URL do Render ou do CloudFront)
 
 npm install
 npm run dev
@@ -416,8 +425,8 @@ Douglas é um desenvolvedor apaixonado por tecnologia e impacto social. Nascido 
 | 📁 **Arquivos** | 50+ |
 | 📝 **Linhas de Código** | 5.000+ |
 | 🧩 **Componentes** | 15+ |
-| 📱 **Páginas** | 6 |
-| 🔗 **Endpoints** | 3 |
+| 📱 **Páginas** | 23 |
+| 🔗 **Endpoints** | 6+ |
 | 🐳 **Containers** | 3 |
 | ⚡ **Performance** | 95+ |
 

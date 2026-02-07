@@ -36,11 +36,18 @@ export default function EstudanteInicio() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-white">
-          Olá, <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">{user?.name}</span>
-        </h1>
-        <p className="mt-1 text-white/60">Resumo da sua jornada</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-white">
+            Olá, <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">{user?.name}</span>
+          </h1>
+          <p className="mt-1 text-white/60">Resumo da sua jornada</p>
+        </div>
+        <Link href="/estudante/aulas" className="shrink-0">
+          <Button className="w-full sm:w-auto bg-gradient-to-r from-orbit-electric to-orbit-purple text-black font-bold hover:opacity-90 text-base px-6 py-3">
+            🎬 Entrar na sala de aula
+          </Button>
+        </Link>
       </div>
 
       {error && (
@@ -64,11 +71,9 @@ export default function EstudanteInicio() {
               </CardHeader>
               <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-white/90 font-medium">{progress.lastLesson}</p>
-                <Link href="/estudante/aulas">
-                  <Button className="w-full sm:w-auto bg-gradient-to-r from-orbit-electric to-orbit-purple text-black font-bold hover:opacity-90">
-                    Ir para as aulas
-                  </Button>
-                </Link>
+                <Button asChild className="w-full sm:w-auto bg-gradient-to-r from-orbit-electric to-orbit-purple text-black font-bold hover:opacity-90">
+                  <Link href="/estudante/aulas">Ir para as aulas</Link>
+                </Button>
               </CardContent>
             </Card>
           )}
@@ -115,11 +120,9 @@ export default function EstudanteInicio() {
             </CardHeader>
             <CardContent>
               <p className="text-white/80 text-sm mb-4">{nextAction.title} — {nextAction.description}</p>
-              <Link href={nextAction.cta}>
-                <Button className="w-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-black font-bold hover:from-orbit-purple hover:to-orbit-electric">
-                  Ir para as aulas
-                </Button>
-              </Link>
+              <Button asChild className="w-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-black font-bold hover:from-orbit-purple hover:to-orbit-electric">
+                <Link href={nextAction.cta}>Continuar aula</Link>
+              </Button>
             </CardContent>
           </Card>
 
@@ -132,11 +135,9 @@ export default function EstudanteInicio() {
             <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-white/70 text-sm">Nenhum evento agendado no momento.</p>
               <div className="flex flex-wrap gap-2">
-                <Link href="/estudante/mentorias">
-                  <Button variant="outline" size="sm" className="border-orbit-purple text-orbit-purple hover:bg-orbit-purple hover:text-white">
-                    Ver mentorias
-                  </Button>
-                </Link>
+                <Button asChild variant="outline" size="sm" className="border-orbit-purple text-orbit-purple hover:bg-orbit-purple hover:text-white">
+                  <Link href="/estudante/mentorias">Ver mentorias</Link>
+                </Button>
                 <a href={whatsappMentoriaUrl} target="_blank" rel="noreferrer">
                   <Button variant="outline" size="sm" className="border-white/30 text-white hover:bg-white/10">
                     Agendar pelo WhatsApp
@@ -177,36 +178,24 @@ export default function EstudanteInicio() {
           <CardDescription>Navegue rápido</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
-          <Link href="/estudante/aulas">
-            <Button variant="outline" className="border-orbit-electric text-orbit-electric hover:bg-orbit-electric hover:text-black">
-              🎓 Aulas
-            </Button>
-          </Link>
-          <Link href="/estudante/mentorias">
-            <Button variant="outline" className="border-orbit-purple text-orbit-purple hover:bg-orbit-purple hover:text-white">
-              👨‍🏫 Mentorias
-            </Button>
-          </Link>
-          <Link href="/mensagens">
-            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-              💬 Enviar dúvida
-            </Button>
-          </Link>
-          <Link href="/estudante/comunidade">
-            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-              🌐 Fórum / Comunidade
-            </Button>
-          </Link>
-          <Link href="/estudante/progresso">
-            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-              📊 Progresso
-            </Button>
-          </Link>
-          <Link href={whatsappMentoriaUrl} target="_blank" rel="noreferrer">
-            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-              📱 Solicitar mentoria
-            </Button>
-          </Link>
+          <Button asChild variant="outline" className="border-orbit-electric text-orbit-electric hover:bg-orbit-electric hover:text-black">
+            <Link href="/estudante/aulas">🎓 Aulas</Link>
+          </Button>
+          <Button asChild variant="outline" className="border-orbit-purple text-orbit-purple hover:bg-orbit-purple hover:text-white">
+            <Link href="/estudante/mentorias">👨‍🏫 Mentorias</Link>
+          </Button>
+          <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white/10">
+            <Link href="/mensagens">💬 Enviar dúvida</Link>
+          </Button>
+          <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white/10">
+            <Link href="/estudante/comunidade">🌐 Fórum / Comunidade</Link>
+          </Button>
+          <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white/10">
+            <Link href="/estudante/progresso">📊 Progresso</Link>
+          </Button>
+          <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white/10">
+            <a href={whatsappMentoriaUrl} target="_blank" rel="noreferrer">📱 Solicitar mentoria</a>
+          </Button>
         </CardContent>
       </Card>
     </div>

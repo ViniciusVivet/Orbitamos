@@ -1,37 +1,48 @@
 # API na EC2 com HTTPS (CloudFront)
 
-O site na Vercel é **HTTPS**. Navegadores bloqueiam requisições de página HTTPS para API **HTTP** (Mixed Content). Por isso o login não conecta.
+O site na Vercel é **HTTPS**. Navegadores bloqueiam requisições de página HTTPS para API **HTTP** (Mixed Content). Por isso o login não conecta se a API for acessada por HTTP direto.
 
-Solução: **nginx na EC2 (porta 80)** + **CloudFront** em frente. O front usa a URL HTTPS do CloudFront.
+Solução: **nginx na EC2 (porta 80)** + **CloudFront** na frente. O front usa a URL **HTTPS** do CloudFront; o CloudFront fala com a EC2 por **HTTP na porta 80**.
+
+---
+
+## Arquitetura
+
+```
+Navegador (HTTPS) → CloudFront (HTTPS) → EC2:80 (HTTP, nginx) → API:8080 (Spring Boot)
+```
+
+- **CloudFront → origem:** sempre **HTTP only**, porta **80**. A EC2 não precisa de HTTPS; o certificado fica no CloudFront.
+- **Security Group:** portas **22** (SSH), **80** (HTTP, nginx), **8080** (opcional, API direta).
 
 ---
 
 ## Passo 0: Conectar na VM pelo PowerShell (sua máquina)
 
-No **PowerShell** do Windows, rode (troque o IP se o da sua instância for outro):
+No **PowerShell** do Windows (troque `SEU_IP` pelo IPv4 público da instância no console EC2):
 
 ```powershell
-ssh -i "C:\Users\dougl\Documents\orbitamos-key.pem" ec2-user@18.191.153.134
+ssh -i "CAMINHO_PARA_SUA_CHAVE.pem" ec2-user@SEU_IP
 ```
 
-Na primeira vez pode perguntar se confia no host — digite `yes` e Enter. Depois você entra na VM e os comandos abaixo rodam **dentro** dela.
+Na primeira vez pode perguntar se confia no host — digite `yes` e Enter.
 
 ---
 
 ## Parte 1: Nginx na EC2 (porta 80 → 8080)
 
-Já conectado na VM (via PowerShell acima), rode:
+Já conectado na VM, rode:
 
 ```bash
 sudo dnf install -y nginx
 ```
 
-Criar o config da API:
+Criar o config da API (**default_server** para atender tudo na porta 80):
 
 ```bash
 sudo tee /etc/nginx/conf.d/api.conf << 'EOF'
 server {
-    listen 80;
+    listen 80 default_server;
     server_name _;
     location / {
         proxy_pass http://127.0.0.1:8080;
@@ -51,119 +62,75 @@ Testar e ativar:
 sudo nginx -t && sudo systemctl enable nginx && sudo systemctl start nginx
 ```
 
-**Security Group da EC2:** abrir a **porta 80** para 0.0.0.0/0 (EC2 → Security groups → launch-wizard-1 → Edit inbound rules → Add rule: HTTP, 80, 0.0.0.0/0).
+**Security Group da EC2:** em **Regras de entrada** deve existir:
+
+| Tipo   | Porta | Origem     |
+|--------|-------|------------|
+| SSH    | 22    | 0.0.0.0/0  |
+| HTTP   | 80    | 0.0.0.0/0  |
+| Custom TCP (API) | 8080 | 0.0.0.0/0 (opcional) |
+
+Sem a porta **80** aberta, o CloudFront não consegue falar com a EC2 (504 Gateway Timeout).
 
 ---
 
-## Parte 2: CloudFront (passo a passo no console AWS)
+## Parte 2: CloudFront
 
-Você está na tela das **Instâncias EC2**. O próximo passo é criar uma **distribuição CloudFront** para ter uma URL HTTPS que aponta para sua API na EC2.
+### 2.1 Origem: HTTP, porta 80 (obrigatório)
 
----
+A origem da distribuição **precisa** ser:
 
-### 2.1 Abrir o CloudFront
+- **Protocol:** **HTTP only** (não use HTTPS only).
+- **HTTP port:** **80**.
 
-1. No **topo da página** do console AWS, tem uma **barra de busca** (onde está escrito "Pesquisar serviços, recursos..." ou "Search").
-2. Digite: **CloudFront**.
-3. Clique em **CloudFront** (o serviço, não um resultado de documentação).
-4. Você entra na página do CloudFront. Deve aparecer a lista de distribuições (pode estar vazia).
+Se a origem estiver como **HTTPS only** ou porta **443**, o CloudFront não conecta na EC2 (nginx está em HTTP:80). Edite a origem: **CloudFront → sua distribuição → Origins → Editar origem** → Protocol **HTTP only**, porta **80**.
 
----
+### 2.2 Criar distribuição (resumo)
 
-### 2.2 Criar a distribuição
+1. **CloudFront** → Create distribution.
+2. **Origin domain:** DNS público da EC2 (ex.: `ec2-A-B-C-D.regiao.compute.amazonaws.com`).
+3. **Protocol:** **HTTP only**. **HTTP port:** **80**.
+4. **Default cache behavior:** Viewer protocol **Redirect HTTP to HTTPS**; Allowed methods **GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE**; Cache policy **CachingDisabled**.
+5. (Opcional) Criar comportamento **Path pattern** `/api/*` com mesma origem, cache desabilitado e política de resposta **CORS-With-Preflight**.
+6. Criar e aguardar status **Enabled**.
 
-1. Clique no botão laranja **"Create distribution"** (ou **"Criar distribuição"**).
-2. A tela vai mostrar um formulário grande. Preencha **só o que está abaixo**; o resto pode deixar como está.
+### 2.3 URL da API no front
 
----
+Após a distribuição estar **Enabled**, use no Vercel:
 
-### 2.3 Seção "Origin" (origem = sua EC2)
-
-Role até a seção **"Origin"** (ou **"Origem"**).
-
-| Campo | O que fazer |
-|-------|-------------|
-| **Origin domain** | O dropdown mostra S3 e outros. **Não escolha do dropdown.** Clique no campo e **digite direto**: `18.191.153.134` (o IP público da sua EC2, igual na tela de Instâncias). Se não aceitar IP, tente: `ec2-18-191-153-134.us-east-2.compute.amazonaws.com`. |
-| **Name** | Preenche sozinho (ex.: `18.191.153.134`). Pode deixar. |
-| **Protocol** | Deixe **HTTP only** (a EC2 está em HTTP na porta 80; o HTTPS fica no CloudFront). |
-| **HTTP port** | **80**. |
-| **HTTPS port** | 443 (padrão). Pode deixar. |
-
-Não mexa em "Origin access", "Origin shield", etc.
-
----
-
-### 2.4 Seção "Default cache behavior" (comportamento de cache)
-
-Role até **"Default cache behavior"**.
-
-| Campo | O que fazer |
-|-------|-------------|
-| **Viewer protocol policy** | Mude para **"Redirect HTTP to HTTPS"**. Assim quem acessar por HTTPS (seu site na Vercel) usa HTTPS no CloudFront. |
-| **Allowed HTTP methods** | Selecione **"GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE"** (todos que a API usa). |
-| **Cache policy** | Escolha **"CachingDisabled"** (API não deve cachear respostas de login, etc.). Se não aparecer, use "CachingOptimized" por enquanto. |
-
-O resto pode ficar em padrão.
-
----
-
-### 2.5 Seção "Settings" (configurações gerais)
-
-Role até **"Settings"**.
-
-- **Price class**: pode deixar **"Use only North America and Europe"** (mais barato) ou o padrão.
-- Não precisa preencher "Alternate domain names" nem "Custom SSL certificate".
-
----
-
-### 2.6 Criar
-
-1. Role até o **final da página**.
-2. Clique no botão laranja **"Create distribution"** (ou **"Criar distribuição"**).
-3. Você volta para a lista de distribuições. A nova vai aparecer com **Status** = **"Deploying"** (Implantando).
-4. Espere **2 a 5 minutos**. Atualize a página (F5) de vez em quando. Quando o **Status** mudar para **"Enabled"**, está pronto.
-
----
-
-### 2.7 Copiar a URL HTTPS da API
-
-1. Na lista de distribuições, clique no **ID** da distribuição que você criou (ex.: `E1234ABCD5678`).
-2. No topo da página de detalhes, está o **"Distribution domain name"** (ex.: `d1234abcd5678.cloudfront.net`). Clique no ícone de **copiar** ao lado.
-3. A URL da API que você vai usar no Vercel é:
-   ```text
-   https://SEU-DOMINIO-AQUI.cloudfront.net/api
-   ```
-   Exemplo: se o domínio for `d1a2b3c4d5e6f7.cloudfront.net`, use:
-   ```text
-   https://d1a2b3c4d5e6f7.cloudfront.net/api
-   ```
-   Guarde esse valor para o **Parte 3** (Vercel).
+- **NEXT_PUBLIC_API_URL** = `https://SEU-DOMINIO-CLOUDFRONT.cloudfront.net/api`
 
 ---
 
 ## Parte 3: Vercel
 
-**Environment variable:**
-
 - **NEXT_PUBLIC_API_URL** = `https://SEU-DOMINIO-CLOUDFRONT.cloudfront.net/api`
-
-Exemplo: `https://d111111abcdef8.cloudfront.net/api`
-
-Depois: **Redeploy** do projeto na Vercel.
+- Redeploy do projeto após alterar a variável.
 
 ---
 
-## Onde ver os logs da API (AWS / EC2)
+## Invalidação de cache (CloudFront)
 
-Os logs **não** aparecem no console da AWS por padrão. Eles ficam **dentro da VM**:
+Se alterar a API ou a configuração e o CloudFront continuar servindo resposta antiga: **CloudFront → sua distribuição → Invalidations → Create invalidation** → Object paths: `/*` → Create. Aguardar conclusão e testar de novo.
 
-1. Conectar na EC2: no PowerShell, use o comando do **Passo 0** acima (SSH com a chave `.pem`).
-2. Dentro da VM, rodar:
-   ```bash
-   tail -f ~/app/app.log
-   ```
-   (Ctrl+C para sair.)
+---
 
-Para ver as últimas linhas de uma vez: `tail -100 ~/app/app.log`.
+## Logs da API (na EC2)
 
-Se quiser ver logs da API no **CloudWatch** no futuro, dá para instalar o CloudWatch Agent na EC2 e enviar o arquivo `~/app/app.log` para um log group.
+Os logs não aparecem no console AWS por padrão. Na VM:
+
+```bash
+tail -f ~/app/app.log
+```
+
+(Ctrl+C para sair.)
+
+---
+
+## Checklist rápido
+
+- [ ] Nginx na EC2: porta 80, `default_server`, proxy para 127.0.0.1:8080.
+- [ ] Security Group: porta **80** aberta (0.0.0.0/0).
+- [ ] CloudFront origem: **HTTP only**, porta **80** (não HTTPS/443).
+- [ ] Comportamento `/api/*` ou default: métodos GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE; cache desabilitado para API.
+- [ ] Vercel: `NEXT_PUBLIC_API_URL` com a URL HTTPS do CloudFront + `/api`.

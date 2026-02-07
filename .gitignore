@@ -28,6 +28,9 @@ dist/
 .env
 .env.local
 scripts/ec2-env.sh
+
+# Runbook / notas locais (não commitar)
+docs/local/
 .env.development.local
 .env.test.local
 .env.production.local

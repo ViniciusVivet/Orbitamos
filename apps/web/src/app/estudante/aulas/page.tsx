@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { cursos, totalAulas, type Curso } from "@/lib/cursos";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -50,11 +51,11 @@ export default function EstudanteAulas() {
               <p className="font-medium text-white/90">{sugerido.titulo}</p>
               <p className="text-sm text-white/60">{sugerido.descricao ?? `${totalAulas(sugerido)} aulas`}</p>
             </div>
-            <Link href={`/estudante/cursos/${sugerido.slug}`}>
-              <span className="inline-flex rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 py-2 text-sm font-bold text-black hover:opacity-90">
-                {getPercent(sugerido, userId) > 0 ? "Continuar" : "Começar"}
-              </span>
-            </Link>
+            <Button asChild className="rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 py-2 text-sm font-bold text-black hover:opacity-90">
+              <Link href={`/estudante/cursos/${sugerido.slug}`}>
+                {getPercent(sugerido, userId) > 0 ? "Continuar aula" : "Começar"}
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       )}

@@ -63,6 +63,7 @@ export default function PerfilForm({
   const [editState, setEditState] = useState("");
   const [editZipCode, setEditZipCode] = useState("");
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -234,11 +235,15 @@ export default function PerfilForm({
           </div>
         </div>
 
+        {saveError && (
+          <p className="text-sm text-red-400">{saveError}</p>
+        )}
         <div className="flex gap-2 pt-2">
           <Button
             className={buttonClass}
             disabled={saving}
             onClick={async () => {
+              setSaveError(null);
               setSaving(true);
               try {
                 await onSave({
@@ -251,6 +256,9 @@ export default function PerfilForm({
                   state: editState.trim() || null,
                   zipCode: editZipCode.trim() || null,
                 });
+              } catch (err) {
+                const msg = err instanceof Error ? err.message : "Erro ao salvar. Verifique a conexão e tente de novo.";
+                setSaveError(msg);
               } finally {
                 setSaving(false);
               }

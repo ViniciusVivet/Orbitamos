@@ -12,15 +12,24 @@ const API_URL =
 export const API_BASE_URL = API_URL.replace(/\/api\/?$/, "");
 
 /**
- * URL de avatar para exibição. Se a API devolveu localhost (ex.: upload feito em dev),
- * reescreve para a base da API em produção para a foto carregar na Vercel.
+ * URL de avatar para exibição. Garante que a foto carregue sempre pela mesma base da API
+ * usada pelo frontend (evita buraco transparente por Mixed Content ou URL errada).
+ * - Se a URL for localhost/127.0.0.1, reescreve para API_BASE_URL.
+ * - Se a URL for de upload da API (/api/uploads/avatars/...), reescreve para API_BASE_URL + path.
  */
 export function getDisplayAvatarUrl(avatarUrl: string | null | undefined): string | null | undefined {
-  if (!avatarUrl) return avatarUrl;
-  if (avatarUrl.includes("localhost") || avatarUrl.includes("127.0.0.1")) {
-    return API_BASE_URL + avatarUrl.replace(/^https?:\/\/[^/]+/, "");
+  if (!avatarUrl?.trim()) return avatarUrl;
+  const trimmed = avatarUrl.trim();
+  // URL de upload da própria API: usar sempre a base configurada no frontend
+  const uploadPathMatch = trimmed.match(/^(?:https?:\/\/[^/]+)?(\/api\/uploads\/avatars\/\S+)/);
+  if (uploadPathMatch) {
+    const path = uploadPathMatch[1];
+    return (API_BASE_URL.replace(/\/$/, "") + path);
   }
-  return avatarUrl;
+  if (trimmed.includes("localhost") || trimmed.includes("127.0.0.1")) {
+    return API_BASE_URL + trimmed.replace(/^https?:\/\/[^/]+/, "");
+  }
+  return trimmed;
 }
 
 export interface ContactData {
