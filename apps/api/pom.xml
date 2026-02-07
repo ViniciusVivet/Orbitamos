@@ -15,6 +15,8 @@
     <description>Orbitamos API - Portal da quebrada que orbita tecnologia</description>
     <properties>
         <java.version>21</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
     <dependencies>
         <!-- Spring Boot Starters -->
