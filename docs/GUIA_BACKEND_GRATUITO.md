@@ -531,6 +531,10 @@ Mesmas do Render, configure no Railway.
 - Verifique se `ddl-auto: update` está configurado
 - Reinicie o backend para criar tabelas
 
+### Tabela `conversations` (avatar e criador do grupo)
+- Com `ddl-auto: update`, o Hibernate cria/atualiza as colunas `avatar_url` e `created_by_user_id` ao subir a API.
+- Em produção, se usar `ddl-auto: validate`, aplique a migração manual: `docs/migrations/003_conversations_avatar_and_creator.sql` (Supabase SQL Editor).
+
 ### Backend "dormindo" no Render
 - Primeira requisição após 15 min demora mais
 - Considere usar Railway se isso for problema

@@ -13,6 +13,9 @@ import {
   getChatUsers,
   createDirectConversation,
   createGroupConversation,
+  updateGroupConversation,
+  removeGroupParticipant,
+  uploadGroupAvatar,
   getDisplayAvatarUrl,
   getPublicProfile,
   type ChatConversation,
@@ -22,7 +25,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { MessageCircle, Users, Send } from "lucide-react";
+import { MessageCircle, Users, Send, Info } from "lucide-react";
+import AvatarWithPresence from "@/components/chat/AvatarWithPresence";
+import GroupInfoModal from "@/components/chat/GroupInfoModal";
 
 const POLL_INTERVAL_MS = 5000;
 
@@ -43,6 +48,10 @@ export default function MensagensPage() {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [groupName, setGroupName] = useState("");
   const [groupUserIds, setGroupUserIds] = useState<number[]>([]);
+  const [groupAvatarUrl, setGroupAvatarUrl] = useState("");
+  const [groupAvatarFile, setGroupAvatarFile] = useState<File | null>(null);
+  const [uploadingGroupAvatar, setUploadingGroupAvatar] = useState(false);
+  const [groupInfoOpen, setGroupInfoOpen] = useState(false);
   const [clickedMessageId, setClickedMessageId] = useState<number | null>(null);
   const [otherUserLastSeen, setOtherUserLastSeen] = useState<string | null>(null);
   const searchParams = useSearchParams();
@@ -123,9 +132,9 @@ export default function MensagensPage() {
   }, [messages]);
 
   useEffect(() => {
-    if (!token || (!newChatOpen && !newGroupOpen)) return;
+    if (!token || (!newChatOpen && !newGroupOpen && !groupInfoOpen)) return;
     getChatUsers(token).then(setUsers).catch(() => setUsers([]));
-  }, [token, newChatOpen, newGroupOpen]);
+  }, [token, newChatOpen, newGroupOpen, groupInfoOpen]);
 
   const handleSend = async () => {
     const text = input.trim();
@@ -158,15 +167,25 @@ export default function MensagensPage() {
   const startGroup = async () => {
     const name = groupName.trim();
     if (!token || !name) return;
+    setUploadingGroupAvatar(!!groupAvatarFile);
     try {
-      const { conversation } = await createGroupConversation(token, name, groupUserIds);
-      setConversations((prev) => [conversation, ...prev.filter((c) => c.id !== conversation.id)]);
-      setSelectedId(conversation.id);
+      const { conversation } = await createGroupConversation(token, name, groupUserIds, groupAvatarUrl.trim() || undefined);
+      let finalConv = conversation;
+      if (groupAvatarFile) {
+        const { conversation: updated } = await uploadGroupAvatar(token, conversation.id, groupAvatarFile);
+        finalConv = updated;
+      }
+      setConversations((prev) => [finalConv, ...prev.filter((c) => c.id !== finalConv.id)]);
+      setSelectedId(finalConv.id);
       setNewGroupOpen(false);
       setGroupName("");
       setGroupUserIds([]);
+      setGroupAvatarUrl("");
+      setGroupAvatarFile(null);
     } catch (e) {
       console.error(e);
+    } finally {
+      setUploadingGroupAvatar(false);
     }
   };
 
@@ -194,6 +213,12 @@ export default function MensagensPage() {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  const ONLINE_THRESHOLD_MS = 5 * 60 * 1000; // 5 min
+  const isOnline = (iso: string | null | undefined): boolean => {
+    if (!iso) return false;
+    return Date.now() - new Date(iso).getTime() < ONLINE_THRESHOLD_MS;
   };
 
   const formatLastSeen = (iso: string | null): string => {
@@ -302,18 +327,24 @@ export default function MensagensPage() {
                       : "hover:bg-white/5 border-l-4 border-transparent"
                   )}
                 >
-                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full ring-2 ring-white/10">
+                  <div className="h-14 w-14 shrink-0 relative">
                     {c.type === "GROUP" ? (
-                      <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-orbit-purple/30 to-orbit-electric/30 text-2xl">👥</span>
+                      getDisplayAvatarUrl(c.avatarUrl) ? (
+                        <img src={getDisplayAvatarUrl(c.avatarUrl)!} alt="" className="h-full w-full rounded-full object-cover ring-2 ring-white/10" />
+                      ) : (
+                        <span className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-orbit-purple/30 to-orbit-electric/30 text-2xl ring-2 ring-white/10">👥</span>
+                      )
                     ) : (
                       (() => {
                         const other = c.participants.find((p) => p.id !== user.id);
-                        return getDisplayAvatarUrl(other?.avatarUrl) ? (
-                          <img src={getDisplayAvatarUrl(other?.avatarUrl)!} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                          <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-orbit-electric to-orbit-purple text-xl font-bold text-black">
-                            {(other?.name ?? "?").slice(0, 1).toUpperCase()}
-                          </span>
+                        return (
+                          <AvatarWithPresence
+                            avatarUrl={other?.avatarUrl}
+                            name={other?.name ?? "?"}
+                            lastSeenAt={other?.lastSeenAt}
+                            size="lg"
+                            className="h-14 w-14"
+                          />
                         );
                       })()
                     )}
@@ -371,28 +402,41 @@ export default function MensagensPage() {
           ) : (
             <>
               <div className="flex h-16 shrink-0 items-center gap-4 border-b border-white/10 bg-black/40 px-6 backdrop-blur-sm">
-                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full ring-2 ring-orbit-electric/30">
+                <div className="h-12 w-12 shrink-0">
                   {selectedConv?.type === "GROUP" ? (
-                    <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-orbit-purple/40 to-orbit-electric/40 text-2xl">👥</span>
+                    getDisplayAvatarUrl(selectedConv?.avatarUrl) ? (
+                      <img src={getDisplayAvatarUrl(selectedConv.avatarUrl)!} alt="" className="h-full w-full rounded-full object-cover ring-2 ring-orbit-electric/30" />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-orbit-purple/40 to-orbit-electric/40 text-2xl ring-2 ring-orbit-electric/30">👥</span>
+                    )
                   ) : (
                     (() => {
                       const other = selectedConv?.participants.find((p) => p.id !== user.id);
-                      return getDisplayAvatarUrl(other?.avatarUrl) ? (
-                        <img src={getDisplayAvatarUrl(other?.avatarUrl)!} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-orbit-electric to-orbit-purple text-lg font-bold text-black">
-                          {(other?.name ?? "?").slice(0, 1).toUpperCase()}
-                        </span>
+                      return (
+                        <AvatarWithPresence
+                          avatarUrl={other?.avatarUrl}
+                          name={other?.name ?? "?"}
+                          lastSeenAt={other?.lastSeenAt ?? otherUserLastSeen}
+                          size="lg"
+                          className="h-12 w-12 ring-2 ring-orbit-electric/30"
+                        />
                       );
                     })()
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-lg truncate">{selectedConv?.displayName ?? "Conversa"}</p>
-                  {selectedConv?.type === "DIRECT" && otherUserLastSeen && (
-                    <p className="text-xs text-white/50 truncate">Visto por último: {formatLastSeen(otherUserLastSeen)}</p>
+                  {selectedConv?.type === "DIRECT" && (otherUserLastSeen || otherParticipant?.lastSeenAt) && (
+                    <p className="text-xs text-white/50 truncate" title={isOnline(otherParticipant?.lastSeenAt ?? otherUserLastSeen) ? "Online" : `Offline: ${formatLastSeen(otherUserLastSeen ?? otherParticipant?.lastSeenAt ?? null)}`}>
+                      {isOnline(otherParticipant?.lastSeenAt ?? otherUserLastSeen) ? "Online" : `Visto por último: ${formatLastSeen(otherUserLastSeen ?? otherParticipant?.lastSeenAt ?? null)}`}
+                    </p>
                   )}
                 </div>
+                {selectedConv?.type === "GROUP" && (
+                  <button type="button" onClick={() => setGroupInfoOpen(true)} className="shrink-0 flex h-10 w-10 items-center justify-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white" aria-label="Info do grupo">
+                    <Info className="h-5 w-5" />
+                  </button>
+                )}
               </div>
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {loadingMessages ? (
@@ -508,15 +552,7 @@ export default function MensagensPage() {
                     selectedUserId === u.id && "bg-orbit-electric/20"
                   )}
                 >
-                  <div className="h-10 w-10 shrink-0 rounded-full bg-white/10 overflow-hidden">
-                    {getDisplayAvatarUrl(u.avatarUrl) ? (
-                      <img src={getDisplayAvatarUrl(u.avatarUrl)!} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <span className="flex h-full w-full items-center justify-center text-orbit-electric font-medium">
-                        {u.name.slice(0, 1).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
+                  <AvatarWithPresence avatarUrl={u.avatarUrl} name={u.name} lastSeenAt={u.lastSeenAt} size="md" />
                   <div>
                     <p className="font-medium">{u.name}</p>
                     <p className="text-xs text-white/50">{u.email}</p>
@@ -547,6 +583,15 @@ export default function MensagensPage() {
               placeholder="Nome do grupo"
               className="mb-3 bg-white/10 border-white/20 text-white"
             />
+            <p className="text-sm text-white/60 mb-1">Foto do grupo (opcional)</p>
+            <div className="flex flex-col gap-2 mb-3">
+              <label className="flex w-fit cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-white/30 bg-white/5 px-3 py-2 text-sm text-white/80 hover:bg-white/10">
+                <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden" onChange={(e) => setGroupAvatarFile(e.target.files?.[0] ?? null)} />
+                {groupAvatarFile ? `📷 ${groupAvatarFile.name}` : "📷 Enviar imagem (JPG, PNG, GIF, WebP)"}
+              </label>
+              <span className="text-xs text-white/50">ou URL:</span>
+              <Input value={groupAvatarUrl} onChange={(e) => setGroupAvatarUrl(e.target.value)} placeholder="https://..." className="bg-white/10 border-white/20 text-white" disabled={!!groupAvatarFile} />
+            </div>
             <p className="text-sm text-white/60 mb-2">Adicione participantes:</p>
             <div className="max-h-48 overflow-y-auto space-y-1 mb-4">
               {users.map((u) => (
@@ -569,15 +614,33 @@ export default function MensagensPage() {
               ))}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => { setNewGroupOpen(false); setGroupName(""); setGroupUserIds([]); }}>
+              <Button variant="outline" className="flex-1" onClick={() => { setNewGroupOpen(false); setGroupName(""); setGroupUserIds([]); setGroupAvatarUrl(""); setGroupAvatarFile(null); }}>
                 Cancelar
               </Button>
-              <Button className="flex-1 bg-orbit-purple" onClick={startGroup} disabled={!groupName.trim()}>
-                Criar grupo
+              <Button className="flex-1 bg-orbit-purple" onClick={startGroup} disabled={!groupName.trim() || uploadingGroupAvatar}>
+                {uploadingGroupAvatar ? "Criando e enviando foto..." : "Criar grupo"}
               </Button>
             </div>
           </div>
         </div>
+      )}
+
+      {groupInfoOpen && selectedConv?.type === "GROUP" && selectedId != null && token && (
+        <GroupInfoModal
+          token={token}
+          conversation={selectedConv}
+          currentUserId={user?.id}
+          users={users}
+          onClose={() => setGroupInfoOpen(false)}
+          onUpdate={(updated) => {
+            setConversations((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+          }}
+          onLeave={() => {
+            setGroupInfoOpen(false);
+            setSelectedId(null);
+            getChatConversations(token).then(setConversations);
+          }}
+        />
       )}
     </div>
   );

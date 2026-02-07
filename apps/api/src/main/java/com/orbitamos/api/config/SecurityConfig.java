@@ -53,7 +53,7 @@ public class SecurityConfig {
                 // Endpoints protegidos (precisam de autenticação JWT)
                 .requestMatchers("/api/uploads/**").permitAll()
                 .requestMatchers("/api/dashboard/**").authenticated()
-                .requestMatchers("/api/contacts").authenticated()
+                .requestMatchers("/api/contacts", "/api/contacts/**").authenticated()
                 .requestMatchers("/api/projects/**").authenticated()
                 .requestMatchers("/api/jobs/**").authenticated()
                 .requestMatchers("/api/chat/**").authenticated()

@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/colaborador", label: "Início", icon: "🏠" },
   { href: "/mensagens", label: "Mensagens", icon: "💬" },
+  { href: "/colaborador/contatos", label: "Contatos", icon: "📩" },
   { href: "/colaborador/vagas", label: "Vagas", icon: "💼" },
   { href: "/colaborador/candidaturas", label: "Candidaturas", icon: "📋" },
   { href: "/colaborador/projetos", label: "Projetos", icon: "📂" },

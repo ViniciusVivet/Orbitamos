@@ -4,10 +4,17 @@ import com.orbitamos.api.entity.*;
 import com.orbitamos.api.repository.*;
 import com.orbitamos.api.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -31,7 +38,16 @@ public class ChatController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    @Value("${app.upload-dir:./uploads}")
+    private String uploadDir;
+
+    @Value("${app.api-base-url:http://localhost:8080}")
+    private String apiBaseUrl;
+
     private static final DateTimeFormatter ISO = DateTimeFormatter.ISO_DATE_TIME;
+    private static final List<String> ALLOWED_IMAGE_TYPES = List.of(
+        "image/jpeg", "image/png", "image/gif", "image/webp"
+    );
 
     private User userFromToken(String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) return null;
@@ -65,6 +81,8 @@ public class ChatController {
             item.put("id", c.getId());
             item.put("type", c.getType().name());
             item.put("name", c.getName());
+            item.put("avatarUrl", c.getAvatarUrl());
+            item.put("createdByUserId", c.getCreatedByUserId());
             item.put("createdAt", c.getCreatedAt().format(ISO));
 
             List<ConversationParticipant> participants = participantRepository.findByConversationIdOrderByJoinedAtAsc(c.getId());
@@ -112,13 +130,8 @@ public class ChatController {
         if (opt.isEmpty()) return ResponseEntity.status(404).body(Map.of("success", false, "message", "Conversa não encontrada"));
 
         Conversation c = opt.get();
-        Map<String, Object> item = new HashMap<>();
-        item.put("id", c.getId());
-        item.put("type", c.getType().name());
-        item.put("name", c.getName());
-        item.put("createdAt", c.getCreatedAt().format(ISO));
         List<ConversationParticipant> participants = participantRepository.findByConversationIdOrderByJoinedAtAsc(c.getId());
-        item.put("participants", participants.stream().map(p -> userToMap(p.getUser())).collect(Collectors.toList()));
+        Map<String, Object> item = conversationToMap(c, me);
         return ResponseEntity.ok(Map.of("success", true, "conversation", item));
     }
 
@@ -242,9 +255,14 @@ public class ChatController {
             userIds.add(me.getId());
             for (Number n : ids) userIds.add(n.longValue());
 
+            String avatarUrl = body != null && body.get("avatarUrl") != null ? body.get("avatarUrl").toString().trim() : null;
+            if (avatarUrl != null && avatarUrl.isEmpty()) avatarUrl = null;
+
             Conversation conv = new Conversation();
             conv.setType(ConversationType.GROUP);
             conv.setName(name);
+            conv.setAvatarUrl(avatarUrl);
+            conv.setCreatedByUserId(me.getId());
             conv = conversationRepository.save(conv);
             for (Long uid : userIds) {
                 User u = userRepository.findById(uid).orElse(null);
@@ -274,6 +292,8 @@ public class ChatController {
         if (opt.isEmpty()) return ResponseEntity.status(404).body(Map.of("success", false, "message", "Conversa não encontrada"));
         Conversation c = opt.get();
         if (c.getType() != ConversationType.GROUP) return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Só grupos aceitam novos participantes"));
+        if (c.getCreatedByUserId() != null && !c.getCreatedByUserId().equals(me.getId()))
+            return ResponseEntity.status(403).body(Map.of("success", false, "message", "Apenas quem criou o grupo pode adicionar participantes"));
 
         Object uidObj = body != null ? body.get("userId") : null;
         Long userId = uidObj instanceof Number ? ((Number) uidObj).longValue() : null;
@@ -305,11 +325,124 @@ public class ChatController {
         return ResponseEntity.ok(Map.of("success", true, "users", payload));
     }
 
+    /** Atualiza grupo (nome e/ou avatar). Apenas o criador pode atualizar. */
+    @PatchMapping("/conversations/{id}")
+    public ResponseEntity<?> updateConversation(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body) {
+        User me = userFromToken(authHeader);
+        if (me == null) return ResponseEntity.status(401).body(Map.of("success", false, "message", "Não autorizado"));
+
+        Optional<Conversation> opt = conversationRepository.findByIdAndParticipantUserId(id, me.getId());
+        if (opt.isEmpty()) return ResponseEntity.status(404).body(Map.of("success", false, "message", "Conversa não encontrada"));
+        Conversation c = opt.get();
+        if (c.getType() != ConversationType.GROUP) return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Só grupos podem ser editados"));
+        if (c.getCreatedByUserId() == null || !c.getCreatedByUserId().equals(me.getId()))
+            return ResponseEntity.status(403).body(Map.of("success", false, "message", "Apenas quem criou o grupo pode editar"));
+
+        if (body != null && body.containsKey("name")) {
+            String name = body.get("name") != null ? body.get("name").toString().trim() : null;
+            c.setName(name != null && !name.isEmpty() ? name : c.getName());
+        }
+        if (body != null && body.containsKey("avatarUrl")) {
+            String avatarUrl = body.get("avatarUrl") != null ? body.get("avatarUrl").toString().trim() : null;
+            c.setAvatarUrl(avatarUrl != null && !avatarUrl.isEmpty() ? avatarUrl : null);
+        }
+        conversationRepository.save(c);
+        Map<String, Object> convMap = conversationToMap(c, me);
+        return ResponseEntity.ok(Map.of("success", true, "conversation", convMap));
+    }
+
+    /** Remove participante do grupo. O criador pode remover qualquer um; qualquer participante pode sair (remover a si mesmo). */
+    @DeleteMapping("/conversations/{id}/participants/{userId}")
+    public ResponseEntity<?> removeParticipant(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable Long id,
+            @PathVariable Long userId) {
+        User me = userFromToken(authHeader);
+        if (me == null) return ResponseEntity.status(401).body(Map.of("success", false, "message", "Não autorizado"));
+
+        Optional<Conversation> opt = conversationRepository.findByIdAndParticipantUserId(id, me.getId());
+        if (opt.isEmpty()) return ResponseEntity.status(404).body(Map.of("success", false, "message", "Conversa não encontrada"));
+        Conversation c = opt.get();
+        if (c.getType() != ConversationType.GROUP) return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Só grupos têm participantes removíveis"));
+
+        boolean isRemovingSelf = userId.equals(me.getId());
+        boolean isCreator = c.getCreatedByUserId() != null && c.getCreatedByUserId().equals(me.getId());
+        if (!isRemovingSelf && !isCreator)
+            return ResponseEntity.status(403).body(Map.of("success", false, "message", "Apenas quem criou o grupo pode remover outros participantes"));
+
+        Optional<ConversationParticipant> toRemove = participantRepository.findByConversationIdAndUserId(id, userId);
+        if (toRemove.isEmpty()) return ResponseEntity.status(404).body(Map.of("success", false, "message", "Participante não encontrado"));
+
+        participantRepository.delete(toRemove.get());
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    /** Upload de foto do grupo. Apenas o criador pode enviar. Salva em uploads/avatars/groups/{id}/ */
+    @PostMapping(value = "/conversations/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadGroupAvatar(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file,
+            HttpServletRequest request) {
+        User me = userFromToken(authHeader);
+        if (me == null) return ResponseEntity.status(401).body(Map.of("success", false, "message", "Não autorizado"));
+
+        Optional<Conversation> opt = conversationRepository.findByIdAndParticipantUserId(id, me.getId());
+        if (opt.isEmpty()) return ResponseEntity.status(404).body(Map.of("success", false, "message", "Conversa não encontrada"));
+        Conversation c = opt.get();
+        if (c.getType() != ConversationType.GROUP) return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Só grupos têm avatar"));
+        if (c.getCreatedByUserId() == null || !c.getCreatedByUserId().equals(me.getId()))
+            return ResponseEntity.status(403).body(Map.of("success", false, "message", "Apenas quem criou o grupo pode alterar a foto"));
+
+        if (file == null || file.isEmpty())
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Nenhum arquivo enviado"));
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType))
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Envie uma imagem (JPG, PNG, GIF ou WebP)"));
+
+        try {
+            String ext = contentType.split("/")[1];
+            if ("jpeg".equals(ext)) ext = "jpg";
+            String filename = System.currentTimeMillis() + "." + ext;
+            Path dir = Path.of(uploadDir).toAbsolutePath().normalize().resolve("avatars").resolve("groups").resolve(String.valueOf(id));
+            Files.createDirectories(dir);
+            Path target = dir.resolve(filename);
+            file.transferTo(target.toFile());
+            String baseUrl = resolveApiBaseUrl(request);
+            String avatarUrl = baseUrl + "/api/uploads/avatars/groups/" + id + "/" + filename;
+            c.setAvatarUrl(avatarUrl);
+            conversationRepository.save(c);
+            Map<String, Object> convMap = conversationToMap(c, me);
+            return ResponseEntity.ok(Map.of("success", true, "avatarUrl", avatarUrl, "conversation", convMap));
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Erro ao salvar a imagem"));
+        }
+    }
+
+    private String resolveApiBaseUrl(HttpServletRequest request) {
+        if (apiBaseUrl != null && !apiBaseUrl.contains("localhost"))
+            return apiBaseUrl.endsWith("/") ? apiBaseUrl.substring(0, apiBaseUrl.length() - 1) : apiBaseUrl;
+        if (request == null) return apiBaseUrl;
+        String scheme = request.getHeader("X-Forwarded-Proto");
+        if (scheme == null || scheme.isBlank()) scheme = request.getScheme();
+        String host = request.getHeader("X-Forwarded-Host");
+        if (host == null || host.isBlank()) host = request.getServerName();
+        int port = request.getServerPort();
+        boolean defaultPort = ("https".equals(scheme) && port == 443) || ("http".equals(scheme) && port == 80);
+        if (defaultPort) return scheme + "://" + host;
+        return scheme + "://" + host + ":" + port;
+    }
+
     private Map<String, Object> conversationToMap(Conversation c, User me) {
         Map<String, Object> item = new HashMap<>();
         item.put("id", c.getId());
         item.put("type", c.getType().name());
         item.put("name", c.getName());
+        item.put("avatarUrl", c.getAvatarUrl());
+        item.put("createdByUserId", c.getCreatedByUserId());
         item.put("createdAt", c.getCreatedAt().format(ISO));
         List<ConversationParticipant> participants = participantRepository.findByConversationIdOrderByJoinedAtAsc(c.getId());
         item.put("participants", participants.stream().map(p -> userToMap(p.getUser())).collect(Collectors.toList()));

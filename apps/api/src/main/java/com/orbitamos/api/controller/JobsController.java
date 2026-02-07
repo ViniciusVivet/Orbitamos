@@ -19,8 +19,10 @@ public class JobsController {
     private JobRepository jobRepository;
 
     @GetMapping
-    public ResponseEntity<?> listJobs() {
-        List<Job> jobs = jobRepository.findByStatusOrderByCreatedAtDesc("aberta");
+    public ResponseEntity<?> listJobs(@RequestParam(required = false) String type) {
+        List<Job> jobs = (type != null && !type.isBlank())
+            ? jobRepository.findByStatusAndTypeOrderByCreatedAtDesc("aberta", type.trim())
+            : jobRepository.findByStatusOrderByCreatedAtDesc("aberta");
         List<Map<String, Object>> payload = jobs.stream()
             .map(j -> Map.<String, Object>of(
                 "id", j.getId(),

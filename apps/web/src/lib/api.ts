@@ -73,6 +73,74 @@ export async function sendContact(data: ContactData): Promise<ContactResponse> {
   }
 }
 
+/** Contato retornado pela API (lista admin) */
+export interface ContactItem {
+  id: number;
+  name: string;
+  email: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+}
+
+/**
+ * Lista todas as mensagens de contato (área colaborador/admin)
+ */
+export async function getContacts(token: string): Promise<ContactItem[]> {
+  const response = await fetch(`${API_URL}/contacts`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.message || "Erro ao carregar contatos");
+  }
+  return response.json();
+}
+
+/**
+ * Lista contatos não lidos
+ */
+export async function getUnreadContacts(token: string): Promise<ContactItem[]> {
+  const response = await fetch(`${API_URL}/contacts/unread`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.message || "Erro ao carregar contatos");
+  }
+  return response.json();
+}
+
+/**
+ * Marca um contato como lido
+ */
+export async function markContactAsRead(
+  token: string,
+  contactId: number
+): Promise<ContactItem> {
+  const response = await fetch(`${API_URL}/contacts/${contactId}/read`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.message || "Erro ao marcar como lido");
+  }
+  const data = await response.json();
+  return data.contact;
+}
+
 // ==================== AUTENTICAÇÃO ====================
 
 export interface RegisterData {
@@ -482,26 +550,37 @@ export async function getMyProjects(token: string): Promise<Project[]> {
   }
 }
 
+export interface GetJobsOptions {
+  /** Filtrar por tipo: freela, clt, estágio, etc. */
+  type?: string;
+}
+
 /**
- * Lista vagas (área do colaborador)
+ * Lista vagas (área do colaborador). Opcionalmente filtra por tipo.
  */
-export async function getJobs(token: string): Promise<Job[]> {
+export async function getJobs(
+  token: string,
+  options?: GetJobsOptions
+): Promise<Job[]> {
   try {
-    const response = await fetch(`${API_URL}/jobs`, {
-      method: 'GET',
+    const params = new URLSearchParams();
+    if (options?.type?.trim()) params.set("type", options.type.trim());
+    const url = params.toString() ? `${API_URL}/jobs?${params}` : `${API_URL}/jobs`;
+    const response = await fetch(url, {
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     });
     const result = await response.json();
     if (!response.ok) {
-      throw new Error(result.message || 'Erro ao carregar vagas');
+      throw new Error(result.message || "Erro ao carregar vagas");
     }
     return result.jobs ?? [];
   } catch (error) {
     if (error instanceof Error) throw error;
-    throw new Error('Erro ao carregar vagas');
+    throw new Error("Erro ao carregar vagas");
   }
 }
 
@@ -687,6 +766,8 @@ export interface ChatConversation {
   type: "DIRECT" | "GROUP";
   name: string | null;
   displayName: string;
+  avatarUrl?: string | null;
+  createdByUserId?: number | null;
   createdAt: string;
   participants: ChatUser[];
   lastMessage: ChatLastMessage | null;
@@ -761,15 +842,83 @@ export async function createDirectConversation(
 export async function createGroupConversation(
   token: string,
   name: string,
-  userIds: number[]
+  userIds: number[],
+  avatarUrl?: string | null
 ): Promise<{ conversation: ChatConversation }> {
+  const body: { type: string; name: string; userIds: number[]; avatarUrl?: string } = { type: "GROUP", name, userIds };
+  if (avatarUrl?.trim()) body.avatarUrl = avatarUrl.trim();
   const response = await fetch(`${API_URL}/chat/conversations`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ type: "GROUP", name, userIds }),
+    body: JSON.stringify(body),
   });
   const result = await response.json();
   if (!response.ok) throw new Error(result.message || "Erro ao criar grupo");
+  return result;
+}
+
+export async function updateGroupConversation(
+  token: string,
+  conversationId: number,
+  data: { name?: string; avatarUrl?: string | null }
+): Promise<{ success: boolean; conversation: ChatConversation }> {
+  const response = await fetch(`${API_URL}/chat/conversations/${conversationId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || "Erro ao atualizar grupo");
+  return result;
+}
+
+export async function addGroupParticipant(
+  token: string,
+  conversationId: number,
+  userId: number
+): Promise<{ success: boolean }> {
+  const response = await fetch(`${API_URL}/chat/conversations/${conversationId}/participants`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ userId }),
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || "Erro ao adicionar participante");
+  return result;
+}
+
+export async function removeGroupParticipant(
+  token: string,
+  conversationId: number,
+  userId: number
+): Promise<{ success: boolean }> {
+  const response = await fetch(`${API_URL}/chat/conversations/${conversationId}/participants/${userId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || "Erro ao remover participante");
+  return result;
+}
+
+/**
+ * Upload de foto do grupo (arquivo). Apenas o criador pode enviar.
+ * Retorna a conversa atualizada com avatarUrl.
+ */
+export async function uploadGroupAvatar(
+  token: string,
+  conversationId: number,
+  file: File
+): Promise<{ success: boolean; avatarUrl: string; conversation: ChatConversation }> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await fetch(`${API_URL}/chat/conversations/${conversationId}/avatar`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || "Erro ao enviar foto do grupo");
   return result;
 }
 

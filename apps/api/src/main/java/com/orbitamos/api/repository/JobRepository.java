@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface JobRepository extends JpaRepository<Job, Long> {
     List<Job> findByStatusOrderByCreatedAtDesc(String status);
+    List<Job> findByStatusAndTypeOrderByCreatedAtDesc(String status, String type);
 }
