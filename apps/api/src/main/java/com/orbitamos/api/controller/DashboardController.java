@@ -317,7 +317,7 @@ public class DashboardController {
             Map<String, Object> nextActionMap = new HashMap<>();
             nextActionMap.put("title", "Continuar o Módulo 1");
             nextActionMap.put("description", "Registrar a primeira dúvida");
-            nextActionMap.put("cta", "/orbitacademy");
+            nextActionMap.put("cta", "/estudante/aulas");
             response.put("nextAction", nextActionMap);
 
             List<Map<String, Object>> checklistPayload = new ArrayList<>();

@@ -33,7 +33,20 @@
   animation: shimmer 2s infinite;
 }
 
-/* Estilos básicos para garantir funcionamento */
+/* Estilos básicos e mobile */
 body {
   font-family: 'Inter', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe area: aplicado em nav/headers fixos via componentes */
+
+/* Input date: área de toque maior no mobile */
+input[type="date"] {
+  min-height: 2.75rem;
+}
+@media (min-width: 768px) {
+  input[type="date"] {
+    min-height: 3rem;
+  }
 }

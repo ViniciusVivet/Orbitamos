@@ -10,11 +10,13 @@ import {
   postForumMessage,
   updateForumMessage,
   deleteForumMessage,
+  getDisplayAvatarUrl,
 } from "@/lib/api";
 import { getFriendlyApiErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import UserProfileModal from "@/components/forum/UserProfileModal";
 
 function formatDate(value: string): string {
   const date = new Date(value);
@@ -31,16 +33,21 @@ function formatDate(value: string): string {
   return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-function AuthorAvatar({ name }: { name: string }) {
+function AuthorAvatar({ name, avatarUrl }: { name: string; avatarUrl?: string | null }) {
   const initials = name
     .split(" ")
     .map((n) => n[0])
     .slice(0, 2)
     .join("")
     .toUpperCase();
+  const displayUrl = getDisplayAvatarUrl(avatarUrl ?? undefined);
   return (
-    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orbit-electric to-orbit-purple text-sm font-bold text-black">
-      {initials || "?"}
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-orbit-electric to-orbit-purple text-sm font-bold text-black ring-2 ring-white/10">
+      {displayUrl ? (
+        <img src={displayUrl} alt="" className="h-full w-full object-cover" />
+      ) : (
+        <span>{initials || "?"}</span>
+      )}
     </div>
   );
 }
@@ -53,9 +60,14 @@ export default function ForumPage() {
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [content, setContent] = useState("");
-  const [city, setCity] = useState("");
-  const [neighborhood, setNeighborhood] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [topicTitle, setTopicTitle] = useState("");
+  const [topicColor, setTopicColor] = useState("#00D4FF");
+  const [topicEmoji, setTopicEmoji] = useState("💬");
+  const [profileUserId, setProfileUserId] = useState<number | null>(null);
+  const [replyingToId, setReplyingToId] = useState<number | null>(null);
+  const [replyContent, setReplyContent] = useState("");
+  const [repliesByParent, setRepliesByParent] = useState<Record<number, ForumMessage[]>>({});
 
   const loadMessages = useCallback(async (searchTerm?: string) => {
     setLoading(true);
@@ -72,9 +84,24 @@ export default function ForumPage() {
     }
   }, []);
 
+  const loadReplies = useCallback(async (parentId: number) => {
+    try {
+      const replies = await getForumMessages(parentId);
+      setRepliesByParent((prev) => ({ ...prev, [parentId]: replies }));
+    } catch {
+      setRepliesByParent((prev) => ({ ...prev, [parentId]: [] }));
+    }
+  }, []);
+
   useEffect(() => {
     loadMessages();
   }, [loadMessages]);
+
+  useEffect(() => {
+    messages
+      .filter((m) => m.parentId == null)
+      .forEach((m) => loadReplies(m.id));
+  }, [messages, loadReplies]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,16 +114,40 @@ export default function ForumPage() {
     setError("");
     try {
       if (editingId) {
-        const updated = await updateForumMessage(token, editingId, content.trim(), city, neighborhood);
+        const updated = await updateForumMessage(
+          token,
+          editingId,
+          content.trim(),
+          undefined,
+          undefined,
+          { topicTitle, topicColor, topicEmoji }
+        );
         setMessages((prev) => prev.map((m) => (m.id === editingId ? updated : m)));
         setEditingId(null);
+      } else if (replyingToId) {
+        const created = await postForumMessage(token, content.trim(), undefined, undefined, {
+          parentId: replyingToId,
+        });
+        setRepliesByParent((prev) => ({
+          ...prev,
+          [replyingToId]: [...(prev[replyingToId] ?? []), created],
+        }));
+        setReplyContent("");
+        setReplyingToId(null);
       } else {
-        const created = await postForumMessage(token, content.trim(), city, neighborhood);
+        const created = await postForumMessage(token, content.trim(), undefined, undefined, {
+          topicTitle: topicTitle || undefined,
+          topicColor: topicColor || undefined,
+          topicEmoji: topicEmoji || undefined,
+        });
         setMessages((prev) => [created, ...prev]);
       }
       setContent("");
-      setCity("");
-      setNeighborhood("");
+      if (!editingId && !replyingToId) {
+        setTopicTitle("");
+        setTopicColor("#00D4FF");
+        setTopicEmoji("💬");
+      }
     } catch (err) {
       setError(getFriendlyApiErrorMessage(err));
     } finally {
@@ -106,9 +157,12 @@ export default function ForumPage() {
 
   const handleEdit = (message: ForumMessage) => {
     setEditingId(message.id);
+    setReplyingToId(null);
+    setReplyContent("");
     setContent(message.content);
-    setCity(message.city || "");
-    setNeighborhood(message.neighborhood || "");
+    setTopicTitle(message.topicTitle || "");
+    setTopicColor(message.topicColor || "#00D4FF");
+    setTopicEmoji(message.topicEmoji || "💬");
   };
 
   const handleDelete = async (id: number) => {
@@ -168,26 +222,45 @@ export default function ForumPage() {
                     {error}
                   </div>
                 )}
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Input
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="Cidade (opcional)"
-                    className="border-white/10 bg-white/5 text-white placeholder:text-white/40"
-                    disabled={sending}
-                  />
-                  <Input
-                    value={neighborhood}
-                    onChange={(e) => setNeighborhood(e.target.value)}
-                    placeholder="Bairro (opcional)"
-                    className="border-white/10 bg-white/5 text-white placeholder:text-white/40"
-                    disabled={sending}
-                  />
-                </div>
+                {!editingId && !replyingToId && (
+                  <>
+                    <div>
+                      <label className="text-xs text-white/60">Título do tópico (opcional)</label>
+                      <Input
+                        value={topicTitle}
+                        onChange={(e) => setTopicTitle(e.target.value)}
+                        placeholder="Ex: Dúvida sobre HTML"
+                        className="mt-1 border-white/10 bg-white/5 text-white placeholder:text-white/40"
+                        disabled={sending}
+                      />
+                    </div>
+                    <div className="flex flex-wrap items-center gap-4">
+                      <div>
+                        <label className="text-xs text-white/60 mr-2">Cor</label>
+                        <input
+                          type="color"
+                          value={topicColor}
+                          onChange={(e) => setTopicColor(e.target.value)}
+                          className="h-10 w-14 cursor-pointer rounded border border-white/20 bg-white/5"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-white/60 mr-2">Emoji</label>
+                        <Input
+                          value={topicEmoji}
+                          onChange={(e) => setTopicEmoji(e.target.value.slice(0, 4))}
+                          placeholder="💬"
+                          className="w-16 text-center text-2xl border-white/10 bg-white/5 text-white"
+                          disabled={sending}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
                 <textarea
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="O que você quer compartilhar?"
+                  value={replyingToId ? replyContent : content}
+                  onChange={(e) => (replyingToId ? setReplyContent(e.target.value) : setContent(e.target.value))}
+                  placeholder={replyingToId ? "Sua resposta..." : "O que você quer compartilhar?"}
                   rows={3}
                   className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/40 focus:border-orbit-electric/50 focus:outline-none focus:ring-1 focus:ring-orbit-electric/30 disabled:opacity-50"
                   disabled={sending}
@@ -196,13 +269,23 @@ export default function ForumPage() {
                   <Button
                     type="button"
                     onClick={handleSend}
-                    disabled={sending || !content.trim()}
+                    disabled={sending || !(replyingToId ? replyContent : content).trim()}
                     className="bg-gradient-to-r from-orbit-electric to-orbit-purple text-black font-semibold hover:opacity-90 disabled:opacity-50"
                   >
-                    {sending ? "Enviando..." : editingId ? "Salvar" : "Publicar"}
+                    {sending ? "Enviando..." : replyingToId ? "Responder" : editingId ? "Salvar" : "Publicar"}
                   </Button>
-                  {editingId && (
-                    <Button type="button" variant="outline" onClick={() => { setEditingId(null); setContent(""); setCity(""); setNeighborhood(""); }} className="border-white/20 text-white hover:bg-white/10">
+                  {(editingId || replyingToId) && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setEditingId(null);
+                        setReplyingToId(null);
+                        setReplyContent("");
+                        setContent("");
+                      }}
+                      className="border-white/20 text-white hover:bg-white/10"
+                    >
                       Cancelar
                     </Button>
                   )}
@@ -249,52 +332,124 @@ export default function ForumPage() {
               </Card>
             ) : (
               <ul className="space-y-4">
-                {messages.map((message) => (
-                  <li key={message.id}>
-                    <Card className="border-white/10 bg-gray-900/40 transition-colors hover:border-white/15 hover:bg-gray-900/60">
-                      <CardContent className="p-5">
-                        <div className="flex gap-4">
-                          <AuthorAvatar name={message.author} />
-                          <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <span className="font-semibold text-white/95">{message.author}</span>
-                              <span className="text-xs text-white/50">{formatDate(message.createdAt)}</span>
-                            </div>
-                            {(message.city || message.neighborhood) && (
-                              <p className="mt-0.5 text-xs text-white/50">
-                                {[message.neighborhood, message.city].filter(Boolean).join(" • ")}
-                              </p>
+                {messages
+                  .filter((m) => m.parentId == null)
+                  .map((message) => (
+                    <li key={message.id}>
+                      <Card className="border-white/10 bg-gray-900/40 transition-colors hover:border-white/15 hover:bg-gray-900/60">
+                        {(message.topicTitle || message.topicEmoji) && (
+                          <div
+                            className="flex items-center gap-3 rounded-t-xl border-b border-l-4 border-white/10 px-5 py-3"
+                            style={{
+                              backgroundColor: message.topicColor
+                                ? `${message.topicColor}20`
+                                : "rgba(0,212,255,0.1)",
+                              borderLeftColor: message.topicColor || "#00D4FF",
+                            }}
+                          >
+                            {message.topicEmoji && (
+                              <span className="text-3xl" role="img" aria-hidden>
+                                {message.topicEmoji}
+                              </span>
                             )}
-                            <p className="mt-3 whitespace-pre-wrap text-white/90">{message.content}</p>
-                            {user?.id === message.userId && (
-                              <div className="mt-4 flex gap-3 text-sm">
-                                <button
-                                  type="button"
-                                  onClick={() => handleEdit(message)}
-                                  className="text-orbit-electric hover:underline"
-                                >
-                                  Editar
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDelete(message.id)}
-                                  className="text-red-400 hover:underline"
-                                >
-                                  Excluir
-                                </button>
-                              </div>
+                            {message.topicTitle && (
+                              <span className="font-semibold text-white/95">{message.topicTitle}</span>
                             )}
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </li>
-                ))}
+                        )}
+                        <CardContent className="p-5">
+                          <div className="flex gap-4">
+                            <AuthorAvatar name={message.author} avatarUrl={message.authorAvatarUrl} />
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setProfileUserId(message.userId)}
+                                  className="font-semibold text-white/95 hover:text-orbit-electric hover:underline text-left"
+                                >
+                                  {message.author}
+                                </button>
+                                <span className="text-xs text-white/50">{formatDate(message.createdAt)}</span>
+                              </div>
+                              <p className="mt-0.5 text-xs text-white/50">
+                                {[message.neighborhood, message.city].filter(Boolean).join(" • ") || "—"}
+                              </p>
+                              <p className="mt-3 whitespace-pre-wrap text-white/90">{message.content}</p>
+                              <div className="mt-4 flex flex-wrap gap-3 text-sm">
+                                {isAuthenticated && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setReplyingToId(message.id);
+                                      setEditingId(null);
+                                      setReplyContent("");
+                                    }}
+                                    className="text-orbit-electric hover:underline"
+                                  >
+                                    Responder
+                                  </button>
+                                )}
+                                {user?.id === message.userId && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleEdit(message)}
+                                      className="text-orbit-electric hover:underline"
+                                    >
+                                      Editar
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDelete(message.id)}
+                                      className="text-red-400 hover:underline"
+                                    >
+                                      Excluir
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                              {(repliesByParent[message.id]?.length ?? 0) > 0 && (
+                                <div className="mt-4 pl-4 border-l-2 border-white/10 space-y-3">
+                                  {repliesByParent[message.id]?.map((reply) => (
+                                    <div key={reply.id} className="flex gap-3">
+                                      <AuthorAvatar name={reply.author} avatarUrl={reply.authorAvatarUrl} />
+                                      <div className="min-w-0 flex-1">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                          <button
+                                            type="button"
+                                            onClick={() => setProfileUserId(reply.userId)}
+                                            className="text-sm font-medium text-white/90 hover:text-orbit-electric hover:underline"
+                                          >
+                                            {reply.author}
+                                          </button>
+                                          <span className="text-xs text-white/50">{formatDate(reply.createdAt)}</span>
+                                        </div>
+                                        <p className="mt-1 whitespace-pre-wrap text-sm text-white/80">{reply.content}</p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </li>
+                  ))}
               </ul>
             )}
           </div>
         </div>
       </section>
+
+      {profileUserId != null && token && (
+        <UserProfileModal
+          userId={profileUserId}
+          token={token}
+          authorName={messages.find((m) => m.userId === profileUserId)?.author ?? ""}
+          onClose={() => setProfileUserId(null)}
+        />
+      )}
     </div>
   );
 }

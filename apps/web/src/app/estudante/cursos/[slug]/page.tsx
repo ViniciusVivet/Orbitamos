@@ -102,9 +102,9 @@ export default function CursoPage() {
   }
 
   return (
-    <div className="flex gap-6">
+    <div className="flex flex-col gap-4 md:flex-row md:gap-6">
       {/* Sidebar do curso: modulos e aulas */}
-      <aside className="w-72 shrink-0 rounded-xl border border-white/10 bg-black/40 p-4 backdrop-blur-sm">
+      <aside className="w-full shrink-0 rounded-xl border border-white/10 bg-black/40 p-4 backdrop-blur-sm md:w-72">
         <Link href="/estudante/aulas" className="mb-2 block text-sm text-orbit-electric hover:underline">
           ← Voltar aos cursos
         </Link>
@@ -167,12 +167,12 @@ export default function CursoPage() {
       <main className="min-w-0 flex-1">
         {aula ? (
           <>
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-              <h1 className="text-xl font-bold text-white md:text-2xl">{aula.titulo}</h1>
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+              <h1 className="text-lg font-bold text-white sm:text-xl md:text-2xl">{aula.titulo}</h1>
               <button
                 type="button"
                 onClick={marcarConcluida}
-                className="rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 py-2 text-sm font-bold text-black hover:opacity-90"
+                className="w-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 py-3 text-sm font-bold text-black hover:opacity-90 touch-manipulation sm:w-auto"
               >
                 Concluir e ir para proxima aula
               </button>

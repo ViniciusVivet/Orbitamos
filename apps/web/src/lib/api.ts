@@ -173,8 +173,13 @@ export interface ForumMessage {
   content: string;
   author: string;
   userId: number;
+  authorAvatarUrl?: string | null;
   city?: string | null;
   neighborhood?: string | null;
+  parentId?: number | null;
+  topicTitle?: string | null;
+  topicColor?: string | null;
+  topicEmoji?: string | null;
   createdAt: string;
 }
 
@@ -500,29 +505,47 @@ export async function getJobs(token: string): Promise<Job[]> {
   }
 }
 
-/**
- * Lista mensagens do forum
- */
-export async function getForumMessages(): Promise<ForumMessage[]> {
+/** Perfil público do usuário (para modal no fórum, visto por último no chat). */
+export interface PublicProfile {
+  id: number;
+  name: string;
+  avatarUrl: string;
+  city: string;
+  state: string;
+  role: string;
+  lastSeenAt: string | null;
+}
+
+export async function getPublicProfile(token: string, userId: number): Promise<PublicProfile | null> {
   try {
-    const response = await fetch(`${API_URL}/forum/messages`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    const response = await fetch(`${API_URL}/users/${userId}/profile`, {
+      headers: { Authorization: `Bearer ${token}` },
     });
-
     const result = await response.json();
+    if (!response.ok || !result.profile) return null;
+    return result.profile;
+  } catch {
+    return null;
+  }
+}
 
-    if (!response.ok) {
-      throw new Error('Erro ao carregar mensagens');
-    }
-
+/**
+ * Lista mensagens do forum (tópicos raiz) ou respostas de um tópico
+ */
+export async function getForumMessages(parentId?: number): Promise<ForumMessage[]> {
+  try {
+    const params = new URLSearchParams();
+    if (parentId != null) params.set("parentId", String(parentId));
+    const url = params.toString() ? `${API_URL}/forum/messages?${params.toString()}` : `${API_URL}/forum/messages`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error('Erro ao carregar mensagens');
     return result;
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
+    if (error instanceof Error) throw error;
     throw new Error('Erro desconhecido ao carregar mensagens');
   }
 }
@@ -553,35 +576,31 @@ export async function searchForumMessages(query: string): Promise<ForumMessage[]
 }
 
 /**
- * Envia nova mensagem no forum (requer autenticação)
+ * Envia nova mensagem no forum (requer autenticação). Pode ser tópico (com título/cor/emoji) ou resposta (parentId).
  */
 export async function postForumMessage(
   token: string,
   content: string,
   city?: string,
-  neighborhood?: string
+  neighborhood?: string,
+  options?: { parentId?: number; topicTitle?: string; topicColor?: string; topicEmoji?: string }
 ): Promise<ForumMessage> {
   try {
+    const body: Record<string, unknown> = { content, city: city ?? "", neighborhood: neighborhood ?? "" };
+    if (options?.parentId != null) body.parentId = options.parentId;
+    if (options?.topicTitle != null) body.topicTitle = options.topicTitle;
+    if (options?.topicColor != null) body.topicColor = options.topicColor;
+    if (options?.topicEmoji != null) body.topicEmoji = options.topicEmoji;
     const response = await fetch(`${API_URL}/forum/messages`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ content, city, neighborhood }),
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body),
     });
-
     const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.message || 'Erro ao enviar mensagem');
-    }
-
+    if (!response.ok) throw new Error(result.message || 'Erro ao enviar mensagem');
     return result;
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
+    if (error instanceof Error) throw error;
     throw new Error('Erro desconhecido ao enviar mensagem');
   }
 }
@@ -591,16 +610,21 @@ export async function updateForumMessage(
   id: number,
   content: string,
   city?: string,
-  neighborhood?: string
+  neighborhood?: string,
+  options?: { topicTitle?: string; topicColor?: string; topicEmoji?: string }
 ): Promise<ForumMessage> {
   try {
+    const body: Record<string, string> = { content, city: city ?? "", neighborhood: neighborhood ?? "" };
+    if (options?.topicTitle != null) body.topicTitle = options.topicTitle;
+    if (options?.topicColor != null) body.topicColor = options.topicColor;
+    if (options?.topicEmoji != null) body.topicEmoji = options.topicEmoji;
     const response = await fetch(`${API_URL}/forum/messages/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ content, city, neighborhood }),
+      body: JSON.stringify(body),
     });
 
     const result = await response.json();
@@ -649,6 +673,7 @@ export interface ChatUser {
   email: string;
   avatarUrl: string;
   role: string;
+  lastSeenAt?: string | null;
 }
 
 export interface ChatLastMessage {
@@ -674,6 +699,7 @@ export interface ChatMessageItem {
   senderName: string;
   senderAvatarUrl: string;
   createdAt: string;
+  readAt?: string | null;
 }
 
 export async function getChatConversations(token: string): Promise<ChatConversation[]> {

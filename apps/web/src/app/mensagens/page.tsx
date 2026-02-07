@@ -5,6 +5,7 @@ import { useChat } from "@/contexts/ChatContext";
 import { useChatWebSocket } from "@/hooks/useChatWebSocket";
 import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   getChatConversations,
   getChatMessages,
@@ -13,6 +14,7 @@ import {
   createDirectConversation,
   createGroupConversation,
   getDisplayAvatarUrl,
+  getPublicProfile,
   type ChatConversation,
   type ChatMessageItem,
   type ChatUser,
@@ -41,8 +43,12 @@ export default function MensagensPage() {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [groupName, setGroupName] = useState("");
   const [groupUserIds, setGroupUserIds] = useState<number[]>([]);
+  const [clickedMessageId, setClickedMessageId] = useState<number | null>(null);
+  const [otherUserLastSeen, setOtherUserLastSeen] = useState<string | null>(null);
+  const searchParams = useSearchParams();
 
   const selectedConv = conversations.find((c) => c.id === selectedId);
+  const otherParticipant = selectedConv?.type === "DIRECT" ? selectedConv.participants.find((p) => p.id !== user?.id) : null;
 
   const appendMessage = useCallback((msg: ChatMessageItem) => {
     setMessages((prev) => [...prev, msg]);
@@ -69,6 +75,36 @@ export default function MensagensPage() {
       clearUnread(selectedId);
     }
   }, [selectedId, selectedConv, setActiveConversation, clearUnread]);
+
+  const openUserId = searchParams.get("openUserId");
+  useEffect(() => {
+    if (!token || !openUserId || loadingConvs) return;
+    const uid = parseInt(openUserId, 10);
+    if (Number.isNaN(uid)) return;
+    const existing = conversations.find(
+      (c) => c.type === "DIRECT" && c.participants.some((p) => p.id === uid)
+    );
+    if (existing) {
+      setSelectedId(existing.id);
+      return;
+    }
+    createDirectConversation(token, uid)
+      .then(({ conversation }) => {
+        setConversations((prev) => [conversation, ...prev.filter((c) => c.id !== conversation.id)]);
+        setSelectedId(conversation.id);
+      })
+      .catch(() => {});
+  }, [token, openUserId, loadingConvs, conversations]);
+
+  useEffect(() => {
+    if (!token || !otherParticipant?.id) {
+      setOtherUserLastSeen(null);
+      return;
+    }
+    getPublicProfile(token, otherParticipant.id).then((p) =>
+      setOtherUserLastSeen(p?.lastSeenAt ?? null)
+    );
+  }, [token, otherParticipant?.id]);
 
   useEffect(() => {
     if (!token || selectedId == null) {
@@ -148,6 +184,57 @@ export default function MensagensPage() {
     }
     return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
   };
+
+  const formatFullDate = (iso: string) => {
+    const d = new Date(iso);
+    return d.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const formatLastSeen = (iso: string | null): string => {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    if (diffMins < 1) return "agora";
+    if (diffMins < 60) return `há ${diffMins} min`;
+    if (diffHours < 24) return `há ${diffHours}h`;
+    if (diffDays < 7) return `há ${diffDays} dia${diffDays !== 1 ? "s" : ""}`;
+    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+  };
+
+  const getDayLabel = (iso: string) => {
+    const d = new Date(iso);
+    const now = new Date();
+    if (d.toDateString() === now.toDateString()) return "Hoje";
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (d.toDateString() === yesterday.toDateString()) return "Ontem";
+    return d.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "short" });
+  };
+
+  const messagesByDay = (() => {
+    const groups: { day: string; messages: ChatMessageItem[] }[] = [];
+    let currentDay = "";
+    messages.forEach((m) => {
+      const day = getDayLabel(m.createdAt);
+      if (day !== currentDay) {
+        currentDay = day;
+        groups.push({ day, messages: [m] });
+      } else {
+        groups[groups.length - 1].messages.push(m);
+      }
+    });
+    return groups;
+  })();
 
   if (!user) return null;
 
@@ -300,7 +387,12 @@ export default function MensagensPage() {
                     })()
                   )}
                 </div>
-                <p className="font-semibold text-lg truncate">{selectedConv?.displayName ?? "Conversa"}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-lg truncate">{selectedConv?.displayName ?? "Conversa"}</p>
+                  {selectedConv?.type === "DIRECT" && otherUserLastSeen && (
+                    <p className="text-xs text-white/50 truncate">Visto por último: {formatLastSeen(otherUserLastSeen)}</p>
+                  )}
+                </div>
               </div>
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {loadingMessages ? (
@@ -308,44 +400,64 @@ export default function MensagensPage() {
                     <div className="h-10 w-10 animate-spin rounded-full border-2 border-orbit-electric border-t-transparent" />
                   </div>
                 ) : (
-                  messages.map((m) => {
-                    const isMe = m.senderId === user.id;
-                    return (
-                      <div
-                        key={m.id}
-                        className={cn(
-                          "flex gap-3 max-w-[80%]",
-                          isMe ? "ml-auto flex-row-reverse" : ""
-                        )}
-                      >
-                        {!isMe && (
-                          <div className="h-10 w-10 shrink-0 rounded-full overflow-hidden ring-2 ring-white/10">
-                            {m.senderAvatarUrl ? (
-                              <img src={m.senderAvatarUrl} alt="" className="h-full w-full object-cover" />
-                            ) : (
-                              <span className="flex h-full w-full items-center justify-center bg-orbit-electric/20 text-orbit-electric font-semibold">
-                                {m.senderName.slice(0, 1).toUpperCase()}
-                              </span>
+                  messagesByDay.map(({ day, messages: dayMessages }) => (
+                    <div key={day}>
+                      <p className="text-center text-xs text-white/50 py-2 sticky top-0 bg-black/60 backdrop-blur-sm rounded-full w-fit mx-auto px-3">
+                        {day}
+                      </p>
+                      {dayMessages.map((m) => {
+                        const isMe = m.senderId === user.id;
+                        const showFullDate = clickedMessageId === m.id;
+                        return (
+                          <div
+                            key={m.id}
+                            className={cn(
+                              "flex gap-3 max-w-[80%]",
+                              isMe ? "ml-auto flex-row-reverse" : ""
                             )}
+                          >
+                            {!isMe && (
+                              <div className="h-10 w-10 shrink-0 rounded-full overflow-hidden ring-2 ring-white/10">
+                                {getDisplayAvatarUrl(m.senderAvatarUrl) ? (
+                                  <img src={getDisplayAvatarUrl(m.senderAvatarUrl)!} alt="" className="h-full w-full object-cover" />
+                                ) : (
+                                  <span className="flex h-full w-full items-center justify-center bg-orbit-electric/20 text-orbit-electric font-semibold">
+                                    {m.senderName.slice(0, 1).toUpperCase()}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            <div
+                              className={cn(
+                                "rounded-2xl px-4 py-3 shadow-lg cursor-pointer select-none",
+                                isMe
+                                  ? "bg-gradient-to-br from-orbit-electric to-orbit-purple text-black rounded-br-md"
+                                  : "bg-white/10 text-white rounded-bl-md border border-white/5"
+                              )}
+                              onClick={() => setClickedMessageId((prev) => (prev === m.id ? null : m.id))}
+                              title={formatFullDate(m.createdAt)}
+                            >
+                              {!isMe && selectedConv?.type === "GROUP" && (
+                                <p className="text-xs font-semibold text-orbit-electric mb-1">{m.senderName}</p>
+                              )}
+                              <p className="text-sm whitespace-pre-wrap break-words">{m.content}</p>
+                              <div className="flex items-center justify-end gap-1.5 mt-1.5">
+                                <p className="text-xs opacity-70">{formatTime(m.createdAt)}</p>
+                                {isMe && m.readAt && (
+                                  <span className="text-xs opacity-80" title="Visualizado">✓✓</span>
+                                )}
+                              </div>
+                              {showFullDate && (
+                                <p className="text-xs opacity-80 mt-1 border-t border-white/10 pt-1">
+                                  Enviado em {formatFullDate(m.createdAt)}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                        )}
-                        <div
-                          className={cn(
-                            "rounded-2xl px-4 py-3 shadow-lg",
-                            isMe
-                              ? "bg-gradient-to-br from-orbit-electric to-orbit-purple text-black rounded-br-md"
-                              : "bg-white/10 text-white rounded-bl-md border border-white/5"
-                          )}
-                        >
-                          {!isMe && selectedConv?.type === "GROUP" && (
-                            <p className="text-xs font-semibold text-orbit-electric mb-1">{m.senderName}</p>
-                          )}
-                          <p className="text-sm whitespace-pre-wrap break-words">{m.content}</p>
-                          <p className="text-xs opacity-70 mt-1.5">{formatTime(m.createdAt)}</p>
-                        </div>
-                      </div>
-                    );
-                  })
+                        );
+                      })}
+                    </div>
+                  ))
                 )}
                 <div ref={messagesEndRef} />
               </div>

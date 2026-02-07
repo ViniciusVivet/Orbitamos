@@ -1,11 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { uploadAvatar } from "@/lib/supabase";
 import { uploadAvatarViaApi, getDisplayAvatarUrl, type User } from "@/lib/api";
+
+/** Busca endereço pelo CEP (ViaCEP). Retorna logradouro, bairro, localidade, uf ou null se erro. */
+async function fetchByCep(cep: string): Promise<{ logradouro: string; bairro: string; localidade: string; uf: string } | null> {
+  const digits = cep.replace(/\D/g, "");
+  if (digits.length !== 8) return null;
+  try {
+    const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+    const data = await res.json();
+    if (data?.erro) return null;
+    return {
+      logradouro: data.logradouro ?? "",
+      bairro: data.bairro ?? "",
+      localidade: data.localidade ?? "",
+      uf: data.uf ?? "",
+    };
+  } catch {
+    return null;
+  }
+}
 
 function Avatar({ user }: { user: { name: string; avatarUrl?: string | null } }) {
   const initials = user.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
@@ -66,6 +85,23 @@ export default function PerfilForm({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [cepLoading, setCepLoading] = useState(false);
+
+  const fillAddressByCep = useCallback(async (cepValue: string) => {
+    const digits = cepValue.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+    setCepLoading(true);
+    try {
+      const data = await fetchByCep(cepValue);
+      if (data) {
+        setEditAddress(data.logradouro + (data.bairro ? `, ${data.bairro}` : ""));
+        setEditCity(data.localidade);
+        setEditState(data.uf);
+      }
+    } finally {
+      setCepLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -185,9 +221,10 @@ export default function PerfilForm({
             type="date"
             value={editBirthDate}
             onChange={(e) => setEditBirthDate(e.target.value)}
-            className="mt-1 bg-black/40 border-white/20 text-white"
+            className="mt-1 min-h-12 bg-black/40 border-white/20 text-white text-base md:text-lg py-3 px-4 [color-scheme:dark] cursor-pointer touch-manipulation"
+            style={{ minHeight: "3rem" }}
           />
-          <p className="mt-1 text-xs text-white/50">Usada para calcular sua idade (opcional)</p>
+          <p className="mt-1 text-xs text-white/50">Toque para abrir o calendário e escolher dia, mês e ano (opcional)</p>
         </div>
 
         <div className="border-t border-white/10 pt-4">
@@ -195,12 +232,23 @@ export default function PerfilForm({
           <div className="space-y-3">
             <div>
               <label className="text-xs text-white/60">CEP</label>
-              <Input
-                value={editZipCode}
-                onChange={(e) => setEditZipCode(e.target.value)}
-                className="mt-1 bg-black/40 border-white/20 text-white"
-                placeholder="00000-000"
-              />
+              <div className="mt-1 flex gap-2">
+                <Input
+                  value={editZipCode}
+                  onChange={(e) => setEditZipCode(e.target.value)}
+                  onBlur={(e) => {
+                    const v = e.target.value.replace(/\D/g, "");
+                    if (v.length === 8) fillAddressByCep(e.target.value);
+                  }}
+                  className="flex-1 bg-black/40 border-white/20 text-white"
+                  placeholder="00000-000"
+                  maxLength={9}
+                />
+                {cepLoading && (
+                  <span className="flex items-center text-xs text-white/50">Buscando...</span>
+                )}
+              </div>
+              <p className="mt-0.5 text-[10px] text-white/40">Preencha o CEP e os campos abaixo serão preenchidos automaticamente (você pode editar).</p>
             </div>
             <div>
               <label className="text-xs text-white/60">Rua, número, complemento</label>

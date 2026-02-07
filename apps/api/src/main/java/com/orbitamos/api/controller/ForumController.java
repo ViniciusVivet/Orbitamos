@@ -32,38 +32,34 @@ public class ForumController {
 
     @GetMapping("/messages")
     public ResponseEntity<?> getMessages(
-        @RequestParam(value = "q", required = false) String query
+        @RequestParam(value = "q", required = false) String query,
+        @RequestParam(value = "parentId", required = false) Long parentId
     ) {
-        List<ForumMessage> messages = forumMessageRepository.findTop50ByOrderByCreatedAtDesc();
-        List<ForumMessage> filtered = messages;
-        if (query != null && !query.trim().isEmpty()) {
-            String q = query.trim().toLowerCase();
-            filtered = messages.stream().filter(message ->
-                message.getContent().toLowerCase().contains(q)
-                    || message.getUser().getName().toLowerCase().contains(q)
-                    || (message.getCity() != null && message.getCity().toLowerCase().contains(q))
-                    || (message.getNeighborhood() != null && message.getNeighborhood().toLowerCase().contains(q))
-            ).collect(Collectors.toList());
+        List<ForumMessage> messages;
+        if (parentId != null) {
+            messages = forumMessageRepository.findByParentIdOrderByCreatedAtAsc(parentId);
+        } else {
+            messages = forumMessageRepository.findTop50ByParentIdIsNullOrderByCreatedAtDesc();
+            if (query != null && !query.trim().isEmpty()) {
+                String q = query.trim().toLowerCase();
+                messages = messages.stream().filter(message ->
+                    message.getContent().toLowerCase().contains(q)
+                        || (message.getTopicTitle() != null && message.getTopicTitle().toLowerCase().contains(q))
+                        || message.getUser().getName().toLowerCase().contains(q)
+                        || (message.getCity() != null && message.getCity().toLowerCase().contains(q))
+                        || (message.getNeighborhood() != null && message.getNeighborhood().toLowerCase().contains(q))
+                ).collect(Collectors.toList());
+            }
         }
 
-        List<Map<String, Object>> payload = filtered.stream().map(message -> {
-            Map<String, Object> item = new HashMap<>();
-            item.put("id", message.getId());
-            item.put("content", message.getContent());
-            item.put("author", message.getUser().getName());
-            item.put("userId", message.getUser().getId());
-            item.put("city", message.getCity());
-            item.put("neighborhood", message.getNeighborhood());
-            item.put("createdAt", message.getCreatedAt());
-            return item;
-        }).collect(Collectors.toList());
+        List<Map<String, Object>> payload = messages.stream().map(message -> forumMessageToMap(message)).collect(Collectors.toList());
         return ResponseEntity.ok(payload);
     }
 
     @PostMapping("/messages")
     public ResponseEntity<?> createMessage(
         @RequestHeader(value = "Authorization", required = false) String authHeader,
-        @RequestBody Map<String, String> body
+        @RequestBody Map<String, Object> body
     ) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(401).body(Map.of(
@@ -72,9 +68,12 @@ public class ForumController {
             ));
         }
 
-        String content = body.getOrDefault("content", "").trim();
-        String city = body.getOrDefault("city", "").trim();
-        String neighborhood = body.getOrDefault("neighborhood", "").trim();
+        String content = body.get("content") != null ? body.get("content").toString().trim() : "";
+        String topicTitle = body.get("topicTitle") != null ? body.get("topicTitle").toString().trim() : null;
+        String topicColor = body.get("topicColor") != null ? body.get("topicColor").toString().trim() : null;
+        String topicEmoji = body.get("topicEmoji") != null ? body.get("topicEmoji").toString().trim() : null;
+        Long parentId = body.get("parentId") instanceof Number ? ((Number) body.get("parentId")).longValue() : null;
+
         if (content.isEmpty() || content.length() > 500) {
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
@@ -93,18 +92,16 @@ public class ForumController {
         }
 
         User user = userOpt.get();
-        ForumMessage message = new ForumMessage(user, sanitize(content), safeField(city), safeField(neighborhood));
+        String userCity = user.getCity() != null && !user.getCity().trim().isEmpty() ? user.getCity().trim() : null;
+        ForumMessage message = new ForumMessage(user, sanitize(content), userCity, null);
+        message.setParentId(parentId);
+        message.setTopicTitle(safeField(topicTitle));
+        message.setTopicColor(safeField(topicColor));
+        message.setTopicEmoji(safeField(topicEmoji));
         ForumMessage saved = forumMessageRepository.save(message);
 
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = forumMessageToMap(saved);
         response.put("success", true);
-        response.put("id", saved.getId());
-        response.put("author", user.getName());
-        response.put("userId", user.getId());
-        response.put("content", saved.getContent());
-        response.put("city", saved.getCity());
-        response.put("neighborhood", saved.getNeighborhood());
-        response.put("createdAt", saved.getCreatedAt());
         return ResponseEntity.ok(response);
     }
 
@@ -148,8 +145,9 @@ public class ForumController {
         }
 
         String content = body.getOrDefault("content", "").trim();
-        String city = body.getOrDefault("city", "").trim();
-        String neighborhood = body.getOrDefault("neighborhood", "").trim();
+        String topicTitle = body.getOrDefault("topicTitle", "").trim();
+        String topicColor = body.getOrDefault("topicColor", "").trim();
+        String topicEmoji = body.getOrDefault("topicEmoji", "").trim();
         if (content.isEmpty() || content.length() > 500) {
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
@@ -157,20 +155,18 @@ public class ForumController {
             ));
         }
 
+        User user = userOpt.get();
+        String userCity = user.getCity() != null && !user.getCity().trim().isEmpty() ? user.getCity().trim() : null;
         message.setContent(sanitize(content));
-        message.setCity(safeField(city));
-        message.setNeighborhood(safeField(neighborhood));
+        message.setCity(userCity);
+        message.setNeighborhood(null);
+        message.setTopicTitle(safeField(topicTitle));
+        message.setTopicColor(safeField(topicColor));
+        message.setTopicEmoji(safeField(topicEmoji));
         ForumMessage saved = forumMessageRepository.save(message);
 
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = forumMessageToMap(saved);
         response.put("success", true);
-        response.put("id", saved.getId());
-        response.put("author", saved.getUser().getName());
-        response.put("userId", saved.getUser().getId());
-        response.put("content", saved.getContent());
-        response.put("city", saved.getCity());
-        response.put("neighborhood", saved.getNeighborhood());
-        response.put("createdAt", saved.getCreatedAt());
         return ResponseEntity.ok(response);
     }
 
@@ -214,6 +210,23 @@ public class ForumController {
 
         forumMessageRepository.delete(message);
         return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    private Map<String, Object> forumMessageToMap(ForumMessage message) {
+        Map<String, Object> item = new HashMap<>();
+        item.put("id", message.getId());
+        item.put("content", message.getContent());
+        item.put("author", message.getUser().getName());
+            item.put("userId", message.getUser().getId());
+            item.put("authorAvatarUrl", message.getUser().getAvatarUrl() != null ? message.getUser().getAvatarUrl() : "");
+            item.put("city", message.getCity());
+            item.put("neighborhood", message.getNeighborhood());
+        item.put("parentId", message.getParentId());
+        item.put("topicTitle", message.getTopicTitle());
+        item.put("topicColor", message.getTopicColor());
+        item.put("topicEmoji", message.getTopicEmoji());
+        item.put("createdAt", message.getCreatedAt());
+        return item;
     }
 
     private String safeField(String value) {

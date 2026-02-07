@@ -24,6 +24,22 @@ public class ForumMessage {
     @Column(length = 80)
     private String neighborhood;
 
+    /** Resposta a outro post (null = tópico raiz). */
+    @Column(name = "parent_id")
+    private Long parentId;
+
+    /** Título do tópico (só em posts raiz). */
+    @Column(name = "topic_title", length = 120)
+    private String topicTitle;
+
+    /** Cor do tópico (hex ou nome). */
+    @Column(name = "topic_color", length = 30)
+    private String topicColor;
+
+    /** Emoji do tópico. */
+    @Column(name = "topic_emoji", length = 10)
+    private String topicEmoji;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -37,6 +53,15 @@ public class ForumMessage {
         this.neighborhood = neighborhood;
         this.createdAt = LocalDateTime.now();
     }
+
+    public Long getParentId() { return parentId; }
+    public void setParentId(Long parentId) { this.parentId = parentId; }
+    public String getTopicTitle() { return topicTitle; }
+    public void setTopicTitle(String topicTitle) { this.topicTitle = topicTitle; }
+    public String getTopicColor() { return topicColor; }
+    public void setTopicColor(String topicColor) { this.topicColor = topicColor; }
+    public String getTopicEmoji() { return topicEmoji; }
+    public void setTopicEmoji(String topicEmoji) { this.topicEmoji = topicEmoji; }
 
     @PrePersist
     protected void onCreate() {
@@ -82,4 +107,13 @@ public class ForumMessage {
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+
+    public Long getParentId() { return parentId; }
+    public void setParentId(Long parentId) { this.parentId = parentId; }
+    public String getTopicTitle() { return topicTitle; }
+    public void setTopicTitle(String topicTitle) { this.topicTitle = topicTitle; }
+    public String getTopicColor() { return topicColor; }
+    public void setTopicColor(String topicColor) { this.topicColor = topicColor; }
+    public String getTopicEmoji() { return topicEmoji; }
+    public void setTopicEmoji(String topicEmoji) { this.topicEmoji = topicEmoji; }
 }

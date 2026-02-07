@@ -57,6 +57,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/projects/**").authenticated()
                 .requestMatchers("/api/jobs/**").authenticated()
                 .requestMatchers("/api/chat/**").authenticated()
+                .requestMatchers("/api/users/**").authenticated()
                 .anyRequest().permitAll()
             )
             

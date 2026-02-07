@@ -121,7 +121,9 @@ export default function EstudanteInicio() {
             <CardContent>
               <p className="text-white/80 text-sm mb-4">{nextAction.title} — {nextAction.description}</p>
               <Button asChild className="w-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-black font-bold hover:from-orbit-purple hover:to-orbit-electric">
-                <Link href={nextAction.cta}>Continuar aula</Link>
+                <Link href={nextAction.cta?.startsWith("/estudante") ? nextAction.cta : "/estudante/aulas"}>
+                  Ir para sala de aula
+                </Link>
               </Button>
             </CardContent>
           </Card>

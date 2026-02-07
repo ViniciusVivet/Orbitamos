@@ -53,7 +53,7 @@ export default function EstudanteAulas() {
             </div>
             <Button asChild className="rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 py-2 text-sm font-bold text-black hover:opacity-90">
               <Link href={`/estudante/cursos/${sugerido.slug}`}>
-                {getPercent(sugerido, userId) > 0 ? "Continuar aula" : "Começar"}
+                Ir para sala de aula
               </Link>
             </Button>
           </CardContent>
@@ -91,7 +91,7 @@ export default function EstudanteAulas() {
                   </div>
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-orbit-electric">
-                      {concluido ? "Ver certificado" : ultimaAulaId ? "Continuar" : "Iniciar"} curso
+                      {concluido ? "Ver certificado" : "Ir para sala de aula"}
                     </span>
                     {concluido && <span className="text-white/50">✓</span>}
                   </div>

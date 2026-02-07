@@ -22,6 +22,10 @@ interface AuthContextType {
     zipCode?: string | null;
   }) => Promise<void>;
   setUserFromResponse: (user: User) => void;
+  /** Alterna para a área colaborador (por enquanto só no front; lógica pode mudar depois) */
+  switchToCollaborator: () => void;
+  /** Alterna para a área estudante */
+  switchToStudent: () => void;
   isAuthenticated: boolean;
 }
 
@@ -137,6 +141,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const switchToCollaborator = () => {
+    if (!user) return;
+    setUser({ ...user, role: "FREELANCER" });
+    router.push("/colaborador");
+  };
+
+  const switchToStudent = () => {
+    if (!user) return;
+    setUser({ ...user, role: "STUDENT" });
+    router.push("/estudante");
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -148,6 +164,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         updateProfile,
         setUserFromResponse: setUser,
+        switchToCollaborator,
+        switchToStudent,
         isAuthenticated: !!token && !!user,
       }}
     >
