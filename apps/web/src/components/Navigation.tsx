@@ -6,6 +6,7 @@ import { useState } from "react";
 import LogoOrbitamos from "@/components/LogoOrbitamos";
 import { useAuth } from "@/contexts/AuthContext";
 import { getDisplayAvatarUrl } from "@/lib/api";
+import { cursos } from "@/lib/cursos";
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -44,7 +45,7 @@ export default function Navigation() {
             </Link>
             {!loading && isAuthenticated && user?.role === "STUDENT" && (
               <Link
-                href="/estudante/aulas"
+                href={cursos.length > 0 ? `/estudante/cursos/${cursos[0].slug}` : "/estudante/aulas"}
                 className="text-white/90 hover:text-orbit-electric transition-colors font-medium"
               >
                 Ir para sala de aula
@@ -134,7 +135,7 @@ export default function Navigation() {
               </Link>
               {!loading && isAuthenticated && user?.role === "STUDENT" && (
                 <Link
-                  href="/estudante/aulas"
+                  href={cursos.length > 0 ? `/estudante/cursos/${cursos[0].slug}` : "/estudante/aulas"}
                   className="text-white/90 hover:text-orbit-electric transition-colors font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
