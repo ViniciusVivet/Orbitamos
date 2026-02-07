@@ -167,23 +167,25 @@ export default function MensagensPage() {
   const startGroup = async () => {
     const name = groupName.trim();
     if (!token || !name) return;
-    setUploadingGroupAvatar(!!groupAvatarFile);
+    setUploadingGroupAvatar(true);
     try {
       const { conversation } = await createGroupConversation(token, name, groupUserIds, groupAvatarUrl.trim() || undefined);
-      let finalConv = conversation;
-      if (groupAvatarFile) {
-        const { conversation: updated } = await uploadGroupAvatar(token, conversation.id, groupAvatarFile);
-        finalConv = updated;
-      }
-      setConversations((prev) => [finalConv, ...prev.filter((c) => c.id !== finalConv.id)]);
-      setSelectedId(finalConv.id);
+      setConversations((prev) => [conversation, ...prev.filter((c) => c.id !== conversation.id)]);
+      setSelectedId(conversation.id);
       setNewGroupOpen(false);
       setGroupName("");
       setGroupUserIds([]);
       setGroupAvatarUrl("");
       setGroupAvatarFile(null);
+      if (groupAvatarFile) {
+        uploadGroupAvatar(token, conversation.id, groupAvatarFile)
+          .then(({ conversation: updated }) => {
+            setConversations((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+          })
+          .catch((e) => console.error("Erro ao enviar foto do grupo:", e));
+      }
     } catch (e) {
-      console.error(e);
+      console.error("Erro ao criar grupo:", e);
     } finally {
       setUploadingGroupAvatar(false);
     }
@@ -426,6 +428,10 @@ export default function MensagensPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-lg truncate">{selectedConv?.displayName ?? "Conversa"}</p>
+                  {selectedConv?.type === "GROUP" && selectedConv.createdByUserId != null && (() => {
+                    const admin = selectedConv.participants.find((p) => p.id === selectedConv.createdByUserId);
+                    return admin ? <p className="text-xs text-white/50 truncate">Admin: {admin.name}</p> : null;
+                  })()}
                   {selectedConv?.type === "DIRECT" && (otherUserLastSeen || otherParticipant?.lastSeenAt) && (
                     <p className="text-xs text-white/50 truncate" title={isOnline(otherParticipant?.lastSeenAt ?? otherUserLastSeen) ? "Online" : `Offline: ${formatLastSeen(otherUserLastSeen ?? otherParticipant?.lastSeenAt ?? null)}`}>
                       {isOnline(otherParticipant?.lastSeenAt ?? otherUserLastSeen) ? "Online" : `Visto por último: ${formatLastSeen(otherUserLastSeen ?? otherParticipant?.lastSeenAt ?? null)}`}

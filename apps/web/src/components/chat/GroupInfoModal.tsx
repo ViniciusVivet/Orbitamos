@@ -160,7 +160,10 @@ export default function GroupInfoModal({
               ) : (
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-orbit-electric/20 text-orbit-electric font-medium text-sm">{p.name.slice(0, 1).toUpperCase()}</span>
               )}
-              <span className="flex-1 font-medium truncate">{p.name}{p.id === conversation.createdByUserId ? " (criador)" : ""}</span>
+              <span className="flex-1 font-medium truncate">
+                {p.name}
+                {p.id === conversation.createdByUserId && <span className="ml-1.5 rounded bg-orbit-purple/30 px-1.5 py-0.5 text-xs text-orbit-purple">Admin</span>}
+              </span>
               {((isCreator && p.id !== currentUserId) || p.id === currentUserId) && (
                 <Button
                   variant="outline"

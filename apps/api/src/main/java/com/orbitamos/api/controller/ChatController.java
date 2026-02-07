@@ -376,6 +376,16 @@ public class ChatController {
         Optional<ConversationParticipant> toRemove = participantRepository.findByConversationIdAndUserId(id, userId);
         if (toRemove.isEmpty()) return ResponseEntity.status(404).body(Map.of("success", false, "message", "Participante não encontrado"));
 
+        if (isRemovingSelf && c.getCreatedByUserId() != null && c.getCreatedByUserId().equals(me.getId())) {
+            List<ConversationParticipant> current = participantRepository.findByConversationIdOrderByJoinedAtAsc(id);
+            current.stream()
+                .filter(p -> !p.getUser().getId().equals(me.getId()))
+                .findFirst()
+                .ifPresent(newAdmin -> {
+                    c.setCreatedByUserId(newAdmin.getUser().getId());
+                    conversationRepository.save(c);
+                });
+        }
         participantRepository.delete(toRemove.get());
         return ResponseEntity.ok(Map.of("success", true));
     }
