@@ -18,6 +18,7 @@ interface AuthContextType {
     birthDate?: string | null;
     address?: string | null;
     city?: string | null;
+    neighborhood?: string | null;
     state?: string | null;
     zipCode?: string | null;
   }) => Promise<void>;
@@ -131,6 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     birthDate?: string | null;
     address?: string | null;
     city?: string | null;
+    neighborhood?: string | null;
     state?: string | null;
     zipCode?: string | null;
   }) => {

@@ -49,6 +49,10 @@ public class User {
     @Column(length = 100)
     private String city;
     
+    /** Bairro (opcional). */
+    @Column(length = 100)
+    private String neighborhood;
+    
     /** Estado (UF) (opcional). */
     @Column(length = 2)
     private String state;
@@ -180,6 +184,14 @@ public class User {
     
     public void setCity(String city) {
         this.city = city;
+    }
+    
+    public String getNeighborhood() {
+        return neighborhood;
+    }
+    
+    public void setNeighborhood(String neighborhood) {
+        this.neighborhood = neighborhood;
     }
     
     public String getState() {

@@ -12,6 +12,7 @@ public class UpdateProfileRequest {
     private LocalDate birthDate;
     private String address;
     private String city;
+    private String neighborhood;
     private String state;
     private String zipCode;
     
@@ -64,6 +65,14 @@ public class UpdateProfileRequest {
     
     public void setCity(String city) {
         this.city = city;
+    }
+    
+    public String getNeighborhood() {
+        return neighborhood;
+    }
+    
+    public void setNeighborhood(String neighborhood) {
+        this.neighborhood = neighborhood;
     }
     
     public String getState() {

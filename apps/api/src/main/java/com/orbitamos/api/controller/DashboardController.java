@@ -110,6 +110,7 @@ public class DashboardController {
         map.put("birthDate", user.getBirthDate() != null ? user.getBirthDate().toString() : null);
         map.put("address", user.getAddress() != null ? user.getAddress() : "");
         map.put("city", user.getCity() != null ? user.getCity() : "");
+        map.put("neighborhood", user.getNeighborhood() != null ? user.getNeighborhood() : "");
         map.put("state", user.getState() != null ? user.getState() : "");
         map.put("zipCode", user.getZipCode() != null ? user.getZipCode() : "");
         return map;
@@ -172,6 +173,9 @@ public class DashboardController {
             }
             if (request.getCity() != null) {
                 user.setCity(request.getCity().trim().isEmpty() ? null : request.getCity().trim());
+            }
+            if (request.getNeighborhood() != null) {
+                user.setNeighborhood(request.getNeighborhood().trim().isEmpty() ? null : request.getNeighborhood().trim());
             }
             if (request.getState() != null) {
                 user.setState(request.getState().trim().isEmpty() ? null : request.getState().trim());

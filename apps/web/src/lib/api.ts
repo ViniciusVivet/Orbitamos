@@ -178,6 +178,7 @@ export interface User {
   birthDate?: string | null;
   address?: string | null;
   city?: string | null;
+  neighborhood?: string | null;
   state?: string | null;
   zipCode?: string | null;
 }
@@ -244,6 +245,8 @@ export interface ForumMessage {
   authorAvatarUrl?: string | null;
   city?: string | null;
   neighborhood?: string | null;
+  /** Idade do autor (calculada a partir da data de nascimento do perfil). */
+  authorAge?: number | null;
   parentId?: number | null;
   topicTitle?: string | null;
   topicColor?: string | null;
@@ -418,6 +421,7 @@ export async function updateProfile(
     birthDate?: string | null;
     address?: string | null;
     city?: string | null;
+    neighborhood?: string | null;
     state?: string | null;
     zipCode?: string | null;
   }

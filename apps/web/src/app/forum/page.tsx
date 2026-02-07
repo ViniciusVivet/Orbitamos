@@ -372,7 +372,13 @@ export default function ForumPage() {
                                 <span className="text-xs text-white/50">{formatDate(message.createdAt)}</span>
                               </div>
                               <p className="mt-0.5 text-xs text-white/50">
-                                {[message.neighborhood, message.city].filter(Boolean).join(" • ") || "—"}
+                                {[
+                                  message.neighborhood,
+                                  message.city,
+                                  message.authorAge != null ? `${message.authorAge} anos` : "",
+                                ]
+                                  .filter(Boolean)
+                                  .join(" • ") || "—"}
                               </p>
                               <p className="mt-3 whitespace-pre-wrap text-white/90">{message.content}</p>
                               <div className="mt-4 flex flex-wrap gap-3 text-sm">
@@ -424,6 +430,17 @@ export default function ForumPage() {
                                           </button>
                                           <span className="text-xs text-white/50">{formatDate(reply.createdAt)}</span>
                                         </div>
+                                        {(reply.neighborhood || reply.city || reply.authorAge != null) && (
+                                          <p className="mt-0.5 text-xs text-white/50">
+                                            {[
+                                              reply.neighborhood,
+                                              reply.city,
+                                              reply.authorAge != null ? `${reply.authorAge} anos` : "",
+                                            ]
+                                              .filter(Boolean)
+                                              .join(" • ")}
+                                          </p>
+                                        )}
                                         <p className="mt-1 whitespace-pre-wrap text-sm text-white/80">{reply.content}</p>
                                       </div>
                                     </div>

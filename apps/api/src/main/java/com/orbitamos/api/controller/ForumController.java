@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,7 +95,8 @@ public class ForumController {
 
         User user = userOpt.get();
         String userCity = user.getCity() != null && !user.getCity().trim().isEmpty() ? user.getCity().trim() : null;
-        ForumMessage message = new ForumMessage(user, sanitize(content), userCity, null);
+        String userNeighborhood = user.getNeighborhood() != null && !user.getNeighborhood().trim().isEmpty() ? user.getNeighborhood().trim() : null;
+        ForumMessage message = new ForumMessage(user, sanitize(content), userCity, userNeighborhood);
         message.setParentId(parentId);
         message.setTopicTitle(safeField(topicTitle));
         message.setTopicColor(safeField(topicColor));
@@ -217,10 +220,15 @@ public class ForumController {
         item.put("id", message.getId());
         item.put("content", message.getContent());
         item.put("author", message.getUser().getName());
-            item.put("userId", message.getUser().getId());
-            item.put("authorAvatarUrl", message.getUser().getAvatarUrl() != null ? message.getUser().getAvatarUrl() : "");
-            item.put("city", message.getCity());
-            item.put("neighborhood", message.getNeighborhood());
+        item.put("userId", message.getUser().getId());
+        item.put("authorAvatarUrl", message.getUser().getAvatarUrl() != null ? message.getUser().getAvatarUrl() : "");
+        item.put("city", message.getCity());
+        item.put("neighborhood", message.getNeighborhood());
+        Integer authorAge = null;
+        if (message.getUser().getBirthDate() != null) {
+            authorAge = Period.between(message.getUser().getBirthDate(), LocalDate.now()).getYears();
+        }
+        item.put("authorAge", authorAge);
         item.put("parentId", message.getParentId());
         item.put("topicTitle", message.getTopicTitle());
         item.put("topicColor", message.getTopicColor());

@@ -55,6 +55,7 @@ interface PerfilFormProps {
     birthDate?: string | null;
     address?: string | null;
     city?: string | null;
+    neighborhood?: string | null;
     state?: string | null;
     zipCode?: string | null;
   }) => Promise<void>;
@@ -79,6 +80,7 @@ export default function PerfilForm({
   const [editBirthDate, setEditBirthDate] = useState("");
   const [editAddress, setEditAddress] = useState("");
   const [editCity, setEditCity] = useState("");
+  const [editNeighborhood, setEditNeighborhood] = useState("");
   const [editState, setEditState] = useState("");
   const [editZipCode, setEditZipCode] = useState("");
   const [saving, setSaving] = useState(false);
@@ -94,7 +96,8 @@ export default function PerfilForm({
     try {
       const data = await fetchByCep(cepValue);
       if (data) {
-        setEditAddress(data.logradouro + (data.bairro ? `, ${data.bairro}` : ""));
+        setEditAddress(data.logradouro);
+        setEditNeighborhood(data.bairro);
         setEditCity(data.localidade);
         setEditState(data.uf);
       }
@@ -111,6 +114,7 @@ export default function PerfilForm({
       setEditBirthDate(user.birthDate ?? "");
       setEditAddress(user.address ?? "");
       setEditCity(user.city ?? "");
+      setEditNeighborhood(user.neighborhood ?? "");
       setEditState(user.state ?? "");
       setEditZipCode(user.zipCode ?? "");
     }
@@ -259,6 +263,15 @@ export default function PerfilForm({
                 placeholder="Rua, número, complemento"
               />
             </div>
+            <div>
+              <label className="text-xs text-white/60">Bairro</label>
+              <Input
+                value={editNeighborhood}
+                onChange={(e) => setEditNeighborhood(e.target.value)}
+                className="mt-1 bg-black/40 border-white/20 text-white"
+                placeholder="Bairro"
+              />
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-white/60">Cidade</label>
@@ -301,6 +314,7 @@ export default function PerfilForm({
                   birthDate: editBirthDate || null,
                   address: editAddress.trim() || null,
                   city: editCity.trim() || null,
+                  neighborhood: editNeighborhood.trim() || null,
                   state: editState.trim() || null,
                   zipCode: editZipCode.trim() || null,
                 });
