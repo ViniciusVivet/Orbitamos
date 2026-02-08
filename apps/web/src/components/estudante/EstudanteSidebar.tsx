@@ -30,7 +30,7 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
 
   const asideContent = (
     <>
-      <div className="flex h-14 md:h-16 items-center justify-between gap-2 border-b border-white/10 px-4">
+      <div className="flex h-14 lg:h-16 items-center justify-between gap-2 border-b border-white/10 px-4">
         <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-lg font-bold text-transparent">
           Estudante
         </span>
@@ -38,14 +38,14 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
           <button
             type="button"
             onClick={onCloseMobile}
-            className="md:hidden flex h-10 w-10 items-center justify-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white"
+            className="lg:hidden flex h-12 min-w-[44px] items-center justify-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white touch-manipulation"
             aria-label="Fechar menu"
           >
-            ✕
+            &#10005;
           </button>
         )}
       </div>
-      <nav className="flex-1 space-y-1 overflow-y-auto p-3" onClick={onCloseMobile ?? undefined}>
+      <nav className="flex-1 space-y-1 overflow-y-auto p-3" onClick={() => onCloseMobile?.()}>
         {navItems.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -105,7 +105,7 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
       {onCloseMobile && (
         <div
           className={cn(
-            "fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity md:hidden",
+            "fixed inset-0 z-40 bg-black/70 backdrop-blur-sm transition-opacity lg:hidden",
             mobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
           )}
           onClick={onCloseMobile}
@@ -114,8 +114,8 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
       )}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-50 flex h-screen w-64 max-w-[85vw] flex-col border-r border-white/10 bg-black/95 backdrop-blur-xl transition-transform duration-200 ease-out md:z-40 md:w-56 md:max-w-none md:translate-x-0",
-          mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+          "fixed left-0 top-0 z-50 flex h-screen w-72 max-w-[90vw] flex-col border-r border-white/10 bg-black/95 backdrop-blur-xl transition-transform duration-200 ease-out lg:z-40 lg:w-56 lg:max-w-none lg:translate-x-0",
+          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
         {asideContent}

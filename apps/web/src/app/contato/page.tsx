@@ -91,9 +91,9 @@ export default function Contato() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orbit-black via-gray-900 to-orbit-black">
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-7xl font-bold mb-8">
+      <section className="relative overflow-hidden py-12 sm:py-16 md:py-20">
+        <div className="container mx-auto max-w-full px-4 text-center">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-6 md:mb-8">
             <span className="gradient-text">Entre em Órbita</span>
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">

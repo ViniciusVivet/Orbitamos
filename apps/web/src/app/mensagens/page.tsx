@@ -268,10 +268,10 @@ export default function MensagensPage() {
   return (
     <div className="flex h-screen flex-col bg-gradient-to-br from-black via-gray-950 to-black text-white">
       {/* Header */}
-      <header className="flex h-16 shrink-0 items-center gap-4 border-b border-white/10 bg-black/60 px-6 backdrop-blur-xl">
+      <header className="flex h-14 md:h-16 shrink-0 items-center gap-2 md:gap-4 border-b border-white/10 bg-black/60 px-4 md:px-6 backdrop-blur-xl">
         <Link
           href={user.role === "FREELANCER" ? "/colaborador" : "/estudante"}
-          className="rounded-lg px-3 py-2 text-white/70 transition hover:bg-white/10 hover:text-white"
+          className="rounded-lg px-3 py-2 min-h-[44px] flex items-center text-white/70 transition hover:bg-white/10 hover:text-white touch-manipulation"
         >
           ← Voltar
         </Link>
@@ -283,9 +283,14 @@ export default function MensagensPage() {
         </h1>
       </header>
 
-      <div className="flex flex-1 min-h-0">
-        {/* Lista de conversas */}
-        <aside className="flex w-96 shrink-0 flex-col border-r border-white/10 bg-black/30 backdrop-blur-sm">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* Lista de conversas — no mobile some quando uma conversa está selecionada */}
+        <aside
+          className={cn(
+            "flex w-full md:w-96 shrink-0 flex-col border-r border-white/10 bg-black/30 backdrop-blur-sm",
+            selectedId != null && "hidden md:flex"
+          )}
+        >
           <div className="flex gap-2 p-3 border-b border-white/10">
             <Button
               size="sm"
@@ -375,8 +380,13 @@ export default function MensagensPage() {
           </div>
         </aside>
 
-        {/* Área da conversa */}
-        <section className="flex flex-1 flex-col min-w-0 bg-gradient-to-b from-black/50 to-transparent">
+        {/* Área da conversa — no mobile ocupa toda a tela quando há seleção; escondida quando nenhuma conversa selecionada */}
+        <section
+          className={cn(
+            "flex flex-1 flex-col min-w-0 min-h-0 bg-gradient-to-b from-black/50 to-transparent",
+            selectedId == null && "hidden md:flex"
+          )}
+        >
           {selectedId == null ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-6 text-white/60">
               <div className="rounded-full bg-white/5 p-6">
@@ -403,8 +413,17 @@ export default function MensagensPage() {
             </div>
           ) : (
             <>
-              <div className="flex h-16 shrink-0 items-center gap-4 border-b border-white/10 bg-black/40 px-6 backdrop-blur-sm">
-                <div className="h-12 w-12 shrink-0">
+              <div className="flex h-14 md:h-16 shrink-0 items-center gap-3 border-b border-white/10 bg-black/40 px-4 md:px-6 backdrop-blur-sm">
+                <button
+                  type="button"
+                  onClick={() => setSelectedId(null)}
+                  className="md:hidden flex h-10 min-w-[44px] items-center justify-center rounded-lg text-white/80 hover:bg-white/10 hover:text-white touch-manipulation -ml-1"
+                  aria-label="Voltar para lista de conversas"
+                >
+                  <span className="text-lg">&#8592;</span>
+                  <span className="ml-1 text-sm">Conversas</span>
+                </button>
+                <div className="h-10 w-10 md:h-12 md:w-12 shrink-0">
                   {selectedConv?.type === "GROUP" ? (
                     getDisplayAvatarUrl(selectedConv?.avatarUrl) ? (
                       <img src={getDisplayAvatarUrl(selectedConv.avatarUrl)!} alt="" className="h-full w-full rounded-full object-cover ring-2 ring-orbit-electric/30" />

@@ -189,9 +189,9 @@ export default function ForumPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900/50 to-black text-white">
-      <section className="container mx-auto px-4 py-10 md:py-14">
-        <header className="mb-10 text-center md:text-left">
-          <h1 className="text-4xl font-extrabold tracking-tight md:text-5xl">
+      <section className="container mx-auto max-w-full px-4 py-8 sm:py-10 md:py-14">
+        <header className="mb-8 sm:mb-10 text-center md:text-left">
+          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl">
             Fórum da <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">Comunidade</span>
           </h1>
           <p className="mt-3 max-w-2xl text-white/70">

@@ -78,29 +78,41 @@ export default function Navigation() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-white"
+            type="button"
+            className="md:hidden flex h-12 min-w-[44px] items-center justify-center text-white touch-manipulation -mr-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label={isMenuOpen ? "Fechar menu" : "Abrir menu"}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+            {isMenuOpen ? (
+              <span className="text-2xl leading-none" aria-hidden>&#10005;</span>
+            ) : (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
           </button>
         </div>
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-white/10 bg-black/60 backdrop-blur-xl rounded-b-xl">
-            <div className="flex flex-col space-y-4">
+          <>
+            <div
+              className="md:hidden fixed inset-0 top-16 z-40 bg-black/60 backdrop-blur-sm"
+              onClick={() => setIsMenuOpen(false)}
+              aria-hidden
+            />
+            <div className="md:hidden relative z-50 py-4 border-t border-white/10 bg-black/90 backdrop-blur-xl rounded-b-xl">
+            <div className="flex flex-col space-y-1">
               <Link 
                 href="/" 
-                className="text-white/90 hover:text-orbit-electric transition-colors"
+                className="text-white/90 hover:text-orbit-electric transition-colors py-3 px-4 rounded-lg hover:bg-white/5 min-h-[44px] flex items-center touch-manipulation"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Home
               </Link>
               <Link 
                 href="/sobre" 
-                className="text-white/90 hover:text-orbit-electric transition-colors"
+                className="text-white/90 hover:text-orbit-electric transition-colors py-3 px-4 rounded-lg hover:bg-white/5 min-h-[44px] flex items-center touch-manipulation"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Sobre
@@ -167,7 +179,8 @@ export default function Navigation() {
                 </Button>
               )}
             </div>
-          </div>
+            </div>
+          </>
         )}
       </div>
     </nav>
