@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { useChat } from "@/contexts/ChatContext";
 import {
   ForumMessage,
   getForumMessages,
@@ -10,21 +11,25 @@ import {
   updateForumMessage,
   deleteForumMessage,
   searchForumMessages,
+  getDisplayAvatarUrl,
+  createDirectConversation,
 } from "@/lib/api";
 import { getFriendlyApiErrorMessage } from "@/lib/utils";
+import { Minus, X, RefreshCw, ExternalLink } from "lucide-react";
 
 export default function ForumWidget() {
   const { token, isAuthenticated, user } = useAuth();
+  const { setActiveConversation } = useChat();
   const [open, setOpen] = useState(false);
+  const [minimized, setMinimized] = useState(false);
   const [messages, setMessages] = useState<ForumMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [content, setContent] = useState("");
-  const [city, setCity] = useState("");
-  const [neighborhood, setNeighborhood] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [query, setQuery] = useState("");
+  const [openingChat, setOpeningChat] = useState<number | null>(null);
 
   const loadMessages = async () => {
     setLoading(true);
@@ -33,7 +38,8 @@ export default function ForumWidget() {
       const data = query.trim()
         ? await searchForumMessages(query.trim())
         : await getForumMessages();
-      setMessages(data);
+      const onlyRoot = (data || []).filter((m) => m.parentId == null);
+      setMessages(onlyRoot);
     } catch (err) {
       if (process.env.NODE_ENV !== "production") {
         console.error("[ForumWidget] Erro ao carregar mensagens:", err);
@@ -55,16 +61,14 @@ export default function ForumWidget() {
     setError("");
     try {
       if (editingId) {
-        const updated = await updateForumMessage(token, editingId, content.trim(), city, neighborhood);
+        const updated = await updateForumMessage(token, editingId, content.trim());
         setMessages((prev) => prev.map((item) => (item.id === editingId ? updated : item)));
         setEditingId(null);
       } else {
-        const created = await postForumMessage(token, content.trim(), city, neighborhood);
+        const created = await postForumMessage(token, content.trim());
         setMessages((prev) => [created, ...prev]);
       }
       setContent("");
-      setCity("");
-      setNeighborhood("");
     } catch (err) {
       if (process.env.NODE_ENV !== "production") {
         console.error("[ForumWidget] Erro ao enviar mensagem:", err);
@@ -78,8 +82,6 @@ export default function ForumWidget() {
   const handleEdit = (message: ForumMessage) => {
     setEditingId(message.id);
     setContent(message.content);
-    setCity(message.city || "");
-    setNeighborhood(message.neighborhood || "");
   };
 
   const handleDelete = async (id: number) => {
@@ -99,6 +101,21 @@ export default function ForumWidget() {
     }
   };
 
+  const openChatWithUser = async (userId: number) => {
+    if (!token || !user || userId === user.id) return;
+    setOpeningChat(userId);
+    try {
+      const { conversation } = await createDirectConversation(token, userId);
+      setActiveConversation(conversation.id, conversation);
+    } catch (err) {
+      if (process.env.NODE_ENV !== "production") {
+        console.error("[ForumWidget] Erro ao abrir conversa:", err);
+      }
+    } finally {
+      setOpeningChat(null);
+    }
+  };
+
   const formatDate = (value: string) => {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value;
@@ -110,132 +127,207 @@ export default function ForumWidget() {
     });
   };
 
+  const rootMessages = messages.filter((m) => m.parentId == null);
+
   return (
     <div className="fixed bottom-5 right-5 z-50">
       {!open && (
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 py-3 text-black font-semibold shadow-lg"
+          className="rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 py-3 text-black font-semibold shadow-lg shadow-orbit-purple/30 hover:opacity-95 transition"
         >
           💬 Fórum
         </button>
       )}
 
       {open && (
-        <div className="resize both overflow-auto rounded-2xl border border-white/10 bg-black/85 backdrop-blur-xl shadow-xl w-96 h-[520px] min-w-[280px] min-h-[360px]">
-          <div className="flex items-center justify-between border-b border-white/10 px-4 py-2">
-            <div className="text-sm font-semibold text-white">Fórum</div>
-            <div className="flex items-center gap-2 text-xs text-white/60">
-              <button type="button" onClick={loadMessages} className="hover:text-white">
-                Atualizar
-              </button>
-              <Link href="/forum" className="hover:text-white">
-                Abrir
-              </Link>
-              <button type="button" onClick={() => setOpen(false)} className="hover:text-white">
-                Fechar
-              </button>
-            </div>
-          </div>
-
-          <div className="px-4 py-3">
-            {!isAuthenticated && (
-              <div className="mb-3 rounded-lg border border-white/10 bg-white/5 p-2 text-xs text-white/70">
-                Faça login para publicar. Você pode ler todas as mensagens.
-                <Link href="/entrar" className="ml-2 text-orbit-electric hover:underline">
-                  Entrar
-                </Link>
-              </div>
-            )}
-
-            {error && (
-              <div className="mb-3 rounded-lg border border-red-500/40 bg-red-500/10 p-2 text-xs text-red-200">
-                {error}
-              </div>
-            )}
-
-            <div className="mb-3 space-y-2">
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    loadMessages();
-                  }
-                }}
-                placeholder="Buscar por pessoa ou cidade..."
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-white placeholder:text-white/40 focus:outline-none"
-              />
-              {loading ? (
-                <div className="text-xs text-white/60">Carregando mensagens...</div>
-              ) : (
-                <>
-                  {messages.length === 0 && (
-                    <div className="text-xs text-white/60">Ainda não há mensagens.</div>
-                  )}
-                  {messages.map((message) => (
-                    <div key={message.id} className="rounded-lg border border-white/10 bg-white/5 p-2 text-xs text-white/80">
-                      <div className="flex items-center justify-between text-[10px] text-white/50">
-                        <span>{message.author}</span>
-                        <span>{formatDate(message.createdAt)}</span>
-                      </div>
-                      {(message.city || message.neighborhood) && (
-                        <div className="text-[10px] text-white/40">
-                          {[message.neighborhood, message.city].filter(Boolean).join(" • ")}
-                        </div>
-                      )}
-                      <div className="mt-1">{message.content}</div>
-                      {user?.id === message.userId && (
-                        <div className="mt-2 flex gap-2 text-[10px] text-white/50">
-                          <button type="button" onClick={() => handleEdit(message)} className="hover:text-white">
-                            Editar
-                          </button>
-                          <button type="button" onClick={() => handleDelete(message.id)} className="hover:text-white">
-                            Excluir
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <input
-                  value={city}
-                  onChange={(event) => setCity(event.target.value)}
-                  placeholder="Cidade"
-                  className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-white placeholder:text-white/40 focus:outline-none"
-                  disabled={!isAuthenticated || sending}
-                />
-                <input
-                  value={neighborhood}
-                  onChange={(event) => setNeighborhood(event.target.value)}
-                  placeholder="Bairro"
-                  className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-white placeholder:text-white/40 focus:outline-none"
-                  disabled={!isAuthenticated || sending}
-                />
-              </div>
-              <textarea
-                value={content}
-                onChange={(event) => setContent(event.target.value)}
-                placeholder={isAuthenticated ? "Escreva sua mensagem..." : "Faça login para postar"}
-                className="h-16 w-full resize-none rounded-lg border border-white/10 bg-white/5 p-2 text-xs text-white placeholder:text-white/40 focus:outline-none"
-                disabled={!isAuthenticated || sending}
-              />
+        <div
+          className="flex flex-col overflow-hidden rounded-2xl border border-orbit-purple/30 shadow-2xl shadow-orbit-purple/20 w-96 min-w-[300px] min-h-[360px]"
+          style={{
+            height: minimized ? 48 : 520,
+            background: "linear-gradient(160deg, rgba(88, 28, 135, 0.35) 0%, rgba(15, 23, 42, 0.95) 50%, rgba(30, 27, 75, 0.4) 100%)",
+            backdropFilter: "blur(16px)",
+          }}
+        >
+          {/* Header */}
+          <div className="flex shrink-0 items-center justify-between gap-2 border-b border-orbit-purple/20 px-4 py-2.5 bg-orbit-purple/15">
+            <span className="text-sm font-bold text-white/95">Fórum</span>
+            <div className="flex items-center gap-1">
               <button
                 type="button"
-                onClick={handleSend}
-                disabled={!isAuthenticated || sending || !content.trim()}
-                className="w-full rounded-lg bg-gradient-to-r from-orbit-electric to-orbit-purple py-2 text-xs font-semibold text-black disabled:opacity-50"
+                onClick={loadMessages}
+                className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-orbit-electric hover:bg-orbit-electric/20 transition"
+                title="Atualizar"
               >
-                {sending ? "Enviando..." : editingId ? "Salvar" : "Publicar"}
+                <RefreshCw className="h-4 w-4" />
+                <span className="hidden sm:inline">Atualizar</span>
+              </button>
+              <Link
+                href="/forum"
+                className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-blue-300 hover:bg-blue-500/20 transition"
+                title="Abrir em página cheia"
+              >
+                <ExternalLink className="h-4 w-4" />
+                <span className="hidden sm:inline">Abrir</span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => setMinimized(true)}
+                className="rounded-lg p-1.5 text-blue-300 hover:bg-blue-500/20 transition"
+                title="Minimizar"
+                aria-label="Minimizar"
+              >
+                <Minus className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => { setOpen(false); setMinimized(false); }}
+                className="rounded-lg p-1.5 text-red-300 hover:bg-red-500/20 transition"
+                title="Fechar"
+                aria-label="Fechar"
+              >
+                <X className="h-5 w-5" />
               </button>
             </div>
           </div>
+
+          {!minimized && (
+            <>
+              <div className="flex-1 overflow-auto px-4 py-3 space-y-3">
+                {!isAuthenticated && (
+                  <div className="rounded-xl border border-orbit-purple/30 bg-orbit-purple/10 p-3 text-xs text-white/80">
+                    Faça login para publicar.
+                    <Link href="/entrar" className="ml-2 text-orbit-electric hover:underline font-medium">
+                      Entrar
+                    </Link>
+                  </div>
+                )}
+
+                {error && (
+                  <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-2 text-xs text-red-200">
+                    {error}
+                  </div>
+                )}
+
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && loadMessages()}
+                  placeholder="Buscar por pessoa ou cidade..."
+                  className="w-full rounded-xl border border-orbit-purple/20 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-orbit-purple/50 focus:outline-none"
+                />
+
+                {loading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-orbit-purple border-t-transparent" />
+                  </div>
+                ) : rootMessages.length === 0 ? (
+                  <div className="py-6 text-center text-sm text-white/50">Nenhuma publicação ainda.</div>
+                ) : (
+                  <div className="space-y-3">
+                    {rootMessages.map((message) => (
+                      <div
+                        key={message.id}
+                        className="rounded-xl border border-orbit-purple/20 bg-white/5 p-3 transition hover:bg-white/[0.07]"
+                      >
+                        <div className="flex gap-3">
+                          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-orbit-electric to-orbit-purple ring-2 ring-orbit-purple/30">
+                            {getDisplayAvatarUrl(message.authorAvatarUrl) ? (
+                              <img
+                                src={getDisplayAvatarUrl(message.authorAvatarUrl)!}
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <span className="flex h-full w-full items-center justify-center text-sm font-bold text-black">
+                                {message.author.slice(0, 2).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center justify-between gap-1">
+                              <button
+                                type="button"
+                                onClick={() => openChatWithUser(message.userId)}
+                                disabled={!user || message.userId === user.id || openingChat === message.userId}
+                                className="font-semibold text-white/95 hover:text-orbit-electric hover:underline text-left disabled:opacity-60 disabled:no-underline"
+                              >
+                                {message.author}
+                              </button>
+                              <span className="text-[10px] text-white/50">{formatDate(message.createdAt)}</span>
+                            </div>
+                            <p className="mt-0.5 text-[11px] text-white/50">
+                              {[
+                                message.neighborhood,
+                                message.city,
+                                message.authorState,
+                                message.authorAge != null ? `${message.authorAge} anos` : "",
+                              ]
+                                .filter(Boolean)
+                                .join(" • ") || "—"}
+                            </p>
+                            <p className="mt-1.5 text-sm text-white/90 whitespace-pre-wrap break-words">
+                              {message.content}
+                            </p>
+                            {user?.id === message.userId && (
+                              <div className="mt-2 flex gap-3 text-[11px]">
+                                <button
+                                  type="button"
+                                  onClick={() => handleEdit(message)}
+                                  className="text-orbit-electric hover:underline"
+                                >
+                                  Editar
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDelete(message.id)}
+                                  className="text-red-400 hover:underline"
+                                >
+                                  Excluir
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="space-y-2 pt-2">
+                  <textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder={isAuthenticated ? "Escreva sua mensagem..." : "Faça login para postar"}
+                    className="min-h-[80px] w-full resize-none rounded-xl border border-orbit-purple/20 bg-white/5 p-3 text-sm text-white placeholder:text-white/40 focus:border-orbit-purple/50 focus:outline-none disabled:opacity-50"
+                    disabled={!isAuthenticated || sending}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSend}
+                    disabled={!isAuthenticated || sending || !content.trim()}
+                    className="w-full rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple py-2.5 text-sm font-semibold text-black shadow-lg shadow-orbit-purple/30 disabled:opacity-50 hover:opacity-95 transition"
+                  >
+                    {sending ? "Enviando..." : editingId ? "Salvar" : "Publicar"}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
+          {minimized && (
+            <div className="flex items-center justify-between px-4 py-2">
+              <span className="text-xs text-white/70">Fórum minimizado</span>
+              <button
+                type="button"
+                onClick={() => setMinimized(false)}
+                className="rounded-lg px-3 py-1.5 text-xs font-medium text-orbit-electric hover:bg-orbit-electric/20 transition"
+              >
+                Expandir
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
