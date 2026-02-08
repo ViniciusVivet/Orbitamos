@@ -133,7 +133,7 @@ export default function GroupInfoModal({
                   } finally {
                     setUploadingAvatar(false);
                     e.target.value = "";
-                  }}
+                  }
                 }}
               />
               <Button
