@@ -127,6 +127,16 @@ tail -f ~/app/app.log
 
 ---
 
+## Upload de arquivos (avatar de grupo, foto de perfil)
+
+Na EC2 o diretório de upload é persistente (diferente de Render). Para a foto do grupo e a foto de perfil funcionarem:
+
+- **`API_BASE_URL`** no `ec2-env.sh` deve ser a URL **HTTPS do CloudFront** (ex.: `https://SEU_ID.cloudfront.net`). O backend usa essa URL para montar as URLs das imagens; se estiver errada, o front recebe link quebrado (404).
+- **`app.upload-dir`** (ou padrão `./uploads`): a aplicação precisa ter permissão de escrita. Na VM, por exemplo: `mkdir -p ~/app/uploads && chmod 755 ~/app/uploads`. Se o JAR rodar de outro diretório, use caminho absoluto em `app.upload-dir`.
+- O front chama a API via CloudFront; as URLs de imagem retornadas (ex.: `/api/uploads/avatars/groups/9/xxx.jpg`) são acessadas pelo mesmo domínio CloudFront, então Mixed Content não ocorre.
+
+---
+
 ## Checklist rápido
 
 - [ ] Nginx na EC2: porta 80, `default_server`, proxy para 127.0.0.1:8080.
@@ -134,3 +144,4 @@ tail -f ~/app/app.log
 - [ ] CloudFront origem: **HTTP only**, porta **80** (não HTTPS/443).
 - [ ] Comportamento `/api/*` ou default: métodos GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE; cache desabilitado para API.
 - [ ] Vercel: `NEXT_PUBLIC_API_URL` com a URL HTTPS do CloudFront + `/api`.
+- [ ] EC2: `API_BASE_URL` = URL HTTPS do CloudFront; diretório de upload existente e com permissão de escrita.

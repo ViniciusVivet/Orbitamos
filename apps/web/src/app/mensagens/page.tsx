@@ -50,7 +50,10 @@ export default function MensagensPage() {
   const [groupUserIds, setGroupUserIds] = useState<number[]>([]);
   const [groupAvatarUrl, setGroupAvatarUrl] = useState("");
   const [groupAvatarFile, setGroupAvatarFile] = useState<File | null>(null);
+  const [groupAvatarPreviewUrl, setGroupAvatarPreviewUrl] = useState<string | null>(null);
   const [uploadingGroupAvatar, setUploadingGroupAvatar] = useState(false);
+  const [groupAvatarUploadError, setGroupAvatarUploadError] = useState<string | null>(null);
+  const [groupAvatarUploadErrorConvId, setGroupAvatarUploadErrorConvId] = useState<number | null>(null);
   const [groupInfoOpen, setGroupInfoOpen] = useState(false);
   const [clickedMessageId, setClickedMessageId] = useState<number | null>(null);
   const [otherUserLastSeen, setOtherUserLastSeen] = useState<string | null>(null);
@@ -64,6 +67,16 @@ export default function MensagensPage() {
   }, []);
 
   useChatWebSocket(token, selectedId, user?.id, appendMessage, () => {}, false);
+
+  useEffect(() => {
+    if (!groupAvatarFile) {
+      setGroupAvatarPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(groupAvatarFile);
+    setGroupAvatarPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [groupAvatarFile]);
 
   useEffect(() => {
     if (!token) return;
@@ -167,7 +180,9 @@ export default function MensagensPage() {
   const startGroup = async () => {
     const name = groupName.trim();
     if (!token || !name) return;
+    setGroupAvatarUploadError(null);
     setUploadingGroupAvatar(true);
+    const fileToUpload = groupAvatarFile;
     try {
       const { conversation } = await createGroupConversation(token, name, groupUserIds, groupAvatarUrl.trim() || undefined);
       setConversations((prev) => [conversation, ...prev.filter((c) => c.id !== conversation.id)]);
@@ -177,12 +192,15 @@ export default function MensagensPage() {
       setGroupUserIds([]);
       setGroupAvatarUrl("");
       setGroupAvatarFile(null);
-      if (groupAvatarFile) {
-        uploadGroupAvatar(token, conversation.id, groupAvatarFile)
-          .then(({ conversation: updated }) => {
-            setConversations((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
-          })
-          .catch((e) => console.error("Erro ao enviar foto do grupo:", e));
+      if (fileToUpload) {
+        try {
+          const { conversation: updated } = await uploadGroupAvatar(token, conversation.id, fileToUpload);
+          setConversations((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+        } catch (uploadErr) {
+          const msg = uploadErr instanceof Error ? uploadErr.message : "Erro ao enviar foto do grupo";
+          setGroupAvatarUploadError(msg);
+          setGroupAvatarUploadErrorConvId(conversation.id);
+        }
       }
     } catch (e) {
       console.error("Erro ao criar grupo:", e);
@@ -458,11 +476,17 @@ export default function MensagensPage() {
                   )}
                 </div>
                 {selectedConv?.type === "GROUP" && (
-                  <button type="button" onClick={() => setGroupInfoOpen(true)} className="shrink-0 flex h-10 w-10 items-center justify-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white" aria-label="Info do grupo">
+                  <button type="button" onClick={() => { setGroupInfoOpen(true); if (selectedId === groupAvatarUploadErrorConvId) { setGroupAvatarUploadError(null); setGroupAvatarUploadErrorConvId(null); } }} className="shrink-0 flex h-10 w-10 items-center justify-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white" aria-label="Info do grupo">
                     <Info className="h-5 w-5" />
                   </button>
                 )}
               </div>
+              {groupAvatarUploadError && selectedId === groupAvatarUploadErrorConvId && (
+                <div className="shrink-0 rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-2 text-sm text-amber-200 mx-4 mt-2 flex items-center justify-between gap-2">
+                  <span>{groupAvatarUploadError} Altere em Info do grupo (ícone ao lado).</span>
+                  <button type="button" onClick={() => { setGroupAvatarUploadError(null); setGroupAvatarUploadErrorConvId(null); }} className="text-amber-300 hover:text-amber-100" aria-label="Fechar">✕</button>
+                </div>
+              )}
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {loadingMessages ? (
                   <div className="flex justify-center py-12">
@@ -610,6 +634,11 @@ export default function MensagensPage() {
             />
             <p className="text-sm text-white/60 mb-1">Foto do grupo (opcional)</p>
             <div className="flex flex-col gap-2 mb-3">
+              {groupAvatarPreviewUrl && (
+                <div className="flex justify-center">
+                  <img src={groupAvatarPreviewUrl} alt="Preview" className="h-20 w-20 rounded-full object-cover ring-2 ring-orbit-purple/40" />
+                </div>
+              )}
               <label className="flex w-fit cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-white/30 bg-white/5 px-3 py-2 text-sm text-white/80 hover:bg-white/10">
                 <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden" onChange={(e) => setGroupAvatarFile(e.target.files?.[0] ?? null)} />
                 {groupAvatarFile ? `📷 ${groupAvatarFile.name}` : "📷 Enviar imagem (JPG, PNG, GIF, WebP)"}
@@ -639,7 +668,7 @@ export default function MensagensPage() {
               ))}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => { setNewGroupOpen(false); setGroupName(""); setGroupUserIds([]); setGroupAvatarUrl(""); setGroupAvatarFile(null); }}>
+              <Button variant="outline" className="flex-1" onClick={() => { setNewGroupOpen(false); setGroupName(""); setGroupUserIds([]); setGroupAvatarUrl(""); setGroupAvatarFile(null); setGroupAvatarUploadError(null); setGroupAvatarUploadErrorConvId(null); }}>
                 Cancelar
               </Button>
               <Button className="flex-1 bg-orbit-purple" onClick={startGroup} disabled={!groupName.trim() || uploadingGroupAvatar}>

@@ -428,7 +428,7 @@ public class ChatController {
             Map<String, Object> convMap = conversationToMap(c, me);
             return ResponseEntity.ok(Map.of("success", true, "avatarUrl", avatarUrl, "conversation", convMap));
         } catch (IOException e) {
-            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Erro ao salvar a imagem"));
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Erro ao salvar a imagem no servidor. Verifique permissões do diretório de upload (app.upload-dir) e API_BASE_URL (EC2/CloudFront)."));
         }
     }
 
