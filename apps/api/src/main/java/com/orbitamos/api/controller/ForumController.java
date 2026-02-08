@@ -224,6 +224,7 @@ public class ForumController {
         item.put("authorAvatarUrl", message.getUser().getAvatarUrl() != null ? message.getUser().getAvatarUrl() : "");
         item.put("city", message.getCity());
         item.put("neighborhood", message.getNeighborhood());
+        item.put("authorState", message.getUser().getState() != null ? message.getUser().getState() : "");
         Integer authorAge = null;
         if (message.getUser().getBirthDate() != null) {
             authorAge = Period.between(message.getUser().getBirthDate(), LocalDate.now()).getYears();

@@ -245,6 +245,8 @@ export interface ForumMessage {
   authorAvatarUrl?: string | null;
   city?: string | null;
   neighborhood?: string | null;
+  /** Estado (UF) do autor, do perfil. */
+  authorState?: string | null;
   /** Idade do autor (calculada a partir da data de nascimento do perfil). */
   authorAge?: number | null;
   parentId?: number | null;

@@ -34,6 +34,7 @@ function formatDate(value: string): string {
 }
 
 function AuthorAvatar({ name, avatarUrl }: { name: string; avatarUrl?: string | null }) {
+  const [imgFailed, setImgFailed] = useState(false);
   const initials = name
     .split(" ")
     .map((n) => n[0])
@@ -41,10 +42,16 @@ function AuthorAvatar({ name, avatarUrl }: { name: string; avatarUrl?: string | 
     .join("")
     .toUpperCase();
   const displayUrl = getDisplayAvatarUrl(avatarUrl ?? undefined);
+  const showImg = displayUrl && !imgFailed;
   return (
     <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-orbit-electric to-orbit-purple text-sm font-bold text-black ring-2 ring-white/10">
-      {displayUrl ? (
-        <img src={displayUrl} alt="" className="h-full w-full object-cover" />
+      {showImg ? (
+        <img
+          src={displayUrl}
+          alt=""
+          className="h-full w-full object-cover"
+          onError={() => setImgFailed(true)}
+        />
       ) : (
         <span>{initials || "?"}</span>
       )}
@@ -87,7 +94,8 @@ export default function ForumPage() {
   const loadReplies = useCallback(async (parentId: number) => {
     try {
       const replies = await getForumMessages(parentId);
-      setRepliesByParent((prev) => ({ ...prev, [parentId]: replies }));
+      const onlyRepliesToThisParent = replies.filter((r) => r.parentId === parentId);
+      setRepliesByParent((prev) => ({ ...prev, [parentId]: onlyRepliesToThisParent }));
     } catch {
       setRepliesByParent((prev) => ({ ...prev, [parentId]: [] }));
     }
@@ -336,14 +344,25 @@ export default function ForumPage() {
                   .filter((m) => m.parentId == null)
                   .map((message) => (
                     <li key={message.id}>
-                      <Card className="border-white/10 bg-gray-900/40 transition-colors hover:border-white/15 hover:bg-gray-900/60">
+                      <Card
+                        className="border-l-4 transition-colors hover:opacity-95"
+                        style={{
+                          backgroundColor: message.topicColor
+                            ? `${message.topicColor}18`
+                            : "rgba(17, 24, 39, 0.4)",
+                          borderLeftColor: message.topicColor || "#00D4FF",
+                          borderTopColor: "rgba(255,255,255,0.1)",
+                          borderRightColor: "rgba(255,255,255,0.1)",
+                          borderBottomColor: "rgba(255,255,255,0.1)",
+                        }}
+                      >
                         {(message.topicTitle || message.topicEmoji) && (
                           <div
-                            className="flex items-center gap-3 rounded-t-xl border-b border-l-4 border-white/10 px-5 py-3"
+                            className="flex items-center gap-3 rounded-t-xl border-b border-white/10 px-5 py-3"
                             style={{
                               backgroundColor: message.topicColor
-                                ? `${message.topicColor}20`
-                                : "rgba(0,212,255,0.1)",
+                                ? `${message.topicColor}30`
+                                : "rgba(0,212,255,0.15)",
                               borderLeftColor: message.topicColor || "#00D4FF",
                             }}
                           >
@@ -375,6 +394,7 @@ export default function ForumPage() {
                                 {[
                                   message.neighborhood,
                                   message.city,
+                                  message.authorState,
                                   message.authorAge != null ? `${message.authorAge} anos` : "",
                                 ]
                                   .filter(Boolean)
@@ -414,9 +434,11 @@ export default function ForumPage() {
                                   </>
                                 )}
                               </div>
-                              {(repliesByParent[message.id]?.length ?? 0) > 0 && (
+                              {((repliesByParent[message.id] ?? []).filter((r) => r.parentId === message.id).length > 0) && (
                                 <div className="mt-4 pl-4 border-l-2 border-white/10 space-y-3">
-                                  {repliesByParent[message.id]?.map((reply) => (
+                                  {(repliesByParent[message.id] ?? [])
+                                    .filter((reply) => reply.parentId === message.id)
+                                    .map((reply) => (
                                     <div key={reply.id} className="flex gap-3">
                                       <AuthorAvatar name={reply.author} avatarUrl={reply.authorAvatarUrl} />
                                       <div className="min-w-0 flex-1">
@@ -430,17 +452,16 @@ export default function ForumPage() {
                                           </button>
                                           <span className="text-xs text-white/50">{formatDate(reply.createdAt)}</span>
                                         </div>
-                                        {(reply.neighborhood || reply.city || reply.authorAge != null) && (
-                                          <p className="mt-0.5 text-xs text-white/50">
-                                            {[
-                                              reply.neighborhood,
-                                              reply.city,
-                                              reply.authorAge != null ? `${reply.authorAge} anos` : "",
-                                            ]
-                                              .filter(Boolean)
-                                              .join(" • ")}
-                                          </p>
-                                        )}
+                                        <p className="mt-0.5 text-xs text-white/50">
+                                          {[
+                                            reply.neighborhood,
+                                            reply.city,
+                                            reply.authorState,
+                                            reply.authorAge != null ? `${reply.authorAge} anos` : "",
+                                          ]
+                                            .filter(Boolean)
+                                            .join(" • ") || "—"}
+                                        </p>
                                         <p className="mt-1 whitespace-pre-wrap text-sm text-white/80">{reply.content}</p>
                                       </div>
                                     </div>
