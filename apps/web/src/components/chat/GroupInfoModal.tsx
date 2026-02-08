@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   updateGroupConversation,
   removeGroupParticipant,
@@ -38,6 +38,7 @@ export default function GroupInfoModal({
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [addUserOpen, setAddUserOpen] = useState(false);
   const [removingId, setRemovingId] = useState<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isCreator = currentUserId != null && conversation.createdByUserId === currentUserId;
   const participantIds = conversation.participants.map((p) => p.id);
@@ -105,11 +106,47 @@ export default function GroupInfoModal({
           </button>
         </div>
 
-        <div className="flex justify-center mb-4">
-          {getDisplayAvatarUrl(conversation.avatarUrl) ? (
-            <img src={getDisplayAvatarUrl(conversation.avatarUrl)!} alt="" className="h-20 w-20 rounded-full object-cover ring-2 ring-orbit-purple/40" />
-          ) : (
-            <span className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-orbit-purple/40 to-orbit-electric/40 text-3xl">👥</span>
+        <div className="flex flex-col items-center mb-4">
+          <div className="flex justify-center mb-3">
+            {getDisplayAvatarUrl(conversation.avatarUrl) ? (
+              <img src={getDisplayAvatarUrl(conversation.avatarUrl)!} alt="" className="h-20 w-20 rounded-full object-cover ring-2 ring-orbit-purple/40" />
+            ) : (
+              <span className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-orbit-purple/40 to-orbit-electric/40 text-3xl">👥</span>
+            )}
+          </div>
+          {isCreator && (
+            <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file || !token) return;
+                  setUploadingAvatar(true);
+                  try {
+                    const { conversation: updated } = await uploadGroupAvatar(token, conversation.id, file);
+                    onUpdate(updated);
+                  } catch (err) {
+                    console.error(err);
+                  } finally {
+                    setUploadingAvatar(false);
+                    e.target.value = "";
+                  }}
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="border-orbit-purple/50 text-orbit-purple hover:bg-orbit-purple/20"
+                disabled={uploadingAvatar}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {uploadingAvatar ? "⏳ Enviando..." : "✏️ Editar foto"}
+              </Button>
+            </>
           )}
         </div>
 
@@ -117,34 +154,8 @@ export default function GroupInfoModal({
           <>
             <label className="block text-sm text-white/60 mb-1">Nome do grupo</label>
             <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="mb-3 bg-white/10 border-white/20 text-white" placeholder="Nome" />
-            <p className="text-sm text-white/60 mb-1">Foto do grupo</p>
-            <div className="flex flex-col gap-2 mb-3">
-              <label className="flex w-fit cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-white/30 bg-white/5 px-3 py-2 text-sm text-white/80 hover:bg-white/10">
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/gif,image/webp"
-                  className="hidden"
-                  disabled={uploadingAvatar}
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file || !token) return;
-                    setUploadingAvatar(true);
-                    try {
-                      const { conversation: updated } = await uploadGroupAvatar(token, conversation.id, file);
-                      onUpdate(updated);
-                    } catch (err) {
-                      console.error(err);
-                    } finally {
-                      setUploadingAvatar(false);
-                      e.target.value = "";
-                    }
-                  }}
-                />
-                {uploadingAvatar ? "⏳ Enviando..." : "📷 Enviar nova foto"}
-              </label>
-              <span className="text-xs text-white/50">ou URL:</span>
-              <Input value={editAvatarUrl} onChange={(e) => setEditAvatarUrl(e.target.value)} className="bg-white/10 border-white/20 text-white" placeholder="https://..." />
-            </div>
+            <p className="text-sm text-white/60 mb-1">Foto do grupo (URL alternativa)</p>
+            <Input value={editAvatarUrl} onChange={(e) => setEditAvatarUrl(e.target.value)} className="mb-3 bg-white/10 border-white/20 text-white" placeholder="https://..." />
             <Button className="w-full mb-4 bg-orbit-purple" onClick={handleSave} disabled={saving}>
               {saving ? "Salvando..." : "Salvar alterações"}
             </Button>
