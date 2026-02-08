@@ -15,7 +15,7 @@ import {
   createDirectConversation,
 } from "@/lib/api";
 import { getFriendlyApiErrorMessage } from "@/lib/utils";
-import { Minus, X, RefreshCw, ExternalLink } from "lucide-react";
+import { Minus, X, RefreshCw, ExternalLink, Maximize2 } from "lucide-react";
 
 export default function ForumWidget() {
   const { token, isAuthenticated, user } = useAuth();
@@ -130,7 +130,7 @@ export default function ForumWidget() {
   const rootMessages = messages.filter((m) => m.parentId == null);
 
   return (
-    <div className="fixed bottom-5 right-5 z-50">
+    <div className={`fixed right-5 z-50 ${minimized ? "bottom-0" : "bottom-5"}`}>
       {!open && (
         <button
           type="button"
@@ -143,43 +143,60 @@ export default function ForumWidget() {
 
       {open && (
         <div
-          className="flex flex-col overflow-hidden rounded-2xl border border-orbit-purple/30 shadow-2xl shadow-orbit-purple/20 w-96 min-w-[300px] min-h-[360px]"
+          className={`flex flex-col overflow-hidden border border-orbit-purple/30 shadow-2xl shadow-orbit-purple/20 ${minimized ? "rounded-t-2xl w-72 min-w-[200px]" : "rounded-2xl w-96 min-w-[300px] min-h-[360px]"}`}
           style={{
-            height: minimized ? 48 : 520,
+            height: minimized ? undefined : 520,
+            minHeight: minimized ? 0 : undefined,
             background: "linear-gradient(160deg, rgba(88, 28, 135, 0.35) 0%, rgba(15, 23, 42, 0.95) 50%, rgba(30, 27, 75, 0.4) 100%)",
             backdropFilter: "blur(16px)",
           }}
         >
-          {/* Header */}
+          {/* Header — quando minimizado é só a barrinha; clicar em Expandir volta */}
           <div className="flex shrink-0 items-center justify-between gap-2 border-b border-orbit-purple/20 px-4 py-2.5 bg-orbit-purple/15">
             <span className="text-sm font-bold text-white/95">Fórum</span>
             <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={loadMessages}
-                className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-orbit-electric hover:bg-orbit-electric/20 transition"
-                title="Atualizar"
-              >
-                <RefreshCw className="h-4 w-4" />
-                <span className="hidden sm:inline">Atualizar</span>
-              </button>
-              <Link
-                href="/forum"
-                className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-blue-300 hover:bg-blue-500/20 transition"
-                title="Abrir em página cheia"
-              >
-                <ExternalLink className="h-4 w-4" />
-                <span className="hidden sm:inline">Abrir</span>
-              </Link>
-              <button
-                type="button"
-                onClick={() => setMinimized(true)}
-                className="rounded-lg p-1.5 text-blue-300 hover:bg-blue-500/20 transition"
-                title="Minimizar"
-                aria-label="Minimizar"
-              >
-                <Minus className="h-5 w-5" />
-              </button>
+              {!minimized && (
+                <>
+                  <button
+                    type="button"
+                    onClick={loadMessages}
+                    className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-orbit-electric hover:bg-orbit-electric/20 transition"
+                    title="Atualizar"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    <span className="hidden sm:inline">Atualizar</span>
+                  </button>
+                  <Link
+                    href="/forum"
+                    className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-blue-300 hover:bg-blue-500/20 transition"
+                    title="Abrir em página cheia"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    <span className="hidden sm:inline">Abrir</span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setMinimized(true)}
+                    className="rounded-lg p-1.5 text-blue-300 hover:bg-blue-500/20 transition"
+                    title="Minimizar"
+                    aria-label="Minimizar"
+                  >
+                    <Minus className="h-5 w-5" />
+                  </button>
+                </>
+              )}
+              {minimized && (
+                <button
+                  type="button"
+                  onClick={() => setMinimized(false)}
+                  className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-blue-300 hover:bg-blue-500/20 transition"
+                  title="Expandir"
+                  aria-label="Expandir"
+                >
+                  <Maximize2 className="h-5 w-5" />
+                  <span className="hidden sm:inline">Expandir</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => { setOpen(false); setMinimized(false); }}
@@ -229,7 +246,14 @@ export default function ForumWidget() {
                     {rootMessages.map((message) => (
                       <div
                         key={message.id}
-                        className="rounded-xl border border-orbit-purple/20 bg-white/5 p-3 transition hover:bg-white/[0.07]"
+                        className="rounded-xl border border-orbit-purple/20 p-3 transition hover:opacity-95"
+                        style={{
+                          backgroundColor: message.topicColor
+                            ? `${message.topicColor}50`
+                            : "rgba(255,255,255,0.05)",
+                          borderLeftColor: message.topicColor || undefined,
+                          borderLeftWidth: message.topicColor ? 4 : undefined,
+                        }}
                       >
                         <div className="flex gap-3">
                           <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-orbit-electric to-orbit-purple ring-2 ring-orbit-purple/30">
@@ -314,19 +338,6 @@ export default function ForumWidget() {
                 </div>
               </div>
             </>
-          )}
-
-          {minimized && (
-            <div className="flex items-center justify-between px-4 py-2">
-              <span className="text-xs text-white/70">Fórum minimizado</span>
-              <button
-                type="button"
-                onClick={() => setMinimized(false)}
-                className="rounded-lg px-3 py-1.5 text-xs font-medium text-orbit-electric hover:bg-orbit-electric/20 transition"
-              >
-                Expandir
-              </button>
-            </div>
           )}
         </div>
       )}

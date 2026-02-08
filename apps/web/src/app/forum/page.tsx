@@ -348,7 +348,7 @@ export default function ForumPage() {
                         className="border-l-4 transition-colors hover:opacity-95"
                         style={{
                           backgroundColor: message.topicColor
-                            ? `${message.topicColor}18`
+                            ? `${message.topicColor}50`
                             : "rgba(17, 24, 39, 0.4)",
                           borderLeftColor: message.topicColor || "#00D4FF",
                           borderTopColor: "rgba(255,255,255,0.1)",
@@ -361,7 +361,7 @@ export default function ForumPage() {
                             className="flex items-center gap-3 rounded-t-xl border-b border-white/10 px-5 py-3"
                             style={{
                               backgroundColor: message.topicColor
-                                ? `${message.topicColor}30`
+                                ? `${message.topicColor}70`
                                 : "rgba(0,212,255,0.15)",
                               borderLeftColor: message.topicColor || "#00D4FF",
                             }}
