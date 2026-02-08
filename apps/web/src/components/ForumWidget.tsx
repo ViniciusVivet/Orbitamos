@@ -15,11 +15,15 @@ import {
   createDirectConversation,
 } from "@/lib/api";
 import { getFriendlyApiErrorMessage } from "@/lib/utils";
-import { Minus, X, RefreshCw, ExternalLink, Maximize2 } from "lucide-react";
+import { Minus, X, RefreshCw, ExternalLink, Maximize2, GripVertical } from "lucide-react";
+import { useDraggablePosition } from "@/hooks/useDraggablePosition";
+
+const FORUM_POSITION_KEY = "orbitamos_forum_widget_position";
 
 export default function ForumWidget() {
   const { token, isAuthenticated, user } = useAuth();
   const { setActiveConversation } = useChat();
+  const { positionStyle, startDrag } = useDraggablePosition(FORUM_POSITION_KEY, 20, 20);
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [messages, setMessages] = useState<ForumMessage[]>([]);
@@ -130,15 +134,25 @@ export default function ForumWidget() {
   const rootMessages = messages.filter((m) => m.parentId == null);
 
   return (
-    <div className={`fixed right-5 z-50 ${minimized ? "bottom-0" : "bottom-5"}`}>
+    <div className="fixed z-50" style={positionStyle}>
       {!open && (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 py-3 text-black font-semibold shadow-lg shadow-orbit-purple/30 hover:opacity-95 transition"
-        >
-          💬 Fórum
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onMouseDown={startDrag}
+            className="flex cursor-grab items-center justify-center rounded-full p-2 text-white/70 hover:bg-white/10 hover:text-white active:cursor-grabbing"
+            aria-label="Arrastar para reposicionar"
+          >
+            <GripVertical className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 py-3 text-black font-semibold shadow-lg shadow-orbit-purple/30 hover:opacity-95 transition"
+          >
+            💬 Fórum
+          </button>
+        </div>
       )}
 
       {open && (
@@ -151,8 +165,16 @@ export default function ForumWidget() {
             backdropFilter: "blur(16px)",
           }}
         >
-          {/* Header — quando minimizado é só a barrinha; clicar em Expandir volta */}
-          <div className="flex shrink-0 items-center justify-between gap-2 border-b border-orbit-purple/20 px-4 py-2.5 bg-orbit-purple/15">
+          {/* Header — quando minimizado é só a barrinha; clicar em Expandir volta; arrastar pelo grip */}
+          <div className="flex shrink-0 items-center justify-between gap-2 border-b border-orbit-purple/20 px-2 py-2.5 bg-orbit-purple/15">
+            <button
+              type="button"
+              onMouseDown={startDrag}
+              className="flex cursor-grab shrink-0 items-center justify-center rounded-lg p-1.5 text-white/70 hover:bg-white/10 hover:text-white active:cursor-grabbing"
+              aria-label="Arrastar para reposicionar"
+            >
+              <GripVertical className="h-5 w-5" />
+            </button>
             <span className="text-sm font-bold text-white/95">Fórum</span>
             <div className="flex items-center gap-1">
               {!minimized && (

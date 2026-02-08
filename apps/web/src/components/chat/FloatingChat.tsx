@@ -14,7 +14,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { MessageCircle, Minus, X, Send, ChevronUp } from "lucide-react";
+import { MessageCircle, Minus, X, Send, ChevronUp, GripVertical } from "lucide-react";
+import { useDraggablePosition } from "@/hooks/useDraggablePosition";
 
 function formatTime(iso: string) {
   const d = new Date(iso);
@@ -84,6 +85,7 @@ export default function FloatingChat() {
   };
 
   const unread = activeConversationId != null ? (unreadByConv[activeConversationId] ?? 0) : 0;
+  const { positionStyle, startDrag } = useDraggablePosition("orbitamos_floating_chat_position", 24, 24);
 
   if (!user || !floatingVisible || activeConversationId == null || activeConversation == null) {
     return null;
@@ -95,7 +97,15 @@ export default function FloatingChat() {
 
   if (floatingMinimized) {
     return (
-      <div className="fixed bottom-6 right-6 z-[100]">
+      <div className="fixed z-[100] flex items-center gap-1" style={positionStyle}>
+        <button
+          type="button"
+          onMouseDown={startDrag}
+          className="flex cursor-grab items-center justify-center rounded-full p-2 text-white/70 hover:bg-white/10 hover:text-white active:cursor-grabbing"
+          aria-label="Arrastar para reposicionar"
+        >
+          <GripVertical className="h-6 w-6" />
+        </button>
         <button
           type="button"
           onClick={() => {
@@ -121,9 +131,17 @@ export default function FloatingChat() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-gray-900/95 shadow-2xl backdrop-blur-xl" style={{ width: 380, height: 520 }}>
-      {/* Header */}
-      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/10 bg-black/40 px-4 py-3">
+    <div className="fixed z-[100] flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-gray-900/95 shadow-2xl backdrop-blur-xl" style={{ ...positionStyle, width: 380, height: 520 }}>
+      {/* Header — arrastar pelo grip para reposicionar */}
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/10 bg-black/40 px-2 py-3">
+        <button
+          type="button"
+          onMouseDown={startDrag}
+          className="flex cursor-grab shrink-0 items-center justify-center rounded-lg p-1.5 text-white/70 hover:bg-white/10 hover:text-white active:cursor-grabbing"
+          aria-label="Arrastar para reposicionar"
+        >
+          <GripVertical className="h-5 w-5" />
+        </button>
         <div className="flex min-w-0 items-center gap-3">
           <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-orbit-electric to-orbit-purple">
             {getDisplayAvatarUrl(avatarUrl) ? (
