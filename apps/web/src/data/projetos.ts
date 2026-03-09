@@ -1,107 +1,117 @@
 import type { Projeto } from "@/types/projeto";
 
-/** Dados mockados dos projetos. Fácil trocar por API/CMS depois. */
+/** Projetos reais da Orbitamos usados como portfólio comercial. */
 export const projetos: Projeto[] = [
   {
-    slug: "landing-saaS-tech",
-    nome: "Landing SaaS Tech",
-    categoria: "landing-pages",
-    resumo: "Landing de conversão para produto B2B com foco em captação de leads e demonstração de valor.",
-    tags: ["Next.js", "Tailwind", "Framer Motion"],
-    status: "publicado",
-    link: "https://exemplo.com",
-    thumbnail: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80",
-    imagemPrincipal: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=80",
-    contexto: "Startup B2B precisava de uma página de destino única para campanhas de tráfego pago e eventos.",
-    problema: "Site institucional genérico não convertia; visitantes não entendiam o produto em poucos segundos.",
-    solucao: "Landing com hero claro, prova social, comparação antes/depois e CTA único, otimizada para mobile e performance.",
-    destaques: [
-      "Taxa de conversão 3x maior que a página anterior",
-      "Carregamento under 2s em 3G",
-      "A/B test integrado para headlines",
-    ],
-    stack: ["Next.js", "TypeScript", "Tailwind CSS", "Vercel Analytics"],
-    resultado: "Aumento de leads qualificados e redução do CPL nas campanhas.",
-  },
-  {
-    slug: "site-institucional-advocacia",
-    nome: "Site Institucional Advocacia",
+    slug: "sabrina-lashes",
+    nome: "Sabrina Lashes",
     categoria: "sites-institucionais",
-    resumo: "Presença digital profissional para escritório de advocacia com áreas de atuação e contato.",
-    tags: ["React", "Tailwind", "SEO"],
+    resumo:
+      "Site institucional para especialista em beleza, focado em presença profissional, serviços claros e contato rapido.",
+    tags: ["Site institucional", "Beleza", "WhatsApp", "Conversao local"],
     status: "publicado",
-    thumbnail: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&q=80",
-    imagemPrincipal: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1200&q=80",
-    contexto: "Escritório em expansão precisava de site confiável para captar clientes e passar credibilidade.",
-    problema: "Não tinham presença digital; contato era só por indicação e telefone.",
-    solucao: "Site institucional com identidade visual sólida, páginas por área de atuação, formulário de contato e blog para SEO.",
+    link: "https://salashes-whatsapp-funnel.vercel.app/",
+    thumbnail:
+      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&q=80&auto=format&fit=crop",
+    imagemPrincipal:
+      "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?w=1400&q=80&auto=format&fit=crop",
+    contexto:
+      "A Sabrina ja tinha bom trabalho no boca a boca, mas sua presenca digital era fragmentada entre Instagram e indicacoes.",
+    problema:
+      "Potenciais clientes nao encontravam facilmente informacoes sobre servicos, valores e formas de agendamento em um unico lugar.",
+    solucao:
+      "Criamos um site institucional responsivo com foco em conversao local, apresentando servicos, provas de confianca e CTA direto para WhatsApp e agendamento.",
     destaques: [
-      "Layout responsivo e acessível",
-      "SEO local e schema para escritório",
-      "Formulário integrado e WhatsApp",
+      "Visual alinhado com a identidade da marca pessoal da Sabrina",
+      "Sessao clara de servicos e beneficios com foco em confianca",
+      "CTA sempre visivel para contato rapido por WhatsApp",
     ],
-    stack: ["Next.js", "TypeScript", "Tailwind", "MDX para blog"],
-    resultado: "Primeira página no Google para o nome do escritório e aumento de contatos pelo site.",
+    stack: ["Next.js", "TypeScript", "Tailwind CSS"],
+    resultado:
+      "Presenca digital mais profissional e pronta para campanhas pagas e parcerias locais.",
   },
   {
-    slug: "dashboard-operacoes",
-    nome: "Dashboard de Operações",
-    categoria: "sistemas-dashboards",
-    resumo: "Painel para acompanhamento de métricas operacionais, ordens e indicadores em tempo quase real.",
-    tags: ["React", "Charts", "API"],
-    status: "mvp",
-    thumbnail: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80",
-    imagemPrincipal: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80",
-    contexto: "Operação logística precisava visualizar volume de pedidos, atrasos e performance por região.",
-    problema: "Dados espalhados em planilhas e e-mails; decisões atrasadas por falta de visão única.",
-    solucao: "Dashboard com gráficos, filtros por período e região, e alertas para indicadores fora da meta.",
-    destaques: [
-      "Atualização automática a cada 5 min",
-      "Exportação de relatórios em PDF",
-      "Permissões por perfil (admin/operador)",
-    ],
-    stack: ["Next.js", "Recharts", "Tailwind", "REST API"],
-    resultado: "Redução do tempo de análise e reação a problemas operacionais.",
-  },
-  {
-    slug: "loja-dropshipping",
-    nome: "Loja Dropshipping",
+    slug: "yume-moda-disrruptiva",
+    nome: "YUME – Moda Disrruptiva",
     categoria: "ecommerce",
-    resumo: "E-commerce focado em conversão com catálogo, carrinho e integração com gateways de pagamento.",
-    tags: ["Next.js", "Stripe", "E-commerce"],
+    resumo:
+      "Vitrine digital para marca autoral de moda, com foco em experiencia visual forte e identidade marcante.",
+    tags: ["E-commerce", "Moda autoral", "Branding", "Experiencia visual"],
     status: "em-evolucao",
-    thumbnail: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80",
-    imagemPrincipal: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200&q=80",
-    contexto: "Marca própria queria loja própria em vez de depender só de marketplaces.",
-    problema: "Comissões altas e pouco controle da experiência de compra nos marketplaces.",
-    solucao: "Loja com catálogo, busca, carrinho, checkout e integração com fornecedor e pagamentos.",
+    link: "https://yume-atelier.vercel.app/",
+    thumbnail:
+      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80&auto=format&fit=crop",
+    imagemPrincipal:
+      "https://images.unsplash.com/photo-1445205170230-053b83016050?w=1400&q=80&auto=format&fit=crop",
+    contexto:
+      "A YUME precisava tirar a marca do papel e ter um lugar proprio para apresentar colecoes e narrativa visual.",
+    problema:
+      "Dependencia total de redes sociais dificultava mostrar o catalogo completo e a proposta de valor da marca.",
+    solucao:
+      "Desenhamos uma loja digital com foco em storytelling de marca, vitrine limpa e espaco para colecoes, editoriais e futuras funcoes de venda.",
     destaques: [
-      "Checkout otimizado e mobile-first",
-      "Integração com API do fornecedor",
-      "Painel básico de pedidos",
+      "Identidade visual aplicada em toda a experiencia da loja",
+      "Layout pensado para fotos em destaque e banners de campanha",
+      "Arquitetura preparada para evoluir para checkout completo",
     ],
-    stack: ["Next.js", "Stripe", "Tailwind", "PostgreSQL"],
-    resultado: "Loja no ar em modo beta; próximos passos: marketing e automação de estoque.",
+    stack: ["Next.js", "TypeScript", "Tailwind CSS"],
+    resultado:
+      "Base digital pronta para crescer com novas colecoes, campanhas e integracoes de pagamento.",
   },
   {
-    slug: "automacao-relatorios",
-    nome: "Automação de Relatórios",
-    categoria: "automacoes",
-    resumo: "Pipeline que consolida dados de várias fontes e gera relatórios em PDF/Excel agendados.",
-    tags: ["Node.js", "Sheets", "PDF"],
-    status: "publicado",
-    thumbnail: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800&q=80",
-    imagemPrincipal: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=1200&q=80",
-    contexto: "Equipe comercial precisava de relatórios semanais sem trabalho manual de copiar/colar.",
-    problema: "Horas gastas toda semana montando planilhas a partir de CRM, planilhas e e-mails.",
-    solucao: "Script agendado que puxa dados das APIs e planilhas, consolida e gera PDF/Excel enviado por e-mail.",
+    slug: "kitcerto",
+    nome: "KitCerto",
+    categoria: "ecommerce",
+    resumo:
+      "Estrutura de loja digital para catalogo de kits e produtos, com foco em organizacao e experiencia mobile.",
+    tags: ["E-commerce", "Catalogo", "Mobile-first"],
+    status: "mvp",
+    link: "https://kit-certo.vercel.app/",
+    thumbnail:
+      "https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=800&q=80&auto=format&fit=crop",
+    imagemPrincipal:
+      "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?w=1400&q=80&auto=format&fit=crop",
+    contexto:
+      "A KitCerto precisava de uma estrutura de loja para organizar produtos em kits e apresentar melhor a proposta da marca.",
+    problema:
+      "A oferta de produtos ficava confusa em canais dispersos, dificultando entender o que estava incluido em cada kit.",
+    solucao:
+      "Desenvolvemos uma vitrine de produtos organizada por kits, com descricao clara, fotos em destaque e navegacao pensada para uso no celular.",
     destaques: [
-      "Execução diária/semanal agendada",
-      "Múltiplas fontes (API + Google Sheets)",
-      "Envio automático por e-mail",
+      "Catalogo organizado por kits e categorias",
+      "Experiencia otimizada para mobile",
+      "Layout preparado para receber funcoes de carrinho e checkout",
     ],
-    stack: ["Node.js", "Google Sheets API", "Puppeteer/PDF", "Cron"],
-    resultado: "Economia de ~8h/semana e relatórios sempre no mesmo formato.",
+    stack: ["Next.js", "TypeScript", "Tailwind CSS"],
+    resultado:
+      "Loja em formato MVP, com estrutura pronta para evoluir em funcoes de venda e integracoes logisticas.",
+  },
+  {
+    slug: "orbitamos-portal-tech",
+    nome: "Orbitamos Portal Tech",
+    categoria: "sistemas-dashboards",
+    resumo:
+      "Plataforma proprietaria da Orbitamos com autenticacao, area do estudante, comunidade, mentorias e produtos digitais.",
+    tags: ["Plataforma web", "Auth", "Dashboard", "Comunidade"],
+    status: "em-evolucao",
+    thumbnail:
+      "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800&q=80&auto=format&fit=crop",
+    imagemPrincipal:
+      "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?w=1400&q=80&auto=format&fit=crop",
+    contexto:
+      "A Orbitamos precisava transformar o movimento em produto digital proprio, centralizando jornadas de estudo, mentorias e comunidade.",
+    problema:
+      "Ferramentas separadas dificultavam acompanhar progresso dos estudantes, organizar conteudo e criar novas experiencias digitais.",
+    solucao:
+      "Construimos uma plataforma web autoral com login, area do estudante, trilhas de conteudo, comunidade, mensagens e espaco para novos modulos.",
+    destaques: [
+      "Autenticacao e gestao de usuarios",
+      "Area do estudante com aulas, progresso e missoes",
+      "Modulos para mentorias, comunidade e area do colaborador",
+    ],
+    stack: ["Next.js", "TypeScript", "Tailwind CSS", "Supabase/PostgreSQL"],
+    resultado:
+      "Base solida de produto para evoluir como plataforma educacional e hub de projetos da Orbitamos.",
   },
 ];
 

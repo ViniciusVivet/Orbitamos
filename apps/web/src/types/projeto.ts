@@ -9,7 +9,7 @@ export type CategoriaSlug =
 export const CATEGORIAS: { slug: CategoriaSlug; label: string }[] = [
   { slug: "landing-pages", label: "Landing Pages" },
   { slug: "sites-institucionais", label: "Sites Institucionais" },
-  { slug: "sistemas-dashboards", label: "Sistemas / Dashboards" },
+  { slug: "sistemas-dashboards", label: "Plataformas / Sistemas web" },
   { slug: "ecommerce", label: "E-commerce" },
   { slug: "automacoes", label: "Automações" },
 ];
