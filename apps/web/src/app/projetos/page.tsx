@@ -22,7 +22,7 @@ export default function ProjetosPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <ProjetosHero />
-      <div className="container mx-auto px-4 py-10">
+      <div className="container mx-auto px-4 py-6">
         <ProjetosFilters
           activeFilter={activeFilter}
           onFilter={setActiveFilter}
