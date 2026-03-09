@@ -40,6 +40,9 @@ export default function Navigation() {
             <Link href="/forum" className="text-white/90 hover:text-orbit-electric transition-colors">
               Fórum
             </Link>
+            <Link href="/projetos" className="text-white/90 hover:text-orbit-electric transition-colors">
+              Projetos
+            </Link>
             <Link href="/contato" className="text-white/90 hover:text-orbit-electric transition-colors">
               Contato
             </Link>
@@ -133,14 +136,21 @@ export default function Navigation() {
               </Link>
               <Link 
                 href="/forum" 
-                className="text-white/90 hover:text-orbit-electric transition-colors"
+                className="text-white/90 hover:text-orbit-electric transition-colors py-3 px-4 rounded-lg hover:bg-white/5 min-h-[44px] flex items-center touch-manipulation"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Fórum
               </Link>
               <Link 
+                href="/projetos" 
+                className="text-white/90 hover:text-orbit-electric transition-colors py-3 px-4 rounded-lg hover:bg-white/5 min-h-[44px] flex items-center touch-manipulation"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Projetos
+              </Link>
+              <Link 
                 href="/contato" 
-                className="text-white/90 hover:text-orbit-electric transition-colors"
+                className="text-white/90 hover:text-orbit-electric transition-colors py-3 px-4 rounded-lg hover:bg-white/5 min-h-[44px] flex items-center touch-manipulation"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Contato

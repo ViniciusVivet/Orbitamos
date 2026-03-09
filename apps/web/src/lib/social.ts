@@ -4,3 +4,6 @@ export const youtubeFeaturedEmbed = "https://www.youtube.com/embed/b7re8uY8Pf4?s
 export const discordUrl = "https://discord.gg/SEU-GRUPO";
 export const whatsappMentoriaUrl =
   "https://wa.me/5511949138973?text=Quero%20falar%20sobre%20as%20mentorias%20da%20Orbitamos";
+
+export const whatsappProjetosUrl =
+  "https://wa.me/5511949138973?text=Quero%20solicitar%20um%20or%C3%A7amento%20ou%20um%20projeto%20como%20os%20da%20Orbitamos";
