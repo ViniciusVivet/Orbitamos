@@ -1,12 +1,18 @@
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { whatsappProjetosUrl } from "@/lib/social";
 
 export default function ProjetosHero() {
   return (
-    <section className="relative overflow-hidden border-b border-white/10 bg-gradient-to-b from-black via-gray-900/50 to-black">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(0,212,255,.12),transparent_50%),radial-gradient(ellipse_at_bottom_left,rgba(139,92,246,.12),transparent_50%)]" />
-      <div className="container relative mx-auto px-4 py-10 md:py-14 lg:py-16 text-center">
+    <section className="relative overflow-hidden border-b border-white/10 min-h-[320px] md:min-h-[380px]">
+      {/* Background: imagem cosmic — cover, centralizada */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/hero-projetos.png')" }}
+        aria-hidden
+      />
+      {/* Overlay escuro para legibilidade do texto (evita muita informacao visual) */}
+      <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px]" aria-hidden />
+      <div className="container relative z-10 mx-auto px-4 py-10 md:py-14 lg:py-16 text-center">
         <p className="mb-3 text-[11px] font-medium tracking-[0.2em] text-orbit-electric/90 uppercase">
           Portfólio comercial
         </p>
