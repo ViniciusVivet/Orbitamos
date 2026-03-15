@@ -264,6 +264,32 @@ export default function EarthGlobePure({ level = 2, xp = 120, xpMax = 300 }: Pro
     };
     container.addEventListener("wheel", onWheel, { passive: false });
 
+    // Pinch-to-zoom (dois dedos no touch)
+    let pinchStartDist = 0;
+    let pinchStartZ    = targetZ;
+
+    const getTouchDist = (e: TouchEvent) => {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      return Math.hypot(dx, dy);
+    };
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        pinchStartDist = getTouchDist(e);
+        pinchStartZ    = targetZ;
+      }
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 2) return;
+      e.preventDefault(); // impede scroll da página durante o pinch
+      const dist  = getTouchDist(e);
+      // dist menor que o início = dedos se aproximando = zoom out (câmera afasta)
+      const ratio = pinchStartDist / dist;
+      targetZ = Math.max(MIN_Z, Math.min(MAX_Z, pinchStartZ * ratio));
+    };
+    container.addEventListener("touchstart", onTouchStart, { passive: true });
+    container.addEventListener("touchmove",  onTouchMove,  { passive: false });
+
     container.style.cursor = "grab";
     renderer.domElement.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("pointermove", onPointerMove);
@@ -341,7 +367,9 @@ export default function EarthGlobePure({ level = 2, xp = 120, xpMax = 300 }: Pro
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerup", onPointerUp);
       renderer.domElement.removeEventListener("pointerdown", onPointerDown);
-      container.removeEventListener("wheel", onWheel);
+      container.removeEventListener("wheel",       onWheel);
+      container.removeEventListener("touchstart",  onTouchStart);
+      container.removeEventListener("touchmove",   onTouchMove);
       renderer.dispose();
       if (renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement);
     };
@@ -349,7 +377,8 @@ export default function EarthGlobePure({ level = 2, xp = 120, xpMax = 300 }: Pro
   }, []);
 
   return (
-    <div ref={rootRef} className="relative mx-auto mt-16 h-72 w-72 md:h-96 md:w-96 select-none">
+    <>
+    <div ref={rootRef} className="relative mx-auto mt-8 h-72 w-72 md:mt-16 md:h-96 md:w-96 select-none">
 
       {/* Anéis de órbita CSS — fora do canvas, não são cortados */}
       {tier.rings >= 1 && (
@@ -432,7 +461,7 @@ export default function EarthGlobePure({ level = 2, xp = 120, xpMax = 300 }: Pro
 
       {/* Mini painel ao clicar */}
       {showPanel && (
-        <div className="absolute left-1/2 top-1/2 z-30 w-52 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-orbit-electric/40 bg-black/85 p-4 text-center backdrop-blur-xl shadow-[0_0_40px_rgba(0,212,255,0.25)]">
+        <div className="absolute left-1/2 top-1/2 z-30 w-[min(13rem,80vw)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-orbit-electric/40 bg-black/85 p-4 text-center backdrop-blur-xl shadow-[0_0_40px_rgba(0,212,255,0.25)]">
           <div className="text-[10px] font-bold tracking-widest text-orbit-electric/70 uppercase mb-1">{tier.label}</div>
           <div className="text-2xl font-extrabold text-white mb-1">Nível {level}</div>
           <div className="text-xs text-white/60 mb-3">{xp} / {xpMax} XP</div>
@@ -451,9 +480,9 @@ export default function EarthGlobePure({ level = 2, xp = 120, xpMax = 300 }: Pro
         </div>
       )}
 
-      {/* Contador "orbitando agora" — arrastável */}
+      {/* Contador "orbitando agora" — arrastável (só desktop) */}
       <div
-        className="absolute z-20 cursor-grab active:cursor-grabbing whitespace-nowrap rounded-2xl border border-orbit-electric/30 bg-black/60 px-4 py-2 backdrop-blur-md shadow-[0_0_18px_rgba(0,212,255,0.15)] hover:border-orbit-electric/60 transition-colors"
+        className="hidden md:block absolute z-20 cursor-grab active:cursor-grabbing whitespace-nowrap rounded-2xl border border-orbit-electric/30 bg-black/60 px-4 py-2 backdrop-blur-md shadow-[0_0_18px_rgba(0,212,255,0.15)] hover:border-orbit-electric/60 transition-colors"
         style={{ left: counterPos.x, top: counterPos.y }}
         onPointerDown={(e) => dragWidget(e, counterPos, setCounterPos)}
       >
@@ -463,9 +492,9 @@ export default function EarthGlobePure({ level = 2, xp = 120, xpMax = 300 }: Pro
         </span>
       </div>
 
-      {/* Botão Voltar ao Brasil — arrastável */}
+      {/* Botão Voltar ao Brasil — arrastável (só desktop) */}
       <div
-        className="absolute z-20 cursor-grab active:cursor-grabbing rounded-full border border-orbit-electric/40 bg-black/60 px-4 py-2 text-sm font-bold text-orbit-electric/80 backdrop-blur-md shadow-[0_0_10px_rgba(0,212,255,0.1)] transition-all hover:border-orbit-electric hover:text-orbit-electric hover:shadow-[0_0_16px_rgba(0,212,255,0.45)]"
+        className="hidden md:block absolute z-20 cursor-grab active:cursor-grabbing rounded-full border border-orbit-electric/40 bg-black/60 px-4 py-2 text-sm font-bold text-orbit-electric/80 backdrop-blur-md shadow-[0_0_10px_rgba(0,212,255,0.1)] transition-all hover:border-orbit-electric hover:text-orbit-electric hover:shadow-[0_0_16px_rgba(0,212,255,0.45)]"
         style={{ left: brazilPos.x, top: brazilPos.y }}
         onPointerDown={(e) => dragWidget(e, brazilPos, setBrazilPos, brazilDragged)}
         onClick={() => { if (!brazilDragged.current) goToBrazilRef.current?.(); }}
@@ -506,5 +535,23 @@ export default function EarthGlobePure({ level = 2, xp = 120, xpMax = 300 }: Pro
         }
       `}</style>
     </div>
+
+    {/* Mobile: widgets estáticos abaixo do globo — hidden em desktop */}
+    <div className="md:hidden mt-4 flex flex-col items-center gap-3 w-full px-4">
+      <div className="rounded-2xl border border-orbit-electric/30 bg-black/60 px-4 py-2 text-center backdrop-blur-md">
+        <span className="text-sm font-semibold text-white/60">
+          🌐{" "}
+          <span className="text-2xl font-extrabold text-orbit-electric" style={{ textShadow: "0 0 12px rgba(0,212,255,0.7)" }}>12</span>
+          <span className="ml-1">orbitando agora</span>
+        </span>
+      </div>
+      <button
+        onClick={() => goToBrazilRef.current?.()}
+        className="rounded-full border border-orbit-electric/40 bg-black/60 px-6 py-3 text-sm font-bold text-orbit-electric/80 backdrop-blur-md transition-all active:scale-95 min-h-[44px]"
+      >
+        🇧🇷 Voltar ao Brasil
+      </button>
+    </div>
+    </>
   );
 }
