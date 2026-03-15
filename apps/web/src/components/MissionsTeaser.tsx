@@ -2,54 +2,108 @@
 
 import Link from "next/link";
 
-export default function MissionsTeaser() {
-  const Card = ({ title, locked = false }: { title: string; locked?: boolean }) => (
-    <div className={`relative rounded-2xl border ${locked ? "border-white/10 bg-white/5" : "border-white/20 bg-white/10"} p-4 backdrop-blur-xl [transform:translateZ(12px)]`}> 
-      <div className="text-sm font-semibold">{title}</div>
-      {locked && (
-        <div className="absolute inset-0 grid place-items-center rounded-2xl bg-black/50">
-          <div className="rounded-full bg-white/10 px-3 py-1 text-xs">Entrar para desbloquear</div>
-        </div>
-      )}
-    </div>
+type Missao = {
+  id: string;
+  dificuldade: "Facil" | "Normal" | "Epica";
+  titulo: string;
+  xp: number;
+  duracao: string;
+  locked?: boolean;
+};
+
+const missoes: Missao[] = [
+  { id: "easy-study",      dificuldade: "Facil",  titulo: "10min de estudo focado",            xp: 10, duracao: "10 min", locked: false },
+  { id: "normal-linkedin", dificuldade: "Normal", titulo: "Atualizar LinkedIn com perfil dev",  xp: 25, duracao: "30 min", locked: false },
+  { id: "epic-project",    dificuldade: "Epica",  titulo: "Subir 1 projeto no GitHub",          xp: 60, duracao: "1–2 h",  locked: true  },
+];
+
+const DIFF = {
+  Facil:  { label: "Fácil",  badge: "bg-emerald-500/25 text-emerald-300 border-emerald-400/60", glow: "shadow-[0_0_24px_rgba(52,211,153,0.25)]",  border: "border-emerald-400/40", icon: "🟢" },
+  Normal: { label: "Normal", badge: "bg-sky-500/25 text-sky-200 border-sky-400/60",             glow: "shadow-[0_0_24px_rgba(56,189,248,0.25)]",   border: "border-sky-400/40",     icon: "🔵" },
+  Epica:  { label: "Épica",  badge: "bg-purple-500/30 text-purple-200 border-purple-400/70",    glow: "shadow-[0_0_28px_rgba(167,139,250,0.35)]",  border: "border-purple-400/50",  icon: "🟣" },
+};
+
+function DificuldadeBadge({ tipo }: { tipo: Missao["dificuldade"] }) {
+  const d = DIFF[tipo];
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide border ${d.badge}`}>
+      {d.icon} {d.label}
+    </span>
   );
+}
+
+export default function MissionsTeaser() {
+  const xpTotal = missoes.reduce((acc, m) => acc + m.xp, 0);
+  const xpAtual = 0;
 
   return (
-    <div className="mt-10">
-      <div className="mb-4 text-center text-white/80">Missões da Semana — desbloqueie recompensas</div>
-      <div className="relative mx-auto grid max-w-3xl grid-cols-3 gap-4">
-        <Card title="Fácil • 10min de estudo" />
-        <Card title="Normal • Atualizar LinkedIn" locked />
-        <Card title="Épica • Projeto no GitHub" locked />
-
-        {/* linha de constelação */}
-        <svg className="pointer-events-none absolute left-0 top-0 h-full w-full" viewBox="0 0 600 160">
-          <defs>
-            <linearGradient id="tgrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#00D4FF"/>
-              <stop offset="100%" stopColor="#8B5CF6"/>
-            </linearGradient>
-          </defs>
-          <path d="M 60 120 C 220 20, 380 220, 540 80" stroke="url(#tgrad)" strokeWidth="2" fill="none" opacity=".5" />
-        </svg>
+    <div>
+      {/* Barra de XP da semana */}
+      <div className="mb-1 flex items-center justify-between text-[11px]">
+        <span className="text-white/60 font-medium">XP da semana</span>
+        <span className="font-bold text-orbit-electric">{xpAtual} / {xpTotal} XP</span>
+      </div>
+      <div className="mb-4 h-2 w-full overflow-hidden rounded-full bg-white/10 shadow-inner">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple shadow-[0_0_10px_rgba(0,212,255,0.6)]"
+          style={{ width: xpAtual === 0 ? "2px" : `${(xpAtual / xpTotal) * 100}%` }}
+        />
       </div>
 
-      {/* cofre e XP fantasma */}
-      <div className="mt-6 flex items-center justify-center gap-6">
-        <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm backdrop-blur-xl animate-constPulse">🔒 Cofre da Semana</div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm backdrop-blur-xl">XP: 0/100</div>
+      {/* Cards de missão */}
+      <div className="relative mx-auto grid max-w-3xl grid-cols-1 gap-3 sm:grid-cols-3">
+        {missoes.map((m) => {
+          const d = DIFF[m.dificuldade];
+          return (
+            <div
+              key={m.id}
+              className={`relative rounded-2xl border bg-black/50 p-4 backdrop-blur-xl transition-transform hover:-translate-y-0.5 ${d.border} ${d.glow}`}
+            >
+              <div className="mb-2.5 flex items-center justify-between">
+                <DificuldadeBadge tipo={m.dificuldade} />
+                <span className="text-sm font-extrabold text-orbit-electric drop-shadow-[0_0_8px_rgba(0,212,255,0.8)]">
+                  +{m.xp} XP
+                </span>
+              </div>
+              <div className="text-sm font-bold text-white leading-snug">{m.titulo}</div>
+              <div className="mt-1.5 text-[11px] text-white/50">⏱ {m.duracao}</div>
+
+              {m.locked && (
+                <div className="absolute inset-0 grid place-items-center rounded-2xl bg-black/70 backdrop-blur-sm">
+                  <div className="flex flex-col items-center gap-1.5">
+                    <span className="text-2xl">🔒</span>
+                    <div className="rounded-full bg-white/10 border border-white/20 px-3 py-1 text-[10px] font-semibold text-white/70 text-center">
+                      Entre para desbloquear
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
-      <div className="mt-6 text-center">
-        <Link href="/entrar" className="rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple px-6 py-3 text-black font-bold inline-block">Entrar e começar agora</Link>
+      {/* Cofre da semana + CTA */}
+      <div className="mt-4 flex flex-col items-center justify-between gap-3 sm:flex-row">
+        <div className="animate-constPulse rounded-2xl border border-purple-400/40 bg-purple-500/10 px-4 py-2 text-xs font-semibold text-purple-200 shadow-[0_0_20px_rgba(139,92,246,0.2)]">
+          🏆 Cofre da Semana — complete tudo e abra o baú
+        </div>
+        <Link
+          href="/entrar"
+          className="rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple px-5 py-2 text-xs font-extrabold text-black shadow-[0_0_20px_rgba(0,212,255,0.4)] hover:shadow-[0_0_30px_rgba(0,212,255,0.6)] transition-shadow inline-flex items-center gap-1"
+        >
+          ⚡ Entrar e ganhar XP
+        </Link>
       </div>
 
       <style>{`
-        @keyframes constPulse { 0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, .35) } 70% { box-shadow: 0 0 0 12px rgba(124, 58, 237, 0) } 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0) } }
+        @keyframes constPulse {
+          0%   { box-shadow: 0 0 0 0 rgba(139,92,246,.5), 0 0 20px rgba(139,92,246,.2) }
+          70%  { box-shadow: 0 0 0 10px rgba(139,92,246,0), 0 0 20px rgba(139,92,246,.2) }
+          100% { box-shadow: 0 0 0 0 rgba(139,92,246,0), 0 0 20px rgba(139,92,246,.2) }
+        }
         .animate-constPulse { animation: constPulse 2.4s ease-in-out infinite; }
       `}</style>
     </div>
   );
 }
-
-
