@@ -1,12 +1,28 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+
+function seededRng(seed: number) {
+  let s = seed;
+  return () => {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    return (s >>> 0) / 0xffffffff;
+  };
+}
+
+const HERO_STARS = (() => {
+  const rng = seededRng(42);
+  return Array.from({ length: 140 }, () => ({
+    cx: (rng() * 800).toFixed(0),
+    cy: (rng() * 600).toFixed(0),
+    r: rng() * 1.2 + 0.2,
+  }));
+})();
 import Tilt from "@/components/Tilt";
 import Parallax from "@/components/Parallax";
 import Magnetic from "@/components/Magnetic";
 import GlobeClient from "@/components/GlobeClient";
 import SpaceShipsOverlay from "@/components/SpaceShipsOverlay";
-import XPRing from "@/components/XPRing";
 import MissionsTeaser from "@/components/MissionsTeaser";
 import ConstellationStepper from "@/components/ConstellationStepper";
 import MissionsSidebar from "@/components/MissionsSidebar";
@@ -15,7 +31,18 @@ export default function Home() {
   const instagramUrl = "https://www.instagram.com/orbitamosbr/";
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="relative min-h-screen text-white">
+      {/* Fundo cósmico em toda a página — uma camada só, sem blocos pretos */}
+      <div
+        className="fixed inset-0 -z-10 bg-black"
+        aria-hidden
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(0,212,255,.18),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_80%_50%,rgba(139,92,246,.12),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_20%_80%,rgba(0,212,255,.08),transparent_50%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black" />
+      </div>
+
       {/* HERO CÓSMICO */}
       <section className="relative overflow-hidden">
         {/* Starfield */}
@@ -28,8 +55,8 @@ export default function Home() {
                 <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
               </radialGradient>
             </defs>
-            {Array.from({ length: 140 }).map((_, i) => (
-              <circle key={i} cx={(Math.random()*800).toFixed(0)} cy={(Math.random()*600).toFixed(0)} r={Math.random()*1.2+0.2} fill="url(#g)" />
+            {HERO_STARS.map((s, i) => (
+              <circle key={i} cx={s.cx} cy={s.cy} r={s.r} fill="url(#g)" />
             ))}
           </svg>
         </Parallax>
@@ -37,34 +64,80 @@ export default function Home() {
         {/* Aurora / Nebulosa */}
         <Parallax speed={0.18} className="absolute -top-40 left-1/2 h-[600px] w-[1200px] -translate-x-1/2 rounded-full blur-3xl opacity-40 bg-[conic-gradient(from_120deg,theme(colors.orbit-electric/.7),theme(colors.orbit-purple/.6),transparent_70%)]" />
 
-        <div className="relative container mx-auto px-4 pt-36 pb-24 text-center">
+        <div className="relative container mx-auto px-4 pt-20 pb-16 text-center">
           <MissionsSidebar />
-          <div className="mx-auto mb-10 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 backdrop-blur-xl">
+          <div className="mx-auto mb-8 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 backdrop-blur-xl">
             <span className="size-2 animate-orbit rounded-full bg-orbit-electric" />
             <span className="text-xs tracking-widest text-white/80">PORTAL DA QUEBRADA QUE ORBITA TECNOLOGIA</span>
           </div>
 
-          <h1 className="mx-auto max-w-5xl bg-gradient-to-br from-orbit-electric via-white to-orbit-purple bg-clip-text text-5xl font-extrabold leading-tight text-transparent md:text-7xl">
-            Da quebrada pra tecnologia. <br className="hidden md:block"/> A gente sobe junto.
+          <h1 className="mx-auto max-w-4xl bg-gradient-to-br from-orbit-electric via-white to-orbit-purple bg-clip-text text-3xl font-extrabold leading-tight text-transparent md:text-5xl">
+            Da quebrada pra tecnologia. <br className="hidden md:block" /> A gente sobe junto.
           </h1>
 
-          <p className="mx-auto mt-6 max-w-3xl text-lg text-white/80">
+          <p className="mx-auto mt-3 max-w-xl text-sm md:text-base text-white/80">
             Movimento de educação, comunidade e cultura que leva você do subemprego ao seu primeiro trampo em T.I. em até 9 meses.
           </p>
-          <ConstellationStepper current={2} />
+
+          {/* Planeta protagonista + órbita ligando à trilha e missões */}
+          <div className="mt-10 relative">
+            {/* Planeta + HUD */}
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative mx-auto">
+                <GlobeClient />
+                <SpaceShipsOverlay />
+              </div>
+              <div className="mt-1 w-full max-w-md space-y-2 text-center">
+                <p className="text-[11px] font-semibold tracking-[0.25em] text-white/60 uppercase">
+                  Seu status em órbita
+                </p>
+                <p className="text-lg font-semibold text-white">
+                  Nível 2 · Orbit Explorer
+                </p>
+                <p className="text-sm text-white/70">
+                  XP 120 / 300 · Para subir para o Nível 3, conclua as missões da semana abaixo
+                </p>
+                <div className="mx-auto mt-2 h-2 w-full max-w-sm overflow-hidden rounded-full bg-white/10">
+                  <div className="h-full w-[40%] rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple" />
+                </div>
+              </div>
+            </div>
+
+
+            {/* Trilha + missões embaixo do planeta */}
+            <div className="mt-10 space-y-6">
+              <ConstellationStepper current={2} />
+              <div className="relative mx-auto max-w-3xl overflow-hidden rounded-2xl border border-orbit-electric/40 p-5 shadow-[0_0_40px_rgba(0,212,255,0.15),inset_0_1px_0_rgba(0,212,255,0.1)]">
+                {/* Nebulosa CSS */}
+                <div className="pointer-events-none absolute inset-0 -z-10 bg-[#02080f]" />
+                <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_60%_at_20%_50%,rgba(0,212,255,0.13),transparent_70%)]" />
+                <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_70%_at_80%_30%,rgba(139,92,246,0.18),transparent_70%)]" />
+                <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_50%_50%_at_50%_90%,rgba(0,212,255,0.08),transparent_70%)]" />
+                <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_30%_40%_at_70%_70%,rgba(167,139,250,0.12),transparent_60%)]" />
+                <p className="text-sm font-extrabold tracking-[0.2em] uppercase mb-3 text-left bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">
+                  ⚡ Próximas missões
+                </p>
+                <MissionsTeaser />
+              </div>
+            </div>
+          </div>
 
           {/* CTAs */}
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Magnetic>
               <Button
                 size="lg"
-                className="px-8 py-6 text-base font-bold bg-gradient-to-r from-orbit-electric to-orbit-purple text-black hover:from-orbit-purple hover:to-orbit-electric transform-gpu transition-all duration-200 shadow-[0_10px_0_0_rgba(0,0,0,0.35)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_4px_0_0_rgba(0,0,0,0.35)]"
+                className="px-10 py-6 text-base font-bold bg-gradient-to-r from-orbit-electric via-white to-orbit-purple text-black shadow-[0_18px_40px_rgba(0,212,255,0.40)] hover:shadow-[0_22px_55px_rgba(0,212,255,0.55)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_10px_24px_rgba(0,0,0,0.45)] border border-black/20 transform-gpu transition-all duration-150"
               >
                 🚀 Começar minha jornada
               </Button>
             </Magnetic>
             <Magnetic>
-              <Button variant="outline" size="lg" className="px-8 py-6 text-base font-bold border-white/20 text-white hover:bg-white/10">
+              <Button
+                variant="outline"
+                size="lg"
+                className="px-8 py-6 text-base font-bold border-white/20 text-white bg-white/5 backdrop-blur-xl hover:bg-white/10 hover:border-orbit-electric/40 transition-all duration-150"
+              >
                 👨‍💻 Ver mentorias
               </Button>
             </Magnetic>
@@ -72,31 +145,22 @@ export default function Home() {
               href={instagramUrl}
               target="_blank"
               rel="noreferrer"
-              className="rounded-full border border-white/20 px-6 py-3 text-base font-semibold text-white hover:bg-white/10"
+              className="rounded-full border border-white/20/80 px-6 py-3 text-base font-semibold text-white/90 hover:bg-white/10 transition-colors duration-150"
             >
               📸 Seguir no Instagram
             </Link>
           </div>
-
-          <div className="relative">
-            <GlobeClient />
-            <XPRing progress={100} />
-            <SpaceShipsOverlay />
-          </div>
-
-          {/* Teaser de Missões */}
-          <MissionsTeaser />
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24 bg-black/40">
+      {/* Features Section — glass card sobre o universo */}
+      <section className="py-24">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center text-white mb-16">
-            Por que a <span className="gradient-text">Orbitamos</span>?
-          </h2>
-          
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="rounded-2xl border border-white/10 bg-black/40 p-8 shadow-[0_0_40px_rgba(0,0,0,0.3)] backdrop-blur-xl md:p-12">
+            <h2 className="text-4xl font-bold text-center text-white mb-16">
+              Por que a <span className="gradient-text">Orbitamos</span>?
+            </h2>
+            <div className="grid md:grid-cols-3 gap-8">
             <Tilt className="[transform-style:preserve-3d]">
             <Card className="bg-white/5 backdrop-blur-xl border-white/10 hover:border-orbit-electric/40 transition-all duration-300 [transform:translateZ(20px)]">
               <CardHeader>
@@ -147,33 +211,35 @@ export default function Home() {
               </CardContent>
             </Card>
             </Tilt>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Impacto Real (números atuais) */}
+      {/* Impacto Real — glass + labels e glow */}
       <section className="py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold text-white mb-16">
-            Impacto <span className="gradient-text">real</span>
-          </h2>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="text-4xl md:text-6xl font-extrabold text-orbit-electric mb-2">1</div>
-              <div className="text-white/80">Vidas Transformadas</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl md:text-6xl font-extrabold text-orbit-purple mb-2">100%</div>
-              <div className="text-white/80">Taxa de Sucesso (amostra atual)</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl md:text-6xl font-extrabold text-orbit-electric mb-2">9</div>
-              <div className="text-white/80">Meses (trajetória típica)</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl md:text-6xl font-extrabold text-orbit-purple mb-2">R$ 1.5k+</div>
-              <div className="text-white/80">Salário de estágiario</div>
+        <div className="container mx-auto px-4">
+          <div className="rounded-2xl border border-white/10 bg-black/40 p-8 shadow-[0_0_40px_rgba(0,0,0,0.3)] backdrop-blur-xl md:p-12">
+            <h2 className="text-4xl font-bold text-center text-white mb-16">
+              Impacto <span className="gradient-text">real</span>
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+              <div>
+                <div className="text-4xl md:text-6xl font-extrabold text-orbit-electric mb-2 drop-shadow-[0_0_20px_rgba(0,212,255,0.5)]">1</div>
+                <div className="text-sm font-medium uppercase tracking-wider text-white/90">Vida transformada</div>
+              </div>
+              <div>
+                <div className="text-4xl md:text-6xl font-extrabold text-orbit-purple mb-2 drop-shadow-[0_0_20px_rgba(139,92,246,0.5)]">100%</div>
+                <div className="text-sm font-medium uppercase tracking-wider text-white/90">Sucesso (amostra)</div>
+              </div>
+              <div>
+                <div className="text-4xl md:text-6xl font-extrabold text-orbit-electric mb-2 drop-shadow-[0_0_20px_rgba(0,212,255,0.5)]">9</div>
+                <div className="text-sm font-medium uppercase tracking-wider text-white/90">Meses (média)</div>
+              </div>
+              <div>
+                <div className="text-4xl md:text-6xl font-extrabold text-orbit-purple mb-2 drop-shadow-[0_0_20px_rgba(139,92,246,0.5)]">R$ 1,5k+</div>
+                <div className="text-sm font-medium uppercase tracking-wider text-white/90">Primeiro salário</div>
+              </div>
             </div>
           </div>
         </div>
@@ -186,10 +252,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Case real: Fundador */}
+      {/* Case real: Fundador — glass sobre universo */}
       <section className="py-12">
         <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-4xl overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl">
+          <div className="mx-auto max-w-4xl overflow-hidden rounded-2xl border border-white/10 bg-black/40 p-8 shadow-[0_0_40px_rgba(0,0,0,0.3)] backdrop-blur-xl">
             <div className="flex flex-col items-start gap-6 md:flex-row md:items-center md:gap-10">
               <div className="relative h-20 w-20 shrink-0 rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple p-[2px]">
                 <div className="h-full w-full rounded-full bg-black/90 grid place-items-center text-2xl">🚀</div>
@@ -207,67 +273,78 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Metas de impacto (progresso) */}
-      <section className="py-20 bg-black/40">
+      {/* Metas de impacto — glass sobre universo */}
+      <section className="py-20">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center text-white mb-14">
-            Metas de <span className="gradient-text">impacto</span>
-          </h2>
+          <div className="rounded-2xl border border-white/10 bg-black/40 p-8 shadow-[0_0_40px_rgba(0,0,0,0.3)] backdrop-blur-xl md:p-12">
+            <h2 className="text-4xl font-bold text-center text-white mb-14">
+              Metas de <span className="gradient-text">impacto</span>
+            </h2>
+            <div className="mx-auto max-w-4xl space-y-6">
+              <div>
+                <div className="mb-2 flex items-center justify-between text-sm text-white/80">
+                  <span>2026 • Transformar 10 vidas</span>
+                  <span>1/10</span>
+                </div>
+                <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple"
+                    style={{ width: "10%" }}
+                  />
+                </div>
+              </div>
 
-        <div className="mx-auto max-w-4xl space-y-6">
-          <div>
-            <div className="mb-2 flex items-center justify-between text-sm text-white/80">
-              <span>2026 • Transformar 10 vidas</span>
-              <span>1/10</span>
-            </div>
-            <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/10">
-              <div className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple" style={{ width: `${(1/120)*100}%` }} />
+              <div>
+                <div className="mb-2 flex items-center justify-between text-sm text-white/80">
+                  <span>2027 • Alcançar 500 vidas</span>
+                  <span>1/500</span>
+                </div>
+                <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple"
+                    style={{ width: "0.2%" }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-2 flex items-center justify-between text-sm text-white/80">
+                  <span>2030 • 10.000 vidas em órbita</span>
+                  <span>1/10.000</span>
+                </div>
+                <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple"
+                    style={{ width: "0.01%" }}
+                  />
+                </div>
+              </div>
             </div>
           </div>
-
-          <div>
-            <div className="mb-2 flex items-center justify-between text-sm text-white/80">
-              <span>2027 • Alcançar 500 vidas</span>
-              <span>1/500</span>
-            </div>
-            <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/10">
-              <div className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple" style={{ width: `${(1/500)*100}%` }} />
-            </div>
-          </div>
-
-          <div>
-            <div className="mb-2 flex items-center justify-between text-sm text-white/80">
-              <span>2030 • 10.000 vidas em órbita</span>
-              <span>1/10.000</span>
-            </div>
-            <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/10">
-              <div className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple" style={{ width: `${(1/10000)*100}%` }} />
-            </div>
-          </div>
-        </div>
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-24 bg-gradient-to-r from-orbit-electric/10 to-orbit-purple/10">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold text-white mb-8">
-            Pronto para <span className="gradient-text">orbitar</span>?
-          </h2>
-          <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
-            Junte-se ao movimento que está transformando vidas através da tecnologia. 
-            Sua jornada começa aqui.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/mentorias">
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-orbit-electric to-orbit-purple text-black hover:from-orbit-purple hover:to-orbit-electric font-bold px-12 py-6 text-xl transform-gpu transition-all duration-200 shadow-[0_10px_0_0_rgba(0,0,0,0.35)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_4px_0_0_rgba(0,0,0,0.35)]"
-              >
-                🚀 Começar Minha Jornada
-              </Button>
-            </Link>
+      {/* Final CTA — glass com glow sobre universo */}
+      <section className="py-24">
+        <div className="container mx-auto px-4">
+          <div className="mx-auto max-w-3xl rounded-2xl border border-white/10 bg-black/40 p-10 shadow-[0_0_60px_rgba(0,212,255,0.15)] backdrop-blur-xl md:p-14">
+            <h2 className="text-4xl font-bold text-center text-white mb-6">
+              Pronto para <span className="gradient-text">orbitar</span>?
+            </h2>
+            <p className="text-xl text-white/80 mb-10 max-w-2xl mx-auto text-center">
+              Junte-se ao movimento que está transformando vidas através da tecnologia. 
+              Sua jornada começa aqui.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/mentorias">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-orbit-electric to-orbit-purple text-black hover:from-orbit-purple hover:to-orbit-electric font-bold px-12 py-6 text-xl shadow-[0_0_30px_rgba(0,212,255,0.4)] hover:shadow-[0_0_40px_rgba(0,212,255,0.5)] transform-gpu transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0.5"
+                >
+                  🚀 Começar Minha Jornada
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
