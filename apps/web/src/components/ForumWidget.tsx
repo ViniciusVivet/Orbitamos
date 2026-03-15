@@ -301,17 +301,17 @@ export default function ForumWidget() {
                         }}
                       >
                         <div className="flex gap-3">
-                          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-orbit-electric to-orbit-purple ring-2 ring-orbit-purple/30">
-                            {getDisplayAvatarUrl(message.authorAvatarUrl) ? (
+                          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-orbit-electric to-orbit-purple ring-2 ring-orbit-purple/30">
+                            <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-black">
+                              {message.author.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase() || "?"}
+                            </span>
+                            {getDisplayAvatarUrl(message.authorAvatarUrl) && (
                               <img
                                 src={getDisplayAvatarUrl(message.authorAvatarUrl)!}
                                 alt=""
-                                className="h-full w-full object-cover"
+                                className="absolute inset-0 h-full w-full object-cover"
+                                onError={(e) => { e.currentTarget.style.display = "none"; }}
                               />
-                            ) : (
-                              <span className="flex h-full w-full items-center justify-center text-sm font-bold text-black">
-                                {message.author.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase() || "?"}
-                              </span>
                             )}
                           </div>
                           <div className="min-w-0 flex-1">
