@@ -10,11 +10,9 @@
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3-green?style=flat-square&logo=spring)](https://spring.io/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
-[![Docker](https://img.shields.io/badge/Docker-Enabled-blue?style=flat-square&logo=docker)](https://www.docker.com/)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Contributions Welcome](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
 </div>
 
@@ -33,116 +31,6 @@ A **Orbitamos** é mais que uma empresa de tecnologia e educação - é um **mov
 
 ---
 
-## 📊 **Números que Impressionam**
-
-<div align="center">
-
-| Métrica | Resultado |
-|---------|-----------|
-| 🚀 **Pessoas Transformadas** | 01+ |
-| 📈 **Taxa de Sucesso** | 100% |
-| ⏱️ **Tempo Médio** | 9 meses |
-| 💰 **Salário Médio** | R$ 1.500+ |
-| 🏢 **Empresas Parceiras** | 0+ |
-| 🌍 **Cidades Atendidas** | 01 |
-
-</div>
-
----
-
-## 🏗️ **Arquitetura do Projeto**
-
-### 📁 **Estrutura Detalhada do Monorepo**
-
-```
-orbitamos/
-├── 📁 apps/                          # Aplicações principais
-│   ├── 📁 web/                       # Frontend Next.js 14
-│   │   ├── 📁 src/
-│   │   │   ├── 📁 app/               # App Router (Next.js 14)
-│   │   │   │   ├── 📄 page.tsx       # Home - "O Movimento"
-│   │   │   │   ├── 📁 sobre/         # Sobre - "Nosso Propósito"
-│   │   │   │   ├── 📁 mentorias/     # Mentorias - "Do Subemprego à T.I."
-│   │   │   │   ├── 📁 orbitacademy/  # OrbitAcademy - Cursos e Conteúdos
-│   │   │   │   ├── 📁 contato/       # Contato - "Entre em Órbita"
-│   │   │   │   ├── 📁 entrar/        # Login
-│   │   │   │   ├── 📁 dashboard/     # Dashboard
-│   │   │   │   ├── 📁 estudante/     # Área do estudante (aulas, cursos, mentorias, etc.)
-│   │   │   │   ├── 📁 colaborador/   # Área do colaborador (vagas, projetos, squad, etc.)
-│   │   │   │   ├── 📁 forum/         # Fórum
-│   │   │   │   ├── 📁 mural/         # Mural
-│   │   │   │   ├── 📁 mensagens/     # Mensagens
-│   │   │   │   ├── 📄 layout.tsx     # Layout principal com navegação
-│   │   │   │   └── 📄 globals.css    # Estilos globais + paleta Orbitamos
-│   │   │   ├── 📁 components/        # Componentes reutilizáveis
-│   │   │   │   ├── 📁 ui/            # shadcn/ui components
-│   │   │   │   │   ├── 📄 button.tsx
-│   │   │   │   │   ├── 📄 card.tsx
-│   │   │   │   │   ├── 📄 input.tsx
-│   │   │   │   │   └── 📄 textarea.tsx
-│   │   │   │   └── 📄 Navigation.tsx # Navegação principal
-│   │   │   └── 📁 lib/               # Utilitários
-│   │   │       └── 📄 utils.ts       # Funções auxiliares
-│   │   ├── 📄 tailwind.config.js     # Configuração Tailwind + paleta Orbitamos
-│   │   ├── 📄 components.json        # Configuração shadcn/ui
-│   │   ├── 📄 package.json           # Dependências frontend
-│   │   ├── 📄 Dockerfile             # Container frontend
-│   │   └── 📄 README.md              # Docs frontend
-│   └── 📁 api/                       # Backend Spring Boot 3
-│       ├── 📁 src/
-│       │   ├── 📁 main/
-│       │   │   ├── 📁 java/com/orbitamos/api/
-│       │   │   │   ├── 📄 OrbitamosApiApplication.java  # App principal
-│       │   │   │   └── 📁 controller/                   # Controllers REST
-│       │   │   │       ├── 📄 HealthController.java     # GET /api/health
-│       │   │   │       ├── 📄 MentorshipController.java # GET /api/mentorships
-│       │   │   │       └── 📄 ContactController.java    # POST /api/contact
-│       │   │   └── 📁 resources/
-│       │   │       └── 📄 application.yml                # Configurações
-│       │   └── 📁 test/                                 # Testes
-│       ├── 📄 pom.xml                                   # Dependências Maven
-│       ├── 📄 Dockerfile                               # Container backend
-│       └── 📄 README.md                                # Docs backend
-├── 📁 docs/                           # Documentação
-│   ├── 📄 API.md                      # Documentação da API
-│   ├── 📄 DEPLOYMENT.md               # Guia de deploy
-│   ├── 📄 VARIAVEIS_AMBIENTE.md       # Variáveis: Render vs EC2
-│   ├── 📄 EC2_CLOUDFRONT_HTTPS.md    # Deploy API na EC2 + CloudFront
-│   ├── 📄 RENDER_SUPABASE_SETUP.md   # Deploy API no Render + Supabase
-│   └── 📄 CONTRIBUTING.md             # Guia de contribuição
-├── 📄 docker-compose.yml              # Orquestração local
-├── 📄 .github/                        # GitHub Actions
-│   └── 📁 workflows/
-│       ├── 📄 frontend.yml            # CI/CD Frontend
-│       ├── 📄 backend.yml             # CI/CD Backend
-│       └── 📄 deploy.yml               # Deploy produção
-└── 📄 README.md                       # Este arquivo
-```
-
-### 🎨 **Design System Orbitamos**
-
-```css
-/* Paleta de Cores */
-:root {
-  --orbit-black: #000000;      /* Preto espacial */
-  --orbit-electric: #00D4FF;   /* Azul elétrico */
-  --orbit-white: #FFFFFF;      /* Branco */
-  --orbit-purple: #8B5CF6;     /* Roxo suave */
-}
-
-/* Gradientes */
-.gradient-orbit {
-  background: linear-gradient(135deg, #00D4FF 0%, #8B5CF6 100%);
-}
-
-/* Animações */
-.animate-orbit {
-  animation: orbit 3s linear infinite;
-}
-```
-
----
-
 ## 🚀 **Stack Tecnológica**
 
 ### **Frontend**
@@ -157,118 +45,111 @@ orbitamos/
 - **Framework**: Spring Boot 3
 - **Linguagem**: Java 21
 - **Segurança**: Spring Security + JWT
-- **Banco**: PostgreSQL 15
+- **Banco**: PostgreSQL (Supabase)
 - **ORM**: Spring Data JPA
-- **Deploy**: EC2 + CloudFront (HTTPS) — ver [docs/INFRA_ATUAL.md](docs/INFRA_ATUAL.md)
+- **WebSocket**: STOMP (chat em tempo real)
+- **Deploy**: EC2 + CloudFront (HTTPS)
 
 ### **Infraestrutura**
-- **Containerização**: Docker + Docker Compose
-- **CI/CD**: GitHub Actions
-- **Monitoramento**: Swagger/OpenAPI
-- **Proxy**: Nginx
+- **Backend**: AWS EC2 (us-east-2) + CloudFront (HTTPS)
+- **Banco de dados**: Supabase (PostgreSQL)
+- **Storage de imagens**: Cloudinary (avatars persistentes)
+- **Frontend**: Vercel
+- **Proxy**: Nginx (EC2)
+
+> Estado completo da infra e histórico: [docs/INFRA_ATUAL.md](docs/INFRA_ATUAL.md)
 
 ---
 
 ## 🎯 **Funcionalidades Implementadas**
 
-### 📱 **Frontend (páginas públicas + área estudante + área colaborador)**
+### 📱 **Páginas públicas**
 
-#### 🏠 **Home - "O Movimento"**
-- Hero section com manifesto da Orbitamos
-- Features principais (Foco Real, Resultado Rápido, Comunidade Forte)
-- Estatísticas de impacto (500+ pessoas transformadas)
-- CTAs principais (Entrar pra Comunidade, Ver Mentorias, Doar Impacto)
+- **Home** — Hero com manifesto, globo 3D interativo, metas da comunidade, XP ring
+- **Sobre** — História, missão, valores, linha do tempo
+- **Mentorias** — Programas disponíveis (vagas sob demanda)
+- **Projetos** — Portfolio de projetos comerciais da Orbitamos
+- **Contato** — Formulário com EmailJS, FAQ, parcerias
 
-#### 📖 **Sobre - "Nosso Propósito"**
-- História da Orbitamos
-- Missão, Visão e Valores
-- Linha do tempo do futuro (2025 → 2030)
-- Apresentação do time
+### 🔐 **Autenticação**
 
-#### 🎓 **Mentorias - "Do Subemprego à T.I."**
-- 3 programas detalhados:
-  - **Mentoria Tech 9 Meses** (Gratuito, 50 vagas)
-  - **Programa Quebrada Dev** (Gratuito, 30 vagas)
-  - **Orbitamos Academy** (Acessível, 20 vagas)
-- Metodologia de ensino
-- Depoimentos de transformação
+- Cadastro e login com JWT
+- Roles: `STUDENT` (estudante) e `FREELANCER` (colaborador)
+- Redirecionamento automático por role após login
 
-#### 📞 **Contato - "Entre em Órbita"**
-- Formulário de contato funcional com EmailJS
-- Envio real de emails para contato@orbitamos.com
-- Estados visuais (loading, success, error)
-- Informações de contato direto
-- Seção para parcerias empresariais
-- FAQ com perguntas frequentes
+### 🎓 **Área do Estudante (`/estudante`)**
 
-### 🔧 **Backend (6 Endpoints)**
+- Dashboard com progresso, XP, nível, streak
+- Checklist semanal de tarefas
+- Perfil editável (nome, foto, localização, dados pessoais)
+- Upload de foto via Cloudinary
+- Aulas, mentorias, mural, vagas
 
-#### 🏥 **Health Check**
-```http
-GET /api/health
-```
-```json
-{
-  "status": "UP",
-  "timestamp": "2025-01-06T22:30:00",
-  "message": "Orbitamos API está funcionando! 🚀",
-  "version": "1.0.0"
-}
-```
+### 🤝 **Área do Colaborador (`/colaborador`)**
 
-#### 🎓 **Mentorias**
-```http
-GET /api/mentorships
-```
-Retorna lista completa dos programas de mentoria com:
-- Nome, descrição, duração
-- Nível, preço, vagas disponíveis
-- Conteúdo programático
+- Dashboard com projetos e oportunidades
+- Perfil editável com upload de foto
+- Área de squad e projetos
 
-#### 📧 **Contato**
-```http
-POST /api/contact
-Content-Type: application/json
+### 💬 **Fórum (`/forum`)**
 
-{
-  "name": "João Silva",
-  "email": "joao@email.com",
-  "message": "Quero participar do programa!"
-}
-```
+- Posts com tópicos, cores e emojis personalizados
+- Respostas inline (thread por post)
+- Edição e exclusão pelo autor
+- Busca por conteúdo, autor ou cidade
+- Perfil público de cada autor com botão de DM
+- ForumWidget flutuante disponível em todas as páginas autenticadas
 
-#### 🔐 **Autenticação**
-```http
-POST /api/auth/register
-POST /api/auth/login
-```
-Sistema completo de autenticação com JWT para cadastro e login de usuários.
+### 📨 **Mensagens (`/mensagens`)**
 
-#### 👤 **Dashboard (Protegido)**
-```http
-GET /api/dashboard/me
-Authorization: Bearer <token>
-```
-Endpoint protegido para área do aluno.
+- Chat privado entre usuários (1:1)
+- Grupos com avatar e membros
+- Mensagens em tempo real via WebSocket (STOMP)
+- Indicador de presença e "visto por último"
+- Upload de foto de grupo
+
+### 🏆 **Gamificação**
+
+- Sistema de XP e níveis
+- XP Ring animado
+- Conquistas (`UserAchievement`)
+- Globo 3D com nível do usuário
 
 ---
 
-## ☁️ **Produção (sem sua máquina ligada)**
+## 🔧 **Backend — Endpoints principais**
 
-O projeto roda 100% na nuvem:
+| Grupo | Endpoints |
+|-------|-----------|
+| Auth | `POST /api/auth/register`, `POST /api/auth/login` |
+| Dashboard | `GET/PUT /api/dashboard/me`, `POST /api/dashboard/me/avatar`, `GET /api/dashboard/summary`, `POST /api/dashboard/me/progress/lesson` |
+| Fórum | `GET/POST /api/forum/messages`, `PUT/DELETE /api/forum/messages/{id}` |
+| Chat | `GET /api/chat/conversations`, `POST /api/chat/conversations`, `GET /api/chat/conversations/{id}/messages`, `POST /api/chat/conversations/{id}/messages`, e mais |
+| Usuários | `GET /api/users/{id}/profile` |
+| Mentorias | `GET /api/mentorships` |
+| Projetos | `GET /api/projects` |
+| Vagas | `GET /api/jobs` |
+| Contato | `POST /api/contact` |
+| Saúde | `GET /api/health` |
 
-| Serviço | Plataforma atual |
-|---------|-----------------|
+Documentação interativa (Swagger): `https://sua-api/swagger-ui.html`
+
+---
+
+## ☁️ **Produção**
+
+O projeto roda 100% na nuvem, sem precisar deixar o PC ligado:
+
+| Serviço | Plataforma |
+|---------|-----------|
 | Frontend | **Vercel** |
 | Backend (Java) | **AWS EC2** (us-east-2) + **CloudFront** (HTTPS) |
 | Banco de dados | **Supabase** (PostgreSQL) |
 | Imagens / avatars | **Cloudinary** |
 
-**Estado completo e histórico da infra:** [docs/INFRA_ATUAL.md](docs/INFRA_ATUAL.md)
-
+**Infra completa e histórico:** [docs/INFRA_ATUAL.md](docs/INFRA_ATUAL.md)
 **Variáveis de ambiente:** [docs/VARIAVEIS_AMBIENTE.md](docs/VARIAVEIS_AMBIENTE.md)
-
-**Deploy do backend:** [docs/EC2_CLOUDFRONT_HTTPS.md](docs/EC2_CLOUDFRONT_HTTPS.md)
+**Deploy do backend (EC2):** [docs/EC2_CLOUDFRONT_HTTPS.md](docs/EC2_CLOUDFRONT_HTTPS.md)
 
 ---
 
@@ -278,40 +159,23 @@ O projeto roda 100% na nuvem:
 - Node.js 18+
 - Java 21+
 - Maven 3.6+
-- (Opcional) Docker e Docker Compose — só se quiser subir backend/front em containers
 
-### **Opção 1: Docker Compose (opcional)**
-
-```bash
-# Clone o repositório
-git clone https://github.com/ViniciusVivet/orbitamos.git
-cd orbitamos
-
-# Execute tudo com Docker
-docker-compose up --build
-
-# Acesse:
-# Frontend: http://localhost:3000
-# Backend: http://localhost:8080
-# API Docs: http://localhost:8080/swagger-ui.html
-```
-
-### **Opção 2: Desenvolvimento Manual**
-
-#### **Backend (API)**
+### **Backend**
 ```bash
 cd apps/api
 mvn spring-boot:run
 # API rodando em http://localhost:8080
 ```
 
-#### **Frontend (Web)**
+### **Frontend**
 ```bash
 cd apps/web
 
 # Configurar variáveis de ambiente
 cp .env.example .env.local
-# Edite .env.local: EmailJS e NEXT_PUBLIC_API_URL (em produção use a URL do Render ou do CloudFront)
+# Edite .env.local: defina NEXT_PUBLIC_API_URL
+# Local: http://localhost:8080/api
+# Produção: URL do CloudFront (ver docs/INFRA_ATUAL.md)
 
 npm install
 npm run dev
@@ -320,79 +184,53 @@ npm run dev
 
 ---
 
-## 📚 **Para Alunos da Orbitamos**
+## 📁 **Estrutura do Projeto**
 
-### 🎓 **Estrutura de Estudos**
-
-O site da Orbitamos foi desenvolvido como uma **plataforma de aprendizado** para nossos alunos. Aqui você encontrará:
-
-#### 📖 **Conteúdo Educativo**
-- **Blog "Diário da Órbita"**: Artigos sobre tecnologia, carreira e mindset
-- **Tutoriais Práticos**: Guias passo-a-passo para desenvolvimento
-- **Cases de Sucesso**: Histórias reais de transformação
-- **Recursos Gratuitos**: Templates, códigos e ferramentas
-
-#### 🛠️ **Projetos Práticos**
-- **Clone do Site**: Use este repositório como base para seus projetos
-- **Componentes Reutilizáveis**: Biblioteca de componentes React
-- **API REST**: Exemplo completo de backend Spring Boot
-- **Deploy em Produção**: Aprenda a colocar projetos no ar
-
-#### 🚀 **Trilha de Aprendizado**
-1. **Iniciante**: Clone o projeto e explore a estrutura
-2. **Intermediário**: Modifique componentes e adicione funcionalidades
-3. **Avançado**: Implemente novas features e otimize performance
-4. **Expert**: Contribua com o projeto open source
-
----
-
-## 🤝 **Contribuindo**
-
-### **Como Contribuir**
-
-1. **Fork** o projeto
-2. **Crie** uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. **Commit** suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** para a branch (`git push origin feature/AmazingFeature`)
-5. **Abra** um Pull Request
-
-### **Padrões de Código**
-
-- **Frontend**: ESLint + Prettier
-- **Backend**: Checkstyle + SpotBugs
-- **Commits**: Conventional Commits
-- **Branches**: GitFlow
-
-### **Áreas para Contribuição**
-
-- 🐛 **Bug Fixes**: Corrigir problemas existentes
-- ✨ **Features**: Adicionar novas funcionalidades
-- 📚 **Docs**: Melhorar documentação
-- 🎨 **UI/UX**: Aprimorar design e experiência
-- 🧪 **Tests**: Adicionar testes automatizados
-- 🚀 **Performance**: Otimizar velocidade e recursos
+```
+orbitamos/
+├── apps/
+│   ├── web/                    # Frontend Next.js 14
+│   │   └── src/
+│   │       ├── app/            # Páginas (home, forum, mensagens, estudante, colaborador...)
+│   │       ├── components/     # Componentes (Navigation, ForumWidget, chat/*, perfil/*, etc.)
+│   │       ├── contexts/       # AuthContext, etc.
+│   │       ├── hooks/          # useDraggablePosition, usePreWake, etc.
+│   │       └── lib/            # api.ts, chatWs.ts, utils.ts
+│   └── api/                    # Backend Spring Boot 3 (Java 21)
+│       └── src/main/java/com/orbitamos/api/
+│           ├── config/         # Security, CORS, WebSocket, Cloudinary
+│           ├── controller/     # Auth, Dashboard, Forum, Chat, Users, Projects, Jobs...
+│           ├── entity/         # User, ForumMessage, Conversation, ChatMessage...
+│           ├── repository/     # JPA repositories
+│           └── util/           # JwtUtil
+├── docs/
+│   ├── INFRA_ATUAL.md          # ⭐ Estado atual da infra (EC2/Cloudinary/Supabase/Vercel)
+│   ├── EC2_CLOUDFRONT_HTTPS.md # Guia de deploy no EC2
+│   ├── VARIAVEIS_AMBIENTE.md   # Variáveis de ambiente por serviço
+│   └── migrations/             # Migrations SQL do Supabase
+└── README.md
+```
 
 ---
 
-## 📈 **Roadmap Futuro**
+## 📈 **Roadmap**
 
-### **Versão 2.0 (Q2 2025)**
-- [ ] Área de login para alunos e mentores
-- [ ] Painel da comunidade com certificados
-- [ ] Dashboard público de impacto
+### ✅ **Já implementado**
+- [x] Sistema de autenticação (JWT, roles)
+- [x] Área do estudante e do colaborador
+- [x] Fórum com threads e busca
+- [x] Chat em tempo real (WebSocket)
+- [x] Gamificação (XP, níveis, conquistas)
+- [x] Upload de avatar via Cloudinary
+- [x] Globo 3D interativo na home
+- [x] Perfil completo editável
+
+### 🔜 **Próximos passos**
+- [ ] Integração com conteúdo real de aulas (OrbitAcademy backend)
+- [ ] Certificados digitais
 - [ ] Sistema de mentoria peer-to-peer
-
-### **Versão 3.0 (Q4 2025)**
-- [ ] Orbitamos Academy (cursos pagos)
-- [ ] Marketplace de projetos
-- [ ] Sistema de gamificação
-- [ ] Integração com redes sociais
-
-### **Versão 4.0 (2026)**
-- [ ] IA para mentoria personalizada
-- [ ] Realidade virtual para simulações
-- [ ] Blockchain para certificados
-- [ ] Expansão internacional
+- [ ] Notificações em tempo real
+- [ ] Dashboard público de impacto
 
 ---
 
@@ -404,61 +242,20 @@ O site da Orbitamos foi desenvolvido como uma **plataforma de aprendizado** para
 
 [![GitHub](https://img.shields.io/badge/GitHub-ViniciusVivet-black?style=flat-square&logo=github)](https://github.com/ViniciusVivet)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-vivetsp-blue?style=flat-square&logo=linkedin)](https://linkedin.com/in/vivetsp)
-[![Email](https://img.shields.io/badge/Email-contato@orbitamos.com.br-red?style=flat-square&logo=gmail)](mailto:douglasvivet@gmail.com.br)
 
 </div>
 
 **Fundador e CEO da Orbitamos**
 
-Douglas é um desenvolvedor apaixonado por tecnologia e impacto social. Nascido na periferia de São Paulo, ele entende na pele as dificuldades de quem quer entrar na área de tecnologia sem ter as ferramentas certas.
+Douglas nasceu na periferia de São Paulo e entende na pele as dificuldades de quem quer entrar na área de tecnologia sem ter as ferramentas certas. Com 8 meses de faculdade já conseguiu seu primeiro estágio como Instrutor de Informática.
 
-**Sua Jornada:**
-- 🏠 **Origem**: Periferia de São Paulo
-- 💻 **Formação**: Analise e Desenvolvimento de Sistemas 
-- 🚀 **Carreira**: Com 8 meses na faculdade entrei no meu primeiro estágio como Intrutor de Informatática  
-- 🎯 **Missão**: Democratizar o acesso à tecnologia
-- 🌟 **Visão**: Transformar vidas através da programação
-
-**Por que criou a Orbitamos:**
-> "Sempre acreditei que a tecnologia pode transformar vidas. A Orbitamos nasceu da necessidade de criar um caminho claro para quem quer sair do subemprego e entrar na área de T.I. Não é só sobre ensinar a programar - é sobre mudança de mindset, quebra de barreiras e construção de uma nova realidade."
-
----
-
-## 📊 **Métricas do Projeto**
-
-<div align="center">
-
-| Métrica | Valor |
-|---------|-------|
-| 📁 **Arquivos** | 50+ |
-| 📝 **Linhas de Código** | 5.000+ |
-| 🧩 **Componentes** | 15+ |
-| 📱 **Páginas** | 23 |
-| 🔗 **Endpoints** | 6+ |
-| 🐳 **Containers** | 3 |
-| ⚡ **Performance** | 95+ |
-
-</div>
-
----
-
-
+> "Sempre acreditei que a tecnologia pode transformar vidas. A Orbitamos nasceu da necessidade de criar um caminho claro para quem quer sair do subemprego e entrar na área de T.I. Não é só sobre ensinar a programar — é sobre mudança de mindset, quebra de barreiras e construção de uma nova realidade."
 
 ---
 
 ## 📄 **Licença**
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
----
-
-## 🙏 **Agradecimentos**
-
-- **Comunidade Orbitamos**: Pelos feedbacks e sugestões
-- **Mentores**: Pelo conhecimento compartilhado
-- **Alunos**: Pela confiança e dedicação
-- **Parceiros**: Pelo apoio e oportunidades
-- **Contribuidores**: Pelo código e melhorias
+Este projeto está sob a licença MIT.
 
 ---
 
