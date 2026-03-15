@@ -20,9 +20,14 @@ module.exports = {
           "0%": { transform: "rotate(0deg) translateX(20px) rotate(0deg)" },
           "100%": { transform: "rotate(360deg) translateX(20px) rotate(-360deg)" },
         },
+        "float": {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)", opacity: "0.25" },
+          "50%": { transform: "translate(8px, -12px) scale(1.1)", opacity: "0.45" },
+        },
       },
       animation: {
         "orbit": "orbit 3s linear infinite",
+        "float": "float 6s ease-in-out infinite",
       },
     },
   },
