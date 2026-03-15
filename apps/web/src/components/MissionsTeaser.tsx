@@ -86,11 +86,11 @@ export default function MissionsTeaser() {
       {/* Cofre da semana + CTA */}
       <div className="mt-4 flex flex-col items-center justify-between gap-3 sm:flex-row">
         <div className="animate-constPulse rounded-2xl border border-purple-400/40 bg-purple-500/10 px-4 py-2 text-xs font-semibold text-purple-200 shadow-[0_0_20px_rgba(139,92,246,0.2)]">
-          🏆 Cofre da Semana — complete tudo e abra o baú
+          🏆 Cofre da Semana<span className="hidden sm:inline"> — complete tudo e abra o baú</span>
         </div>
         <Link
           href="/entrar"
-          className="rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple px-5 py-2 text-xs font-extrabold text-black shadow-[0_0_20px_rgba(0,212,255,0.4)] hover:shadow-[0_0_30px_rgba(0,212,255,0.6)] transition-shadow inline-flex items-center gap-1"
+          className="rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple px-5 py-3 text-xs font-extrabold text-black shadow-[0_0_20px_rgba(0,212,255,0.4)] hover:shadow-[0_0_30px_rgba(0,212,255,0.6)] transition-shadow inline-flex items-center gap-1 min-h-[44px]"
         >
           ⚡ Entrar e ganhar XP
         </Link>
