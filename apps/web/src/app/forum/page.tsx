@@ -180,7 +180,7 @@ export default function ForumPage() {
     setTopicTitle(message.topicTitle || "");
     setTopicColor(message.topicColor || "#00D4FF");
     setTopicEmoji(message.topicEmoji || "💬");
-    // scroll to top so user sees the edit form
+    setError("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -188,12 +188,17 @@ export default function ForumPage() {
     setReplyingToId(message.id);
     setEditingId(null);
     setContent("");
+    setError("");
   };
 
   const handleCancelCompose = () => {
     setEditingId(null);
     setReplyingToId(null);
     setContent("");
+    setError("");
+    setTopicTitle("");
+    setTopicColor("#00D4FF");
+    setTopicEmoji("💬");
   };
 
   const handleDeleteReply = async (replyId: number, parentId: number) => {

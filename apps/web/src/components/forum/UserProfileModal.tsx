@@ -34,6 +34,12 @@ export default function UserProfileModal({ userId, token, authorName, onClose }:
   const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [onClose]);
+
+  useEffect(() => {
     if (!token) {
       setLoading(false);
       setLoadError(true);

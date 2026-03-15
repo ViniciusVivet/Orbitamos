@@ -142,12 +142,16 @@ export default function ForumWidget() {
   const formatDate = (value: string) => {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleString("pt-BR", {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    if (diffMins < 1) return "Agora";
+    if (diffMins < 60) return `${diffMins} min atrás`;
+    if (diffHours < 24) return `${diffHours}h atrás`;
+    if (diffDays < 7) return `${diffDays} dia${diffDays !== 1 ? "s" : ""} atrás`;
+    return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
   };
 
   const rootMessages = messages.filter((m) => m.parentId == null);
@@ -306,7 +310,7 @@ export default function ForumWidget() {
                               />
                             ) : (
                               <span className="flex h-full w-full items-center justify-center text-sm font-bold text-black">
-                                {message.author.slice(0, 2).toUpperCase()}
+                                {message.author.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase() || "?"}
                               </span>
                             )}
                           </div>
