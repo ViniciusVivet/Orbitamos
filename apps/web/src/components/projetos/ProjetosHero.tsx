@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { whatsappProjetosUrl } from "@/lib/social";
+import ProjetosHeroParticles from "./ProjetosHeroParticles";
 
 export default function ProjetosHero() {
   return (
@@ -10,8 +11,10 @@ export default function ProjetosHero() {
         style={{ backgroundImage: "url('/hero-projetos.png')" }}
         aria-hidden
       />
-      {/* Overlay escuro para legibilidade do texto (evita muita informacao visual) */}
-      <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px]" aria-hidden />
+      {/* Overlay escuro para legibilidade do texto */}
+      <div className="absolute inset-0 z-[1] bg-black/55 backdrop-blur-[2px]" aria-hidden />
+      {/* Particulas leves (CSS puro) — por cima do overlay, opacidade baixa */}
+      <ProjetosHeroParticles />
       <div className="container relative z-10 mx-auto px-4 py-10 md:py-14 lg:py-16 text-center">
         <p className="mb-3 text-[11px] font-medium tracking-[0.2em] text-orbit-electric/90 uppercase">
           Portfólio comercial
