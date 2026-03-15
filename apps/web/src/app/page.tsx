@@ -278,53 +278,128 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Metas de impacto — glass sobre universo */}
+      {/* Metas de impacto — gamificado */}
       <section className="py-20">
         <div className="container mx-auto px-4">
-          <div className="rounded-2xl border border-white/10 bg-black/40 p-8 shadow-[0_0_40px_rgba(0,0,0,0.3)] backdrop-blur-xl md:p-12">
-            <h2 className="text-4xl font-bold text-center text-white mb-14">
+
+          <div className="mb-12 text-center">
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.3em] text-orbit-electric/70">
+              📡 missão em andamento
+            </p>
+            <h2 className="text-4xl font-bold text-white">
               Metas de <span className="gradient-text">impacto</span>
             </h2>
-            <div className="mx-auto max-w-4xl space-y-6">
-              <div>
-                <div className="mb-2 flex items-center justify-between text-sm text-white/80">
-                  <span>2026 • Transformar 10 vidas</span>
-                  <span>1/10</span>
-                </div>
-                <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/10">
-                  <div
-                    className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple"
-                    style={{ width: "10%" }}
-                  />
-                </div>
-              </div>
+            <p className="mx-auto mt-3 max-w-sm text-sm text-white/50">
+              Cada número representa uma vida saindo da periferia rumo à tecnologia.
+            </p>
+          </div>
 
-              <div>
-                <div className="mb-2 flex items-center justify-between text-sm text-white/80">
-                  <span>2027 • Alcançar 500 vidas</span>
-                  <span>1/500</span>
-                </div>
-                <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/10">
-                  <div
-                    className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple"
-                    style={{ width: "0.2%" }}
-                  />
-                </div>
-              </div>
+          <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-2">
 
-              <div>
-                <div className="mb-2 flex items-center justify-between text-sm text-white/80">
-                  <span>2030 • 10.000 vidas em órbita</span>
-                  <span>1/10.000</span>
+            {/* 2026 */}
+            <div className="relative overflow-hidden rounded-2xl border border-emerald-500/25 bg-black/50 p-6 backdrop-blur-xl shadow-[0_0_30px_rgba(16,185,129,0.07)] transition-shadow hover:shadow-[0_0_40px_rgba(16,185,129,0.18)]">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_0%_110%,rgba(16,185,129,0.1),transparent)]" />
+              <div className="relative">
+                <div className="mb-4 flex items-start justify-between">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-400/60">Meta 2026</span>
+                    <h3 className="mt-0.5 text-lg font-bold text-white">Transformar 10 vidas</h3>
+                    <p className="mt-0.5 text-xs text-white/40">Primeiro emprego em TI garantido</p>
+                  </div>
+                  <span className="text-3xl">🎯</span>
                 </div>
-                <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/10">
-                  <div
-                    className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple"
-                    style={{ width: "0.01%" }}
-                  />
+                <div className="mb-1.5 flex items-end justify-between">
+                  <span className="text-4xl font-extrabold text-emerald-400 drop-shadow-[0_0_12px_rgba(52,211,153,0.6)]">1</span>
+                  <span className="mb-1 text-sm text-white/40">/ 10 vidas</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                  <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 shadow-[0_0_10px_rgba(52,211,153,0.7)]" style={{ width: "10%" }} />
+                </div>
+                <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                  <span className="text-[10px] font-bold uppercase tracking-wide text-emerald-400">Em progresso</span>
                 </div>
               </div>
             </div>
+
+            {/* Projetos comerciais */}
+            <div className="relative overflow-hidden rounded-2xl border border-amber-500/25 bg-black/50 p-6 backdrop-blur-xl shadow-[0_0_30px_rgba(245,158,11,0.07)] transition-shadow hover:shadow-[0_0_40px_rgba(245,158,11,0.18)]">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_100%_110%,rgba(245,158,11,0.1),transparent)]" />
+              <div className="relative">
+                <div className="mb-4 flex items-start justify-between">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-400/60">Receita · Orbitamos</span>
+                    <h3 className="mt-0.5 text-lg font-bold text-white">Projetos Comerciais Entregues</h3>
+                    <p className="mt-0.5 text-xs text-white/40">Contratos fechados e executados pela Orbitamos</p>
+                  </div>
+                  <span className="text-3xl">🤝</span>
+                </div>
+                <div className="mb-1.5 flex items-end justify-between">
+                  <span className="text-4xl font-extrabold text-amber-400 drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]">3</span>
+                  <span className="mb-1 text-sm text-white/40">/ 10 projetos</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                  <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-400 shadow-[0_0_10px_rgba(251,191,36,0.7)]" style={{ width: "30%" }} />
+                </div>
+                <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" />
+                  <span className="text-[10px] font-bold uppercase tracking-wide text-amber-400">30% da meta</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 2027 */}
+            <div className="relative overflow-hidden rounded-2xl border border-orbit-electric/20 bg-black/50 p-6 backdrop-blur-xl shadow-[0_0_30px_rgba(0,212,255,0.06)] transition-shadow hover:shadow-[0_0_40px_rgba(0,212,255,0.14)]">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_0%_110%,rgba(0,212,255,0.08),transparent)]" />
+              <div className="relative">
+                <div className="mb-4 flex items-start justify-between">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-orbit-electric/60">Meta 2027</span>
+                    <h3 className="mt-0.5 text-lg font-bold text-white">Alcançar 500 vidas</h3>
+                    <p className="mt-0.5 text-xs text-white/40">Comunidade ativa e crescendo</p>
+                  </div>
+                  <span className="text-3xl">🚀</span>
+                </div>
+                <div className="mb-1.5 flex items-end justify-between">
+                  <span className="text-4xl font-extrabold text-orbit-electric drop-shadow-[0_0_12px_rgba(0,212,255,0.6)]">1</span>
+                  <span className="mb-1 text-sm text-white/40">/ 500 vidas</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                  <div className="h-full rounded-full bg-gradient-to-r from-orbit-electric to-cyan-300 shadow-[0_0_10px_rgba(0,212,255,0.7)]" style={{ width: "0.2%" }} />
+                </div>
+                <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-orbit-electric/20 bg-orbit-electric/10 px-3 py-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-orbit-electric/50" />
+                  <span className="text-[10px] font-bold uppercase tracking-wide text-orbit-electric/70">Decolando</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 2030 */}
+            <div className="relative overflow-hidden rounded-2xl border border-orbit-purple/20 bg-black/50 p-6 backdrop-blur-xl shadow-[0_0_30px_rgba(139,92,246,0.06)] transition-shadow hover:shadow-[0_0_40px_rgba(139,92,246,0.14)]">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_100%_110%,rgba(139,92,246,0.1),transparent)]" />
+              <div className="relative">
+                <div className="mb-4 flex items-start justify-between">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-orbit-purple/60">Meta 2030</span>
+                    <h3 className="mt-0.5 text-lg font-bold text-white">10.000 vidas em órbita</h3>
+                    <p className="mt-0.5 text-xs text-white/40">O movimento que vai mudar a periferia</p>
+                  </div>
+                  <span className="text-3xl">🌍</span>
+                </div>
+                <div className="mb-1.5 flex items-end justify-between">
+                  <span className="text-4xl font-extrabold text-orbit-purple drop-shadow-[0_0_12px_rgba(139,92,246,0.6)]">1</span>
+                  <span className="mb-1 text-sm text-white/40">/ 10.000 vidas</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                  <div className="h-full rounded-full bg-gradient-to-r from-orbit-purple to-pink-500 shadow-[0_0_10px_rgba(139,92,246,0.7)]" style={{ width: "0.01%" }} />
+                </div>
+                <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-orbit-purple/20 bg-orbit-purple/10 px-3 py-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-orbit-purple/50" />
+                  <span className="text-[10px] font-bold uppercase tracking-wide text-orbit-purple/70">Visão de longo prazo</span>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
