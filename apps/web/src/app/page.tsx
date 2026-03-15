@@ -32,6 +32,9 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen text-white">
+      {/* Naves: z-0, abaixo de todo o conteúdo */}
+      <SpaceShipsOverlay />
+
       {/* Fundo cósmico em toda a página — uma camada só, sem blocos pretos */}
       <div
         className="fixed inset-0 -z-10 bg-black"
@@ -42,6 +45,9 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_20%_80%,rgba(0,212,255,.08),transparent_50%)]" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black" />
       </div>
+
+      {/* Wrapper de conteúdo: z-[1] cria um stacking context acima das naves (z-0) */}
+      <div className="relative z-[1]">
 
       {/* HERO CÓSMICO */}
       <section className="relative overflow-hidden">
@@ -62,7 +68,7 @@ export default function Home() {
         </Parallax>
 
         {/* Aurora / Nebulosa */}
-        <Parallax speed={0.18} className="absolute -top-40 left-1/2 h-[600px] w-[1200px] -translate-x-1/2 rounded-full blur-3xl opacity-40 bg-[conic-gradient(from_120deg,theme(colors.orbit-electric/.7),theme(colors.orbit-purple/.6),transparent_70%)]" />
+        <Parallax speed={0.18} className="absolute -top-40 left-1/2 h-[400px] w-full max-w-[1200px] -translate-x-1/2 rounded-full blur-3xl opacity-40 bg-[conic-gradient(from_120deg,theme(colors.orbit-electric/.7),theme(colors.orbit-purple/.6),transparent_70%)]" />
 
         <div className="relative container mx-auto px-4 pt-20 pb-16 text-center">
           <MissionsSidebar />
@@ -85,7 +91,6 @@ export default function Home() {
             <div className="flex flex-col items-center gap-4">
               <div className="relative mx-auto">
                 <GlobeClient />
-                <SpaceShipsOverlay />
               </div>
               <div className="mt-1 w-full max-w-md space-y-2 text-center">
                 <p className="text-[11px] font-semibold tracking-[0.25em] text-white/60 uppercase">
@@ -123,11 +128,11 @@ export default function Home() {
           </div>
 
           {/* CTAs */}
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row w-full px-2">
             <Magnetic>
               <Button
                 size="lg"
-                className="px-10 py-6 text-base font-bold bg-gradient-to-r from-orbit-electric via-white to-orbit-purple text-black shadow-[0_18px_40px_rgba(0,212,255,0.40)] hover:shadow-[0_22px_55px_rgba(0,212,255,0.55)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_10px_24px_rgba(0,0,0,0.45)] border border-black/20 transform-gpu transition-all duration-150"
+                className="w-full sm:w-auto px-10 py-4 text-base font-bold bg-gradient-to-r from-orbit-electric via-white to-orbit-purple text-black shadow-[0_18px_40px_rgba(0,212,255,0.40)] hover:shadow-[0_22px_55px_rgba(0,212,255,0.55)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_10px_24px_rgba(0,0,0,0.45)] border border-black/20 transform-gpu transition-all duration-150"
               >
                 🚀 Começar minha jornada
               </Button>
@@ -136,7 +141,7 @@ export default function Home() {
               <Button
                 variant="outline"
                 size="lg"
-                className="px-8 py-6 text-base font-bold border-white/20 text-white bg-white/5 backdrop-blur-xl hover:bg-white/10 hover:border-orbit-electric/40 transition-all duration-150"
+                className="w-full sm:w-auto px-8 py-4 text-base font-bold border-white/20 text-white bg-white/5 backdrop-blur-xl hover:bg-white/10 hover:border-orbit-electric/40 transition-all duration-150"
               >
                 👨‍💻 Ver mentorias
               </Button>
@@ -145,7 +150,7 @@ export default function Home() {
               href={instagramUrl}
               target="_blank"
               rel="noreferrer"
-              className="rounded-full border border-white/20/80 px-6 py-3 text-base font-semibold text-white/90 hover:bg-white/10 transition-colors duration-150"
+              className="w-full sm:w-auto rounded-full border border-white/20 px-6 py-3 text-base font-semibold text-white/90 hover:bg-white/10 transition-colors duration-150 min-h-[44px]"
             >
               📸 Seguir no Instagram
             </Link>
@@ -348,6 +353,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      </div>{/* fim do wrapper z-[1] */}
     </div>
   );
 }
