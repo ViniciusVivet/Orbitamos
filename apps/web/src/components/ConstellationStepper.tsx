@@ -78,7 +78,9 @@ export default function ConstellationStepper({ current = 2 }: { current?: number
         </p>
       </div>
 
-      <div className="relative mx-auto h-[220px] w-full">
+      {/* overflow-x-auto: em mobile a trilha rola horizontalmente em vez de comprimir */}
+      <div className="overflow-x-auto pb-1 -mx-4 px-4">
+      <div className="relative h-[220px] min-w-[560px]">
         <svg width="100%" height="220" viewBox="0 0 900 220">
           <defs>
             <linearGradient id="cg-done" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -209,6 +211,7 @@ export default function ConstellationStepper({ current = 2 }: { current?: number
           );
         })}
       </div>
+      </div>{/* fim overflow-x-auto */}
 
       <style>{`
         @keyframes ping {
