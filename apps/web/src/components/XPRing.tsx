@@ -2,7 +2,7 @@
 
 type Props = { progress: number; size?: number };
 
-export default function XPRing({ progress, size = 380 }: Props) {
+export default function XPRing({ progress, size = 360 }: Props) {
   const clamped = Math.max(0, Math.min(100, progress));
   const r = size / 2 - 8;
   const c = 2 * Math.PI * r;
