@@ -278,6 +278,7 @@ export default function Home() {
                   como <strong className="text-white">Instrutor técnico de informática</strong>.&rdquo;
                 </p>
                 <p className="text-white/70 text-sm">— Nosso ponto de partida. Agora, vamos escalar esse impacto para muita gente.</p>
+                <p className="text-white/30 text-xs pt-1">🕐 há 6 meses atrás</p>
               </div>
             </div>
           </div>
