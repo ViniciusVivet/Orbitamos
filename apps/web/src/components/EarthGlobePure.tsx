@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { ORBITANDO_AGORA } from "@/lib/orbitStats";
 
 interface Props {
   level?: number;
@@ -487,7 +488,7 @@ export default function EarthGlobePure({ level = 2, xp = 120, xpMax = 300 }: Pro
         onPointerDown={(e) => dragWidget(e, counterPos, setCounterPos)}
       >
         <span className="text-sm font-semibold text-white/60">
-          🌐 <span className="text-2xl font-extrabold text-orbit-electric" style={{ textShadow: "0 0 12px rgba(0,212,255,0.7)" }}>12</span>
+          🌐 <span className="text-2xl font-extrabold text-orbit-electric" style={{ textShadow: "0 0 12px rgba(0,212,255,0.7)" }}>{ORBITANDO_AGORA}</span>
           <span className="ml-1">orbitando agora</span>
         </span>
       </div>
@@ -541,7 +542,7 @@ export default function EarthGlobePure({ level = 2, xp = 120, xpMax = 300 }: Pro
       <div className="rounded-2xl border border-orbit-electric/30 bg-black/60 px-4 py-2 text-center backdrop-blur-md">
         <span className="text-sm font-semibold text-white/60">
           🌐{" "}
-          <span className="text-2xl font-extrabold text-orbit-electric" style={{ textShadow: "0 0 12px rgba(0,212,255,0.7)" }}>12</span>
+          <span className="text-2xl font-extrabold text-orbit-electric" style={{ textShadow: "0 0 12px rgba(0,212,255,0.7)" }}>{ORBITANDO_AGORA}</span>
           <span className="ml-1">orbitando agora</span>
         </span>
       </div>

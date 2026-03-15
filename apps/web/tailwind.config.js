@@ -24,10 +24,15 @@ module.exports = {
           "0%, 100%": { transform: "translate(0, 0) scale(1)", opacity: "0.25" },
           "50%": { transform: "translate(8px, -12px) scale(1.1)", opacity: "0.45" },
         },
+        "shimmer": {
+          "0%":   { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(200%)" },
+        },
       },
       animation: {
         "orbit": "orbit 3s linear infinite",
         "float": "float 6s ease-in-out infinite",
+        "shimmer": "shimmer 2.2s ease-in-out infinite",
       },
     },
   },

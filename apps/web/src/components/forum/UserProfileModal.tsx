@@ -31,15 +31,20 @@ function formatLastSeen(iso: string | null): string {
 export default function UserProfileModal({ userId, token, authorName, onClose }: UserProfileModalProps) {
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     if (!token) {
       setLoading(false);
+      setLoadError(true);
       return;
     }
     getPublicProfile(token, userId)
-      .then(setProfile)
-      .catch(() => setProfile(null))
+      .then((p) => {
+        if (!p) setLoadError(true);
+        else setProfile(p);
+      })
+      .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
   }, [token, userId]);
 
@@ -72,6 +77,14 @@ export default function UserProfileModal({ userId, token, authorName, onClose }:
             <div className="flex justify-center py-8">
               <div className="h-10 w-10 animate-spin rounded-full border-2 border-orbit-electric border-t-transparent" />
             </div>
+          ) : loadError ? (
+            <div className="flex flex-col items-center justify-center py-10 text-center gap-3">
+              <span className="text-3xl opacity-40">👤</span>
+              <p className="text-sm text-white/50">Não foi possível carregar o perfil.</p>
+              <Button variant="ghost" className="text-white/70 hover:text-white hover:bg-white/10" onClick={onClose}>
+                Fechar
+              </Button>
+            </div>
           ) : (
             <>
               <div className="flex flex-col items-center text-center">
@@ -81,6 +94,7 @@ export default function UserProfileModal({ userId, token, authorName, onClose }:
                       src={getDisplayAvatarUrl(profile.avatarUrl)!}
                       alt=""
                       className="h-full w-full object-cover"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                     />
                   ) : (
                     <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-orbit-electric to-orbit-purple text-3xl font-bold text-black">

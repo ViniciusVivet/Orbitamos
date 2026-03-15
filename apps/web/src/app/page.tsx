@@ -27,6 +27,7 @@ import MissionsTeaser from "@/components/MissionsTeaser";
 import ConstellationStepper from "@/components/ConstellationStepper";
 import MissionsSidebar from "@/components/MissionsSidebar";
 import LiveCounter from "@/components/LiveCounter";
+import { ORBITANDO_AGORA } from "@/lib/orbitStats";
 
 export default function Home() {
   const instagramUrl = "https://www.instagram.com/orbitamosbr/";
@@ -91,20 +92,56 @@ export default function Home() {
             {/* Planeta + HUD */}
             <div className="flex flex-col items-center gap-4">
               <div className="relative mx-auto">
-                <GlobeClient />
+                <GlobeClient level={1} xp={0} xpMax={100} />
               </div>
-              <div className="mt-1 w-full max-w-md space-y-2 text-center">
-                <p className="text-[11px] font-semibold tracking-[0.25em] text-white/60 uppercase">
+
+              {/* Status — visitante deslogado */}
+              <div className="mt-3 w-full max-w-sm mx-auto">
+                <p className="mb-3 text-[11px] font-semibold tracking-[0.25em] text-white/40 uppercase text-center">
                   Seu status em órbita
                 </p>
-                <p className="text-lg font-semibold text-white">
-                  Nível 2 · Orbit Explorer
-                </p>
-                <p className="text-sm text-white/70">
-                  XP 120 / 300 · Para subir para o Nível 3, conclua as missões da semana abaixo
-                </p>
-                <div className="mx-auto mt-2 h-2 w-full max-w-sm overflow-hidden rounded-full bg-white/10">
-                  <div className="h-full w-[40%] rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple" />
+
+                <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/50 px-5 py-4 backdrop-blur-xl shadow-[0_0_30px_rgba(0,212,255,0.07)]">
+                  {/* glow sutil */}
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(0,212,255,0.07),transparent)]" />
+
+                  <div className="relative">
+                    {/* Nível bloqueado */}
+                    <div className="mb-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5 text-xl">🔒</div>
+                        <div className="text-left">
+                          <div className="text-[10px] font-extrabold uppercase tracking-widest text-white/30">Nível</div>
+                          <div className="text-2xl font-extrabold text-white/20 leading-none">???</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[10px] text-white/20 uppercase tracking-wide">XP acumulado</div>
+                        <div className="text-sm font-bold text-white/15">— / —</div>
+                      </div>
+                    </div>
+
+                    {/* Barra de XP "vazia" com shimmer */}
+                    <div className="relative mb-3 h-2 w-full overflow-hidden rounded-full bg-white/5">
+                      <div
+                        className="absolute inset-0 -translate-x-full animate-[shimmer_2.2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                      />
+                    </div>
+
+                    {/* Frase de FOMO */}
+                    <p className="mb-3 text-center text-xs text-white/50 leading-relaxed">
+                      <span className="font-bold text-orbit-electric">{ORBITANDO_AGORA} pessoas</span> já acumulam XP agora.{" "}
+                      <span className="text-white/70">Você está perdendo cada ponto.</span>
+                    </p>
+
+                    {/* CTA */}
+                    <Link
+                      href="/entrar"
+                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 py-2.5 text-sm font-extrabold text-black shadow-[0_0_20px_rgba(0,212,255,0.35)] hover:shadow-[0_0_30px_rgba(0,212,255,0.55)] transition-shadow min-h-[44px]"
+                    >
+                      ⚡ Entrar e liberar meu XP
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
@@ -368,11 +405,11 @@ export default function Home() {
                   <span className="text-3xl">🚀</span>
                 </div>
                 <div className="mb-1.5 flex items-end justify-between">
-                  <span className="text-4xl font-extrabold text-orbit-electric drop-shadow-[0_0_12px_rgba(0,212,255,0.6)]">1</span>
+                  <span className="text-4xl font-extrabold text-orbit-electric drop-shadow-[0_0_12px_rgba(0,212,255,0.6)]">{ORBITANDO_AGORA}</span>
                   <span className="mb-1 text-sm text-white/40">/ 500 vidas</span>
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-                  <div className="h-full rounded-full bg-gradient-to-r from-orbit-electric to-cyan-300 shadow-[0_0_10px_rgba(0,212,255,0.7)]" style={{ width: "0.2%" }} />
+                  <div className="h-full rounded-full bg-gradient-to-r from-orbit-electric to-cyan-300 shadow-[0_0_10px_rgba(0,212,255,0.7)]" style={{ width: `${(ORBITANDO_AGORA / 500) * 100}%` }} />
                 </div>
                 <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-orbit-electric/20 bg-orbit-electric/10 px-3 py-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-orbit-electric/50" />

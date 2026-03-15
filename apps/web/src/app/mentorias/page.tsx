@@ -52,7 +52,7 @@ export default function Mentorias() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-300">Vagas:</span>
-                    <span className="text-white font-bold">3</span>
+                    <span className="text-white font-bold">0</span>
                   </div>
                   
                   <div className="pt-4">
@@ -97,7 +97,7 @@ export default function Mentorias() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-300">Vagas:</span>
-                    <span className="text-white font-bold">30</span>
+                    <span className="text-white font-bold">0</span>
                   </div>
                   
                   <div className="pt-4">

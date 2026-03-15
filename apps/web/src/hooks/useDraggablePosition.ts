@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useLayoutEffect } from "react";
 
 const CLAMP_PADDING = 16;
 function loadPosition(key: string, defaultRight: number, defaultBottom: number) {
@@ -34,20 +34,31 @@ export function useDraggablePosition(
   );
 
   const lastDraggedRef = useRef<{ right: number; bottom: number }>(position);
+  const positionRef = useRef(position);
+  const mountedRef = useRef(true);
+
+  useLayoutEffect(() => {
+    positionRef.current = position;
+  }, [position]);
 
   useEffect(() => {
     setPosition(loadPosition(key, defaultRight, defaultBottom));
   }, [key, defaultRight, defaultBottom]);
+
+  useEffect(() => {
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const startDrag = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
       const startX = e.clientX;
       const startY = e.clientY;
-      const startRight = position.right;
-      const startBottom = position.bottom;
+      const startRight = positionRef.current.right;
+      const startBottom = positionRef.current.bottom;
 
       const onMove = (ev: MouseEvent) => {
+        if (!mountedRef.current) return;
         const deltaX = ev.clientX - startX;
         const deltaY = ev.clientY - startY;
         let newRight = startRight - deltaX;
@@ -63,6 +74,7 @@ export function useDraggablePosition(
       const onUp = () => {
         window.removeEventListener("mousemove", onMove);
         window.removeEventListener("mouseup", onUp);
+        if (!mountedRef.current) return;
         try {
           if (typeof window !== "undefined") {
             const { right, bottom } = lastDraggedRef.current;
@@ -76,7 +88,7 @@ export function useDraggablePosition(
       window.addEventListener("mousemove", onMove);
       window.addEventListener("mouseup", onUp);
     },
-    [key, position]
+    [key]
   );
 
   const positionStyle: React.CSSProperties = {

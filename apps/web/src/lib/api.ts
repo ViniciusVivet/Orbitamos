@@ -626,37 +626,33 @@ export async function getForumMessages(parentId?: number): Promise<ForumMessage[
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
-    const result = await response.json();
-    if (!response.ok) throw new Error('Erro ao carregar mensagens');
-    return result;
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error((err as { message?: string }).message || 'Erro ao carregar mensagens');
+    }
+    return response.json();
   } catch (error) {
     if (error instanceof Error) throw error;
     throw new Error('Erro desconhecido ao carregar mensagens');
   }
 }
 
-export async function searchForumMessages(query: string): Promise<ForumMessage[]> {
+export async function searchForumMessages(query: string, parentId?: number): Promise<ForumMessage[]> {
   try {
     const params = new URLSearchParams({ q: query });
+    if (parentId != null) params.set("parentId", String(parentId));
     const response = await fetch(`${API_URL}/forum/messages?${params.toString()}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
-
-    const result = await response.json();
-
     if (!response.ok) {
-      throw new Error('Erro ao carregar mensagens');
+      const err = await response.json().catch(() => ({}));
+      throw new Error((err as { message?: string }).message || 'Erro ao buscar mensagens');
     }
-
-    return result;
+    return response.json();
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error('Erro desconhecido ao carregar mensagens');
+    if (error instanceof Error) throw error;
+    throw new Error('Erro desconhecido ao buscar mensagens');
   }
 }
 
@@ -681,9 +677,11 @@ export async function postForumMessage(
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(body),
     });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.message || 'Erro ao enviar mensagem');
-    return result;
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error((err as { message?: string }).message || 'Erro ao enviar mensagem');
+    }
+    return response.json();
   } catch (error) {
     if (error instanceof Error) throw error;
     throw new Error('Erro desconhecido ao enviar mensagem');
@@ -699,7 +697,7 @@ export async function updateForumMessage(
   options?: { topicTitle?: string; topicColor?: string; topicEmoji?: string }
 ): Promise<ForumMessage> {
   try {
-    const body: Record<string, string> = { content, city: city ?? "", neighborhood: neighborhood ?? "" };
+    const body: Record<string, unknown> = { content, city: city ?? "", neighborhood: neighborhood ?? "" };
     if (options?.topicTitle != null) body.topicTitle = options.topicTitle;
     if (options?.topicColor != null) body.topicColor = options.topicColor;
     if (options?.topicEmoji != null) body.topicEmoji = options.topicEmoji;
@@ -711,14 +709,11 @@ export async function updateForumMessage(
       },
       body: JSON.stringify(body),
     });
-
-    const result = await response.json();
-
     if (!response.ok) {
-      throw new Error(result.message || 'Erro ao atualizar mensagem');
+      const err = await response.json().catch(() => ({}));
+      throw new Error((err as { message?: string }).message || 'Erro ao atualizar mensagem');
     }
-
-    return result;
+    return response.json();
   } catch (error) {
     if (error instanceof Error) {
       throw error;
@@ -737,15 +732,12 @@ export async function deleteForumMessage(token: string, id: number): Promise<voi
       },
     });
 
-    const result = await response.json();
-
     if (!response.ok) {
-      throw new Error(result.message || 'Erro ao excluir mensagem');
+      const err = await response.json().catch(() => ({}));
+      throw new Error((err as { message?: string }).message || 'Erro ao excluir mensagem');
     }
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
+    if (error instanceof Error) throw error;
     throw new Error('Erro desconhecido ao excluir mensagem');
   }
 }

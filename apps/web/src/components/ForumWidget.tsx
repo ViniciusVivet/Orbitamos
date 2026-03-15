@@ -19,21 +19,32 @@ import { Minus, X, RefreshCw, ExternalLink, Maximize2, GripVertical } from "luci
 import { useDraggablePosition } from "@/hooks/useDraggablePosition";
 
 const FORUM_POSITION_KEY = "orbitamos_forum_widget_position";
+const FORUM_MINIMIZED_KEY = "orbitamos_forum_widget_minimized";
 
 export default function ForumWidget() {
   const { token, isAuthenticated, user } = useAuth();
   const { setActiveConversation } = useChat();
   const { positionStyle, startDrag } = useDraggablePosition(FORUM_POSITION_KEY, 20, 20);
   const [open, setOpen] = useState(false);
-  const [minimized, setMinimized] = useState(false);
+  const [minimized, setMinimized] = useState(() => {
+    try { return typeof window !== "undefined" && localStorage.getItem(FORUM_MINIMIZED_KEY) === "true"; }
+    catch { return false; }
+  });
   const [messages, setMessages] = useState<ForumMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [content, setContent] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingMessage, setEditingMessage] = useState<ForumMessage | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [query, setQuery] = useState("");
   const [openingChat, setOpeningChat] = useState<number | null>(null);
+
+  const setMinimizedPersisted = (val: boolean) => {
+    setMinimized(val);
+    try { localStorage.setItem(FORUM_MINIMIZED_KEY, String(val)); } catch { /* ignore */ }
+  };
 
   const loadMessages = async () => {
     setLoading(true);
@@ -65,9 +76,14 @@ export default function ForumWidget() {
     setError("");
     try {
       if (editingId) {
-        const updated = await updateForumMessage(token, editingId, content.trim());
+        const updated = await updateForumMessage(token, editingId, content.trim(), undefined, undefined, {
+          topicTitle: editingMessage?.topicTitle ?? undefined,
+          topicColor: editingMessage?.topicColor ?? undefined,
+          topicEmoji: editingMessage?.topicEmoji ?? undefined,
+        });
         setMessages((prev) => prev.map((item) => (item.id === editingId ? updated : item)));
         setEditingId(null);
+        setEditingMessage(null);
       } else {
         const created = await postForumMessage(token, content.trim());
         setMessages((prev) => [created, ...prev]);
@@ -85,11 +101,14 @@ export default function ForumWidget() {
 
   const handleEdit = (message: ForumMessage) => {
     setEditingId(message.id);
+    setEditingMessage(message);
     setContent(message.content);
   };
 
   const handleDelete = async (id: number) => {
     if (!token) return;
+    if (editingId === id) { setEditingId(null); setEditingMessage(null); setContent(""); }
+    setConfirmDeleteId(null);
     setSending(true);
     setError("");
     try {
@@ -198,7 +217,7 @@ export default function ForumWidget() {
                   </Link>
                   <button
                     type="button"
-                    onClick={() => setMinimized(true)}
+                    onClick={() => setMinimizedPersisted(true)}
                     className="rounded-lg p-1.5 text-blue-300 hover:bg-blue-500/20 transition"
                     title="Minimizar"
                     aria-label="Minimizar"
@@ -210,7 +229,7 @@ export default function ForumWidget() {
               {minimized && (
                 <button
                   type="button"
-                  onClick={() => setMinimized(false)}
+                  onClick={() => setMinimizedPersisted(false)}
                   className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-blue-300 hover:bg-blue-500/20 transition"
                   title="Expandir"
                   aria-label="Expandir"
@@ -325,13 +344,21 @@ export default function ForumWidget() {
                                 >
                                   Editar
                                 </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDelete(message.id)}
-                                  className="text-red-400 hover:underline"
-                                >
-                                  Excluir
-                                </button>
+                                {confirmDeleteId === message.id ? (
+                                  <span className="flex items-center gap-1.5">
+                                    <span className="text-white/50">Confirmar?</span>
+                                    <button type="button" onClick={() => handleDelete(message.id)} className="text-red-400 hover:underline">Sim</button>
+                                    <button type="button" onClick={() => setConfirmDeleteId(null)} className="text-white/40 hover:underline">Não</button>
+                                  </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => setConfirmDeleteId(message.id)}
+                                    className="text-red-400 hover:underline"
+                                  >
+                                    Excluir
+                                  </button>
+                                )}
                               </div>
                             )}
                           </div>
