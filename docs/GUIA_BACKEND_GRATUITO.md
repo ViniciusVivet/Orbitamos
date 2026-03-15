@@ -1,6 +1,9 @@
 # 🚀 Guia: Backend Funcional e Gratuito - Orbitamos
 
-> **Passo a passo completo para conectar backend ao frontend usando serviços gratuitos**  
+> **⚠️ REFERÊNCIA HISTÓRICA** — Este guia foi escrito quando o backend rodava no Render/Railway.
+> O deploy atual é **EC2 + CloudFront**. Veja [`docs/INFRA_ATUAL.md`](INFRA_ATUAL.md).
+> Este doc é útil se você quiser migrar para Render/Railway no futuro.
+>
 > Última atualização: 2025-01-06
 
 ---

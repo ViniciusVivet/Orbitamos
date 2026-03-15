@@ -23,12 +23,14 @@
 │  │                 │    │                 │    │              │ │
 │  │  Vercel         │    │  Swagger/OpenAPI│   │  GitHub      │ │
 │  │  (Frontend)     │    │  Health Checks  │   │  Actions     │ │
-│  │  Render/Fly.io  │    │  Logs           │   │  Docker      │ │
+│  │  EC2+CloudFront │    │  Logs           │   │  Docker      │ │
 │  │  (Backend)      │    │                 │   │  Builds      │ │
 │  └─────────────────┘    └─────────────────┘    └──────────────┘ │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+> Estado atual e histórico completo: [`docs/INFRA_ATUAL.md`](INFRA_ATUAL.md)
 
 ## Fluxo de Dados
 
@@ -42,15 +44,15 @@ User Request
 └─────────────┘
      │
      ▼
-┌─────────────┐
-│   Render    │  ← Load Balancer + Auto-scaling
-│  (Backend)  │
-└─────────────┘
-     │
+┌──────────────────┐
+│  CloudFront      │  ← HTTPS termination (AWS)
+│  → EC2 nginx:80  │  ← Reverse proxy → Spring Boot:8080
+└──────────────────┘
+     │              └──→ Cloudinary (upload de avatars)
      ▼
 ┌─────────────┐
-│ PostgreSQL │  ← Connection Pooling + Replication
-│ (Database) │
+│  Supabase   │  ← PostgreSQL (banco de dados)
+│  (Database) │
 └─────────────┘
 ```
 

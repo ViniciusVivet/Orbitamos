@@ -1,5 +1,12 @@
 # Render + Supabase: configurar sem expor senhas no código
 
+> **⚠️ REFERÊNCIA HISTÓRICA — não é o deploy atual.**
+> O backend foi migrado para **EC2 + CloudFront** em 2025. Este guia serve de referência
+> caso o projeto seja migrado de volta para o Render.
+> Estado atual da infra: [`docs/INFRA_ATUAL.md`](INFRA_ATUAL.md)
+
+---
+
 Nenhuma senha ou URL real fica no repositório. Tudo é configurado por **variáveis de ambiente** no Render e, localmente, no arquivo `.env` (que está no `.gitignore`).
 
 ---

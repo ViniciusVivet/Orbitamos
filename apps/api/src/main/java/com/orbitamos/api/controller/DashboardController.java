@@ -1,5 +1,7 @@
 package com.orbitamos.api.controller;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.orbitamos.api.dto.UpdateProfileRequest;
 import com.orbitamos.api.entity.User;
 import com.orbitamos.api.entity.UserAchievement;
@@ -17,10 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -57,8 +56,8 @@ public class DashboardController {
     @Value("${app.upload-dir:./uploads}")
     private String uploadDir;
 
-    @Value("${app.api-base-url:http://localhost:8080}")
-    private String apiBaseUrl;
+    @Autowired
+    private Cloudinary cloudinary;
 
     private static final List<String> ALLOWED_IMAGE_TYPES = List.of(
         "image/jpeg", "image/png", "image/gif", "image/webp"
@@ -114,25 +113,6 @@ public class DashboardController {
         map.put("state", user.getState() != null ? user.getState() : "");
         map.put("zipCode", user.getZipCode() != null ? user.getZipCode() : "");
         return map;
-    }
-
-    /**
-     * Usa API_BASE_URL quando configurado; senão, se a config for localhost e houver request
-     * (ex.: atrás do Render), monta a URL a partir de X-Forwarded-Proto/Host para a foto carregar em HTTPS.
-     */
-    private String resolveApiBaseUrl(HttpServletRequest request) {
-        if (apiBaseUrl != null && !apiBaseUrl.contains("localhost")) {
-            return apiBaseUrl.endsWith("/") ? apiBaseUrl.substring(0, apiBaseUrl.length() - 1) : apiBaseUrl;
-        }
-        if (request == null) return apiBaseUrl;
-        String scheme = request.getHeader("X-Forwarded-Proto");
-        if (scheme == null || scheme.isBlank()) scheme = request.getScheme();
-        String host = request.getHeader("X-Forwarded-Host");
-        if (host == null || host.isBlank()) host = request.getServerName();
-        int port = request.getServerPort();
-        boolean defaultPort = ("https".equals(scheme) && port == 443) || ("http".equals(scheme) && port == 80);
-        if (defaultPort) return scheme + "://" + host;
-        return scheme + "://" + host + ":" + port;
     }
 
     @PutMapping("/me")
@@ -199,8 +179,7 @@ public class DashboardController {
     @PostMapping(value = "/me/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadAvatar(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam("file") MultipartFile file,
-            HttpServletRequest request) {
+            @RequestParam("file") MultipartFile file) {
         try {
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return ResponseEntity.status(401).body(Map.of(
@@ -231,15 +210,16 @@ public class DashboardController {
                 ));
             }
             User user = userOpt.get();
-            String ext = contentType.split("/")[1];
-            if ("jpeg".equals(ext)) ext = "jpg";
-            String filename = System.currentTimeMillis() + "." + ext;
-            Path dir = Path.of(uploadDir).toAbsolutePath().normalize().resolve("avatars").resolve(String.valueOf(user.getId()));
-            Files.createDirectories(dir);
-            Path target = dir.resolve(filename);
-            file.transferTo(target.toFile());
-            String baseUrl = resolveApiBaseUrl(request);
-            String avatarUrl = baseUrl + "/api/uploads/avatars/" + user.getId() + "/" + filename;
+            Map uploadResult = cloudinary.uploader().upload(
+                file.getBytes(),
+                ObjectUtils.asMap(
+                    "folder", "avatars",
+                    "public_id", "user_" + user.getId(),
+                    "overwrite", true,
+                    "resource_type", "image"
+                )
+            );
+            String avatarUrl = (String) uploadResult.get("secure_url");
             user.setAvatarUrl(avatarUrl);
             userRepository.save(user);
             return ResponseEntity.ok(Map.of(

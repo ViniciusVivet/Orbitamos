@@ -1,4 +1,7 @@
-# Variáveis de ambiente: Render vs EC2
+# Variáveis de ambiente: EC2 (atual) e Render (referência)
+
+> **Infra atual:** backend no EC2 + CloudFront. Render foi usado anteriormente.
+> Veja o estado completo em [`docs/INFRA_ATUAL.md`](INFRA_ATUAL.md).
 
 Onde e como configurar as variáveis do backend conforme o ambiente de deploy.
 
@@ -32,11 +35,19 @@ Todas as variáveis abaixo são usadas pela aplicação Spring Boot (`apps/api`)
 | `JWT_SECRET` | Chave longa (ex.: `openssl rand -base64 32`) | Colar na aba Environment | `export JWT_SECRET="..."` |
 | `JWT_EXPIRATION` | `86400000` (opcional) | Idem | Opcional no `ec2-env.sh` |
 
-### URL da API (foto de perfil, etc.)
+### URL da API (legado)
 
 | Variável | Exemplo | Render | EC2 |
 |----------|---------|--------|-----|
-| `API_BASE_URL` | URL pública da API em HTTPS | `https://orbitamos-backend.onrender.com` | `https://SEU_ID.cloudfront.net` ou `http://IP:8080` se não usar CloudFront |
+| `API_BASE_URL` | URL pública da API em HTTPS | `https://orbitamos-backend.onrender.com` | `https://SEU_ID.cloudfront.net` |
+
+### Cloudinary (upload de avatars — atual)
+
+| Variável | Onde obter | EC2 |
+|----------|-----------|-----|
+| `CLOUDINARY_CLOUD_NAME` | cloudinary.com → Dashboard | `export CLOUDINARY_CLOUD_NAME="dt6srlfcj"` |
+| `CLOUDINARY_API_KEY` | cloudinary.com → Dashboard → API Keys | `export CLOUDINARY_API_KEY="..."` |
+| `CLOUDINARY_API_SECRET` | cloudinary.com → Dashboard → API Keys | `export CLOUDINARY_API_SECRET="..."` |
 
 ---
 

@@ -159,7 +159,7 @@ orbitamos/
 - **Segurança**: Spring Security + JWT
 - **Banco**: PostgreSQL 15
 - **ORM**: Spring Data JPA
-- **Deploy**: Render ou EC2 + CloudFront (HTTPS)
+- **Deploy**: EC2 + CloudFront (HTTPS) — ver [docs/INFRA_ATUAL.md](docs/INFRA_ATUAL.md)
 
 ### **Infraestrutura**
 - **Containerização**: Docker + Docker Compose
@@ -255,12 +255,20 @@ Endpoint protegido para área do aluno.
 
 ## ☁️ **Produção (sem sua máquina ligada)**
 
-O projeto roda 100% na nuvem: front na **Vercel**, banco no **Supabase** e backend em uma destas opções:
+O projeto roda 100% na nuvem:
 
-- **Render** — deploy automático; variáveis em Dashboard → Environment. Veja [docs/RENDER_SUPABASE_SETUP.md](docs/RENDER_SUPABASE_SETUP.md).
-- **EC2 + CloudFront** — API na AWS com HTTPS via CloudFront; variáveis em `scripts/ec2-env.sh` (não commitar). Veja [docs/EC2_CLOUDFRONT_HTTPS.md](docs/EC2_CLOUDFRONT_HTTPS.md).
+| Serviço | Plataforma atual |
+|---------|-----------------|
+| Frontend | **Vercel** |
+| Backend (Java) | **AWS EC2** (us-east-2) + **CloudFront** (HTTPS) |
+| Banco de dados | **Supabase** (PostgreSQL) |
+| Imagens / avatars | **Cloudinary** |
 
-**Não é preciso deixar seu PC ligado** — tudo funciona nos servidores de cada serviço. Variáveis de ambiente (Render vs EC2): [docs/VARIAVEIS_AMBIENTE.md](docs/VARIAVEIS_AMBIENTE.md).
+**Estado completo e histórico da infra:** [docs/INFRA_ATUAL.md](docs/INFRA_ATUAL.md)
+
+**Variáveis de ambiente:** [docs/VARIAVEIS_AMBIENTE.md](docs/VARIAVEIS_AMBIENTE.md)
+
+**Deploy do backend:** [docs/EC2_CLOUDFRONT_HTTPS.md](docs/EC2_CLOUDFRONT_HTTPS.md)
 
 ---
 

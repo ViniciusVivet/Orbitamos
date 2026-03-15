@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { uploadAvatar } from "@/lib/supabase";
 import { uploadAvatarViaApi, getDisplayAvatarUrl, type User } from "@/lib/api";
 
 /** Busca endereço pelo CEP (ViaCEP). Retorna logradouro, bairro, localidade, uf ou null se erro. */
@@ -173,8 +172,7 @@ export default function PerfilForm({
                   setUploadingAvatar(true);
                   try {
                     let url: string | null = null;
-                    url = await uploadAvatar(file, user.id);
-                    if (!url && token) {
+                    if (token) {
                       const result = await uploadAvatarViaApi(token, file);
                       url = result.avatarUrl;
                       if (result.user && onAvatarUploaded) onAvatarUploaded(result.user);
