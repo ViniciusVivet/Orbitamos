@@ -26,6 +26,7 @@ import SpaceShipsOverlay from "@/components/SpaceShipsOverlay";
 import MissionsTeaser from "@/components/MissionsTeaser";
 import ConstellationStepper from "@/components/ConstellationStepper";
 import MissionsSidebar from "@/components/MissionsSidebar";
+import LiveCounter from "@/components/LiveCounter";
 
 export default function Home() {
   const instagramUrl = "https://www.instagram.com/orbitamosbr/";
@@ -230,7 +231,12 @@ export default function Home() {
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               <div>
-                <div className="text-4xl md:text-6xl font-extrabold text-orbit-electric mb-2 drop-shadow-[0_0_20px_rgba(0,212,255,0.5)]">1</div>
+                <LiveCounter
+                  value={1}
+                  colorClass="text-orbit-electric"
+                  glowStyle="drop-shadow-[0_0_20px_rgba(0,212,255,0.5)]"
+                  live
+                />
                 <div className="text-sm font-medium uppercase tracking-wider text-white/90">Vida transformada</div>
               </div>
               <div>
