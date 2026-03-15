@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Props {
   value: number;
-  colorClass?: string;     // ex: "text-orbit-electric"
-  glowStyle?: string;      // ex: "drop-shadow-[0_0_20px_rgba(0,212,255,0.5)]"
-  live?: boolean;          // exibe badge "ao vivo" com sync periódico
-  duration?: number;       // duração do count-up em ms
+  colorClass?: string;
+  glowStyle?: string;
+  live?: boolean;
 }
 
 export default function LiveCounter({
@@ -15,51 +14,61 @@ export default function LiveCounter({
   colorClass = "text-orbit-electric",
   glowStyle  = "drop-shadow-[0_0_20px_rgba(0,212,255,0.5)]",
   live       = false,
-  duration   = 1400,
 }: Props) {
-  const [display,  setDisplay]  = useState(0);
-  const [syncing,  setSyncing]  = useState(false);
+  const ref               = useRef<HTMLDivElement>(null);
+  const [visible,  setVisible]  = useState(false);
+  const [animKey,  setAnimKey]  = useState(0);
+  const [showVal,  setShowVal]  = useState(value);
 
-  // Count-up com easeOutExpo ao montar
+  // Dispara o flip quando o elemento entra no viewport
   useEffect(() => {
-    const start = performance.now();
-    const tick  = (now: number) => {
-      const t       = Math.min((now - start) / duration, 1);
-      const eased   = t === 1 ? 1 : 1 - Math.pow(2, -10 * t); // easeOutExpo
-      setDisplay(Math.round(eased * value));
-      if (t < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  }, [value, duration]);
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { threshold: 0.5 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
-  // Sincronização periódica — cria a sensação de dado ao vivo
+  // "Quase incrementa": a cada 9s flipa para value+1 por 800ms e volta
+  // Cria tensão psicológica — parece que está prestes a subir
   useEffect(() => {
-    if (!live) return;
+    if (!live || !visible) return;
     const id = setInterval(() => {
-      setSyncing(true);
-      setTimeout(() => setSyncing(false), 700);
-    }, 5000);
+      setShowVal(value + 1);
+      setAnimKey(k => k + 1);
+      setTimeout(() => {
+        setShowVal(value);
+        setAnimKey(k => k + 1);
+      }, 800);
+    }, 9000);
     return () => clearInterval(id);
-  }, [live]);
+  }, [live, visible, value]);
 
   return (
-    <div className="relative inline-block">
-      {/* Badge "ao vivo" */}
-      {live && (
-        <div className="absolute -right-1 -top-3 flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-          <span className="text-[9px] font-bold uppercase tracking-wide text-emerald-400">
-            {syncing ? "sync…" : "ao vivo"}
-          </span>
-        </div>
-      )}
-
-      {/* Número */}
+    <div ref={ref}>
       <div
-        className={`tabular-nums transition-transform duration-150 text-4xl md:text-6xl font-extrabold mb-2 ${colorClass} ${glowStyle} ${syncing ? "scale-110" : "scale-100"}`}
+        key={animKey}
+        className={`tabular-nums text-4xl md:text-6xl font-extrabold mb-2 ${colorClass} ${glowStyle}`}
+        style={{
+          animation:     visible ? "flipIn 0.65s cubic-bezier(0.23,1,0.32,1) forwards" : "none",
+          opacity:       visible ? undefined : 0,
+          transformOrigin: "top center",
+        }}
       >
-        {display}
+        {showVal}
       </div>
+
+      <style>{`
+        @keyframes flipIn {
+          0%   { transform: perspective(400px) rotateX(-90deg); opacity: 0.2; }
+          55%  { transform: perspective(400px) rotateX(12deg);  opacity: 1;   }
+          75%  { transform: perspective(400px) rotateX(-5deg);               }
+          100% { transform: perspective(400px) rotateX(0deg);                }
+        }
+      `}</style>
     </div>
   );
 }
