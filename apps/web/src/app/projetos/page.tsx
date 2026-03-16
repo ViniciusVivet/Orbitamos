@@ -2,9 +2,12 @@
 
 import { useMemo, useState } from "react";
 import ProjetosHero from "@/components/projetos/ProjetosHero";
+import ProjetosStats from "@/components/projetos/ProjetosStats";
 import ProjetosFilters from "@/components/projetos/ProjetosFilters";
 import ProjectCard from "@/components/projetos/ProjectCard";
+import ProjetosTestimonials from "@/components/projetos/ProjetosTestimonials";
 import WhatWeBuild from "@/components/projetos/WhatWeBuild";
+import ProjetosImpacto from "@/components/projetos/ProjetosImpacto";
 import ProjetosCTA from "@/components/projetos/ProjetosCTA";
 import { projetos } from "@/data/projetos";
 import type { CategoriaSlug } from "@/types/projeto";
@@ -21,7 +24,13 @@ export default function ProjetosPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      {/* 1. Hero */}
       <ProjetosHero />
+
+      {/* 2. Números de tração */}
+      <ProjetosStats />
+
+      {/* 3. Filtros + Grid de projetos */}
       <div className="container mx-auto px-4 py-6">
         <ProjetosFilters
           activeFilter={activeFilter}
@@ -41,7 +50,17 @@ export default function ProjetosPage() {
           </p>
         )}
       </div>
+
+      {/* 4. Depoimentos de clientes */}
+      <ProjetosTestimonials />
+
+      {/* 5. Capacidade técnica */}
       <WhatWeBuild />
+
+      {/* 6. Diferencial / impacto social (argumento para investidor) */}
+      <ProjetosImpacto />
+
+      {/* 7. CTA final */}
       <ProjetosCTA />
     </div>
   );
