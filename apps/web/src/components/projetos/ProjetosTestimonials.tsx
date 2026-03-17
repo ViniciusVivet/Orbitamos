@@ -9,7 +9,7 @@ const DEPOIMENTOS = [
     projeto: "Sabrina Lashes · Site institucional",
   },
   {
-    nome: "Caio Mendes",
+    nome: "Matheus Camaleão",
     cargo: "Fundador · YUME Moda Autoral",
     avatar: "YM",
     cor: "from-violet-500 to-purple-400",
