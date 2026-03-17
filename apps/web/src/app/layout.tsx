@@ -9,6 +9,7 @@ import { ProgressProviderWithAuth } from "@/contexts/ProgressContext";
 import PreWakeProvider from "@/components/PreWakeProvider";
 import ForumWidget from "@/components/ForumWidget";
 import FloatingChat from "@/components/chat/FloatingChat";
+import ErrorBoundaryWrapper from "@/components/ErrorBoundaryWrapper";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -45,6 +46,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${inter.variable} font-sans antialiased`}>
+        <ErrorBoundaryWrapper>
         <ClientAuthProvider>
           <ProgressProviderWithAuth>
           <ChatProvider>
@@ -60,6 +62,7 @@ export default function RootLayout({
           </ChatProvider>
           </ProgressProviderWithAuth>
         </ClientAuthProvider>
+        </ErrorBoundaryWrapper>
       </body>
     </html>
   );

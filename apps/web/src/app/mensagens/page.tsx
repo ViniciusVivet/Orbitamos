@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useChat } from "@/contexts/ChatContext";
-import { useChatWebSocket } from "@/hooks/useChatWebSocket";
+import { useConversationsSync } from "@/hooks/useConversationsSync";
 import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -29,11 +29,9 @@ import { MessageCircle, Users, Send, Info } from "lucide-react";
 import AvatarWithPresence from "@/components/chat/AvatarWithPresence";
 import GroupInfoModal from "@/components/chat/GroupInfoModal";
 
-const POLL_INTERVAL_MS = 5000;
-
 export default function MensagensPage() {
   const { user, token } = useAuth();
-  const { setActiveConversation, clearUnread, unreadByConv } = useChat();
+  const { setActiveConversation, clearUnread, addUnread, unreadByConv } = useChat();
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [messages, setMessages] = useState<ChatMessageItem[]>([]);
@@ -62,11 +60,41 @@ export default function MensagensPage() {
   const selectedConv = conversations.find((c) => c.id === selectedId);
   const otherParticipant = selectedConv?.type === "DIRECT" ? selectedConv.participants.find((p) => p.id !== user?.id) : null;
 
+  const selectedIdRef = useRef(selectedId);
+  selectedIdRef.current = selectedId;
+
   const appendMessage = useCallback((msg: ChatMessageItem) => {
     setMessages((prev) => [...prev, msg]);
   }, []);
 
-  useChatWebSocket(token, selectedId, user?.id, appendMessage, () => {}, false);
+  const handleConversationActivity = useCallback(
+    (convId: number, msg: ChatMessageItem) => {
+      // Bump conversa para o topo e atualiza lastMessage
+      setConversations((prev) => {
+        const idx = prev.findIndex((c) => c.id === convId);
+        if (idx === -1) return prev;
+        const updated = {
+          ...prev[idx],
+          lastMessage: { content: msg.content, senderId: msg.senderId, createdAt: msg.createdAt },
+        };
+        return [updated, ...prev.filter((c) => c.id !== convId)];
+      });
+      // Incrementa unread se a conversa não está aberta
+      if (convId !== selectedIdRef.current) {
+        addUnread(convId);
+      }
+    },
+    [addUnread]
+  );
+
+  useConversationsSync({
+    token,
+    conversations,
+    selectedId,
+    currentUserId: user?.id,
+    onMessageForSelected: appendMessage,
+    onConversationActivity: handleConversationActivity,
+  });
 
   useEffect(() => {
     if (!groupAvatarFile) {
@@ -78,17 +106,14 @@ export default function MensagensPage() {
     return () => URL.revokeObjectURL(url);
   }, [groupAvatarFile]);
 
+  // Carrega a lista de conversas uma única vez — atualizações em tempo real
+  // ficam por conta do useConversationsSync (WebSocket).
   useEffect(() => {
     if (!token) return;
-    const load = () => {
-      getChatConversations(token)
-        .then(setConversations)
-        .catch(() => setConversations([]))
-        .finally(() => setLoadingConvs(false));
-    };
-    load();
-    const t = setInterval(load, POLL_INTERVAL_MS);
-    return () => clearInterval(t);
+    getChatConversations(token)
+      .then(setConversations)
+      .catch(() => setConversations([]))
+      .finally(() => setLoadingConvs(false));
   }, [token]);
 
   useEffect(() => {
