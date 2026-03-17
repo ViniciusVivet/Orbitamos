@@ -18,16 +18,26 @@ const HERO_STARS = (() => {
     r: rng() * 1.2 + 0.2,
   }));
 })();
+import dynamic from "next/dynamic";
 import Tilt from "@/components/Tilt";
 import Parallax from "@/components/Parallax";
 import Magnetic from "@/components/Magnetic";
-import GlobeClient from "@/components/GlobeClient";
-import SpaceShipsOverlay from "@/components/SpaceShipsOverlay";
+const SpaceShipsOverlay = dynamic(() => import("@/components/SpaceShipsOverlay"), { ssr: false, loading: () => null });
 import MissionsTeaser from "@/components/MissionsTeaser";
 import ConstellationStepper from "@/components/ConstellationStepper";
 import MissionsSidebar from "@/components/MissionsSidebar";
 import LiveCounter from "@/components/LiveCounter";
 import { ORBITANDO_AGORA } from "@/lib/orbitStats";
+
+// three.js (~600kb) carregado de forma lazy para não bloquear a compilação inicial
+const GlobeClient = dynamic(() => import("@/components/GlobeClient"), {
+  ssr: false,
+  loading: () => (
+    <div className="mx-auto flex h-[220px] w-[220px] items-center justify-center rounded-full border border-white/10 bg-white/5">
+      <span className="text-white/30 text-sm">🌍</span>
+    </div>
+  ),
+});
 
 export default function Home() {
   const instagramUrl = "https://www.instagram.com/orbitamosbr/";
