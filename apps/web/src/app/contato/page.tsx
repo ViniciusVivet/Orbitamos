@@ -37,9 +37,9 @@ export default function Contato() {
           message: formData.message,
         });
         
-        console.log('✅ Contato salvo no banco:', response);
+        void response;
       } catch (apiError) {
-        console.warn('⚠️ Erro ao salvar no banco (continuando com EmailJS):', apiError);
+        void apiError; // falha silenciosa: backend indisponível não bloqueia o envio de email
         // Continua mesmo se o backend falhar
       }
       
@@ -58,10 +58,9 @@ export default function Contato() {
           };
           
           await emailjs.send(serviceId, templateId, templateParams, publicKey);
-          console.log('📧 Email enviado com sucesso via EmailJS!');
         }
       } catch (emailError) {
-        console.warn('⚠️ Erro ao enviar email (mas dados foram salvos no banco):', emailError);
+        void emailError; // falha de email não bloqueia confirmação ao usuário
         // Não bloqueia o sucesso se o email falhar
       }
       
@@ -74,7 +73,7 @@ export default function Contato() {
       }, 5000);
       
     } catch (err) {
-      console.error('❌ Erro geral:', err);
+      void err;
       setError('Erro ao enviar mensagem. Tente novamente.');
     } finally {
       setIsLoading(false);

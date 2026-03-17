@@ -98,9 +98,9 @@ export default function SpaceShipsOverlay() {
         position: relative;
       `;
 
-      if (variant === "fighter") inner.innerHTML = FIGHTER_SVG(color);
-      else if (variant === "saucer") inner.innerHTML = SAUCER_SVG(color);
-      else inner.innerHTML = CRUISER_SVG(color);
+      const svgString = variant === "fighter" ? FIGHTER_SVG(color) : variant === "saucer" ? SAUCER_SVG(color) : CRUISER_SVG(color);
+      const svgEl = new DOMParser().parseFromString(svgString, "image/svg+xml").documentElement;
+      inner.appendChild(svgEl);
 
       // Rastro de propulsão
       const trail = document.createElement("div");

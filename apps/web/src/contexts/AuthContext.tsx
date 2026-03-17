@@ -68,54 +68,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    try {
-      console.log("🔐 AuthContext: Iniciando login...");
-      const response: AuthResponse = await loginApi({ email, password });
-      console.log("✅ AuthContext: Login API respondeu:", response);
-      
-      localStorage.setItem("token", response.token);
-      setToken(response.token);
-      setUser({
-        id: response.id,
-        name: response.name,
-        email: response.email,
-        createdAt: new Date().toISOString(),
-        avatarUrl: response.avatarUrl ?? null,
-        role: response.role ?? "STUDENT",
-      });
-      // Garante perfil completo (telefone, endereço, etc.) na área logada
-      getCurrentUser(response.token).then((r) => { if (r.success && r.user) setUser(r.user); });
-      console.log("🚀 AuthContext: Redirecionando...");
-      router.push(response.role === "FREELANCER" ? "/colaborador" : "/estudante");
-    } catch (error) {
-      console.error("❌ AuthContext: Erro no login:", error);
-      throw error; // Re-lança o erro para ser capturado no componente
-    }
+    const response: AuthResponse = await loginApi({ email, password });
+    localStorage.setItem("token", response.token);
+    setToken(response.token);
+    setUser({
+      id: response.id,
+      name: response.name,
+      email: response.email,
+      createdAt: new Date().toISOString(),
+      avatarUrl: response.avatarUrl ?? null,
+      role: response.role ?? "STUDENT",
+    });
+    // Garante perfil completo (telefone, endereço, etc.) na área logada
+    getCurrentUser(response.token).then((r) => { if (r.success && r.user) setUser(r.user); });
+    router.push(response.role === "FREELANCER" ? "/colaborador" : "/estudante");
   };
 
   const register = async (name: string, email: string, password: string, role?: "STUDENT" | "FREELANCER") => {
-    try {
-      console.log("📝 AuthContext: Iniciando registro...");
-      const response: AuthResponse = await registerApi({ name, email, password, role });
-      console.log("✅ AuthContext: Registro API respondeu:", response);
-      
-      localStorage.setItem("token", response.token);
-      setToken(response.token);
-      setUser({
-        id: response.id,
-        name: response.name,
-        email: response.email,
-        createdAt: new Date().toISOString(),
-        avatarUrl: response.avatarUrl ?? null,
-        role: response.role ?? "STUDENT",
-      });
-      getCurrentUser(response.token).then((r) => { if (r.success && r.user) setUser(r.user); });
-      console.log("🚀 AuthContext: Redirecionando...");
-      router.push(response.role === "FREELANCER" ? "/colaborador" : "/estudante");
-    } catch (error) {
-      console.error("❌ AuthContext: Erro no registro:", error);
-      throw error;
-    }
+    const response: AuthResponse = await registerApi({ name, email, password, role });
+    localStorage.setItem("token", response.token);
+    setToken(response.token);
+    setUser({
+      id: response.id,
+      name: response.name,
+      email: response.email,
+      createdAt: new Date().toISOString(),
+      avatarUrl: response.avatarUrl ?? null,
+      role: response.role ?? "STUDENT",
+    });
+    getCurrentUser(response.token).then((r) => { if (r.success && r.user) setUser(r.user); });
+    router.push(response.role === "FREELANCER" ? "/colaborador" : "/estudante");
   };
 
   const logout = () => {

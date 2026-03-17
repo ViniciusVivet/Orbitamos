@@ -4,9 +4,7 @@
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
-  (typeof window !== "undefined" && window.location.hostname !== "localhost"
-    ? "https://orbitamos-backend.onrender.com/api"
-    : "http://localhost:8080/api");
+  "http://localhost:8080/api";
 
 /** Base da API sem /api (para montar URLs de upload/avatar em produção). */
 export const API_BASE_URL = API_URL.replace(/\/api\/?$/, "");
