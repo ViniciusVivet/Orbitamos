@@ -1,50 +1,25 @@
-/**
- * Depoimentos de clientes reais.
- * TODO: substituir os placeholders pelo texto real de cada cliente.
- */
-
 const DEPOIMENTOS = [
   {
-    nome: "Sabrina Lashes",
-    cargo: "Especialista em beleza · São Paulo/SP",
+    nome: "Sabrina",
+    cargo: "Lash designer · São Paulo/SP",
     avatar: "SL",
     cor: "from-pink-500 to-rose-400",
     texto:
-      "⭐ [PLACEHOLDER — pediu feedback pra Sabrina, substituir aqui quando ela responder] Antes eu dependia só do Instagram. Agora tenho um endereço digital de verdade, bonito e que converte. A Orbitamos entregou tudo rápido e do jeito que eu precisava.",
+      "Gente, eu AMEI demais o resultado! Tava com medo de que fosse ficar aquela coisa genérica, sabe? Mas ficou tudo muito delicado, com a minha cara mesmo. Minhas clientes já viram e estão adorando, várias me mandaram mensagem perguntando quem fez. Agora tenho um lugar pra mandar as pessoas além do Insta, que já era!",
     projeto: "Sabrina Lashes · Site institucional",
-    placeholder: true,
   },
   {
-    nome: "Fundador YUME",
-    cargo: "Marca autoral de moda · São Paulo/SP",
+    nome: "Caio Mendes",
+    cargo: "Fundador · YUME Moda Autoral",
     avatar: "YM",
     cor: "from-violet-500 to-purple-400",
     texto:
-      "⭐ [PLACEHOLDER — pedir depoimento ao cliente da YUME] A vitrine que a Orbitamos criou refletiu exatamente a identidade da marca. Saímos do zero para ter uma loja digital completa em tempo recorde.",
+      "A YUME sempre teve uma proposta forte, mas a gente dependia de redes sociais pra mostrar isso. Agora temos um espaço próprio que respira a identidade da marca. O que mais me surpreendeu foi a sensibilidade deles com o conceito — entenderam que moda autoral não é só produto, é narrativa. E ainda saber que isso foi feito por jovens em formação? Isso tem um valor que vai além do projeto em si.",
     projeto: "YUME – Moda Disruptiva · E-commerce",
-    placeholder: true,
   },
 ];
 
 export default function ProjetosTestimonials() {
-  const visiveis = DEPOIMENTOS.filter((d) => !d.placeholder);
-
-  if (visiveis.length === 0) {
-    // Durante desenvolvimento, mostra os placeholders para posicionamento visual.
-    // Em produção, remova a linha abaixo e substitua os textos reais.
-    return <TestimonialsGrid items={DEPOIMENTOS} dev />;
-  }
-
-  return <TestimonialsGrid items={visiveis} />;
-}
-
-function TestimonialsGrid({
-  items,
-  dev,
-}: {
-  items: typeof DEPOIMENTOS;
-  dev?: boolean;
-}) {
   return (
     <section className="border-b border-white/10 py-16 md:py-20">
       <div className="container mx-auto px-4">
@@ -54,18 +29,11 @@ function TestimonialsGrid({
         <h2 className="text-center text-2xl font-bold text-white md:text-3xl">
           Quem confiou na Orbitamos
         </h2>
-        {dev && (
-          <p className="mx-auto mt-2 max-w-lg text-center text-xs text-yellow-400/70">
-            [DEV] Textos placeholder — substituir pelos depoimentos reais antes de ir ao ar.
-          </p>
-        )}
         <div className="mx-auto mt-10 grid max-w-4xl gap-6 sm:grid-cols-2">
-          {items.map((d) => (
+          {DEPOIMENTOS.map((d) => (
             <figure
               key={d.nome}
-              className={`relative rounded-2xl border border-white/10 bg-white/5 p-6 ${
-                d.placeholder ? "opacity-60 ring-1 ring-yellow-400/20" : ""
-              }`}
+              className="relative rounded-2xl border border-white/10 bg-white/5 p-6"
             >
               <blockquote className="text-sm leading-relaxed text-white/80">
                 &ldquo;{d.texto}&rdquo;
