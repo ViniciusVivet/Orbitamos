@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { login as loginApi, register as registerApi, getCurrentUser, updateProfile as updateProfileApi, AuthResponse, User } from "@/lib/api";
+import { login as loginApi, register as registerApi, getCurrentUser, updateProfile as updateProfileApi, logout as logoutApi, AuthResponse, User } from "@/lib/api";
 
 interface AuthContextType {
   user: User | null;
@@ -38,38 +38,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Carrega dados do localStorage ao inicializar
+  // Restaura sessão via cookie httpOnly — sem localStorage.
+  // O cookie é enviado automaticamente pelo browser (credentials: "include" em authFetch).
+  // Se o cookie for válido, a API retorna o usuário e a sessão é restaurada.
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (storedToken) {
-      setToken(storedToken);
-      // Busca dados do usuário
-      getCurrentUser(storedToken)
-        .then((response) => {
-          if (response.success && response.user) {
-            setUser(response.user);
-          } else {
-            // Token inválido, limpa
-            localStorage.removeItem("token");
-            setToken(null);
-          }
-        })
-        .catch(() => {
-          // Token inválido ou erro, limpa
-          localStorage.removeItem("token");
-          setToken(null);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
-    }
+    getCurrentUser(null)
+      .then((response) => {
+        if (response.success && response.user) {
+          setUser(response.user);
+          // Mantém token em memória para o header Authorization nas requisições desta sessão.
+          // O cookie httpOnly é o mecanismo primário de autenticação persistente.
+          if (response.token) setToken(response.token);
+        }
+      })
+      .catch(() => {
+        // Cookie ausente ou expirado — usuário não autenticado, estado já é null
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const login = async (email: string, password: string) => {
     const response: AuthResponse = await loginApi({ email, password });
-    localStorage.setItem("token", response.token);
+    // Token mantido apenas em memória — cookie httpOnly é setado pelo backend
     setToken(response.token);
     setUser({
       id: response.id,
@@ -86,7 +78,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (name: string, email: string, password: string, role?: "STUDENT" | "FREELANCER") => {
     const response: AuthResponse = await registerApi({ name, email, password, role });
-    localStorage.setItem("token", response.token);
     setToken(response.token);
     setUser({
       id: response.id,
@@ -101,9 +92,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
+    // Limpa estado em memória
     setToken(null);
     setUser(null);
+    // Invalida o cookie httpOnly no backend (fire-and-forget)
+    logoutApi().catch(() => {});
     router.push("/entrar");
   };
 

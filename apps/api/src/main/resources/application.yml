@@ -77,6 +77,9 @@ jwt:
 app:
   upload-dir: ${UPLOAD_DIR:./uploads}
   api-base-url: ${API_BASE_URL:http://localhost:8080}
+  # false em dev (HTTP localhost), true em produção (HTTPS) — sobreponha via env var
+  cookie:
+    secure: ${APP_COOKIE_SECURE:false}
 
 # Cloudinary (storage persistente de avatars)
 cloudinary:

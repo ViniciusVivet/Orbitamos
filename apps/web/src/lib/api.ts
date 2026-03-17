@@ -10,6 +10,16 @@ const API_URL =
 export const API_BASE_URL = API_URL.replace(/\/api\/?$/, "");
 
 /**
+ * Wrapper de fetch que sempre inclui `credentials: "include"`.
+ * Isso garante que o cookie httpOnly de sessão seja enviado em toda
+ * requisição, permitindo autenticação mesmo após o token sair da memória
+ * (ex: refresh de página antes do login via cookie estar implementado no back).
+ */
+function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  return fetch(url, { ...options, credentials: "include" });
+}
+
+/**
  * URL de avatar para exibição. Garante que a foto carregue sempre pela mesma base da API
  * usada pelo frontend (evita buraco transparente por Mixed Content ou URL errada).
  * - Se a URL for localhost/127.0.0.1, reescreve para API_BASE_URL.
@@ -49,7 +59,7 @@ export interface ContactResponse {
  */
 export async function sendContact(data: ContactData): Promise<ContactResponse> {
   try {
-    const response = await fetch(`${API_URL}/contact`, {
+    const response = await authFetch(`${API_URL}/contact`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -85,7 +95,7 @@ export interface ContactItem {
  * Lista todas as mensagens de contato (área colaborador/admin)
  */
 export async function getContacts(token: string): Promise<ContactItem[]> {
-  const response = await fetch(`${API_URL}/contacts`, {
+  const response = await authFetch(`${API_URL}/contacts`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -103,7 +113,7 @@ export async function getContacts(token: string): Promise<ContactItem[]> {
  * Lista contatos não lidos
  */
 export async function getUnreadContacts(token: string): Promise<ContactItem[]> {
-  const response = await fetch(`${API_URL}/contacts/unread`, {
+  const response = await authFetch(`${API_URL}/contacts/unread`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -124,7 +134,7 @@ export async function markContactAsRead(
   token: string,
   contactId: number
 ): Promise<ContactItem> {
-  const response = await fetch(`${API_URL}/contacts/${contactId}/read`, {
+  const response = await authFetch(`${API_URL}/contacts/${contactId}/read`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -156,7 +166,7 @@ export interface LoginData {
 export type UserRole = "STUDENT" | "FREELANCER";
 
 export interface AuthResponse {
-  token: string;
+  token: string; // ainda retornado no body para manter token em memória; cookie httpOnly é setado em paralelo pelo backend
   email: string;
   name: string;
   id: number;
@@ -284,7 +294,7 @@ export async function register(data: RegisterData): Promise<AuthResponse> {
       // Timeout maior para serviços gratuitos que "acordam" devagar
       const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos
 
-      const response = await fetch(`${API_URL}/auth/register`, {
+      const response = await authFetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -339,7 +349,7 @@ export async function login(data: LoginData): Promise<AuthResponse> {
       // Timeout maior para serviços gratuitos que "acordam" devagar
       const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos
 
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await authFetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -384,13 +394,13 @@ export async function login(data: LoginData): Promise<AuthResponse> {
 /**
  * Busca dados do usuário autenticado
  */
-export async function getCurrentUser(token: string): Promise<{ success: boolean; user: User }> {
+export async function getCurrentUser(token: string | null): Promise<{ success: boolean; user: User; token?: string }> {
   try {
-    const response = await fetch(`${API_URL}/dashboard/me`, {
+    const response = await authFetch(`${API_URL}/dashboard/me`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
 
@@ -407,6 +417,13 @@ export async function getCurrentUser(token: string): Promise<{ success: boolean;
     }
     throw new Error('Erro desconhecido ao buscar dados do usuário');
   }
+}
+
+/**
+ * Invalida a sessão no backend — apaga o cookie httpOnly.
+ */
+export async function logout(): Promise<void> {
+  await authFetch(`${API_URL}/auth/logout`, { method: "POST" }).catch(() => {});
 }
 
 /**
@@ -427,7 +444,7 @@ export async function updateProfile(
   }
 ): Promise<{ success: boolean; user: User }> {
   try {
-    const response = await fetch(`${API_URL}/dashboard/me`, {
+    const response = await authFetch(`${API_URL}/dashboard/me`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -461,7 +478,7 @@ export async function uploadAvatarViaApi(
 ): Promise<{ success: boolean; avatarUrl: string; user: User }> {
   const formData = new FormData();
   formData.append('file', file);
-  const response = await fetch(`${API_URL}/dashboard/me/avatar`, {
+  const response = await authFetch(`${API_URL}/dashboard/me/avatar`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -480,7 +497,7 @@ export async function uploadAvatarViaApi(
  */
 export async function getDashboardSummary(token: string): Promise<DashboardSummary> {
   try {
-    const response = await fetch(`${API_URL}/dashboard/summary`, {
+    const response = await authFetch(`${API_URL}/dashboard/summary`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -516,7 +533,7 @@ export async function addProgressLesson(
   token: string,
   body: AddProgressLessonBody = {}
 ): Promise<{ success: boolean; progress: DashboardProgress }> {
-  const response = await fetch(`${API_URL}/dashboard/me/progress/lesson`, {
+  const response = await authFetch(`${API_URL}/dashboard/me/progress/lesson`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -536,7 +553,7 @@ export async function addProgressLesson(
  */
 export async function getMyProjects(token: string): Promise<Project[]> {
   try {
-    const response = await fetch(`${API_URL}/projects`, {
+    const response = await authFetch(`${API_URL}/projects`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -570,7 +587,7 @@ export async function getJobs(
     const params = new URLSearchParams();
     if (options?.type?.trim()) params.set("type", options.type.trim());
     const url = params.toString() ? `${API_URL}/jobs?${params}` : `${API_URL}/jobs`;
-    const response = await fetch(url, {
+    const response = await authFetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -601,7 +618,7 @@ export interface PublicProfile {
 
 export async function getPublicProfile(token: string, userId: number): Promise<PublicProfile | null> {
   try {
-    const response = await fetch(`${API_URL}/users/${userId}/profile`, {
+    const response = await authFetch(`${API_URL}/users/${userId}/profile`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const result = await response.json();
@@ -620,7 +637,7 @@ export async function getForumMessages(parentId?: number): Promise<ForumMessage[
     const params = new URLSearchParams();
     if (parentId != null) params.set("parentId", String(parentId));
     const url = params.toString() ? `${API_URL}/forum/messages?${params.toString()}` : `${API_URL}/forum/messages`;
-    const response = await fetch(url, {
+    const response = await authFetch(url, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -639,7 +656,7 @@ export async function searchForumMessages(query: string, parentId?: number): Pro
   try {
     const params = new URLSearchParams({ q: query });
     if (parentId != null) params.set("parentId", String(parentId));
-    const response = await fetch(`${API_URL}/forum/messages?${params.toString()}`, {
+    const response = await authFetch(`${API_URL}/forum/messages?${params.toString()}`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -670,7 +687,7 @@ export async function postForumMessage(
     if (options?.topicTitle != null) body.topicTitle = options.topicTitle;
     if (options?.topicColor != null) body.topicColor = options.topicColor;
     if (options?.topicEmoji != null) body.topicEmoji = options.topicEmoji;
-    const response = await fetch(`${API_URL}/forum/messages`, {
+    const response = await authFetch(`${API_URL}/forum/messages`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(body),
@@ -699,7 +716,7 @@ export async function updateForumMessage(
     if (options?.topicTitle != null) body.topicTitle = options.topicTitle;
     if (options?.topicColor != null) body.topicColor = options.topicColor;
     if (options?.topicEmoji != null) body.topicEmoji = options.topicEmoji;
-    const response = await fetch(`${API_URL}/forum/messages/${id}`, {
+    const response = await authFetch(`${API_URL}/forum/messages/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -722,7 +739,7 @@ export async function updateForumMessage(
 
 export async function deleteForumMessage(token: string, id: number): Promise<void> {
   try {
-    const response = await fetch(`${API_URL}/forum/messages/${id}`, {
+    const response = await authFetch(`${API_URL}/forum/messages/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -780,7 +797,7 @@ export interface ChatMessageItem {
 }
 
 export async function getChatConversations(token: string): Promise<ChatConversation[]> {
-  const response = await fetch(`${API_URL}/chat/conversations`, {
+  const response = await authFetch(`${API_URL}/chat/conversations`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   const result = await response.json();
@@ -789,7 +806,7 @@ export async function getChatConversations(token: string): Promise<ChatConversat
 }
 
 export async function getChatConversation(token: string, id: number): Promise<ChatConversation | null> {
-  const response = await fetch(`${API_URL}/chat/conversations/${id}`, {
+  const response = await authFetch(`${API_URL}/chat/conversations/${id}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   const result = await response.json();
@@ -798,7 +815,7 @@ export async function getChatConversation(token: string, id: number): Promise<Ch
 }
 
 export async function getChatMessages(token: string, conversationId: number): Promise<ChatMessageItem[]> {
-  const response = await fetch(`${API_URL}/chat/conversations/${conversationId}/messages`, {
+  const response = await authFetch(`${API_URL}/chat/conversations/${conversationId}/messages`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   const result = await response.json();
@@ -811,7 +828,7 @@ export async function sendChatMessage(
   conversationId: number,
   content: string
 ): Promise<ChatMessageItem> {
-  const response = await fetch(`${API_URL}/chat/conversations/${conversationId}/messages`, {
+  const response = await authFetch(`${API_URL}/chat/conversations/${conversationId}/messages`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify({ content: content.trim() }),
@@ -825,7 +842,7 @@ export async function createDirectConversation(
   token: string,
   otherUserId: number
 ): Promise<{ conversation: ChatConversation; alreadyExists?: boolean }> {
-  const response = await fetch(`${API_URL}/chat/conversations`, {
+  const response = await authFetch(`${API_URL}/chat/conversations`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify({ type: "DIRECT", otherUserId }),
@@ -843,7 +860,7 @@ export async function createGroupConversation(
 ): Promise<{ conversation: ChatConversation }> {
   const body: { type: string; name: string; userIds: number[]; avatarUrl?: string } = { type: "GROUP", name, userIds };
   if (avatarUrl?.trim()) body.avatarUrl = avatarUrl.trim();
-  const response = await fetch(`${API_URL}/chat/conversations`, {
+  const response = await authFetch(`${API_URL}/chat/conversations`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify(body),
@@ -858,7 +875,7 @@ export async function updateGroupConversation(
   conversationId: number,
   data: { name?: string; avatarUrl?: string | null }
 ): Promise<{ success: boolean; conversation: ChatConversation }> {
-  const response = await fetch(`${API_URL}/chat/conversations/${conversationId}`, {
+  const response = await authFetch(`${API_URL}/chat/conversations/${conversationId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify(data),
@@ -873,7 +890,7 @@ export async function addGroupParticipant(
   conversationId: number,
   userId: number
 ): Promise<{ success: boolean }> {
-  const response = await fetch(`${API_URL}/chat/conversations/${conversationId}/participants`, {
+  const response = await authFetch(`${API_URL}/chat/conversations/${conversationId}/participants`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify({ userId }),
@@ -888,7 +905,7 @@ export async function removeGroupParticipant(
   conversationId: number,
   userId: number
 ): Promise<{ success: boolean }> {
-  const response = await fetch(`${API_URL}/chat/conversations/${conversationId}/participants/${userId}`, {
+  const response = await authFetch(`${API_URL}/chat/conversations/${conversationId}/participants/${userId}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -908,7 +925,7 @@ export async function uploadGroupAvatar(
 ): Promise<{ success: boolean; avatarUrl: string; conversation: ChatConversation }> {
   const formData = new FormData();
   formData.append("file", file);
-  const response = await fetch(`${API_URL}/chat/conversations/${conversationId}/avatar`, {
+  const response = await authFetch(`${API_URL}/chat/conversations/${conversationId}/avatar`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
     body: formData,
@@ -919,7 +936,7 @@ export async function uploadGroupAvatar(
 }
 
 export async function getChatUsers(token: string): Promise<ChatUser[]> {
-  const response = await fetch(`${API_URL}/chat/users`, {
+  const response = await authFetch(`${API_URL}/chat/users`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   const result = await response.json();

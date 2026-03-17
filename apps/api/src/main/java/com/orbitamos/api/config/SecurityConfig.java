@@ -81,9 +81,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Origens permitidas: localhost + qualquer preview/produção Vercel (*.vercel.app)
+        // Origens permitidas: localhost (3000 e 3001) + qualquer preview/produção Vercel
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:3000",
+            "http://localhost:3001",
             "https://*.vercel.app"
         ));
         
@@ -96,8 +97,8 @@ public class SecurityConfig {
         // Permite credenciais (cookies, headers de autenticação)
         configuration.setAllowCredentials(true);
         
-        // Headers expostos na resposta
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        // Headers expostos na resposta (Set-Cookie necessário para cookie httpOnly cross-origin)
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type", "Set-Cookie"));
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);
