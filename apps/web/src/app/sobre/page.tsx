@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Parallax from "@/components/Parallax";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Sobre | Orbitamos",
+  description: "Conheça a Orbitamos — startup que conecta talentos a projetos reais, impulsionando carreiras e comunidades.",
+};
 
 export default function Sobre() {
   const instagramUrl = "https://www.instagram.com/orbitamosbr/";

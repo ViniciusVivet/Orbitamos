@@ -90,8 +90,8 @@ cloudinary:
   datasource:
     append-timeout-params: ${APP_DATASOURCE_APPEND_TIMEOUT_PARAMS:false}
 
-# Logging
+# Logging (sobrescreva LOG_LEVEL=INFO e SECURITY_LOG_LEVEL=WARN em produção)
 logging:
   level:
-    com.orbitamos.api: DEBUG
-    org.springframework.security: DEBUG
+    com.orbitamos.api: ${LOG_LEVEL:DEBUG}
+    org.springframework.security: ${SECURITY_LOG_LEVEL:DEBUG}

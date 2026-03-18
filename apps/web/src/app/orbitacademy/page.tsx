@@ -33,8 +33,8 @@ export default function OrbitAcademy() {
     { slug: "html-css-basico", title: "HTML/CSS Basico", track: "frontend", level: "iniciante", format: "curso" },
     { slug: "js-essencial", title: "JS Essencial", track: "frontend", level: "iniciante", format: "curso" },
     { slug: "react-iniciantes", title: "React para Iniciantes", track: "frontend", level: "intermediario", format: "curso" },
-    { slug: "html-css-basico", title: "Fundamentos de QA", track: "qa", level: "iniciante", format: "curso" },
-    { slug: "html-css-basico", title: "Bootcamp Portfolio", track: "geral", level: "intermediario", format: "bootcamp" },
+    { slug: "qa-fundamentos", title: "Fundamentos de QA", track: "qa", level: "iniciante", format: "curso" },
+    { slug: "bootcamp-portfolio", title: "Bootcamp Portfolio", track: "geral", level: "intermediario", format: "bootcamp" },
   ];
 
   const filtered = useMemo(() => courses.filter(c =>

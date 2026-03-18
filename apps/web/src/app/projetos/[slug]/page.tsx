@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getProjetoBySlug } from "@/data/projetos";
@@ -8,6 +9,16 @@ import { Button } from "@/components/ui/button";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const projeto = getProjetoBySlug(slug);
+  if (!projeto) return { title: "Projeto não encontrado | Orbitamos" };
+  return {
+    title: `${projeto.title} | Orbitamos`,
+    description: projeto.contexto ?? `Conheça o case ${projeto.title} desenvolvido pela Orbitamos.`,
+  };
 }
 
 export default async function ProjetoCasePage({ params }: PageProps) {

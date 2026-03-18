@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Mentorias | Orbitamos",
+  description: "Sessões de mentoria com profissionais experientes. Acelere sua carreira com orientação personalizada na Orbitamos.",
+};
 
 export default function Mentorias() {
   return (
