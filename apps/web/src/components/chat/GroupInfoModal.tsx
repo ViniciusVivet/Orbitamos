@@ -54,7 +54,7 @@ export default function GroupInfoModal({
       });
       onUpdate(updated);
     } catch (e) {
-      console.error(e);
+      if (process.env.NODE_ENV !== "production") console.error("[GroupInfoModal] Erro ao salvar grupo:", e);
     } finally {
       setSaving(false);
     }
@@ -62,16 +62,18 @@ export default function GroupInfoModal({
 
   const handleAdd = async (userId: number) => {
     if (!token || !isCreator) return;
+    const userToAdd = users.find((u) => u.id === userId);
+    if (!userToAdd) return;
     try {
       await addGroupParticipant(token, conversation.id, userId);
       const updated: ChatConversation = {
         ...conversation,
-        participants: [...conversation.participants, users.find((u) => u.id === userId)!],
+        participants: [...conversation.participants, userToAdd],
       };
       onUpdate(updated);
       setAddUserOpen(false);
     } catch (e) {
-      console.error(e);
+      if (process.env.NODE_ENV !== "production") console.error("[GroupInfoModal] Erro ao adicionar participante:", e);
     }
   };
 
@@ -90,7 +92,7 @@ export default function GroupInfoModal({
       };
       onUpdate(updated);
     } catch (e) {
-      console.error(e);
+      if (process.env.NODE_ENV !== "production") console.error("[GroupInfoModal] Erro ao remover participante:", e);
     } finally {
       setRemovingId(null);
     }
@@ -129,7 +131,7 @@ export default function GroupInfoModal({
                     const { conversation: updated } = await uploadGroupAvatar(token, conversation.id, file);
                     onUpdate(updated);
                   } catch (err) {
-                    console.error(err);
+                    if (process.env.NODE_ENV !== "production") console.error("[GroupInfoModal] Erro ao enviar foto:", err);
                   } finally {
                     setUploadingAvatar(false);
                     e.target.value = "";

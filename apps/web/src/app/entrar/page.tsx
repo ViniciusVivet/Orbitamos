@@ -9,6 +9,23 @@ import Link from "next/link";
 import RocketProgress from "@/components/RocketProgress";
 import { getFriendlyApiErrorMessage } from "@/lib/utils";
 
+function seededRng(seed: number) {
+  let s = seed;
+  return () => {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    return (s >>> 0) / 0xffffffff;
+  };
+}
+
+const ENTRAR_STARS = (() => {
+  const rng = seededRng(13);
+  return Array.from({ length: 160 }, () => ({
+    cx: (rng() * 800).toFixed(0),
+    cy: (rng() * 600).toFixed(0),
+    r: rng() * 1.2 + 0.2,
+  }));
+})();
+
 export default function Entrar() {
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState("");
@@ -145,8 +162,8 @@ export default function Entrar() {
               <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
             </radialGradient>
           </defs>
-          {Array.from({ length: 160 }).map((_, i) => (
-            <circle key={i} cx={(Math.random()*800).toFixed(0)} cy={(Math.random()*600).toFixed(0)} r={Math.random()*1.2+0.2} fill="url(#g)" />
+          {ENTRAR_STARS.map((s, i) => (
+            <circle key={i} cx={s.cx} cy={s.cy} r={s.r} fill="url(#g)" />
           ))}
         </svg>
       </div>

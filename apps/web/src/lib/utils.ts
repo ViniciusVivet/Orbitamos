@@ -5,6 +5,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/** Formata ISO timestamp para exibição em chat: hora (hoje) ou data (outros dias). */
+export function formatChatTime(iso: string): string {
+  const d = new Date(iso)
+  const now = new Date()
+  if (d.toDateString() === now.toDateString()) {
+    return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+  }
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })
+}
+
 /**
  * Converte erros técnicos de API/rede em mensagem amigável para o usuário.
  * Para devs: sempre use console.error(err) antes de exibir a mensagem.

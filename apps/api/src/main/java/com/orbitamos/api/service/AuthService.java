@@ -46,9 +46,9 @@ public class AuthService {
             throw new RuntimeException("A senha deve ter no mínimo 6 caracteres!");
         }
         
-        // Validação básica de email
+        // Validação de email via regex
         String email = request.getEmail().trim().toLowerCase();
-        if (!email.contains("@") || !email.contains(".")) {
+        if (!email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]{2,}$")) {
             throw new RuntimeException("E-mail inválido!");
         }
         

@@ -13,18 +13,9 @@ import {
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { cn, formatChatTime } from "@/lib/utils";
 import { MessageCircle, Minus, X, Send, ChevronUp, GripVertical } from "lucide-react";
 import { useDraggablePosition } from "@/hooks/useDraggablePosition";
-
-function formatTime(iso: string) {
-  const d = new Date(iso);
-  const now = new Date();
-  if (d.toDateString() === now.toDateString()) {
-    return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-  }
-  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-}
 
 export default function FloatingChat() {
   const { user, token } = useAuth();
@@ -216,7 +207,7 @@ export default function FloatingChat() {
                     <p className="text-[10px] font-medium text-orbit-electric mb-0.5">{m.senderName}</p>
                   )}
                   <p className="text-sm whitespace-pre-wrap break-words">{m.content}</p>
-                  <p className="text-[10px] opacity-70 mt-0.5">{formatTime(m.createdAt)}</p>
+                  <p className="text-[10px] opacity-70 mt-0.5">{formatChatTime(m.createdAt)}</p>
                 </div>
               </div>
             );
