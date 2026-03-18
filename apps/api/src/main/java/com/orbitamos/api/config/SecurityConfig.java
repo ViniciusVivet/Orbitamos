@@ -28,6 +28,12 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Autowired
+    private RateLimitFilter rateLimitFilter;
+
+    @Autowired
+    private OriginValidationFilter originValidationFilter;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -61,7 +67,9 @@ public class SecurityConfig {
                 .anyRequest().permitAll()
             )
             
-            // Adiciona filtro JWT antes do filtro de autenticação padrão
+            // Filtros de segurança: rate limit → origin → JWT
+            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(originValidationFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             
             // Desabilita sessões (stateless - melhor para APIs)
