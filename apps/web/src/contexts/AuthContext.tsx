@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { login as loginApi, register as registerApi, getCurrentUser, updateProfile as updateProfileApi, logout as logoutApi, AuthResponse, User } from "@/lib/api";
+import { login as loginApi, register as registerApi, getCurrentUser, updateProfile as updateProfileApi, logout as logoutApi, refreshSession, AuthResponse, User } from "@/lib/api";
 
 interface AuthContextType {
   user: User | null;
@@ -37,6 +37,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  // Renova o JWT a cada 20h (token expira em 24h — renovar antes evita logout abrupto)
+  useEffect(() => {
+    if (!token) return;
+    const REFRESH_INTERVAL_MS = 20 * 60 * 60 * 1000; // 20 horas
+    const timer = setInterval(async () => {
+      const newToken = await refreshSession();
+      if (newToken) {
+        setToken(newToken);
+      } else {
+        // Sessão expirou — faz logout limpo
+        setToken(null);
+        setUser(null);
+        router.push("/entrar");
+      }
+    }, REFRESH_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [token, router]);
 
   // Restaura sessão via cookie httpOnly — sem localStorage.
   // O cookie é enviado automaticamente pelo browser (credentials: "include" em authFetch).

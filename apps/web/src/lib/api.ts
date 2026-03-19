@@ -427,6 +427,21 @@ export async function logout(): Promise<void> {
 }
 
 /**
+ * Renova o JWT sem pedir senha, desde que o token atual ainda seja válido.
+ * Retorna o novo token ou null se a sessão expirou.
+ */
+export async function refreshSession(): Promise<string | null> {
+  try {
+    const res = await authFetch(`${API_URL}/auth/refresh`, { method: "POST" });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.success ? (data.token as string) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Atualiza perfil do usuário (nome, foto, endereço, telefone, data de nascimento, etc.)
  */
 export async function updateProfile(

@@ -4,6 +4,7 @@ import com.orbitamos.api.dto.AuthResponse;
 import com.orbitamos.api.dto.LoginRequest;
 import com.orbitamos.api.dto.RegisterRequest;
 import com.orbitamos.api.service.AuthService;
+import com.orbitamos.api.util.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     /** true em produção (HTTPS) — garante cookie Secure; false em localhost (HTTP). */
     @Value("${app.cookie.secure:true}")
@@ -57,6 +61,32 @@ public class AuthController {
     public ResponseEntity<?> logout(HttpServletResponse res) {
         clearSessionCookie(res);
         return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    /**
+     * Renova o JWT sem pedir senha novamente, desde que o token atual ainda seja válido.
+     * O frontend chama este endpoint periodicamente (ex: a cada 20h) para evitar
+     * que o usuário seja deslogado após as 24h de expiração.
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(
+            @CookieValue(value = "session_token", required = false) String sessionToken,
+            HttpServletResponse res) {
+        try {
+            if (sessionToken == null || sessionToken.isBlank()) {
+                return ResponseEntity.status(401).body(Map.of("success", false, "message", "Sessão não encontrada"));
+            }
+            if (jwtUtil.isTokenExpired(sessionToken)) {
+                return ResponseEntity.status(401).body(Map.of("success", false, "message", "Sessão expirada. Faça login novamente."));
+            }
+            String email  = jwtUtil.extractEmail(sessionToken);
+            Long   userId = jwtUtil.extractUserId(sessionToken);
+            String newToken = jwtUtil.generateToken(email, userId);
+            setSessionCookie(res, newToken);
+            return ResponseEntity.ok(Map.of("success", true, "token", newToken));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Token inválido"));
+        }
     }
 
     // ─── helpers ─────────────────────────────────────────────────────────────

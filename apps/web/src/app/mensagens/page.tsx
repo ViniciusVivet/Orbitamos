@@ -13,8 +13,6 @@ import {
   getChatUsers,
   createDirectConversation,
   createGroupConversation,
-  updateGroupConversation,
-  removeGroupParticipant,
   uploadGroupAvatar,
   getDisplayAvatarUrl,
   getPublicProfile,
@@ -24,14 +22,80 @@ import {
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { cn, formatChatTime } from "@/lib/utils";
 import { MessageCircle, Users, Send, Info } from "lucide-react";
 import AvatarWithPresence from "@/components/chat/AvatarWithPresence";
 import GroupInfoModal from "@/components/chat/GroupInfoModal";
+import NewDirectChatModal from "@/components/chat/NewDirectChatModal";
+import NewGroupChatModal from "@/components/chat/NewGroupChatModal";
+
+// ─── helpers locais ───────────────────────────────────────────────────────────
+
+const ONLINE_THRESHOLD_MS = 5 * 60 * 1000;
+
+function isOnline(iso: string | null | undefined): boolean {
+  if (!iso) return false;
+  return Date.now() - new Date(iso).getTime() < ONLINE_THRESHOLD_MS;
+}
+
+function formatLastSeen(iso: string | null): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  if (diffMins < 1) return "agora";
+  if (diffMins < 60) return `há ${diffMins} min`;
+  if (diffHours < 24) return `há ${diffHours}h`;
+  if (diffDays < 7) return `há ${diffDays} dia${diffDays !== 1 ? "s" : ""}`;
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+}
+
+function getDayLabel(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) return "Hoje";
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (d.toDateString() === yesterday.toDateString()) return "Ontem";
+  return d.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "short" });
+}
+
+function formatFullDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function groupMessagesByDay(messages: ChatMessageItem[]) {
+  const groups: { day: string; messages: ChatMessageItem[] }[] = [];
+  let currentDay = "";
+  messages.forEach((m) => {
+    const day = getDayLabel(m.createdAt);
+    if (day !== currentDay) {
+      currentDay = day;
+      groups.push({ day, messages: [m] });
+    } else {
+      groups[groups.length - 1].messages.push(m);
+    }
+  });
+  return groups;
+}
+
+// ─── página ───────────────────────────────────────────────────────────────────
 
 export default function MensagensPage() {
   const { user, token } = useAuth();
   const { setActiveConversation, clearUnread, addUnread, unreadByConv } = useChat();
+  const searchParams = useSearchParams();
+
+  // Estado de conversas e mensagens
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [messages, setMessages] = useState<ChatMessageItem[]>([]);
@@ -39,11 +103,20 @@ export default function MensagensPage() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
   const [input, setInput] = useState("");
+  const [clickedMessageId, setClickedMessageId] = useState<number | null>(null);
+  const [otherUserLastSeen, setOtherUserLastSeen] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Estado de modais
   const [newChatOpen, setNewChatOpen] = useState(false);
   const [newGroupOpen, setNewGroupOpen] = useState(false);
+  const [groupInfoOpen, setGroupInfoOpen] = useState(false);
+
+  // Estado de usuários para modais
   const [users, setUsers] = useState<ChatUser[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+
+  // Estado do novo grupo
   const [groupName, setGroupName] = useState("");
   const [groupUserIds, setGroupUserIds] = useState<number[]>([]);
   const [groupAvatarUrl, setGroupAvatarUrl] = useState("");
@@ -52,16 +125,17 @@ export default function MensagensPage() {
   const [uploadingGroupAvatar, setUploadingGroupAvatar] = useState(false);
   const [groupAvatarUploadError, setGroupAvatarUploadError] = useState<string | null>(null);
   const [groupAvatarUploadErrorConvId, setGroupAvatarUploadErrorConvId] = useState<number | null>(null);
-  const [groupInfoOpen, setGroupInfoOpen] = useState(false);
-  const [clickedMessageId, setClickedMessageId] = useState<number | null>(null);
-  const [otherUserLastSeen, setOtherUserLastSeen] = useState<string | null>(null);
-  const searchParams = useSearchParams();
 
   const selectedConv = conversations.find((c) => c.id === selectedId);
-  const otherParticipant = selectedConv?.type === "DIRECT" ? selectedConv.participants.find((p) => p.id !== user?.id) : null;
+  const otherParticipant = selectedConv?.type === "DIRECT"
+    ? selectedConv.participants.find((p) => p.id !== user?.id)
+    : null;
 
+  // Ref para evitar stale closure no WebSocket
   const selectedIdRef = useRef(selectedId);
   selectedIdRef.current = selectedId;
+
+  // ─── callbacks WebSocket ───────────────────────────────────────────────────
 
   const appendMessage = useCallback((msg: ChatMessageItem) => {
     setMessages((prev) => [...prev, msg]);
@@ -69,7 +143,6 @@ export default function MensagensPage() {
 
   const handleConversationActivity = useCallback(
     (convId: number, msg: ChatMessageItem) => {
-      // Bump conversa para o topo e atualiza lastMessage
       setConversations((prev) => {
         const idx = prev.findIndex((c) => c.id === convId);
         if (idx === -1) return prev;
@@ -79,10 +152,7 @@ export default function MensagensPage() {
         };
         return [updated, ...prev.filter((c) => c.id !== convId)];
       });
-      // Incrementa unread se a conversa não está aberta
-      if (convId !== selectedIdRef.current) {
-        addUnread(convId);
-      }
+      if (convId !== selectedIdRef.current) addUnread(convId);
     },
     [addUnread]
   );
@@ -96,18 +166,15 @@ export default function MensagensPage() {
     onConversationActivity: handleConversationActivity,
   });
 
+  // ─── efeitos ──────────────────────────────────────────────────────────────
+
   useEffect(() => {
-    if (!groupAvatarFile) {
-      setGroupAvatarPreviewUrl(null);
-      return;
-    }
+    if (!groupAvatarFile) { setGroupAvatarPreviewUrl(null); return; }
     const url = URL.createObjectURL(groupAvatarFile);
     setGroupAvatarPreviewUrl(url);
     return () => URL.revokeObjectURL(url);
   }, [groupAvatarFile]);
 
-  // Carrega a lista de conversas uma única vez — atualizações em tempo real
-  // ficam por conta do useConversationsSync (WebSocket).
   useEffect(() => {
     if (!token) return;
     getChatConversations(token)
@@ -123,6 +190,7 @@ export default function MensagensPage() {
     }
   }, [selectedId, selectedConv, setActiveConversation, clearUnread]);
 
+  // Abre conversa direta via query param ?openUserId=...
   const openUserId = searchParams.get("openUserId");
   useEffect(() => {
     if (!token || !openUserId || loadingConvs) return;
@@ -131,10 +199,7 @@ export default function MensagensPage() {
     const existing = conversations.find(
       (c) => c.type === "DIRECT" && c.participants.some((p) => p.id === uid)
     );
-    if (existing) {
-      setSelectedId(existing.id);
-      return;
-    }
+    if (existing) { setSelectedId(existing.id); return; }
     createDirectConversation(token, uid)
       .then(({ conversation }) => {
         setConversations((prev) => [conversation, ...prev.filter((c) => c.id !== conversation.id)]);
@@ -144,20 +209,14 @@ export default function MensagensPage() {
   }, [token, openUserId, loadingConvs, conversations]);
 
   useEffect(() => {
-    if (!token || !otherParticipant?.id) {
-      setOtherUserLastSeen(null);
-      return;
-    }
+    if (!token || !otherParticipant?.id) { setOtherUserLastSeen(null); return; }
     getPublicProfile(token, otherParticipant.id).then((p) =>
       setOtherUserLastSeen(p?.lastSeenAt ?? null)
     );
   }, [token, otherParticipant?.id]);
 
   useEffect(() => {
-    if (!token || selectedId == null) {
-      setMessages([]);
-      return;
-    }
+    if (!token || selectedId == null) { setMessages([]); return; }
     setLoadingMessages(true);
     getChatMessages(token, selectedId)
       .then(setMessages)
@@ -173,6 +232,8 @@ export default function MensagensPage() {
     if (!token || (!newChatOpen && !newGroupOpen && !groupInfoOpen)) return;
     getChatUsers(token).then(setUsers).catch(() => setUsers([]));
   }, [token, newChatOpen, newGroupOpen, groupInfoOpen]);
+
+  // ─── handlers ─────────────────────────────────────────────────────────────
 
   const handleSend = async () => {
     const text = input.trim();
@@ -198,7 +259,7 @@ export default function MensagensPage() {
       setNewChatOpen(false);
       setSelectedUserId(null);
     } catch (e) {
-      console.error(e);
+      if (process.env.NODE_ENV !== "production") console.error("[Mensagens] Erro ao criar conversa direta:", e);
     }
   };
 
@@ -228,85 +289,27 @@ export default function MensagensPage() {
         }
       }
     } catch (e) {
-      console.error("Erro ao criar grupo:", e);
+      if (process.env.NODE_ENV !== "production") console.error("[Mensagens] Erro ao criar grupo:", e);
     } finally {
       setUploadingGroupAvatar(false);
     }
   };
 
-  const toggleGroupUser = (id: number) => {
-    setGroupUserIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
+  const closeNewGroup = () => {
+    setNewGroupOpen(false);
+    setGroupName("");
+    setGroupUserIds([]);
+    setGroupAvatarUrl("");
+    setGroupAvatarFile(null);
+    setGroupAvatarUploadError(null);
+    setGroupAvatarUploadErrorConvId(null);
   };
 
-  const formatTime = (iso: string) => {
-    const d = new Date(iso);
-    const now = new Date();
-    if (d.toDateString() === now.toDateString()) {
-      return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-    }
-    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-  };
-
-  const formatFullDate = (iso: string) => {
-    const d = new Date(iso);
-    return d.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const ONLINE_THRESHOLD_MS = 5 * 60 * 1000; // 5 min
-  const isOnline = (iso: string | null | undefined): boolean => {
-    if (!iso) return false;
-    return Date.now() - new Date(iso).getTime() < ONLINE_THRESHOLD_MS;
-  };
-
-  const formatLastSeen = (iso: string | null): string => {
-    if (!iso) return "—";
-    const d = new Date(iso);
-    const now = new Date();
-    const diffMs = now.getTime() - d.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-    if (diffMins < 1) return "agora";
-    if (diffMins < 60) return `há ${diffMins} min`;
-    if (diffHours < 24) return `há ${diffHours}h`;
-    if (diffDays < 7) return `há ${diffDays} dia${diffDays !== 1 ? "s" : ""}`;
-    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
-  };
-
-  const getDayLabel = (iso: string) => {
-    const d = new Date(iso);
-    const now = new Date();
-    if (d.toDateString() === now.toDateString()) return "Hoje";
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    if (d.toDateString() === yesterday.toDateString()) return "Ontem";
-    return d.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "short" });
-  };
-
-  const messagesByDay = (() => {
-    const groups: { day: string; messages: ChatMessageItem[] }[] = [];
-    let currentDay = "";
-    messages.forEach((m) => {
-      const day = getDayLabel(m.createdAt);
-      if (day !== currentDay) {
-        currentDay = day;
-        groups.push({ day, messages: [m] });
-      } else {
-        groups[groups.length - 1].messages.push(m);
-      }
-    });
-    return groups;
-  })();
+  // ─── render ───────────────────────────────────────────────────────────────
 
   if (!user) return null;
+
+  const messagesByDay = groupMessagesByDay(messages);
 
   return (
     <div className="flex h-screen flex-col bg-gradient-to-br from-black via-gray-950 to-black text-white">
@@ -327,7 +330,7 @@ export default function MensagensPage() {
       </header>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* Lista de conversas — no mobile some quando uma conversa está selecionada */}
+        {/* Lista de conversas */}
         <aside
           className={cn(
             "flex w-full md:w-96 shrink-0 flex-col border-r border-white/10 bg-black/30 backdrop-blur-sm",
@@ -384,20 +387,18 @@ export default function MensagensPage() {
                       ) : (
                         <span className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-orbit-purple/30 to-orbit-electric/30 text-2xl ring-2 ring-white/10">👥</span>
                       )
-                    ) : (
-                      (() => {
-                        const other = c.participants.find((p) => p.id !== user.id);
-                        return (
-                          <AvatarWithPresence
-                            avatarUrl={other?.avatarUrl}
-                            name={other?.name ?? "?"}
-                            lastSeenAt={other?.lastSeenAt}
-                            size="lg"
-                            className="h-14 w-14"
-                          />
-                        );
-                      })()
-                    )}
+                    ) : (() => {
+                      const other = c.participants.find((p) => p.id !== user.id);
+                      return (
+                        <AvatarWithPresence
+                          avatarUrl={other?.avatarUrl}
+                          name={other?.name ?? "?"}
+                          lastSeenAt={other?.lastSeenAt}
+                          size="lg"
+                          className="h-14 w-14"
+                        />
+                      );
+                    })()}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold text-white">{c.displayName}</p>
@@ -413,7 +414,7 @@ export default function MensagensPage() {
                     )}
                     {c.lastMessage && (
                       <span className="text-xs text-white/40">
-                        {formatTime(c.lastMessage.createdAt)}
+                        {formatChatTime(c.lastMessage.createdAt)}
                       </span>
                     )}
                   </div>
@@ -423,7 +424,7 @@ export default function MensagensPage() {
           </div>
         </aside>
 
-        {/* Área da conversa — no mobile ocupa toda a tela quando há seleção; escondida quando nenhuma conversa selecionada */}
+        {/* Área da conversa */}
         <section
           className={cn(
             "flex flex-1 flex-col min-w-0 min-h-0 bg-gradient-to-b from-black/50 to-transparent",
@@ -456,6 +457,7 @@ export default function MensagensPage() {
             </div>
           ) : (
             <>
+              {/* Header da conversa selecionada */}
               <div className="flex h-14 md:h-16 shrink-0 items-center gap-3 border-b border-white/10 bg-black/40 px-4 md:px-6 backdrop-blur-sm">
                 <button
                   type="button"
@@ -473,20 +475,18 @@ export default function MensagensPage() {
                     ) : (
                       <span className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-orbit-purple/40 to-orbit-electric/40 text-2xl ring-2 ring-orbit-electric/30">👥</span>
                     )
-                  ) : (
-                    (() => {
-                      const other = selectedConv?.participants.find((p) => p.id !== user.id);
-                      return (
-                        <AvatarWithPresence
-                          avatarUrl={other?.avatarUrl}
-                          name={other?.name ?? "?"}
-                          lastSeenAt={other?.lastSeenAt ?? otherUserLastSeen}
-                          size="lg"
-                          className="h-12 w-12 ring-2 ring-orbit-electric/30"
-                        />
-                      );
-                    })()
-                  )}
+                  ) : (() => {
+                    const other = selectedConv?.participants.find((p) => p.id !== user.id);
+                    return (
+                      <AvatarWithPresence
+                        avatarUrl={other?.avatarUrl}
+                        name={other?.name ?? "?"}
+                        lastSeenAt={other?.lastSeenAt ?? otherUserLastSeen}
+                        size="lg"
+                        className="h-12 w-12 ring-2 ring-orbit-electric/30"
+                      />
+                    );
+                  })()}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-lg truncate">{selectedConv?.displayName ?? "Conversa"}</p>
@@ -495,23 +495,47 @@ export default function MensagensPage() {
                     return admin ? <p className="text-xs text-white/50 truncate">Admin: {admin.name}</p> : null;
                   })()}
                   {selectedConv?.type === "DIRECT" && (otherUserLastSeen || otherParticipant?.lastSeenAt) && (
-                    <p className="text-xs text-white/50 truncate" title={isOnline(otherParticipant?.lastSeenAt ?? otherUserLastSeen) ? "Online" : `Offline: ${formatLastSeen(otherUserLastSeen ?? otherParticipant?.lastSeenAt ?? null)}`}>
-                      {isOnline(otherParticipant?.lastSeenAt ?? otherUserLastSeen) ? "Online" : `Visto por último: ${formatLastSeen(otherUserLastSeen ?? otherParticipant?.lastSeenAt ?? null)}`}
+                    <p className="text-xs text-white/50 truncate">
+                      {isOnline(otherParticipant?.lastSeenAt ?? otherUserLastSeen)
+                        ? "Online"
+                        : `Visto por último: ${formatLastSeen(otherUserLastSeen ?? otherParticipant?.lastSeenAt ?? null)}`}
                     </p>
                   )}
                 </div>
                 {selectedConv?.type === "GROUP" && (
-                  <button type="button" onClick={() => { setGroupInfoOpen(true); if (selectedId === groupAvatarUploadErrorConvId) { setGroupAvatarUploadError(null); setGroupAvatarUploadErrorConvId(null); } }} className="shrink-0 flex h-10 w-10 items-center justify-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white" aria-label="Info do grupo">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setGroupInfoOpen(true);
+                      if (selectedId === groupAvatarUploadErrorConvId) {
+                        setGroupAvatarUploadError(null);
+                        setGroupAvatarUploadErrorConvId(null);
+                      }
+                    }}
+                    className="shrink-0 flex h-10 w-10 items-center justify-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white"
+                    aria-label="Info do grupo"
+                  >
                     <Info className="h-5 w-5" />
                   </button>
                 )}
               </div>
+
+              {/* Banner de erro no upload do avatar do grupo */}
               {groupAvatarUploadError && selectedId === groupAvatarUploadErrorConvId && (
                 <div className="shrink-0 rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-2 text-sm text-amber-200 mx-4 mt-2 flex items-center justify-between gap-2">
                   <span>{groupAvatarUploadError} Altere em Info do grupo (ícone ao lado).</span>
-                  <button type="button" onClick={() => { setGroupAvatarUploadError(null); setGroupAvatarUploadErrorConvId(null); }} className="text-amber-300 hover:text-amber-100" aria-label="Fechar">✕</button>
+                  <button
+                    type="button"
+                    onClick={() => { setGroupAvatarUploadError(null); setGroupAvatarUploadErrorConvId(null); }}
+                    className="text-amber-300 hover:text-amber-100"
+                    aria-label="Fechar"
+                  >
+                    ✕
+                  </button>
                 </div>
               )}
+
+              {/* Lista de mensagens */}
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {loadingMessages ? (
                   <div className="flex justify-center py-12">
@@ -529,10 +553,7 @@ export default function MensagensPage() {
                         return (
                           <div
                             key={m.id}
-                            className={cn(
-                              "flex gap-3 max-w-[80%]",
-                              isMe ? "ml-auto flex-row-reverse" : ""
-                            )}
+                            className={cn("flex gap-3 max-w-[80%]", isMe ? "ml-auto flex-row-reverse" : "")}
                           >
                             {!isMe && (
                               <div className="h-10 w-10 shrink-0 rounded-full overflow-hidden ring-2 ring-white/10">
@@ -560,7 +581,7 @@ export default function MensagensPage() {
                               )}
                               <p className="text-sm whitespace-pre-wrap break-words">{m.content}</p>
                               <div className="flex items-center justify-end gap-1.5 mt-1.5">
-                                <p className="text-xs opacity-70">{formatTime(m.createdAt)}</p>
+                                <p className="text-xs opacity-70">{formatChatTime(m.createdAt)}</p>
                                 {isMe && m.readAt && (
                                   <span className="text-xs opacity-80" title="Visualizado">✓✓</span>
                                 )}
@@ -579,12 +600,11 @@ export default function MensagensPage() {
                 )}
                 <div ref={messagesEndRef} />
               </div>
+
+              {/* Input de envio */}
               <div className="shrink-0 border-t border-white/10 bg-black/40 p-4 backdrop-blur-sm">
                 <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleSend();
-                  }}
+                  onSubmit={(e) => { e.preventDefault(); handleSend(); }}
                   className="flex gap-3"
                 >
                   <Input
@@ -609,99 +629,35 @@ export default function MensagensPage() {
         </section>
       </div>
 
-      {/* Modal Nova conversa */}
+      {/* Modais */}
       {newChatOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl border border-orbit-electric/30 bg-gray-900/95 p-5 shadow-2xl shadow-orbit-electric/10">
-            <h2 className="text-lg font-semibold mb-3">Nova conversa</h2>
-            <p className="text-sm text-white/60 mb-3">Escolha um usuário para conversar:</p>
-            <div className="max-h-60 overflow-y-auto space-y-1 mb-4">
-              {users.map((u) => (
-                <button
-                  key={u.id}
-                  type="button"
-                  onClick={() => setSelectedUserId(u.id)}
-                  className={cn(
-                    "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-white/10",
-                    selectedUserId === u.id && "bg-orbit-electric/20"
-                  )}
-                >
-                  <AvatarWithPresence avatarUrl={u.avatarUrl} name={u.name} lastSeenAt={u.lastSeenAt} size="md" />
-                  <div>
-                    <p className="font-medium">{u.name}</p>
-                    <p className="text-xs text-white/50">{u.email}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => { setNewChatOpen(false); setSelectedUserId(null); }}>
-                Cancelar
-              </Button>
-              <Button className="flex-1 bg-orbit-electric text-black" onClick={startDirect} disabled={selectedUserId == null}>
-                Iniciar
-              </Button>
-            </div>
-          </div>
-        </div>
+        <NewDirectChatModal
+          users={users}
+          selectedUserId={selectedUserId}
+          onSelectUser={setSelectedUserId}
+          onStart={startDirect}
+          onClose={() => { setNewChatOpen(false); setSelectedUserId(null); }}
+        />
       )}
 
-      {/* Modal Novo grupo */}
       {newGroupOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl border border-orbit-purple/30 bg-gray-900/95 p-5 shadow-2xl shadow-orbit-purple/10">
-            <h2 className="text-lg font-semibold mb-3">Novo grupo</h2>
-            <Input
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-              placeholder="Nome do grupo"
-              className="mb-3 bg-white/10 border-white/20 text-white"
-            />
-            <p className="text-sm text-white/60 mb-1">Foto do grupo (opcional)</p>
-            <div className="flex flex-col gap-2 mb-3">
-              {groupAvatarPreviewUrl && (
-                <div className="flex justify-center">
-                  <img src={groupAvatarPreviewUrl} alt="Preview" className="h-20 w-20 rounded-full object-cover ring-2 ring-orbit-purple/40" />
-                </div>
-              )}
-              <label className="flex w-fit cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-white/30 bg-white/5 px-3 py-2 text-sm text-white/80 hover:bg-white/10">
-                <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden" onChange={(e) => setGroupAvatarFile(e.target.files?.[0] ?? null)} />
-                {groupAvatarFile ? `📷 ${groupAvatarFile.name}` : "📷 Enviar imagem (JPG, PNG, GIF, WebP)"}
-              </label>
-              <span className="text-xs text-white/50">ou URL:</span>
-              <Input value={groupAvatarUrl} onChange={(e) => setGroupAvatarUrl(e.target.value)} placeholder="https://..." className="bg-white/10 border-white/20 text-white" disabled={!!groupAvatarFile} />
-            </div>
-            <p className="text-sm text-white/60 mb-2">Adicione participantes:</p>
-            <div className="max-h-48 overflow-y-auto space-y-1 mb-4">
-              {users.map((u) => (
-                <label key={u.id} className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-white/5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={groupUserIds.includes(u.id)}
-                    onChange={() => toggleGroupUser(u.id)}
-                    className="rounded border-white/30"
-                  />
-                  <div className="h-8 w-8 shrink-0 rounded-full bg-white/10 overflow-hidden">
-                    {getDisplayAvatarUrl(u.avatarUrl) ? (
-                      <img src={getDisplayAvatarUrl(u.avatarUrl)!} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <span className="flex h-full w-full items-center justify-center text-xs text-orbit-electric">{u.name.slice(0, 1).toUpperCase()}</span>
-                    )}
-                  </div>
-                  <span className="font-medium">{u.name}</span>
-                </label>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => { setNewGroupOpen(false); setGroupName(""); setGroupUserIds([]); setGroupAvatarUrl(""); setGroupAvatarFile(null); setGroupAvatarUploadError(null); setGroupAvatarUploadErrorConvId(null); }}>
-                Cancelar
-              </Button>
-              <Button className="flex-1 bg-orbit-purple" onClick={startGroup} disabled={!groupName.trim() || uploadingGroupAvatar}>
-                {uploadingGroupAvatar ? "Criando e enviando foto..." : "Criar grupo"}
-              </Button>
-            </div>
-          </div>
-        </div>
+        <NewGroupChatModal
+          users={users}
+          groupName={groupName}
+          onGroupNameChange={setGroupName}
+          groupUserIds={groupUserIds}
+          onToggleGroupUser={(id) =>
+            setGroupUserIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])
+          }
+          groupAvatarUrl={groupAvatarUrl}
+          onGroupAvatarUrlChange={setGroupAvatarUrl}
+          groupAvatarFile={groupAvatarFile}
+          onGroupAvatarFileChange={setGroupAvatarFile}
+          groupAvatarPreviewUrl={groupAvatarPreviewUrl}
+          uploading={uploadingGroupAvatar}
+          onCreate={startGroup}
+          onClose={closeNewGroup}
+        />
       )}
 
       {groupInfoOpen && selectedConv?.type === "GROUP" && selectedId != null && token && (
@@ -711,9 +667,7 @@ export default function MensagensPage() {
           currentUserId={user?.id}
           users={users}
           onClose={() => setGroupInfoOpen(false)}
-          onUpdate={(updated) => {
-            setConversations((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
-          }}
+          onUpdate={(updated) => setConversations((prev) => prev.map((c) => (c.id === updated.id ? updated : c)))}
           onLeave={() => {
             setGroupInfoOpen(false);
             setSelectedId(null);
