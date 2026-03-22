@@ -171,8 +171,46 @@ export default function Entrar() {
       {/* Nebula */}
       <div className="absolute -top-40 left-1/2 h-[700px] w-[1200px] -translate-x-1/2 rounded-full blur-3xl opacity-40 bg-[conic-gradient(from_120deg,theme(colors.orbit-electric/.7),theme(colors.orbit-purple/.6),transparent_70%)]" />
 
-      <div className="relative container mx-auto grid min-h-[calc(100vh-4rem)] place-items-center px-4 py-8 sm:py-16">
-        <div className="w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-8 backdrop-blur-2xl">
+      <div className="relative container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8 sm:py-16">
+        <div className="flex w-full max-w-4xl flex-col gap-8 lg:flex-row lg:items-center lg:gap-16">
+
+          {/* ── Lado esquerdo: OrbitAcademy teaser ── */}
+          <div className="hidden lg:flex flex-col gap-6 flex-1">
+            <div className="inline-flex items-center gap-2 rounded-full border border-orbit-electric/30 bg-orbit-electric/10 px-3 py-1.5 w-fit">
+              <span className="size-1.5 animate-pulse rounded-full bg-orbit-electric" />
+              <span className="text-xs font-bold tracking-widest text-orbit-electric uppercase">OrbitAcademy</span>
+            </div>
+            <h2 className="text-3xl font-extrabold leading-tight text-white">
+              Da quebrada<br />
+              <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">
+                ao primeiro trampo em TI.
+              </span>
+            </h2>
+            <p className="text-white/60 text-sm leading-relaxed max-w-sm">
+              Trilha de formação em tecnologia feita por quem veio da periferia. Cursos, missões, comunidade e mentoria — tudo num lugar só.
+            </p>
+            <ul className="space-y-3">
+              {[
+                { icon: "🎯", text: "Trilha do zero ao primeiro emprego" },
+                { icon: "⚡", text: "Sistema de XP, níveis e missões" },
+                { icon: "🤝", text: "Comunidade e fórum exclusivo" },
+                { icon: "🚀", text: "Projetos reais no portfólio" },
+              ].map((item) => (
+                <li key={item.text} className="flex items-center gap-3 text-sm text-white/70">
+                  <span className="text-base">{item.icon}</span>
+                  {item.text}
+                </li>
+              ))}
+            </ul>
+            <a
+              href="/orbitacademy"
+              className="mt-2 w-fit text-sm font-semibold text-orbit-electric hover:text-white transition-colors underline underline-offset-4"
+            >
+              Conhecer a OrbitAcademy →
+            </a>
+          </div>
+
+        <div className="w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-8 backdrop-blur-2xl flex-shrink-0">
           <div className="mb-6 sm:mb-8 text-center">
             <div className="mx-auto mb-3 sm:mb-4 h-10 w-10 sm:h-12 sm:w-12 animate-orbit rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple" />
             <h1 className="bg-gradient-to-br from-orbit-electric via-white to-orbit-purple bg-clip-text text-2xl sm:text-3xl font-extrabold text-transparent">
@@ -331,6 +369,7 @@ export default function Entrar() {
             </button>
           </div>
         </div>
+        </div>{/* fim flex row */}
       </div>
     </div>
   );
