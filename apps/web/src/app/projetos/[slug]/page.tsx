@@ -16,8 +16,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const projeto = getProjetoBySlug(slug);
   if (!projeto) return { title: "Projeto não encontrado | Orbitamos" };
   return {
-    title: `${projeto.title} | Orbitamos`,
-    description: projeto.contexto ?? `Conheça o case ${projeto.title} desenvolvido pela Orbitamos.`,
+    title: `${projeto.nome} | Orbitamos`,
+    description: projeto.contexto ?? `Conheça o case ${projeto.nome} desenvolvido pela Orbitamos.`,
   };
 }
 
