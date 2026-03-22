@@ -167,14 +167,12 @@ export default function Entrar() {
           ))}
         </svg>
       </div>
-
-      {/* Nebula */}
       <div className="absolute -top-40 left-1/2 h-[700px] w-[1200px] -translate-x-1/2 rounded-full blur-3xl opacity-40 bg-[conic-gradient(from_120deg,theme(colors.orbit-electric/.7),theme(colors.orbit-purple/.6),transparent_70%)]" />
 
       <div className="relative container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8 sm:py-16">
         <div className="flex w-full max-w-4xl flex-col gap-8 lg:flex-row lg:items-center lg:gap-16">
 
-          {/* ── Lado esquerdo: OrbitAcademy teaser ── */}
+          {/* Lado esquerdo: OrbitAcademy teaser (só desktop) */}
           <div className="hidden lg:flex flex-col gap-6 flex-1">
             <div className="inline-flex items-center gap-2 rounded-full border border-orbit-electric/30 bg-orbit-electric/10 px-3 py-1.5 w-fit">
               <span className="size-1.5 animate-pulse rounded-full bg-orbit-electric" />
@@ -210,166 +208,172 @@ export default function Entrar() {
             </a>
           </div>
 
-        <div className="w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-8 backdrop-blur-2xl flex-shrink-0">
-          <div className="mb-6 sm:mb-8 text-center">
-            <div className="mx-auto mb-3 sm:mb-4 h-10 w-10 sm:h-12 sm:w-12 animate-orbit rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple" />
-            <h1 className="bg-gradient-to-br from-orbit-electric via-white to-orbit-purple bg-clip-text text-2xl sm:text-3xl font-extrabold text-transparent">
-              {isLogin ? "Entrar na Órbita" : "Criar Conta"}
-            </h1>
-            <p className="mt-2 text-white/70">
-              {isLogin ? "Acesse sua conta para continuar sua jornada." : "Comece sua transformação hoje!"}
-            </p>
-          </div>
+          {/* Card do formulário com borda gradiente */}
+          <div className="relative w-full max-w-md flex-shrink-0">
+            <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-orbit-electric via-orbit-purple to-orbit-electric opacity-50 blur-[1px]" />
+            <div className="absolute -inset-6 rounded-3xl bg-gradient-to-br from-orbit-electric/8 to-orbit-purple/8 blur-2xl" />
+            <div className="relative overflow-hidden rounded-2xl bg-[#05080f] p-4 sm:p-8">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(0,212,255,0.08),transparent)]" />
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_100%_100%,rgba(139,92,246,0.07),transparent)]" />
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {!isLogin && (
-            <div>
-              <label htmlFor="name" className="mb-2 block text-sm text-white/80">Nome Completo</label>
-              <Input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Seu nome completo"
-                className="bg-black/40 border-white/20 text-white placeholder:text-white/40"
-                required={!isLogin}
-                autoComplete="name"
-                autoCapitalize="words"
-                autoCorrect="on"
-              />
-            </div>
-            )}
+              <div className="relative">
+                <div className="mb-6 sm:mb-8 text-center">
+                  <div className="mx-auto mb-3 sm:mb-4 h-10 w-10 sm:h-12 sm:w-12 animate-orbit rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple shadow-[0_0_20px_rgba(0,212,255,0.5)]" />
+                  <h1 className="bg-gradient-to-br from-orbit-electric via-white to-orbit-purple bg-clip-text text-2xl sm:text-3xl font-extrabold text-transparent">
+                    {isLogin ? "Entrar na Órbita" : "Criar Conta"}
+                  </h1>
+                  <p className="mt-2 text-white/50 text-sm">
+                    {isLogin ? "Acesse sua conta para continuar sua jornada." : "Comece sua transformação hoje!"}
+                  </p>
+                </div>
 
-            {!isLogin && (
-              <div>
-                <label className="mb-2 block text-sm text-white/80">Tipo de conta</label>
-                <div className="flex gap-3">
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  {!isLogin && (
+                    <div>
+                      <label htmlFor="name" className="mb-2 block text-sm text-white/80">Nome Completo</label>
+                      <Input
+                        id="name"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Seu nome completo"
+                        className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-orbit-electric/60 transition-colors"
+                        required={!isLogin}
+                        autoComplete="name"
+                        autoCapitalize="words"
+                        autoCorrect="on"
+                      />
+                    </div>
+                  )}
+
+                  {!isLogin && (
+                    <div>
+                      <label className="mb-2 block text-sm text-white/80">Tipo de conta</label>
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setRegisterRole("STUDENT")}
+                          className={`flex-1 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                            registerRole === "STUDENT"
+                              ? "border-orbit-electric bg-orbit-electric/20 text-orbit-electric"
+                              : "border-white/20 text-white/70 hover:bg-white/5"
+                          }`}
+                        >
+                          🎓 Estudante
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setRegisterRole("FREELANCER")}
+                          className={`flex-1 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                            registerRole === "FREELANCER"
+                              ? "border-orbit-purple bg-orbit-purple/20 text-orbit-purple"
+                              : "border-white/20 text-white/70 hover:bg-white/5"
+                          }`}
+                        >
+                          💼 Colaborador
+                        </button>
+                      </div>
+                      <p className="mt-1 text-xs text-white/50">
+                        {registerRole === "STUDENT" ? "Acesso a vídeo-aulas e mentorias." : "Projetos reais, vagas e contato com o squad."}
+                      </p>
+                    </div>
+                  )}
+
+                  <div>
+                    <label htmlFor="email" className="mb-2 block text-sm text-white/80">E-mail</label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="voce@email.com"
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-orbit-electric/60 transition-colors"
+                      required
+                      autoComplete="email"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      inputMode="email"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="password" className="mb-2 block text-sm text-white/80">Senha</label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-orbit-electric/60 transition-colors"
+                      required
+                      autoComplete={isLogin ? "current-password" : "new-password"}
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      minLength={6}
+                    />
+                    {!isLogin && (
+                      <p className="mt-1 text-xs text-white/50">Mínimo de 6 caracteres</p>
+                    )}
+                  </div>
+
+                  {showProgress && (
+                    <div className="py-2 sm:py-4">
+                      <RocketProgress
+                        progress={fakeProgress}
+                        message={isLogin ? "Conectando à sua conta..." : "Criando sua conta..."}
+                      />
+                    </div>
+                  )}
+
+                  {error && (
+                    <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm text-center">
+                      {error}
+                      {error.includes("iniciando") && (
+                        <p className="mt-2 text-xs text-white/60">
+                          💡 Dica: Serviços gratuitos podem levar alguns segundos para iniciar. Aguarde e tente novamente.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="mt-2 w-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-black hover:from-orbit-purple hover:to-orbit-electric font-bold disabled:opacity-50"
+                  >
+                    {loading ? "⏳ Processando..." : isLogin ? "🚀 Entrar" : "✨ Criar Conta"}
+                  </Button>
+                </form>
+
+                <div className="mt-4 flex items-center justify-between text-xs sm:text-sm text-white/70">
+                  {isLogin ? (
+                    <Link href="/contato" className="hover:text-white transition-colors underline">
+                      Esqueci minha senha
+                    </Link>
+                  ) : (
+                    <span className="text-white/50">Mínimo de 6 caracteres</span>
+                  )}
                   <button
                     type="button"
-                    onClick={() => setRegisterRole("STUDENT")}
-                    className={`flex-1 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
-                      registerRole === "STUDENT"
-                        ? "border-orbit-electric bg-orbit-electric/20 text-orbit-electric"
-                        : "border-white/20 text-white/70 hover:bg-white/5"
-                    }`}
+                    onClick={() => {
+                      setIsLogin(!isLogin);
+                      setError("");
+                      setName("");
+                      setEmail("");
+                      setPassword("");
+                      setShowProgress(false);
+                      setFakeProgress(0);
+                    }}
+                    className="hover:text-white transition-colors underline bg-transparent border-0 cursor-pointer p-0 font-inherit"
                   >
-                    🎓 Estudante
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRegisterRole("FREELANCER")}
-                    className={`flex-1 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
-                      registerRole === "FREELANCER"
-                        ? "border-orbit-purple bg-orbit-purple/20 text-orbit-purple"
-                        : "border-white/20 text-white/70 hover:bg-white/5"
-                    }`}
-                  >
-                    💼 Colaborador
+                    {isLogin ? "Criar conta" : "Já tem conta? Fazer login"}
                   </button>
                 </div>
-                <p className="mt-1 text-xs text-white/50">
-                  {registerRole === "STUDENT" ? "Acesso a vídeo-aulas e mentorias." : "Projetos reais, vagas e contato com o squad."}
-                </p>
               </div>
-            )}
-
-            <div>
-              <label htmlFor="email" className="mb-2 block text-sm text-white/80">E-mail</label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="voce@email.com"
-                className="bg-black/40 border-white/20 text-white placeholder:text-white/40"
-                required
-                autoComplete="email"
-                autoCapitalize="none"
-                autoCorrect="off"
-                inputMode="email"
-              />
             </div>
-
-            <div>
-              <label htmlFor="password" className="mb-2 block text-sm text-white/80">Senha</label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="bg-black/40 border-white/20 text-white placeholder:text-white/40"
-                required
-                autoComplete={isLogin ? "current-password" : "new-password"}
-                autoCapitalize="none"
-                autoCorrect="off"
-                minLength={6}
-              />
-              {!isLogin && (
-                <p className="mt-1 text-xs text-white/50">Mínimo de 6 caracteres</p>
-              )}
-            </div>
-
-            {/* Barra de progresso gamificada */}
-            {showProgress && (
-              <div className="py-2 sm:py-4">
-                <RocketProgress 
-                  progress={fakeProgress} 
-                  message={isLogin ? "Conectando à sua conta..." : "Criando sua conta..."}
-                />
-              </div>
-            )}
-
-            {error && (
-              <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm text-center">
-                {error}
-                {error.includes('iniciando') && (
-                  <p className="mt-2 text-xs text-white/60">
-                    💡 Dica: Serviços gratuitos podem levar alguns segundos para iniciar. Aguarde e tente novamente.
-                  </p>
-                )}
-              </div>
-            )}
-
-            <Button 
-              type="submit" 
-              disabled={loading}
-              className="mt-2 w-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-black hover:from-orbit-purple hover:to-orbit-electric font-bold disabled:opacity-50"
-            >
-              {loading ? "⏳ Processando..." : isLogin ? "🚀 Entrar" : "✨ Criar Conta"}
-            </Button>
-          </form>
-
-          {/* Fora do form para não interferir com validação/submit ao clicar */}
-          <div className="mt-4 flex items-center justify-between text-xs sm:text-sm text-white/70">
-            {isLogin ? (
-              <Link
-                href="/contato"
-                className="hover:text-white transition-colors underline"
-              >
-                Esqueci minha senha
-              </Link>
-            ) : (
-              <span className="text-white/50">Mínimo de 6 caracteres</span>
-            )}
-            <button
-              type="button"
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setError("");
-                setName("");
-                setEmail("");
-                setPassword("");
-                setShowProgress(false);
-                setFakeProgress(0);
-              }}
-              className="hover:text-white transition-colors underline bg-transparent border-0 cursor-pointer p-0 font-inherit"
-            >
-              {isLogin ? "Criar conta" : "Já tem conta? Fazer login"}
-            </button>
           </div>
+
         </div>
-        </div>{/* fim flex row */}
       </div>
     </div>
   );
