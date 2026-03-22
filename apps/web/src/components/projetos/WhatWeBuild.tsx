@@ -9,46 +9,60 @@ const SERVICOS = [
 
 export default function WhatWeBuild() {
   return (
-    <section className="py-20 md:py-28" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+    <section
+      className="py-20 md:py-28"
+      style={{
+        background: "linear-gradient(180deg, #000 0%, #08060f 50%, #000 100%)",
+        borderTop: "1px solid rgba(255,255,255,0.07)",
+      }}
+    >
       <div className="container mx-auto max-w-5xl px-6">
 
-        <div className="mb-12 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
+        <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.3em] text-orbit-electric/50">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.3em] text-orbit-electric">
               Capacidade técnica
             </p>
             <h2 className="text-2xl font-black text-white sm:text-3xl">
               O que entregamos
             </h2>
           </div>
-          <p className="max-w-xs text-sm text-white/35 sm:text-right">
+          <p className="text-sm text-white/50 sm:text-right">
             Do briefing ao ar.<br />Sem enrolação.
           </p>
         </div>
 
-        <div className="grid gap-px" style={{ background: "rgba(255,255,255,0.05)" }}>
-          {SERVICOS.map((s) => (
+        <div
+          className="overflow-hidden rounded-2xl"
+          style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          {SERVICOS.map((s, i) => (
             <div
               key={s.num}
-              className="group flex items-center gap-6 px-5 py-5 transition-colors duration-150"
-              style={{ background: "#000" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,212,255,0.03)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
+              className="group flex cursor-default items-center gap-5 px-6 py-5 transition-all duration-150 hover:bg-white/[0.04]"
+              style={{
+                borderBottom: i < SERVICOS.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
+                background: "rgba(255,255,255,0.01)",
+              }}
             >
               <span
-                className="w-8 shrink-0 text-[11px] font-black tabular-nums"
-                style={{ color: "rgba(0,212,255,0.25)" }}
+                className="w-8 shrink-0 text-sm font-black tabular-nums transition-colors duration-150 group-hover:text-orbit-electric"
+                style={{ color: "rgba(0,212,255,0.45)" }}
               >
                 {s.num}
               </span>
-              <div className="flex flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-6">
-                <p className="w-48 shrink-0 text-sm font-bold text-white">{s.title}</p>
-                <p className="text-sm text-white/40">{s.desc}</p>
+              <div className="flex flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-8">
+                <p className="w-52 shrink-0 text-sm font-bold text-white/90 group-hover:text-white transition-colors duration-150">
+                  {s.title}
+                </p>
+                <p className="text-sm text-white/55 group-hover:text-white/70 transition-colors duration-150">
+                  {s.desc}
+                </p>
               </div>
               <svg
-                className="shrink-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+                className="shrink-0 opacity-0 transition-all duration-150 group-hover:opacity-100 group-hover:translate-x-0.5"
                 width="14" height="14" viewBox="0 0 14 14" fill="none"
-                style={{ color: "rgba(0,212,255,0.5)" }}
+                style={{ color: "rgba(0,212,255,0.7)" }}
               >
                 <path d="M1 7h12M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
