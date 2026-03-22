@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import ProjetosHero from "@/components/projetos/ProjetosHero";
 import ProjetosStats from "@/components/projetos/ProjetosStats";
@@ -15,7 +15,7 @@ import type { CategoriaSlug, Projeto } from "@/types/projeto";
 
 type FilterSlug = "todos" | CategoriaSlug;
 
-export default function ProjetosPage() {
+function ProjetosContent() {
   const [activeFilter, setActiveFilter] = useState<FilterSlug>("todos");
   const [selectedProjeto, setSelectedProjeto] = useState<Projeto | null>(null);
   const searchParams = useSearchParams();
@@ -84,5 +84,13 @@ export default function ProjetosPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function ProjetosPage() {
+  return (
+    <Suspense>
+      <ProjetosContent />
+    </Suspense>
   );
 }
