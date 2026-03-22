@@ -97,46 +97,92 @@ export default function Home() {
       <div className="relative z-[1]">
 
         {/* ── HERO ─────────────────────────────────────────────────── */}
-        <section className="relative overflow-hidden pt-28 pb-20">
-          <div className="pointer-events-none absolute -top-40 left-1/2 h-[400px] w-full max-w-[1200px] -translate-x-1/2 rounded-full blur-3xl opacity-30 bg-[conic-gradient(from_120deg,theme(colors.orbit-electric/.6),theme(colors.orbit-purple/.5),transparent_70%)]" />
+        <section className="relative min-h-screen overflow-hidden">
+          {/* Glow de fundo */}
+          <div className="pointer-events-none absolute -top-40 left-0 h-[600px] w-[600px] rounded-full blur-3xl opacity-20 bg-orbit-electric" />
+          <div className="pointer-events-none absolute bottom-0 right-0 h-[500px] w-[500px] rounded-full blur-3xl opacity-15 bg-orbit-purple" />
 
-          <div className="container mx-auto px-4 text-center">
-            <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 backdrop-blur-xl">
-              <span className="size-2 animate-pulse rounded-full bg-orbit-electric" />
-              <span className="text-xs tracking-widest text-white/70">ESTÚDIO DIGITAL · SÃO PAULO</span>
+          <div className="container mx-auto flex min-h-screen flex-col items-center gap-12 px-4 pt-24 pb-16 lg:flex-row lg:gap-0 lg:pt-0">
+
+            {/* Esquerda: texto */}
+            <div className="flex flex-1 flex-col justify-center gap-8 lg:pr-12">
+              <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 backdrop-blur-xl">
+                <span className="size-2 animate-pulse rounded-full bg-orbit-electric" />
+                <span className="text-xs tracking-widest text-white/70 uppercase">Estúdio Digital · São Paulo</span>
+              </div>
+
+              <h1 className="text-5xl font-extrabold leading-[1.08] tracking-tight text-white md:text-6xl lg:text-7xl">
+                Seu negócio<br />
+                merece um<br />
+                <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">
+                  produto digital
+                </span><br />
+                de verdade.
+              </h1>
+
+              <p className="max-w-md text-base text-white/60 leading-relaxed">
+                Sites, landing pages e sistemas que fazem seu negócio aparecer, vender e crescer. Entrega rápida. Resultado real.
+              </p>
+
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Magnetic>
+                  <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
+                    <Button
+                      size="lg"
+                      className="px-8 py-4 text-base font-bold bg-gradient-to-r from-orbit-electric to-orbit-purple text-black shadow-[0_0_40px_rgba(0,212,255,0.35)] hover:shadow-[0_0_60px_rgba(0,212,255,0.55)] hover:-translate-y-0.5 transform-gpu transition-all duration-150"
+                    >
+                      💬 Pedir orçamento
+                    </Button>
+                  </a>
+                </Magnetic>
+                <Magnetic>
+                  <Link href="/projetos">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="px-8 py-4 text-base font-bold border-white/20 text-white bg-white/5 backdrop-blur-xl hover:bg-white/10 hover:border-orbit-electric/40 transition-all duration-150"
+                    >
+                      Ver projetos →
+                    </Button>
+                  </Link>
+                </Magnetic>
+              </div>
+
+              {/* Mini social proof */}
+              <div className="flex items-center gap-6 pt-2">
+                {[
+                  { value: "5+", label: "Projetos entregues" },
+                  { value: "2 sem", label: "Prazo médio" },
+                  { value: "100%", label: "Satisfação" },
+                ].map((s) => (
+                  <div key={s.label}>
+                    <div className="text-xl font-extrabold text-white">{s.value}</div>
+                    <div className="text-xs text-white/40">{s.label}</div>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <h1 className="mx-auto max-w-4xl bg-gradient-to-br from-orbit-electric via-white to-orbit-purple bg-clip-text text-4xl font-extrabold leading-tight text-transparent md:text-6xl">
-              Seu negócio merece<br className="hidden md:block" /> um produto digital de verdade.
-            </h1>
-
-            <p className="mx-auto mt-5 max-w-xl text-base text-white/70 md:text-lg">
-              Criamos sites, landing pages e sistemas que fazem seu negócio aparecer, vender e crescer. Entrega rápida. Resultado real.
-            </p>
-
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Magnetic>
-                <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
-                  <Button
-                    size="lg"
-                    className="px-10 py-4 text-base font-bold bg-gradient-to-r from-orbit-electric via-white to-orbit-purple text-black shadow-[0_18px_40px_rgba(0,212,255,0.35)] hover:shadow-[0_22px_55px_rgba(0,212,255,0.55)] hover:-translate-y-0.5 active:translate-y-0.5 border border-black/20 transform-gpu transition-all duration-150"
-                  >
-                    💬 Pedir orçamento agora
-                  </Button>
-                </a>
-              </Magnetic>
-              <Magnetic>
-                <Link href="/projetos">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="px-8 py-4 text-base font-bold border-white/20 text-white bg-white/5 backdrop-blur-xl hover:bg-white/10 hover:border-orbit-electric/40 transition-all duration-150"
-                  >
-                    🗂️ Ver projetos
-                  </Button>
-                </Link>
-              </Magnetic>
+            {/* Direita: vídeo */}
+            <div className="relative flex w-full items-center justify-center lg:w-[52%]">
+              {/* Glow atrás do vídeo */}
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-orbit-electric/20 to-orbit-purple/20 blur-3xl" />
+              <div className="relative w-full overflow-hidden rounded-2xl border border-white/10 shadow-[0_0_80px_rgba(0,212,255,0.15)]">
+                <video
+                  src="/hero.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full object-cover"
+                  style={{ maxHeight: "80vh" }}
+                />
+                {/* Overlay sutil para integrar com o fundo */}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-black/30" />
+              </div>
             </div>
+
           </div>
         </section>
 
