@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { sendContact } from "@/lib/api";
-import Link from "next/link";
 
 const WHATSAPP_URL = "https://wa.me/5511949138973?text=Ol%C3%A1%2C+vim+pelo+site+da+Orbitamos+e+quero+fazer+um+or%C3%A7amento";
 const INSTAGRAM_URL = "https://www.instagram.com/orbitamosbr/";
@@ -274,7 +273,7 @@ export default function Contato() {
                 <p className="text-[10px] font-bold uppercase tracking-wider text-white/30 mb-1">E-mail</p>
                 <p className="text-xs text-white/60 break-all">aquelequevivencia<br />@gmail.com</p>
               </a>
-              <Link
+              <a
                 href={INSTAGRAM_URL}
                 target="_blank"
                 rel="noreferrer"
@@ -284,7 +283,7 @@ export default function Contato() {
                 <p className="text-[10px] font-bold uppercase tracking-wider text-white/30 mb-1">Instagram</p>
                 <p className="text-xs text-white/60">@orbitamosbr</p>
                 <p className="mt-1 text-[10px]" style={{ color: "rgba(0,212,255,0.5)" }}>Ver perfil →</p>
-              </Link>
+              </a>
             </div>
 
           </div>
