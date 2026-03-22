@@ -200,12 +200,6 @@ export default function Entrar() {
                 </li>
               ))}
             </ul>
-            <a
-              href="/orbitacademy"
-              className="mt-2 w-fit text-sm font-semibold text-orbit-electric hover:text-white transition-colors underline underline-offset-4"
-            >
-              Conhecer a OrbitAcademy →
-            </a>
           </div>
 
           {/* Card do formulário com borda gradiente */}

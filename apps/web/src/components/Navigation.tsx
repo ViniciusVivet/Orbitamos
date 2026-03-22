@@ -15,7 +15,9 @@ export default function Navigation() {
   const initials = user?.name?.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase() ?? "?";
 
   return (
-    <nav className="fixed top-0 w-full z-50 border-b border-white/10 bg-black/40 backdrop-blur-xl">
+    <nav className="fixed top-0 w-full z-50 bg-[rgba(2,4,14,0.72)] backdrop-blur-3xl">
+      {/* Hairline accent — gradient bottom border */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orbit-electric/12 to-transparent" />
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -24,25 +26,25 @@ export default function Navigation() {
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="text-white/90 hover:text-orbit-electric transition-colors">
+          <div className="hidden md:flex items-center gap-8">
+            <Link href="/" className="text-white/60 hover:text-white text-sm font-medium transition-colors duration-150">
               Início
             </Link>
-            <Link href="/projetos" className="text-white/90 hover:text-orbit-electric transition-colors">
+            <Link href="/projetos" className="text-white/60 hover:text-white text-sm font-medium transition-colors duration-150">
               Projetos
             </Link>
-            <Link href="/contato" className="text-white/90 hover:text-orbit-electric transition-colors">
+            <Link href="/contato" className="text-white/60 hover:text-white text-sm font-medium transition-colors duration-150">
               Contato
             </Link>
             {!loading && isAuthenticated && (
-              <Link href="/forum" className="text-white/90 hover:text-orbit-electric transition-colors">
+              <Link href="/forum" className="text-white/60 hover:text-white text-sm font-medium transition-colors duration-150">
                 Fórum
               </Link>
             )}
             {!loading && isAuthenticated && user?.role === "STUDENT" && (
               <Link
                 href={cursos.length > 0 ? `/estudante/cursos/${cursos[0].slug}` : "/estudante/aulas"}
-                className="text-white/90 hover:text-orbit-electric transition-colors font-medium"
+                className="text-white/60 hover:text-white text-sm font-medium transition-colors duration-150"
               >
                 Sala de Aula
               </Link>
@@ -50,7 +52,7 @@ export default function Navigation() {
             {!loading && isAuthenticated && user ? (
               <Link
                 href={user.role === "FREELANCER" ? "/colaborador" : "/estudante"}
-                className="flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-white/90 hover:bg-white/10 transition-colors"
+                className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-white/70 hover:bg-white/[0.08] hover:text-white transition-colors duration-150"
               >
                 {getDisplayAvatarUrl(user.avatarUrl) ? (
                   <img src={getDisplayAvatarUrl(user.avatarUrl)!} alt={user.name} className="h-8 w-8 rounded-full object-cover" />
@@ -64,7 +66,7 @@ export default function Navigation() {
             ) : (
               <Button 
                 size="sm"
-                className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:from-orbit-purple hover:to-orbit-electric text-black font-bold shadow-[0_0_20px_theme(colors.orbit-electric/.35)]"
+                className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:opacity-90 text-black text-sm font-bold shadow-[0_0_16px_rgba(0,212,255,0.2)] hover:shadow-[0_0_24px_rgba(0,212,255,0.35)] transition-all duration-150"
                 asChild
               >
                 <Link href="/entrar">🚀 Entrar</Link>
@@ -156,7 +158,7 @@ export default function Navigation() {
               ) : (
                 <Button 
                   size="sm"
-                  className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:from-orbit-purple hover:to-orbit-electric text-black font-bold w-full shadow-[0_0_20px_theme(colors.orbit-electric/.35)]"
+                  className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:opacity-90 text-black text-sm font-bold w-full shadow-[0_0_16px_rgba(0,212,255,0.2)] transition-all duration-150"
                   asChild
                 >
                   <Link href="/entrar">🚀 Entrar</Link>
