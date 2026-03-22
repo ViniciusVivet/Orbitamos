@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Tilt from "@/components/Tilt";
 import Magnetic from "@/components/Magnetic";
 
-const SpaceShipsOverlay = dynamic(() => import("@/components/SpaceShipsOverlay"), { ssr: false, loading: () => null });
 
 const WHATSAPP_URL = "https://wa.me/5511949138973?text=Ol%C3%A1%2C+vim+pelo+site+da+Orbitamos+e+quero+fazer+um+or%C3%A7amento";
 
@@ -84,8 +83,6 @@ const PROJECTS = [
 export default function Home() {
   return (
     <div className="relative min-h-screen text-white">
-      <SpaceShipsOverlay />
-
       {/* Fundo cósmico */}
       <div className="fixed inset-0 -z-10 bg-black" aria-hidden>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(0,212,255,.15),transparent_55%)]" />
