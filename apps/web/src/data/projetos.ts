@@ -11,10 +11,8 @@ export const projetos: Projeto[] = [
     tags: ["Site institucional", "Beleza", "WhatsApp", "Conversao local"],
     status: "publicado",
     link: "https://salashes-whatsapp-funnel.vercel.app/",
-    thumbnail:
-      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&q=80&auto=format&fit=crop",
-    imagemPrincipal:
-      "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?w=1400&q=80&auto=format&fit=crop",
+    thumbnail: "/case-sabrina-lashes.png",
+    imagemPrincipal: "/case-sabrina-lashes.png",
     contexto:
       "A Sabrina ja tinha bom trabalho no boca a boca, mas sua presenca digital era fragmentada entre Instagram e indicacoes.",
     problema:
@@ -39,10 +37,8 @@ export const projetos: Projeto[] = [
     tags: ["E-commerce", "Moda autoral", "Branding", "Experiencia visual"],
     status: "em-evolucao",
     link: "https://yume-atelier.vercel.app/",
-    thumbnail:
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80&auto=format&fit=crop",
-    imagemPrincipal:
-      "https://images.unsplash.com/photo-1445205170230-053b83016050?w=1400&q=80&auto=format&fit=crop",
+    thumbnail: "/case-yume.png",
+    imagemPrincipal: "/case-yume.png",
     contexto:
       "A YUME precisava tirar a marca do papel e ter um lugar proprio para apresentar colecoes e narrativa visual.",
     problema:
