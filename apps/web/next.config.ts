@@ -11,7 +11,7 @@ const securityHeaders = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // unsafe-eval needed by Next.js dev; tighten in v2
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com",
+      "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://raw.githubusercontent.com",
       "font-src 'self'",
       "connect-src 'self' https://*.render.com wss://*.render.com https://*.amazonaws.com wss://*.amazonaws.com",
       "media-src 'self'",
