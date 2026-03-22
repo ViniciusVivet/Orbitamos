@@ -1,11 +1,21 @@
-import type { Metadata } from "next";
-import type { ReactNode } from "react";
+"use client";
 
-export const metadata: Metadata = {
-  title: "OrbitAcademy | Orbitamos",
-  description: "Aprenda desenvolvimento web com cursos, bootcamps e missões gamificadas. Ganhe XP e construa seu portfólio na OrbitAcademy.",
-};
+import type { ReactNode } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function OrbitAcademyLayout({ children }: { children: ReactNode }) {
-  return children;
+  const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.replace("/entrar");
+    }
+  }, [isAuthenticated, loading, router]);
+
+  if (loading || !isAuthenticated) return null;
+
+  return <>{children}</>;
 }
