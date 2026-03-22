@@ -72,23 +72,23 @@ export default function Contato() {
           style={{ background: "radial-gradient(circle, rgba(0,212,255,0.2) 0%, transparent 70%)", filter: "blur(60px)" }} />
       </div>
 
-      <div className="relative z-10 container mx-auto max-w-6xl px-6 py-16 sm:py-24">
+      <div className="relative z-10 container mx-auto max-w-6xl px-6 py-8 sm:py-12">
 
         {/* ── Header ── */}
-        <div className="mb-14">
-          <div className="mb-4 inline-flex items-center gap-2">
+        <div className="mb-8">
+          <div className="mb-3 inline-flex items-center gap-2">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orbit-electric" />
             <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-orbit-electric">
               Orbitamos Studio
             </span>
           </div>
-          <h1 className="text-4xl font-black leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+          <h1 className="text-3xl font-black leading-tight tracking-tight sm:text-4xl lg:text-5xl">
             Vamos construir<br />
             <span className="bg-gradient-to-r from-orbit-electric via-sky-300 to-orbit-purple bg-clip-text text-transparent">
               algo juntos?
             </span>
           </h1>
-          <p className="mt-4 max-w-lg text-base text-white/70 leading-relaxed">
+          <p className="mt-3 max-w-lg text-sm text-white/70 leading-relaxed">
             Orçamento sem compromisso. Resposta em até 24h.
             Projetos entregues em até 1 semana.
           </p>
