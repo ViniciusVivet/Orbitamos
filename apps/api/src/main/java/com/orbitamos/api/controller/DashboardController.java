@@ -35,7 +35,6 @@ import java.time.temporal.TemporalAdjusters;
  */
 @RestController
 @RequestMapping("/api/dashboard")
-@CrossOrigin(origins = "*")
 public class DashboardController {
     
     @Autowired

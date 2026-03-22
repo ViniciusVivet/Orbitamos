@@ -16,7 +16,6 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "*")
 public class UserController {
 
     private static final DateTimeFormatter ISO = DateTimeFormatter.ISO_DATE_TIME;

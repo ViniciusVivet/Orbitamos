@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/forum")
-@CrossOrigin(origins = "*")
 public class ForumController {
 
     @Autowired
