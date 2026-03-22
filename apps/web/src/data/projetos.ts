@@ -31,8 +31,8 @@ export const projetos: Projeto[] = [
       "Presenca digital mais profissional e pronta para campanhas pagas e parcerias locais.",
   },
   {
-    slug: "yume-moda-disrruptiva",
-    nome: "YUME – Moda Disrruptiva",
+    slug: "yume-moda-disruptiva",
+    nome: "YUME – Moda Disruptiva",
     categoria: "ecommerce",
     resumo:
       "Vitrine digital para marca autoral de moda, com foco em experiencia visual forte e identidade marcante.",
