@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, Suspense } from "react";
+import { useMemo, useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import ProjetosHero from "@/components/projetos/ProjetosHero";
 import ProjetosStats from "@/components/projetos/ProjetosStats";
@@ -27,6 +27,8 @@ function ProjetosContent() {
       if (projeto) setSelectedProjeto(projeto);
     }
   }, [searchParams]);
+
+  const handleCloseModal = useCallback(() => setSelectedProjeto(null), []);
 
   const filtered = useMemo(() => {
     if (activeFilter === "todos") return projetos;
@@ -80,7 +82,7 @@ function ProjetosContent() {
         <HologramModal
           projeto={selectedProjeto}
           projetos={projetos}
-          onClose={() => setSelectedProjeto(null)}
+          onClose={handleCloseModal}
         />
       )}
     </div>
