@@ -4,18 +4,20 @@ import ProjetosHeroParticles from "./ProjetosHeroParticles";
 
 export default function ProjetosHero() {
   return (
-    <section className="relative overflow-hidden border-b border-white/10 min-h-[320px] md:min-h-[380px]">
-      {/* Background: imagem cosmic — cover, centralizada */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/hero-projetos.png')" }}
+    <section className="relative overflow-hidden border-b border-white/10 min-h-[200px] md:min-h-[240px] bg-[#03050c]">
+      <video
+        src="/hero-projetos.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 h-full w-full object-cover"
         aria-hidden
       />
-      {/* Overlay escuro para legibilidade do texto */}
-      <div className="absolute inset-0 z-[1] bg-black/55 backdrop-blur-[2px]" aria-hidden />
-      {/* Particulas leves (CSS puro) — por cima do overlay, opacidade baixa */}
+      <div className="absolute inset-0 z-[1] bg-black/60" aria-hidden />
       <ProjetosHeroParticles />
-      <div className="container relative z-10 mx-auto px-4 py-10 md:py-14 lg:py-16 text-center">
+
+      <div className="container relative z-10 mx-auto px-4 py-7 md:py-10 text-center">
         <p className="mb-3 text-[11px] font-medium tracking-[0.2em] text-orbit-electric/90 uppercase">
           Portfólio comercial
         </p>

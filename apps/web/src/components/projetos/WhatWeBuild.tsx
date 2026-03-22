@@ -1,39 +1,61 @@
-const ITEMS = [
-  { icone: "📣", title: "Landing pages", desc: "Conversão e clareza para campanhas e produtos." },
-  { icone: "🏢", title: "Sites institucionais", desc: "Presença digital profissional e confiável." },
-  { icone: "📊", title: "Dashboards e sistemas", desc: "Dados em tempo real e tomada de decisão." },
-  { icone: "⚡", title: "MVPs", desc: "Validação rápida da sua ideia com produto funcional." },
-  { icone: "🔧", title: "Sistemas com backend", desc: "APIs, autenticação e regras de negócio." },
-  { icone: "🤖", title: "Automações", desc: "Relatórios, integrações e menos trabalho manual." },
+const SERVICOS = [
+  { num: "01", title: "Landing Page", desc: "Focada em conversão. Um objetivo, uma ação, resultado mensurável." },
+  { num: "02", title: "Site Institucional", desc: "Presença digital que transmite credibilidade e gera contato." },
+  { num: "03", title: "E-commerce", desc: "Vitrine ou loja completa — do catálogo ao checkout." },
+  { num: "04", title: "Sistema Web / MVP", desc: "Produto funcional para validar sua ideia no mercado." },
+  { num: "05", title: "Dashboard & Painel", desc: "Dados em tempo real, gestão e tomada de decisão." },
+  { num: "06", title: "Automação", desc: "Integrações, relatórios automáticos e menos trabalho manual." },
 ];
 
 export default function WhatWeBuild() {
   return (
-    <section className="border-b border-white/10 py-16 md:py-20">
-      <div className="container mx-auto px-4">
-        <p className="text-center text-[11px] font-medium tracking-[0.2em] text-orbit-electric/80 uppercase mb-2">
-          Capacidade técnica
-        </p>
-        <h2 className="text-center text-2xl font-bold text-white md:text-3xl">
-          O que a Orbitamos consegue construir
-        </h2>
-        <p className="mx-auto mt-4 max-w-2xl text-center text-sm text-white/60">
-          Do primeiro site ao sistema completo: entregamos produto digital de ponta a ponta.
-        </p>
-        <ul className="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {ITEMS.map((item) => (
-            <li
-              key={item.title}
-              className="flex items-start gap-4 rounded-xl border border-white/10 bg-white/5 p-5 transition-colors hover:border-orbit-electric/30 hover:bg-white/[0.08]"
+    <section className="py-20 md:py-28" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+      <div className="container mx-auto max-w-5xl px-6">
+
+        <div className="mb-12 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
+          <div>
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.3em] text-orbit-electric/50">
+              Capacidade técnica
+            </p>
+            <h2 className="text-2xl font-black text-white sm:text-3xl">
+              O que entregamos
+            </h2>
+          </div>
+          <p className="max-w-xs text-sm text-white/35 sm:text-right">
+            Do briefing ao ar.<br />Sem enrolação.
+          </p>
+        </div>
+
+        <div className="grid gap-px" style={{ background: "rgba(255,255,255,0.05)" }}>
+          {SERVICOS.map((s) => (
+            <div
+              key={s.num}
+              className="group flex items-center gap-6 px-5 py-5 transition-colors duration-150"
+              style={{ background: "#000" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,212,255,0.03)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
             >
-              <span className="text-2xl mt-0.5 shrink-0" aria-hidden>{item.icone}</span>
-              <div>
-                <h3 className="font-semibold text-white">{item.title}</h3>
-                <p className="mt-1 text-sm text-white/60">{item.desc}</p>
+              <span
+                className="w-8 shrink-0 text-[11px] font-black tabular-nums"
+                style={{ color: "rgba(0,212,255,0.25)" }}
+              >
+                {s.num}
+              </span>
+              <div className="flex flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-6">
+                <p className="w-48 shrink-0 text-sm font-bold text-white">{s.title}</p>
+                <p className="text-sm text-white/40">{s.desc}</p>
               </div>
-            </li>
+              <svg
+                className="shrink-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+                width="14" height="14" viewBox="0 0 14 14" fill="none"
+                style={{ color: "rgba(0,212,255,0.5)" }}
+              >
+                <path d="M1 7h12M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
           ))}
-        </ul>
+        </div>
+
       </div>
     </section>
   );

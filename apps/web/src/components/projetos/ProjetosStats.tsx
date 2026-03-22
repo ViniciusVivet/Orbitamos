@@ -1,7 +1,7 @@
 const STATS = [
   { valor: "4", label: "projetos entregues" },
   { valor: "3", label: "clientes ativos" },
-  { valor: "≤2 sem", label: "tempo médio de entrega" },
+  { valor: "≤1 sem", label: "tempo médio de entrega" },
   { valor: "100%", label: "mobile-first" },
 ];
 
