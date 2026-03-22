@@ -1,5 +1,26 @@
 # Encoding UTF-8 para todo texto (comentários e mensagens em português)
 * text eol=lf
+
+# Binários — nunca aplicar conversão de linha
+*.mp4 binary
+*.mp3 binary
+*.wav binary
+*.ogg binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.svg binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.otf binary
+*.pdf binary
+*.zip binary
+*.mov binary
 *.java text eol=lf
 *.xml text eol=lf
 *.yml text eol=lf
