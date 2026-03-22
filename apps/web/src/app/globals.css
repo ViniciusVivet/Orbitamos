@@ -14,6 +14,47 @@
   background-clip: text;
 }
 
+/* ── Transição de página ── */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-enter {
+  animation: page-enter 0.5s cubic-bezier(0.0, 0.0, 0.2, 1) both;
+}
+
+/* ── Hologram modal ── */
+@keyframes holo-enter {
+  from { opacity: 0; transform: scale(0.93) translateY(28px); filter: blur(6px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);    filter: blur(0);   }
+}
+@keyframes holo-backdrop {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scanline {
+  0%   { transform: translateY(-8%);   opacity: 0; }
+  5%   { opacity: 0.6; }
+  95%  { opacity: 0.6; }
+  100% { transform: translateY(108%);  opacity: 0; }
+}
+@keyframes hud-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 1;   }
+}
+
+.animate-holo-enter   { animation: holo-enter   0.42s cubic-bezier(0.0, 0.0, 0.2, 1) both; }
+.animate-holo-backdrop{ animation: holo-backdrop 0.25s ease-out both; }
+.animate-scanline     { animation: scanline      3.5s linear infinite; }
+.animate-hud-pulse    { animation: hud-pulse     2s ease-in-out infinite; }
+
 /* Animações customizadas da Orbitamos */
 @keyframes orbit {
   0% { transform: rotate(0deg) translateX(20px) rotate(0deg); }
@@ -34,7 +75,12 @@
 }
 
 /* Estilos básicos e mobile */
+html {
+  background: #000;
+}
+
 body {
+  background: #000;
   font-family: 'Inter', sans-serif;
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;

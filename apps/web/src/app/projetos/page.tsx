@@ -1,21 +1,32 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import ProjetosHero from "@/components/projetos/ProjetosHero";
 import ProjetosStats from "@/components/projetos/ProjetosStats";
 import ProjetosFilters from "@/components/projetos/ProjetosFilters";
 import ProjectCard from "@/components/projetos/ProjectCard";
 import ProjetosTestimonials from "@/components/projetos/ProjetosTestimonials";
 import WhatWeBuild from "@/components/projetos/WhatWeBuild";
-import ProjetosImpacto from "@/components/projetos/ProjetosImpacto";
 import ProjetosCTA from "@/components/projetos/ProjetosCTA";
+import HologramModal from "@/components/projetos/HologramModal";
 import { projetos } from "@/data/projetos";
-import type { CategoriaSlug } from "@/types/projeto";
+import type { CategoriaSlug, Projeto } from "@/types/projeto";
 
 type FilterSlug = "todos" | CategoriaSlug;
 
 export default function ProjetosPage() {
   const [activeFilter, setActiveFilter] = useState<FilterSlug>("todos");
+  const [selectedProjeto, setSelectedProjeto] = useState<Projeto | null>(null);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const caseSlug = searchParams.get("case");
+    if (caseSlug) {
+      const projeto = projetos.find((p) => p.slug === caseSlug);
+      if (projeto) setSelectedProjeto(projeto);
+    }
+  }, [searchParams]);
 
   const filtered = useMemo(() => {
     if (activeFilter === "todos") return projetos;
@@ -41,7 +52,11 @@ export default function ProjetosPage() {
           className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
         >
           {filtered.map((projeto) => (
-            <ProjectCard key={projeto.slug} projeto={projeto} />
+            <ProjectCard
+              key={projeto.slug}
+              projeto={projeto}
+              onOpenCase={setSelectedProjeto}
+            />
           ))}
         </div>
         {filtered.length === 0 && (
@@ -57,11 +72,17 @@ export default function ProjetosPage() {
       {/* 5. Capacidade técnica */}
       <WhatWeBuild />
 
-      {/* 6. Diferencial / impacto social (argumento para investidor) */}
-      <ProjetosImpacto />
-
-      {/* 7. CTA final */}
+      {/* 6. CTA final */}
       <ProjetosCTA />
+
+      {/* Hologram overlay */}
+      {selectedProjeto && (
+        <HologramModal
+          projeto={selectedProjeto}
+          projetos={projetos}
+          onClose={() => setSelectedProjeto(null)}
+        />
+      )}
     </div>
   );
 }
