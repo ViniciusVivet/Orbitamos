@@ -16,7 +16,7 @@ function getCategoriaLabel(slug: string) {
 
 export default function ProjectCard({ projeto, onOpenCase }: ProjectCardProps) {
   return (
-    <article className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:border-orbit-electric/30 hover:bg-white/[0.08] hover:shadow-[0_0_30px_theme(colors.orbit-electric/.08)]">
+    <article onClick={() => onOpenCase(projeto)} className="group relative cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:border-orbit-electric/30 hover:bg-white/[0.08] hover:shadow-[0_0_30px_theme(colors.orbit-electric/.08)]">
       <div className="relative aspect-video w-full overflow-hidden">
         <Image
           src={projeto.thumbnail}
@@ -59,7 +59,7 @@ export default function ProjectCard({ projeto, onOpenCase }: ProjectCardProps) {
           </Button>
           {projeto.link && (
             <Button asChild size="sm" className="bg-orbit-electric/20 text-orbit-electric hover:bg-orbit-electric/30 border border-orbit-electric/40">
-              <a href={projeto.link} target="_blank" rel="noreferrer">
+              <a href={projeto.link} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
                 Abrir projeto
               </a>
             </Button>
