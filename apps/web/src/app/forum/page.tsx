@@ -12,26 +12,12 @@ import {
   deleteForumMessage,
   getDisplayAvatarUrl,
 } from "@/lib/api";
-import { getFriendlyApiErrorMessage } from "@/lib/utils";
+import { getFriendlyApiErrorMessage, formatRelativeDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import UserProfileModal from "@/components/forum/UserProfileModal";
 
-function formatDate(value: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-  if (diffMins < 1) return "Agora";
-  if (diffMins < 60) return `${diffMins} min atrás`;
-  if (diffHours < 24) return `${diffHours}h atrás`;
-  if (diffDays < 7) return `${diffDays} dia${diffDays !== 1 ? "s" : ""} atrás`;
-  return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
-}
 
 function AuthorAvatar({ name, avatarUrl }: { name: string; avatarUrl?: string | null }) {
   const [imgFailed, setImgFailed] = useState(false);
@@ -462,7 +448,7 @@ export default function ForumPage() {
                                   >
                                     {message.author}
                                   </button>
-                                  <span className="text-xs text-white/50">{formatDate(message.createdAt)}</span>
+                                  <span className="text-xs text-white/50">{formatRelativeDate(message.createdAt)}</span>
                                 </div>
                                 <p className="mt-0.5 text-xs text-white/50">
                                   {[
@@ -573,7 +559,7 @@ export default function ForumPage() {
                                             >
                                               {reply.author}
                                             </button>
-                                            <span className="text-xs text-white/50">{formatDate(reply.createdAt)}</span>
+                                            <span className="text-xs text-white/50">{formatRelativeDate(reply.createdAt)}</span>
                                           </div>
                                           <p className="mt-0.5 text-xs text-white/50">
                                             {[

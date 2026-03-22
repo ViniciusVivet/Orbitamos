@@ -14,7 +14,7 @@ import {
   getDisplayAvatarUrl,
   createDirectConversation,
 } from "@/lib/api";
-import { getFriendlyApiErrorMessage } from "@/lib/utils";
+import { getFriendlyApiErrorMessage, formatRelativeDate } from "@/lib/utils";
 import { Minus, X, RefreshCw, ExternalLink, Maximize2, GripVertical } from "lucide-react";
 import { useDraggablePosition } from "@/hooks/useDraggablePosition";
 
@@ -137,21 +137,6 @@ export default function ForumWidget() {
     } finally {
       setOpeningChat(null);
     }
-  };
-
-  const formatDate = (value: string) => {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-    if (diffMins < 1) return "Agora";
-    if (diffMins < 60) return `${diffMins} min atrás`;
-    if (diffHours < 24) return `${diffHours}h atrás`;
-    if (diffDays < 7) return `${diffDays} dia${diffDays !== 1 ? "s" : ""} atrás`;
-    return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
   };
 
   const rootMessages = messages.filter((m) => m.parentId == null);
@@ -324,7 +309,7 @@ export default function ForumWidget() {
                               >
                                 {message.author}
                               </button>
-                              <span className="text-[10px] text-white/50">{formatDate(message.createdAt)}</span>
+                              <span className="text-[10px] text-white/50">{formatRelativeDate(message.createdAt)}</span>
                             </div>
                             <p className="mt-0.5 text-[11px] text-white/50">
                               {[

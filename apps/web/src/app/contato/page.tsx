@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import emailjs from '@emailjs/browser';
 import { sendContact } from "@/lib/api";
 import Link from "next/link";
 import { whatsappMentoriaUrl } from "@/lib/social";
@@ -43,25 +42,15 @@ export default function Contato() {
         // Continua mesmo se o backend falhar
       }
       
-      // 2. Enviar email via EmailJS (notificação)
+      // 2. Enviar email via rota de API interna (chaves ficam no servidor)
       try {
-        const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
-        const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
-        const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
-        
-        if (serviceId && templateId && publicKey && publicKey !== 'YOUR_PUBLIC_KEY') {
-          const templateParams = {
-            from_name: formData.name,
-            from_email: formData.email,
-            message: formData.message,
-            to_email: 'contato@orbitamos.com',
-          };
-          
-          await emailjs.send(serviceId, templateId, templateParams, publicKey);
-        }
-      } catch (emailError) {
-        void emailError; // falha de email não bloqueia confirmação ao usuário
-        // Não bloqueia o sucesso se o email falhar
+        await fetch("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+      } catch {
+        // falha de email não bloqueia confirmação ao usuário
       }
       
       setIsSuccess(true);

@@ -67,9 +67,10 @@ export function useConversationsSync({
     const client = new Client({
       webSocketFactory: () => new SockJS(wsUrl) as unknown as WebSocket,
       reconnectDelay: 5000,
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
       onConnect: () => {
         // Inscreve em todas as conversas conhecidas no momento da conexão
-        subscribedRef.current.forEach(() => {}); // já limpou, agora re-inscreve
         // (conversations pode ter mudado — o effect abaixo cuida disso)
       },
     });
@@ -128,12 +129,8 @@ export function useConversationsSync({
     if (client.connected) {
       trySubscribe();
     } else {
-      // Sobrepõe onConnect para garantir que novas convs sejam subscritas após reconexão
-      const prevOnConnect = client.onConnect;
-      client.onConnect = (frame) => {
-        prevOnConnect?.(frame);
-        trySubscribe();
-      };
+      // Substitui onConnect sem encadear handlers — usa ref para evitar acúmulo
+      client.onConnect = () => trySubscribe();
     }
   }, [conversations]);
 }

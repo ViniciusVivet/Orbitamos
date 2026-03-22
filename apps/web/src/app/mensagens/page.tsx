@@ -22,7 +22,7 @@ import {
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn, formatChatTime } from "@/lib/utils";
+import { cn, formatChatTime, isOnline } from "@/lib/utils";
 import { MessageCircle, Users, Send, Info } from "lucide-react";
 import AvatarWithPresence from "@/components/chat/AvatarWithPresence";
 import GroupInfoModal from "@/components/chat/GroupInfoModal";
@@ -31,12 +31,6 @@ import NewGroupChatModal from "@/components/chat/NewGroupChatModal";
 
 // ─── helpers locais ───────────────────────────────────────────────────────────
 
-const ONLINE_THRESHOLD_MS = 5 * 60 * 1000;
-
-function isOnline(iso: string | null | undefined): boolean {
-  if (!iso) return false;
-  return Date.now() - new Date(iso).getTime() < ONLINE_THRESHOLD_MS;
-}
 
 function formatLastSeen(iso: string | null): string {
   if (!iso) return "—";

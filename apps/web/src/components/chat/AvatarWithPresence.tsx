@@ -1,15 +1,7 @@
 "use client";
 
 import { getDisplayAvatarUrl } from "@/lib/api";
-import { cn } from "@/lib/utils";
-
-const ONLINE_THRESHOLD_MS = 5 * 60 * 1000; // 5 min
-
-function isOnline(lastSeenAt: string | null | undefined): boolean {
-  if (!lastSeenAt) return false;
-  const d = new Date(lastSeenAt);
-  return Date.now() - d.getTime() < ONLINE_THRESHOLD_MS;
-}
+import { cn, isOnline } from "@/lib/utils";
 
 function lastSeenLabel(lastSeenAt: string | null | undefined): string {
   if (!lastSeenAt) return "Offline";
