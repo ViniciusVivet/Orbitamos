@@ -141,6 +141,8 @@ export default function ForumWidget() {
 
   const rootMessages = messages.filter((m) => m.parentId == null);
 
+  if (!isAuthenticated) return null;
+
   return (
     <div className="fixed z-50" style={positionStyle}>
       {!open && (
