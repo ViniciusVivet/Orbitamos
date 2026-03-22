@@ -26,19 +26,7 @@ export default function Navigation() {
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
             <Link href="/" className="text-white/90 hover:text-orbit-electric transition-colors">
-              Home
-            </Link>
-            <Link href="/sobre" className="text-white/90 hover:text-orbit-electric transition-colors">
-              Sobre
-            </Link>
-            <Link href="/mentorias" className="text-white/90 hover:text-orbit-electric transition-colors">
-              Mentorias
-            </Link>
-            <Link href="/orbitacademy" className="text-white/90 hover:text-orbit-electric transition-colors">
-              OrbitAcademy
-            </Link>
-            <Link href="/forum" className="text-white/90 hover:text-orbit-electric transition-colors">
-              Fórum
+              Início
             </Link>
             <Link href="/projetos" className="text-white/90 hover:text-orbit-electric transition-colors">
               Projetos
@@ -46,12 +34,17 @@ export default function Navigation() {
             <Link href="/contato" className="text-white/90 hover:text-orbit-electric transition-colors">
               Contato
             </Link>
+            {!loading && isAuthenticated && (
+              <Link href="/forum" className="text-white/90 hover:text-orbit-electric transition-colors">
+                Fórum
+              </Link>
+            )}
             {!loading && isAuthenticated && user?.role === "STUDENT" && (
               <Link
                 href={cursos.length > 0 ? `/estudante/cursos/${cursos[0].slug}` : "/estudante/aulas"}
                 className="text-white/90 hover:text-orbit-electric transition-colors font-medium"
               >
-                Ir para sala de aula
+                Sala de Aula
               </Link>
             )}
             {!loading && isAuthenticated && user ? (
@@ -106,62 +99,43 @@ export default function Navigation() {
             />
             <div className="md:hidden relative z-50 py-4 border-t border-white/10 bg-black/90 backdrop-blur-xl rounded-b-xl">
             <div className="flex flex-col space-y-1">
-              <Link 
-                href="/" 
+              <Link
+                href="/"
                 className="text-white/90 hover:text-orbit-electric transition-colors py-3 px-4 rounded-lg hover:bg-white/5 min-h-[44px] flex items-center touch-manipulation"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Home
+                Início
               </Link>
-              <Link 
-                href="/sobre" 
-                className="text-white/90 hover:text-orbit-electric transition-colors py-3 px-4 rounded-lg hover:bg-white/5 min-h-[44px] flex items-center touch-manipulation"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Sobre
-              </Link>
-              <Link 
-                href="/mentorias" 
-                className="text-white/90 hover:text-orbit-electric transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Mentorias
-              </Link>
-              <Link 
-                href="/orbitacademy" 
-                className="text-white/90 hover:text-orbit-electric transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                OrbitAcademy
-              </Link>
-              <Link 
-                href="/forum" 
-                className="text-white/90 hover:text-orbit-electric transition-colors py-3 px-4 rounded-lg hover:bg-white/5 min-h-[44px] flex items-center touch-manipulation"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Fórum
-              </Link>
-              <Link 
-                href="/projetos" 
+              <Link
+                href="/projetos"
                 className="text-white/90 hover:text-orbit-electric transition-colors py-3 px-4 rounded-lg hover:bg-white/5 min-h-[44px] flex items-center touch-manipulation"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Projetos
               </Link>
-              <Link 
-                href="/contato" 
+              <Link
+                href="/contato"
                 className="text-white/90 hover:text-orbit-electric transition-colors py-3 px-4 rounded-lg hover:bg-white/5 min-h-[44px] flex items-center touch-manipulation"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Contato
               </Link>
+              {!loading && isAuthenticated && (
+                <Link
+                  href="/forum"
+                  className="text-white/90 hover:text-orbit-electric transition-colors py-3 px-4 rounded-lg hover:bg-white/5 min-h-[44px] flex items-center touch-manipulation"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Fórum
+                </Link>
+              )}
               {!loading && isAuthenticated && user?.role === "STUDENT" && (
                 <Link
                   href={cursos.length > 0 ? `/estudante/cursos/${cursos[0].slug}` : "/estudante/aulas"}
-                  className="text-white/90 hover:text-orbit-electric transition-colors font-medium"
+                  className="text-white/90 hover:text-orbit-electric transition-colors py-3 px-4 rounded-lg hover:bg-white/5 min-h-[44px] flex items-center touch-manipulation font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Ir para sala de aula
+                  Sala de Aula
                 </Link>
               )}
               {!loading && isAuthenticated && user ? (
