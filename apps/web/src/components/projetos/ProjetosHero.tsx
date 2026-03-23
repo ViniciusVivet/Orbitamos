@@ -1,17 +1,30 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { whatsappProjetosUrl } from "@/lib/social";
 import ProjetosHeroParticles from "./ProjetosHeroParticles";
 
 export default function ProjetosHero() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.play().catch(() => {});
+  }, []);
+
   return (
     <section className="relative overflow-hidden border-b border-white/10 min-h-[200px] md:min-h-[240px] bg-[#03050c]">
       <video
+        ref={videoRef}
         src="/hero-projetos.mp4"
         autoPlay
         loop
         muted
         playsInline
-        className="absolute inset-0 h-full w-full object-cover"
+        disablePictureInPicture
+        className="absolute inset-0 h-full w-full object-cover [&::-webkit-media-controls]:hidden"
         aria-hidden
       />
       <div className="absolute inset-0 z-[1] bg-black/60" aria-hidden />

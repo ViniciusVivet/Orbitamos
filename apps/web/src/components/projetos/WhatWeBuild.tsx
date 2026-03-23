@@ -221,7 +221,19 @@ const SERVICOS = [
   },
 ];
 
+"use client";
+
+import { useEffect, useRef } from "react";
+
 export default function WhatWeBuild() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.play().catch(() => {});
+  }, []);
+
   return (
     <section
       className="relative overflow-hidden py-20 md:py-28"
@@ -229,12 +241,14 @@ export default function WhatWeBuild() {
     >
       {/* Vídeo de fundo — terra girando */}
       <video
+        ref={videoRef}
         src="/terra-real.mp4"
         autoPlay
         loop
         muted
         playsInline
-        className="absolute inset-0 h-full w-full object-cover opacity-30"
+        disablePictureInPicture
+        className="absolute inset-0 h-full w-full object-cover opacity-30 [&::-webkit-media-controls]:hidden"
         style={{ objectPosition: "75% center" }}
       />
       {/* Overlay escuro para manter legibilidade */}

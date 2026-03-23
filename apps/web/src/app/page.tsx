@@ -2,14 +2,22 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 
 const WHATSAPP_URL = "https://wa.me/5511949138973?text=Ol%C3%A1%2C+vim+pelo+site+da+Orbitamos+e+quero+fazer+um+or%C3%A7amento";
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.play().catch(() => {});
+  }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = containerRef.current?.getBoundingClientRect();
@@ -36,12 +44,14 @@ export default function Home() {
 
       {/* ── Vídeo full-bleed com parallax ── */}
       <video
+        ref={videoRef}
         src="/hero.mp4"
         autoPlay
         loop
         muted
         playsInline
-        className="absolute inset-0 h-full w-full object-cover"
+        disablePictureInPicture
+        className="absolute inset-0 h-full w-full object-cover [&::-webkit-media-controls-start-playback-button]:hidden [&::-webkit-media-controls]:hidden"
         style={{
           transform: `scale(1.08) translate(${mouse.x * -5}%, ${mouse.y * -4}%)`,
           transition: active ? "transform 0.1s ease-out" : "transform 0.9s ease-out",
