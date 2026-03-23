@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 const SERVICOS = [
   {
@@ -227,6 +227,10 @@ const SERVICOS = [
 
 export default function WhatWeBuild() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const [active, setActive] = useState(false);
+
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -234,8 +238,24 @@ export default function WhatWeBuild() {
     v.play().catch(() => {});
   }, []);
 
+  const getRelative = useCallback((clientX: number, clientY: number) => {
+    const rect = sectionRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setMouse({ x: (clientX - rect.left) / rect.width - 0.5, y: (clientY - rect.top) / rect.height - 0.5 });
+    setActive(true);
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLElement>) => getRelative(e.clientX, e.clientY), [getRelative]);
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLElement>) => { const t = e.touches[0]; if (t) getRelative(t.clientX, t.clientY); }, [getRelative]);
+  const handleLeave = useCallback(() => { setActive(false); setMouse({ x: 0, y: 0 }); }, []);
+
   return (
     <section
+      ref={sectionRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleLeave}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleLeave}
       className="relative overflow-hidden py-20 md:py-28"
       style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
     >
@@ -249,7 +269,12 @@ export default function WhatWeBuild() {
         playsInline
         disablePictureInPicture
         className="absolute inset-0 h-full w-full object-cover opacity-30 [&::-webkit-media-controls]:hidden"
-        style={{ objectPosition: "75% center" }}
+        style={{
+          objectPosition: "75% center",
+          transform: `scale(1.1) translate(${mouse.x * -4}%, ${mouse.y * -3}%)`,
+          transition: active ? "transform 0.1s ease-out" : "transform 0.9s ease-out",
+          willChange: "transform",
+        }}
       />
       {/* Overlay escuro para manter legibilidade */}
       <div

@@ -235,7 +235,7 @@ export default function Contato() {
                 className="relative rounded-2xl overflow-hidden"
                 style={{
                   padding: isMobile ? "14px" : "28px",
-                  background: isMobile ? "rgba(0,10,22,0.12)" : "rgba(0,10,22,0.25)",
+                  background: isMobile ? "rgba(0,10,22,0.05)" : "rgba(0,10,22,0.25)",
                   border: "1px solid rgba(0,212,255,0.22)",
                   backdropFilter: "blur(18px)",
                   WebkitBackdropFilter: "blur(18px)",

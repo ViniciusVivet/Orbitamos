@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { whatsappProjetosUrl } from "@/lib/social";
 import ProjetosHeroParticles from "./ProjetosHeroParticles";
 
 export default function ProjetosHero() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const [active, setActive] = useState(false);
+
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -14,8 +18,38 @@ export default function ProjetosHero() {
     v.play().catch(() => {});
   }, []);
 
+  const getRelative = useCallback((clientX: number, clientY: number) => {
+    const rect = sectionRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = (clientX - rect.left) / rect.width - 0.5;
+    const y = (clientY - rect.top) / rect.height - 0.5;
+    setMouse({ x, y });
+    setActive(true);
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    getRelative(e.clientX, e.clientY);
+  }, [getRelative]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLElement>) => {
+    const t = e.touches[0];
+    if (t) getRelative(t.clientX, t.clientY);
+  }, [getRelative]);
+
+  const handleLeave = useCallback(() => {
+    setActive(false);
+    setMouse({ x: 0, y: 0 });
+  }, []);
+
   return (
-    <section className="relative overflow-hidden border-b border-white/10 min-h-[200px] md:min-h-[240px] bg-[#03050c]">
+    <section
+      ref={sectionRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleLeave}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleLeave}
+      className="relative overflow-hidden border-b border-white/10 min-h-[200px] md:min-h-[240px] bg-[#03050c]"
+    >
       <video
         ref={videoRef}
         src="/hero-projetos.mp4"
@@ -26,6 +60,11 @@ export default function ProjetosHero() {
         disablePictureInPicture
         className="absolute inset-0 h-full w-full object-cover [&::-webkit-media-controls]:hidden"
         aria-hidden
+        style={{
+          transform: `scale(1.1) translate(${mouse.x * -4}%, ${mouse.y * -4}%)`,
+          transition: active ? "transform 0.1s ease-out" : "transform 0.9s ease-out",
+          willChange: "transform",
+        }}
       />
       <div className="absolute inset-0 z-[1] bg-black/60" aria-hidden />
       <ProjetosHeroParticles />
