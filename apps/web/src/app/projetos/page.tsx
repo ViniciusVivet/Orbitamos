@@ -44,28 +44,30 @@ function ProjetosContent() {
       <ProjetosStats />
 
       {/* 3. Filtros + Grid de projetos */}
-      <div className="container mx-auto px-4 py-6">
-        <ProjetosFilters
-          activeFilter={activeFilter}
-          onFilter={setActiveFilter}
-        />
-        <div
-          id="projetos-grid"
-          className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {filtered.map((projeto) => (
-            <ProjectCard
-              key={projeto.slug}
-              projeto={projeto}
-              onOpenCase={setSelectedProjeto}
-            />
-          ))}
+      <div style={{ background: "linear-gradient(180deg, #000 0%, #000 50%, #0e0825 85%, #130a2e 100%)" }}>
+        <div className="container mx-auto px-4 py-6">
+          <ProjetosFilters
+            activeFilter={activeFilter}
+            onFilter={setActiveFilter}
+          />
+          <div
+            id="projetos-grid"
+            className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {filtered.map((projeto) => (
+              <ProjectCard
+                key={projeto.slug}
+                projeto={projeto}
+                onOpenCase={setSelectedProjeto}
+              />
+            ))}
+          </div>
+          {filtered.length === 0 && (
+            <p className="py-12 text-center text-white/60">
+              Nenhum projeto nesta categoria no momento.
+            </p>
+          )}
         </div>
-        {filtered.length === 0 && (
-          <p className="py-12 text-center text-white/60">
-            Nenhum projeto nesta categoria no momento.
-          </p>
-        )}
       </div>
 
       {/* 4. Depoimentos de clientes */}
