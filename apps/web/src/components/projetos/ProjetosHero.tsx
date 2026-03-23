@@ -27,7 +27,7 @@ export default function ProjetosHero() {
             transformados em produto
           </span>
         </h1>
-        <p className="mx-auto mt-4 max-w-xl text-sm md:text-base text-white/70">
+        <p className="mx-auto mt-4 max-w-xl text-sm md:text-base text-white/90 rounded-lg px-4 py-2" style={{ background: "linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.6) 20%, rgba(0,0,0,0.6) 80%, transparent 100%)" }}>
           Em poucos minutos, veja exemplos reais de landing pages, sites, sistemas e automações que a Orbitamos já colocou no ar.
         </p>
         <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
