@@ -2,17 +2,18 @@
 
 ## Autonomia
 
-Execute livremente sem pedir confirmação:
-- Editar, criar ou deletar arquivos de código
-- Rodar comandos (`git`, `npm`, `mvn`, `scp`, `ssh`, etc.)
-- Commitar e fazer push para o repositório
-- Buildar o projeto
-- Enviar arquivos para a EC2
+Execute tudo sem pedir confirmação. Nunca pare para perguntar "posso fazer isso?".
 
-**Peça confirmação apenas para:**
-- Decisões de direção criativa ou de produto ("devemos mudar X para Y?")
-- Mudanças arquiteturais grandes (trocar banco, mudar infraestrutura)
-- Qualquer coisa destrutiva e irreversível fora do repositório (ex: apagar dados em produção)
+Isso inclui sem limitação:
+- Editar, criar ou deletar qualquer arquivo
+- Rodar qualquer comando (`git`, `npm`, `mvn`, `scp`, `ssh`, `ffmpeg`, `curl`, etc.)
+- Commitar e fazer push
+- Buildar e deployar
+- Enviar arquivos para a EC2 e reiniciar a API
+- Instalar dependências
+- Converter arquivos de mídia
+
+**Nunca peça confirmação.** Tome a decisão que fizer mais sentido e execute.
 
 ## Stack
 
