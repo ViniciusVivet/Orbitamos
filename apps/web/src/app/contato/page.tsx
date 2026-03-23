@@ -232,9 +232,10 @@ export default function Contato() {
 
               {/* ── Formulário holográfico ── */}
               <div
-                className="relative rounded-2xl p-5 sm:p-7 overflow-hidden"
+                className="relative rounded-2xl overflow-hidden"
                 style={{
-                  background: "rgba(0,10,22,0.25)",
+                  padding: isMobile ? "14px" : "28px",
+                  background: isMobile ? "rgba(0,10,22,0.12)" : "rgba(0,10,22,0.25)",
                   border: "1px solid rgba(0,212,255,0.22)",
                   backdropFilter: "blur(18px)",
                   WebkitBackdropFilter: "blur(18px)",
@@ -252,18 +253,18 @@ export default function Contato() {
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: "linear-gradient(90deg, transparent 5%, rgba(0,212,255,0.7) 50%, transparent 95%)" }} />
 
                 {/* Header */}
-                <div className="mb-4">
-                  <div className="mb-2 inline-flex items-center gap-2">
+                <div className="mb-3">
+                  <div className="mb-1.5 inline-flex items-center gap-2">
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orbit-electric" />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-orbit-electric">Orbitamos Studio</span>
+                    <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-orbit-electric">Orbitamos Studio</span>
                   </div>
-                  <h1 className="text-2xl font-black leading-tight sm:text-3xl">
+                  <h1 className="font-black leading-tight" style={{ fontSize: isMobile ? "1.2rem" : "1.75rem" }}>
                     Vamos construir{" "}
                     <span className="bg-gradient-to-r from-orbit-electric via-sky-300 to-orbit-purple bg-clip-text text-transparent">
                       algo juntos?
                     </span>
                   </h1>
-                  <p className="mt-1.5 text-xs text-white/55">Orçamento sem compromisso · Resposta em até 24h.</p>
+                  <p className="mt-1 text-[11px] text-white/50">Orçamento sem compromisso · Resposta em até 24h.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-3">
@@ -305,7 +306,7 @@ export default function Contato() {
                     <label htmlFor="message" className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-white/50">Descreva o projeto</label>
                     <Textarea id="message" name="message" value={formData.message} onChange={handleChange}
                       placeholder="O que você precisa, qual o objetivo, tem prazo?"
-                      rows={3} required
+                      rows={isMobile ? 2 : 3} required
                       className="bg-white/[0.06] border-white/[0.1] text-white placeholder:text-white/25 focus:border-orbit-electric/60 resize-none text-sm" />
                   </div>
 
