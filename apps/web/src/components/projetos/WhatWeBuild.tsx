@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+
 const SERVICOS = [
   {
     num: "01",
@@ -220,10 +224,6 @@ const SERVICOS = [
     ),
   },
 ];
-
-"use client";
-
-import { useEffect, useRef } from "react";
 
 export default function WhatWeBuild() {
   const videoRef = useRef<HTMLVideoElement>(null);
