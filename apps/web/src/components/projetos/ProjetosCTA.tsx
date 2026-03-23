@@ -78,7 +78,7 @@ export default function ProjetosCTA({ variant = "section" }: ProjetosCTAProps) {
             href={WHATSAPP_URL}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2.5 rounded-xl px-8 py-4 text-sm font-bold transition-all duration-150 hover:brightness-110 hover:scale-105"
+            className="inline-flex w-full sm:w-auto items-center justify-center gap-2.5 rounded-xl px-8 py-4 text-sm font-bold transition-all duration-150 hover:brightness-110 hover:scale-105"
             style={{
               background: "linear-gradient(135deg, #00D4FF, #8B5CF6)",
               color: "#000",
@@ -93,7 +93,7 @@ export default function ProjetosCTA({ variant = "section" }: ProjetosCTAProps) {
           </a>
           <Link
             href="/contato"
-            className="rounded-xl border px-8 py-4 text-sm font-semibold text-white/75 transition-all duration-150 hover:border-white/30 hover:text-white"
+            className="w-full sm:w-auto text-center rounded-xl border px-8 py-4 text-sm font-semibold text-white/75 transition-all duration-150 hover:border-white/30 hover:text-white"
             style={{ borderColor: "rgba(255,255,255,0.15)" }}
           >
             Preencher formulário

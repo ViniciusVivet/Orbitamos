@@ -34,8 +34,8 @@ export default function ProjetosTestimonials() {
     <section
       className="py-20 md:py-28"
       style={{
-        background: "linear-gradient(180deg, #000 0%, #06080f 60%, #000 100%)",
-        borderTop: "1px solid rgba(255,255,255,0.07)",
+        background: "linear-gradient(180deg, #130a2e 0%, #0e0825 30%, #080514 65%, #000 100%)",
+        borderTop: "1px solid rgba(139,92,246,0.12)",
       }}
     >
       <div className="container mx-auto max-w-5xl px-6">
@@ -61,7 +61,7 @@ export default function ProjetosTestimonials() {
             >
               {/* Mockup — só aparece se tiver imagem */}
               {d.mockup && (
-                <div className="relative md:w-[45%] shrink-0 min-h-[220px] overflow-hidden">
+                <div className="relative md:w-[45%] shrink-0 min-h-[160px] md:min-h-[220px] overflow-hidden">
                   <Image
                     src={d.mockup}
                     alt={`Mockup ${d.nome}`}
@@ -78,10 +78,10 @@ export default function ProjetosTestimonials() {
               )}
 
               {/* Conteúdo */}
-              <div className={`relative flex flex-col justify-center p-7 ${d.mockup ? "md:p-8" : "p-8"}`}>
+              <div className={`relative flex flex-col justify-center p-5 ${d.mockup ? "md:p-8" : "md:p-8"}`}>
                 <span
                   className="pointer-events-none absolute top-3 right-6 font-serif text-[7rem] leading-none select-none"
-                  style={{ color: d.accentBorder }}
+                  style={{ color: d.accentBorder, fontSize: "clamp(4rem, 10vw, 7rem)" }}
                   aria-hidden
                 >
                   &ldquo;
