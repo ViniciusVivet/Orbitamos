@@ -106,8 +106,8 @@ export default function Contato() {
       />
 
       {/* Overlay escuro */}
-      <div className="absolute inset-0 bg-black/60" />
-      <div className="absolute inset-y-0 right-0 w-3/4 bg-gradient-to-l from-black/80 via-black/40 to-transparent" />
+      <div className="absolute inset-0 bg-black/50" />
+      <div className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-black/75 via-black/40 to-transparent" />
       <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/60 to-transparent" />
 
@@ -120,8 +120,8 @@ export default function Contato() {
           willChange: "transform",
         }}
       >
-        <div className="container mx-auto max-w-6xl px-6">
-          <div className="grid gap-8 lg:grid-cols-[1fr_400px] items-center">
+        <div className="container mx-auto max-w-6xl px-6 lg:pl-8 lg:pr-0">
+          <div className="grid gap-8 lg:grid-cols-[480px_1fr] items-center">
 
             {/* ── Formulário ── */}
             <div
