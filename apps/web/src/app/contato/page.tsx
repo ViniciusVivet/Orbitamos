@@ -120,18 +120,41 @@ export default function Contato() {
           willChange: "transform",
         }}
       >
+        {/* ── Cone de luz projetado ── */}
+        <div className="pointer-events-none absolute bottom-0 z-0" style={{ left: "clamp(1.5rem, 5vw, 6rem)", width: "420px" }}>
+          <div style={{
+            width: "100%",
+            height: "40vh",
+            background: "linear-gradient(180deg, rgba(0,212,255,0.18) 0%, rgba(0,212,255,0.07) 40%, transparent 100%)",
+            clipPath: "polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)",
+            filter: "blur(16px)",
+          }} />
+        </div>
+        {/* Reflexo no chão */}
+        <div className="pointer-events-none absolute bottom-0 z-0 h-6" style={{ left: "clamp(1.5rem, 5vw, 6rem)", width: "420px", background: "radial-gradient(ellipse at center, rgba(0,212,255,0.25), transparent 70%)", filter: "blur(6px)" }} />
+
         <div className="w-full px-6 flex items-center" style={{ paddingLeft: "clamp(1.5rem, 5vw, 6rem)" }}>
           <div className="w-full max-w-[420px] flex flex-col gap-3">
 
-            {/* ── Formulário ── */}
+            {/* ── Formulário holográfico ── */}
             <div
-              className="rounded-2xl p-5 sm:p-7"
+              className="relative rounded-2xl p-5 sm:p-7 overflow-hidden"
               style={{
-                background: "rgba(0,0,0,0.55)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                backdropFilter: "blur(16px)",
+                background: "rgba(0,10,22,0.45)",
+                border: "1px solid rgba(0,212,255,0.22)",
+                backdropFilter: "blur(12px)",
+                boxShadow: "0 0 25px rgba(0,212,255,0.12), 0 0 60px rgba(0,212,255,0.05), inset 0 1px 0 rgba(0,212,255,0.15), inset 0 -1px 0 rgba(139,92,246,0.1)",
+                transform: `perspective(600px) rotateX(${mouse.y * -6}deg) rotateY(${mouse.x * 6}deg) translateZ(40px)`,
+                transition: active ? "transform 0.08s ease-out" : "transform 0.9s ease-out",
+                willChange: "transform",
               }}
             >
+              {/* Scanlines sutis */}
+              <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-40" style={{
+                background: "repeating-linear-gradient(0deg, transparent, transparent 5px, rgba(0,212,255,0.012) 5px, rgba(0,212,255,0.012) 6px)",
+              }} />
+              {/* Linha de luz no topo */}
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: "linear-gradient(90deg, transparent 5%, rgba(0,212,255,0.7) 50%, transparent 95%)" }} />
               {/* Header */}
               <div className="mb-5">
                 <div className="mb-2 inline-flex items-center gap-2">
