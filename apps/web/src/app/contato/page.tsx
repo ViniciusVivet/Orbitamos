@@ -120,8 +120,8 @@ export default function Contato() {
           willChange: "transform",
         }}
       >
-        <div className="container mx-auto max-w-6xl px-6 lg:pl-8 lg:pr-0">
-          <div className="grid gap-8 lg:grid-cols-[480px_1fr] items-center">
+        <div className="w-full px-6 flex items-center" style={{ paddingLeft: "clamp(1.5rem, 5vw, 6rem)" }}>
+          <div className="w-full max-w-[420px] flex flex-col gap-3">
 
             {/* ── Formulário ── */}
             <div
@@ -209,7 +209,7 @@ export default function Contato() {
             </div>
 
             {/* ── Sidebar direita ── */}
-            <div className="hidden lg:flex flex-col gap-3">
+            <div className="hidden flex-col gap-3">
 
               {/* WhatsApp */}
               <a href={WHATSAPP_URL} target="_blank" rel="noreferrer"
