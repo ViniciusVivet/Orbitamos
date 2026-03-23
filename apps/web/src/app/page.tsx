@@ -2,17 +2,39 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useRef, useState, useCallback } from "react";
 
 const WHATSAPP_URL = "https://wa.me/5511949138973?text=Ol%C3%A1%2C+vim+pelo+site+da+Orbitamos+e+quero+fazer+um+or%C3%A7amento";
 
 export default function Home() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const [active, setActive] = useState(false);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    setActive(true);
+    setMouse({ x, y });
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setActive(false);
+    setMouse({ x: 0, y: 0 });
+  }, []);
+
   return (
     <div
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       className="relative overflow-hidden bg-black text-white"
       style={{ height: "calc(100dvh - 4rem)" }}
     >
 
-      {/* ── Vídeo full-bleed ── */}
+      {/* ── Vídeo full-bleed com parallax ── */}
       <video
         src="/hero.mp4"
         autoPlay
@@ -20,6 +42,11 @@ export default function Home() {
         muted
         playsInline
         className="absolute inset-0 h-full w-full object-cover"
+        style={{
+          transform: `scale(1.08) translate(${mouse.x * -5}%, ${mouse.y * -4}%)`,
+          transition: active ? "transform 0.1s ease-out" : "transform 0.9s ease-out",
+          willChange: "transform",
+        }}
       />
 
       {/* ── Overlays ── */}
@@ -28,8 +55,15 @@ export default function Home() {
       <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/70 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/80 to-transparent" />
 
-      {/* ── Conteúdo principal ── */}
-      <div className="absolute inset-0 z-10 flex items-center">
+      {/* ── Conteúdo principal com tilt leve ── */}
+      <div
+        className="absolute inset-0 z-10 flex items-center"
+        style={{
+          transform: `perspective(1400px) rotateX(${mouse.y * -4}deg) rotateY(${mouse.x * 4}deg)`,
+          transition: active ? "transform 0.1s ease-out" : "transform 0.9s ease-out",
+          willChange: "transform",
+        }}
+      >
         <div
           className="flex w-full max-w-xl flex-col px-8 lg:px-16 xl:px-24"
           style={{ gap: "clamp(0.9rem, 2.8vh, 2.25rem)" }}
@@ -115,10 +149,16 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── Bento cards: coluna direita ── */}
+      {/* ── Bento cards: tilt mais forte + translateZ ── */}
       <div
         className="absolute right-8 top-0 bottom-0 z-10 hidden md:flex flex-col items-end justify-center xl:right-14"
-        style={{ width: "clamp(240px, 20vw, 300px)", gap: "clamp(0.5rem, 1.5vh, 0.75rem)" }}
+        style={{
+          width: "clamp(240px, 20vw, 300px)",
+          gap: "clamp(0.5rem, 1.5vh, 0.75rem)",
+          transform: `perspective(800px) rotateX(${mouse.y * -8}deg) rotateY(${mouse.x * 8}deg) translateZ(50px)`,
+          transition: active ? "transform 0.08s ease-out" : "transform 0.9s ease-out",
+          willChange: "transform",
+        }}
       >
 
         {/* Card A: Prazo → WhatsApp */}
