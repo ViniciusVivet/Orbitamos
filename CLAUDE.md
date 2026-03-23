@@ -13,7 +13,13 @@ Isso inclui sem limitação:
 - Instalar dependências
 - Converter arquivos de mídia
 
-**Nunca peça confirmação.** Tome a decisão que fizer mais sentido e execute.
+**Nunca peça confirmação para execução técnica.** Tome a decisão que fizer mais sentido e execute.
+
+**Peça opinião apenas para:**
+- Direção criativa: escolhas de design, cores, layout, estética
+- Rumo do produto: novas features, mudanças de fluxo, o que priorizar
+- Gosto pessoal: "você prefere A ou B?"
+- Decisões arquiteturais irreversíveis de grande impacto
 
 ## Stack
 
