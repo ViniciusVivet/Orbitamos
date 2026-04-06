@@ -90,10 +90,8 @@ export const projetos: Projeto[] = [
     status: "publicado",
     link: "https://concessionariadestaque.vercel.app/",
     github: "https://github.com/ViniciusVivet/concessionariadestaque",
-    thumbnail:
-      "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80&auto=format&fit=crop",
-    imagemPrincipal:
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1400&q=80&auto=format&fit=crop",
+    thumbnail: "/case-destaque-multimarcas.png",
+    imagemPrincipal: "/case-destaque-multimarcas.png",
     contexto:
       "A Destaque Multimarcas precisava de presenca digital que transmitisse credibilidade e levasse o visitante do estoque ao contato com o consultor em poucos cliques.",
     problema:
