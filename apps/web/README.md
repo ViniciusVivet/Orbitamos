@@ -1,325 +1,80 @@
-# 🌐 Orbitamos Web - Frontend
+# Orbitamos Web — Frontend
 
-Frontend da **Orbitamos** construído com Next.js 14, React 18 e TailwindCSS.
+Frontend da **Orbitamos** em **Next.js 16** (App Router), TypeScript e Tailwind CSS.
 
-## 🎯 **Visão Geral**
+## Visão geral
 
-O frontend da Orbitamos é responsável por:
-- ✅ Página inicial com hero section e features
-- ✅ Página sobre a empresa e propósito
-- ✅ Catálogo de programas de mentoria
-- ✅ Formulário de contato funcional
-- ✅ Design system com paleta Orbitamos
-- ✅ Componentes interativos e animações
+O app cobre duas frentes:
 
-## 🛠️ **Stack Tecnológica**
+1. **Site público comercial** — home orientada a orçamento e portfólio, página **`/projetos`** com cases, contato e demais páginas de marketing.
+2. **Plataforma autenticada** — áreas logadas (estudante, colaborador, fórum, mensagens, OrbitAcademy, etc.) consumindo a API em `apps/api`.
 
-- **Next.js 15.5.4** - Framework React
-- **React 18** - Biblioteca de UI
-- **TypeScript 5** - Tipagem estática
-- **TailwindCSS 4** - Framework CSS
-- **shadcn/ui** - Componentes de UI
-- **Three.js** - Gráficos 3D
-- **Docker** - Containerização
+## Stack
 
-## 🚀 **Como Executar**
+- **Next.js 16** — App Router
+- **React 18**
+- **TypeScript**
+- **Tailwind CSS** + shadcn/ui
+- **Three.js** — efeitos 3D onde aplicável
 
-### **Pré-requisitos**
-- Node.js 18+
-- npm ou yarn
+## Como executar
 
-### **Opção 1: Desenvolvimento Local**
+**Pré-requisitos:** Node.js 18+
+
 ```bash
-# 1. Instalar dependências
 npm install
+cp .env.example .env.local
+# NEXT_PUBLIC_API_URL=http://localhost:8080/api (ou URL de produção)
 
-# 2. Executar servidor de desenvolvimento
 npm run dev
-
-# 3. Acessar no navegador
 # http://localhost:3000
 ```
 
-### **Opção 2: Docker**
-```bash
-# Build da imagem
-docker build -t orbitamos-web .
+**Docker** (se usar na raiz do monorepo): `docker-compose up web`
 
-# Executar container
-docker run -p 3000:3000 orbitamos-web
-```
+## Páginas principais
 
-### **Opção 3: Docker Compose**
-```bash
-# Na raiz do projeto
-docker-compose up web
-```
+| Rota | Uso |
+|------|-----|
+| `/` | Home comercial (CTAs, serviços, destaque de projetos) |
+| `/projetos` | Portfólio e cases |
+| `/contato`, `/sobre` | Institucional |
+| `/mentorias`, `/orbitacademy` | Conteúdo legado / institucional |
+| `/estudante`, `/colaborador`, `/forum`, `/mensagens` | Áreas logadas |
 
-## 📱 **Páginas Disponíveis**
+## Variáveis de ambiente
 
-### **🏠 Home (`/`)**
-- Hero section com manifesto
-- Features principais
-- Estatísticas de impacto
-- CTAs principais
-
-### **📖 Sobre (`/sobre`)**
-- História da Orbitamos
-- Missão, visão e valores
-- Linha do tempo do futuro
-- Apresentação do time
-
-### **🎓 Mentorias (`/mentorias`)**
-- 3 programas detalhados:
-  - **Mentoria Tech 9 Meses** (Gratuito)
-  - **Programa Quebrada Dev** (Gratuito)
-  - **Orbitamos Academy** (Acessível)
-- Metodologia de ensino
-- Depoimentos de transformação
-
-### **📞 Contato (`/contato`)**
-- Formulário de contato funcional
-- Informações de contato direto
-- Seção para parcerias empresariais
-- FAQ com perguntas frequentes
-
-### **🎓 OrbitAcademy (`/orbitacademy`)**
-- Cursos especializados
-- Trilhas de aprendizado
-- Recursos educativos
-
-## 🎨 **Design System**
-
-### **Paleta de Cores**
-```css
-:root {
-  --orbit-black: #000000;      /* Preto espacial */
-  --orbit-electric: #00D4FF;   /* Azul elétrico */
-  --orbit-white: #FFFFFF;      /* Branco */
-  --orbit-purple: #8B5CF6;     /* Roxo suave */
-}
-```
-
-### **Gradientes**
-```css
-.gradient-orbit {
-  background: linear-gradient(135deg, #00D4FF 0%, #8B5CF6 100%);
-}
-
-.gradient-text {
-  background: linear-gradient(135deg, #00D4FF 0%, #8B5CF6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-```
-
-### **Animações**
-```css
-@keyframes orbit {
-  0% { transform: rotate(0deg) translateX(20px) rotate(0deg); }
-  100% { transform: rotate(360deg) translateX(20px) rotate(-360deg); }
-}
-
-.animate-orbit {
-  animation: orbit 3s linear infinite;
-}
-```
-
-## 🧩 **Componentes Principais**
-
-### **UI Components (shadcn/ui)**
-- `Button` - Botões com variantes
-- `Card` - Cards de conteúdo
-- `Input` - Campos de entrada
-- `Textarea` - Área de texto
-
-### **Custom Components**
-- `Navigation` - Navegação principal
-- `CursorOrbit` - Cursor animado
-- `GlobeClient` - Globo 3D interativo
-- `Tilt` - Efeito de inclinação
-- `Parallax` - Efeito parallax
-- `Magnetic` - Efeito magnético
-- `XPRing` - Anel de progresso
-- `SpaceShipsOverlay` - Naves espaciais
-- `MissionsTeaser` - Teaser de missões
-- `ConstellationStepper` - Stepper de constelação
-- `MissionsSidebar` - Sidebar de missões
-
-## 🔧 **Configuração de Desenvolvimento**
-
-### **Variáveis de Ambiente**
 ```bash
 # .env.local
 NEXT_PUBLIC_API_URL=http://localhost:8080/api
 NEXT_PUBLIC_APP_NAME=Orbitamos
-NEXT_PUBLIC_APP_VERSION=1.0.0
 ```
 
-### **Scripts Disponíveis**
+Outras chaves podem existir para integrações (EmailJS, etc.); veja `.env.example`.
+
+## Scripts
+
 ```bash
-# Desenvolvimento
-npm run dev
-
-# Build para produção
-npm run build
-
-# Executar build de produção
-npm run start
-
-# Linting
-npm run lint
+npm run dev      # desenvolvimento
+npm run build    # build de produção
+npm run start    # servidor após build
+npm run lint     # ESLint
 ```
 
-## 🧪 **Testes**
+## Deploy
 
-### **Executar Testes**
-```bash
-# Testes unitários
-npm run test
+**Vercel** — conectar o repositório, definir `NEXT_PUBLIC_API_URL` e demais variáveis conforme [docs/VARIAVEIS_AMBIENTE.md](../../docs/VARIAVEIS_AMBIENTE.md).
 
-# Testes com watch
-npm run test:watch
+## Design system (paleta)
 
-# Testes com cobertura
-npm run test:coverage
-```
+- **orbit-electric:** `#00D4FF`
+- **orbit-purple:** `#8B5CF6`
 
-## 📊 **Performance**
+## Documentação
 
-### **Otimizações Implementadas**
-- ✅ **SSR/SSG** - Server-side rendering
-- ✅ **Image Optimization** - Next.js Image
-- ✅ **Code Splitting** - Lazy loading automático
-- ✅ **Bundle Analysis** - Análise de bundle
-- ✅ **Font Optimization** - Next.js Font
+- [README do monorepo](../../README.md)
+- [Next.js](https://nextjs.org/docs) · [Tailwind](https://tailwindcss.com/docs)
 
-### **Métricas Alvo**
-- **LCP** < 2.5s (Largest Contentful Paint)
-- **FID** < 100ms (First Input Delay)
-- **CLS** < 0.1 (Cumulative Layout Shift)
-- **Bundle Size** < 500KB
+## Licença
 
-## 🚀 **Deploy**
-
-### **Vercel (Recomendado)**
-```bash
-# 1. Conectar repositório no Vercel
-# 2. Configurar variáveis de ambiente
-# 3. Deploy automático a cada push
-```
-
-### **Docker**
-```bash
-# Build para produção
-docker build -t orbitamos-web .
-
-# Executar
-docker run -p 3000:3000 orbitamos-web
-```
-
-### **Build Manual**
-```bash
-# Build
-npm run build
-
-# Executar
-npm run start
-```
-
-## 🔒 **Segurança**
-
-### **Configurações**
-- ✅ **HTTPS** forçado em produção
-- ✅ **CSP** (Content Security Policy)
-- ✅ **XSS Protection**
-- ✅ **CSRF Protection**
-
-### **Headers de Segurança**
-```javascript
-// next.config.ts
-const securityHeaders = [
-  {
-    key: 'X-DNS-Prefetch-Control',
-    value: 'on'
-  },
-  {
-    key: 'X-XSS-Protection',
-    value: '1; mode=block'
-  },
-  {
-    key: 'X-Frame-Options',
-    value: 'SAMEORIGIN'
-  }
-];
-```
-
-## 📱 **Responsividade**
-
-### **Breakpoints**
-```css
-/* TailwindCSS */
-sm: 640px   /* Mobile */
-md: 768px   /* Tablet */
-lg: 1024px  /* Desktop */
-xl: 1280px  /* Large Desktop */
-2xl: 1536px /* Extra Large */
-```
-
-### **Design Mobile-First**
-- ✅ Layout responsivo
-- ✅ Touch-friendly
-- ✅ Performance otimizada
-- ✅ Acessibilidade
-
-## 🐛 **Troubleshooting**
-
-### **Problemas Comuns**
-
-#### **Erro de Build**
-```bash
-# Limpar cache
-rm -rf .next
-npm run build
-```
-
-#### **Dependências**
-```bash
-# Limpar node_modules
-rm -rf node_modules package-lock.json
-npm install
-```
-
-#### **Porta 3000 em Uso**
-```bash
-# Verificar processo
-netstat -ano | findstr :3000
-
-# Matar processo
-taskkill /PID <PID> /F
-```
-
-## 📚 **Documentação Adicional**
-
-- [Next.js Docs](https://nextjs.org/docs)
-- [React Docs](https://react.dev/)
-- [TailwindCSS Docs](https://tailwindcss.com/docs)
-- [shadcn/ui Docs](https://ui.shadcn.com/)
-
-## 🤝 **Contribuindo**
-
-Veja o [CONTRIBUTING.md](../../CONTRIBUTING.md) para mais detalhes sobre como contribuir com o projeto.
-
-## 📄 **Licença**
-
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](../../LICENSE) para mais detalhes.
-
----
-
-<div align="center">
-
-### **"Da quebrada pra tecnologia — A gente sobe junto."** 🚀
-
-**Feito com ❤️ pela comunidade Orbitamos**
-
-</div>
+MIT — veja [LICENSE](../../LICENSE).

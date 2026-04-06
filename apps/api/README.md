@@ -2,6 +2,8 @@
 
 API REST da **Orbitamos** construída com Spring Boot 3 e Java 21.
 
+Serve o frontend em `apps/web`: **site público** (contato, projetos, etc.) e **plataforma autenticada** (dashboard, fórum, chat, gamificação).
+
 ## 🎯 **Visão Geral**
 
 A API da Orbitamos é responsável por gerenciar:
