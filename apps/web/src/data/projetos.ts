@@ -118,10 +118,8 @@ export const projetos: Projeto[] = [
     status: "publicado",
     link: "https://sensimilla-records-web.vercel.app/",
     github: "https://github.com/ViniciusVivet/Sensimilla-Records",
-    thumbnail:
-      "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&q=80&auto=format&fit=crop",
-    imagemPrincipal:
-      "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=1400&q=80&auto=format&fit=crop",
+    thumbnail: "/case-sensimilla-records.png",
+    imagemPrincipal: "/case-sensimilla-records.png",
     contexto:
       "A Sensimilla Records precisava de um hub oficial que reunisse selo, artistas, lancamentos e presenca em plataformas sem parecer um template generico.",
     problema:
