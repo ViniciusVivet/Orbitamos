@@ -142,7 +142,7 @@ export default function Home() {
           {/* Stats */}
           <Link href="/projetos" className="group inline-flex items-stretch divide-x divide-white/[0.08]">
             {[
-              { value: "5+", label: "Projetos entregues" },
+              { value: "6+", label: "Projetos entregues" },
               { value: "1 sem", label: "Prazo médio" },
               { value: "100%", label: "Satisfação" },
             ].map((s, i) => (
