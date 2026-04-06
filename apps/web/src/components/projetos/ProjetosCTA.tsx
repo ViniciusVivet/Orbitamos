@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 
 const WHATSAPP_URL = "https://wa.me/5511949138973?text=Ol%C3%A1%2C+vim+pelo+portf%C3%B3lio+da+Orbitamos+e+quero+fazer+um+or%C3%A7amento";
@@ -8,6 +11,15 @@ interface ProjetosCTAProps {
 }
 
 export default function ProjetosCTA({ variant = "section" }: ProjetosCTAProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.play().catch(() => {});
+  }, []);
+
   if (variant === "inline") {
     return (
       <div className="flex flex-wrap items-center gap-4">
@@ -29,25 +41,36 @@ export default function ProjetosCTA({ variant = "section" }: ProjetosCTAProps) {
   return (
     <section className="relative overflow-hidden py-24 md:py-32">
 
-      {/* Fundo com gradiente próprio */}
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          background: "linear-gradient(135deg, #050d1a 0%, #0a0520 50%, #050d1a 100%)",
-        }}
-      />
-
-      {/* Blobs de luz */}
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        <div
-          className="absolute left-1/4 top-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full opacity-20"
-          style={{ background: "radial-gradient(circle, rgba(0,212,255,0.4) 0%, transparent 70%)", filter: "blur(80px)" }}
-        />
-        <div
-          className="absolute right-1/4 top-1/2 -translate-y-1/2 h-[400px] w-[400px] rounded-full opacity-15"
-          style={{ background: "radial-gradient(circle, rgba(139,92,246,0.5) 0%, transparent 70%)", filter: "blur(80px)" }}
+      {/* Vídeo de fundo (cosmos) */}
+      <div className="absolute inset-0 z-0">
+        <video
+          ref={videoRef}
+          src="/cosmos.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          disablePictureInPicture
+          aria-hidden
+          className="absolute left-1/2 top-1/2 h-full min-h-full w-full min-w-full -translate-x-1/2 -translate-y-1/2 object-cover [&::-webkit-media-controls]:hidden"
         />
       </div>
+
+      {/* Overlay escuro para legibilidade do texto */}
+      <div
+        className="pointer-events-none absolute inset-0 z-[1]"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(5,8,20,0.82) 0%, rgba(10,5,28,0.72) 45%, rgba(5,8,20,0.85) 100%)",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 z-[1] opacity-40"
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 60% at 50% 40%, rgba(0,212,255,0.12) 0%, transparent 55%), radial-gradient(ellipse 70% 50% at 80% 60%, rgba(139,92,246,0.14) 0%, transparent 50%)",
+        }}
+      />
 
       <div className="relative z-10 container mx-auto max-w-5xl px-6 text-center">
 
@@ -55,7 +78,7 @@ export default function ProjetosCTA({ variant = "section" }: ProjetosCTAProps) {
           Próximo passo
         </p>
 
-        <h2 className="mx-auto max-w-2xl text-3xl font-black leading-tight text-white sm:text-4xl lg:text-5xl">
+        <h2 className="mx-auto max-w-2xl text-3xl font-black leading-tight text-white sm:text-4xl lg:text-5xl drop-shadow-[0_2px_24px_rgba(0,0,0,0.5)]">
           Seu projeto começa{" "}
           <span
             style={{
@@ -69,7 +92,7 @@ export default function ProjetosCTA({ variant = "section" }: ProjetosCTAProps) {
           </span>
         </h2>
 
-        <p className="mx-auto mt-5 max-w-md text-sm text-white/60">
+        <p className="mx-auto mt-5 max-w-md text-sm text-white/70 drop-shadow-md">
           Orçamento sem compromisso · Resposta em 24h · Entrega em até 1 semana
         </p>
 
