@@ -230,6 +230,30 @@ export default function Home() {
           </div>
         </Link>
 
+        {/* Card E: YUME */}
+        <Link
+          href="/projetos?case=yume-moda-disruptiva"
+          className="group w-full rounded-2xl border border-white/[0.07] bg-[#03050c]/82 px-4 py-3 shadow-[0_20px_60px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-2xl transition-all duration-150 hover:border-orbit-purple/25 hover:shadow-[0_20px_60px_rgba(0,0,0,0.7),0_0_20px_rgba(139,92,246,0.08),inset_0_1px_0_rgba(255,255,255,0.04)]"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-400 to-orbit-purple text-[11px] font-black text-white">
+                Y
+              </div>
+              <div>
+                <p className="text-[12px] font-bold leading-none text-white">YUME</p>
+                <p className="mt-0.5 text-[10px] text-white/25 transition-colors duration-150 group-hover:text-white/40">
+                  Ver case completo →
+                </p>
+              </div>
+            </div>
+            <div className="flex shrink-0 items-center gap-1 rounded-full bg-orbit-purple/10 px-2 py-1">
+              <span className="size-1 rounded-full bg-orbit-purple" />
+              <span className="text-[9px] font-semibold text-violet-300">Em evolução</span>
+            </div>
+          </div>
+        </Link>
+
       </div>
 
       {/* ── Rodapé: missão ── */}
