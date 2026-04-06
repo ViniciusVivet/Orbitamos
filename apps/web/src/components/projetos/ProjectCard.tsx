@@ -64,6 +64,13 @@ export default function ProjectCard({ projeto, onOpenCase }: ProjectCardProps) {
               </a>
             </Button>
           )}
+          {projeto.github && (
+            <Button asChild size="sm" variant="ghost" className="text-white/70 hover:text-white hover:bg-white/10">
+              <a href={projeto.github} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
+                GitHub
+              </a>
+            </Button>
+          )}
         </div>
       </div>
     </article>

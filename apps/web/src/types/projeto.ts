@@ -32,6 +32,8 @@ export interface Projeto {
   status: StatusSlug;
   /** Link para o projeto publicado (opcional) */
   link?: string;
+  /** Repositório público (opcional) */
+  github?: string;
   /** Thumbnail/mockup (URL ou path) */
   thumbnail: string;
   /** Imagem principal para a página do case */

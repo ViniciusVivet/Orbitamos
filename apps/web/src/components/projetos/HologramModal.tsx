@@ -264,6 +264,17 @@ export default function HologramModal({ projeto, projetos, onClose }: HologramMo
                     Ver projeto
                   </a>
                 )}
+                {current.github && (
+                  <a
+                    href={current.github}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all duration-150 hover:brightness-125"
+                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.9)", boxShadow: "0 0 20px rgba(255,255,255,0.04)" }}
+                  >
+                    GitHub
+                  </a>
+                )}
                 <a
                   href="https://wa.me/5511949138973?text=Ol%C3%A1%2C+vi+o+portf%C3%B3lio+da+Orbitamos+e+quero+fazer+um+or%C3%A7amento"
                   target="_blank"

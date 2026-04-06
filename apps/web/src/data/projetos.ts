@@ -83,6 +83,66 @@ export const projetos: Projeto[] = [
       "Loja em formato MVP, com estrutura pronta para evoluir em funcoes de venda e integracoes logisticas.",
   },
   {
+    slug: "destaque-multimarcas",
+    nome: "Destaque Multimarcas",
+    categoria: "sites-institucionais",
+    resumo:
+      "Site de vendas para concessionaria multimarcas: estoque filtravel, galeria por veiculo, simulador de financiamento e CTA direto para WhatsApp do consultor.",
+    tags: ["Conversao", "WhatsApp", "Estoque", "Financiamento", "Mobile-first"],
+    status: "publicado",
+    link: "https://concessionariadestaque.vercel.app/",
+    github: "https://github.com/ViniciusVivet/concessionariadestaque",
+    thumbnail:
+      "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80&auto=format&fit=crop",
+    imagemPrincipal:
+      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1400&q=80&auto=format&fit=crop",
+    contexto:
+      "A Destaque Multimarcas precisava de presenca digital que transmitisse credibilidade e levasse o visitante do estoque ao contato com o consultor em poucos cliques.",
+    problema:
+      "Leads se perdiam entre anuncios dispersos; faltava um hub unico com busca, ficha do veiculo e caminho claro para negociacao via WhatsApp.",
+    solucao:
+      "Entregamos uma pagina unica performatica em HTML, CSS e JavaScript vanilla: hero com carrossel, filtros de estoque em tempo real, modal com galeria e simulador de parcelas, e mensagens pre-preenchidas para o WhatsApp.",
+    destaques: [
+      "Zero dependencias de build — carrega rapido e hospeda em qualquer CDN",
+      "Filtros por marca, modelo, ano, cambio e faixa de preco",
+      "Modal com galeria auto-avanço e simulador de financiamento",
+      "Consultor identificado e botao flutuante de WhatsApp em toda a jornada",
+    ],
+    stack: ["HTML5", "CSS3", "JavaScript (vanilla)"],
+    resultado:
+      "Vendedor digital 24/7 com experiencia responsiva (incluindo bottom sheet no mobile) pronta para campanhas e trafego pago.",
+  },
+  {
+    slug: "sensimilla-records",
+    nome: "Sensimilla Records",
+    categoria: "sites-institucionais",
+    resumo:
+      "Site da gravadora independente: experiencia longa com scroll suave, equipe, tour, lancamentos, merch, YouTube e editorial — identidade forte da ZL.",
+    tags: ["Gravadora", "Entretenimento", "Scroll", "Animacao", "Branding"],
+    status: "publicado",
+    link: "https://sensimilla-records-web.vercel.app/",
+    github: "https://github.com/ViniciusVivet/Sensimilla-Records",
+    thumbnail:
+      "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&q=80&auto=format&fit=crop",
+    imagemPrincipal:
+      "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=1400&q=80&auto=format&fit=crop",
+    contexto:
+      "A Sensimilla Records precisava de um hub oficial que reunisse selo, artistas, lancamentos e presenca em plataformas sem parecer um template generico.",
+    problema:
+      "A narrativa da casa estava espalhada em redes; faltava um site que traduzisse a estetica do movimento e organizasse links, datas e catalogo.",
+    solucao:
+      "Construimos um site em Next.js com conteudo centralizado em dados (site.ts / dossie), scroll suave com Lenis, animacoes GSAP + ScrollTrigger e seções dedicadas a equipe, tour, Out Now, merch e visuais.",
+    destaques: [
+      "Respeito a preferencia de movimento reduzido (scroll nativo, animacoes desligadas)",
+      "SEO base: sitemap, robots e Open Graph",
+      "Formulario de contato preparado para integracao externa",
+      "Estrutura pensada para trocar mídia e copy sem reescrever layout",
+    ],
+    stack: ["Next.js", "TypeScript", "Tailwind CSS", "GSAP", "Lenis"],
+    resultado:
+      "Presenca digital alinhada ao posicionamento do selo, pronta para imprensa, booking e novos lançamentos.",
+  },
+  {
     slug: "orbitamos-portal-tech",
     nome: "Orbitamos Portal Tech",
     categoria: "sistemas-dashboards",

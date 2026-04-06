@@ -72,6 +72,13 @@ export default async function ProjetoCasePage({ params }: PageProps) {
               </a>
             </Button>
           )}
+          {projeto.github && (
+            <Button asChild variant="outline" className="border-white/25 text-white hover:bg-white/10">
+              <a href={projeto.github} target="_blank" rel="noreferrer">
+                Ver no GitHub
+              </a>
+            </Button>
+          )}
           <ProjetosCTA variant="inline" />
         </div>
       </section>

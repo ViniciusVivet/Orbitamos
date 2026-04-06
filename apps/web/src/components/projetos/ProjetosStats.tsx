@@ -1,6 +1,6 @@
 const STATS = [
   {
-    valor: "4",
+    valor: "6",
     label: "projetos entregues",
     accent: "#00D4FF",
     glow: "rgba(0,212,255,0.08)",
