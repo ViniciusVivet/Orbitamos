@@ -41,6 +41,7 @@ const DEPOIMENTOS: Depoimento[] = [
       "A YUME sempre teve uma proposta forte, mas a gente dependia de redes sociais pra mostrar isso. Agora temos um espaço próprio que respira a identidade da marca. O que mais me surpreendeu foi a sensibilidade deles com o conceito — entenderam que moda autoral não é só produto, é narrativa.",
     tipo: "E-commerce",
     mockup: "/mockup-yume.png",
+    mockupImgClass: "object-cover object-center",
     imageRight: true,
   },
 ];
