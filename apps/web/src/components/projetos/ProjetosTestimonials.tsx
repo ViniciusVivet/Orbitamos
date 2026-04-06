@@ -1,6 +1,21 @@
 import Image from "next/image";
 
-const DEPOIMENTOS = [
+type Depoimento = {
+  nome: string;
+  cargo: string;
+  initials: string;
+  cor: string;
+  accentColor: string;
+  accentBorder: string;
+  texto: string;
+  tipo: string;
+  mockup?: string;
+  /** Classes Tailwind para object-fit/position do mockup (ex.: mockup largo) */
+  mockupImgClass?: string;
+  imageRight: boolean;
+};
+
+const DEPOIMENTOS: Depoimento[] = [
   {
     nome: "Sabrina",
     cargo: "Lash designer · São Paulo/SP",
@@ -12,6 +27,7 @@ const DEPOIMENTOS = [
       "Tava com medo de que fosse ficar aquela coisa genérica, sabe? Mas ficou tudo muito delicado, com a minha cara mesmo. Minhas clientes já viram e estão adorando — várias me mandaram mensagem perguntando quem fez. Agora tenho um lugar pra mandar as pessoas além do Insta.",
     tipo: "Site institucional",
     mockup: "/mockup-sabrina.png",
+    mockupImgClass: "object-cover object-center",
     imageRight: false,
   },
   {
@@ -66,7 +82,7 @@ export default function ProjetosTestimonials() {
                     src={d.mockup}
                     alt={`Mockup ${d.nome}`}
                     fill
-                    className="object-cover object-top"
+                    className={d.mockupImgClass ?? "object-cover object-top"}
                     sizes="(max-width: 768px) 100vw, 45vw"
                   />
                   <div className="absolute inset-0" style={{
