@@ -63,10 +63,8 @@ export const projetos: Projeto[] = [
     tags: ["E-commerce", "Catalogo", "Mobile-first"],
     status: "mvp",
     link: "https://kit-certo.vercel.app/",
-    thumbnail:
-      "https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=800&q=80&auto=format&fit=crop",
-    imagemPrincipal:
-      "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?w=1400&q=80&auto=format&fit=crop",
+    thumbnail: "/case-kitcerto.png",
+    imagemPrincipal: "/case-kitcerto.png",
     contexto:
       "A KitCerto precisava de uma estrutura de loja para organizar produtos em kits e apresentar melhor a proposta da marca.",
     problema:
