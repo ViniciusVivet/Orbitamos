@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { sendContact } from "@/lib/api";
 
-const WHATSAPP_URL = "https://wa.me/5511949138973?text=Ol%C3%A1%2C+vim+pelo+site+da+Orbitamos+e+quero+fazer+um+or%C3%A7amento";
 const INSTAGRAM_URL = "https://www.instagram.com/orbitamosbr/";
 
 const SERVICES = [
@@ -108,14 +107,6 @@ export default function Contato() {
           85%  { opacity: 0.35; }
           100% { transform: translateY(110%); opacity: 0; }
         }
-        @keyframes waPulse {
-          0%, 100% { box-shadow: 0 0 12px rgba(37,211,102,0.25), 0 0 30px rgba(37,211,102,0.08); }
-          50%       { box-shadow: 0 0 20px rgba(37,211,102,0.45), 0 0 50px rgba(37,211,102,0.15); }
-        }
-        @keyframes waCone {
-          0%, 100% { opacity: 0.6; }
-          50%       { opacity: 1; }
-        }
         .holo-ring {
           position: absolute;
           inset: 8% -6%;
@@ -141,12 +132,6 @@ export default function Contato() {
           animation: holoScanDown 7s ease-in-out infinite;
           animation-delay: 2s;
           pointer-events: none;
-        }
-        .wa-holo-btn {
-          animation: waPulse 3s ease-in-out infinite;
-        }
-        .wa-cone {
-          animation: waCone 3s ease-in-out infinite;
         }
       `}</style>
 
@@ -330,61 +315,6 @@ export default function Contato() {
 
             </div>
           </div>
-        </div>
-
-        {/* ── WhatsApp Holograma — canto direito ── */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20 flex flex-col items-end">
-          {/* Cone de luz apontando para a esquerda */}
-          <div className="wa-cone pointer-events-none absolute right-full top-1/2 -translate-y-1/2" style={{
-            width: "90px",
-            height: "50px",
-            background: "linear-gradient(270deg, rgba(37,211,102,0.22) 0%, rgba(37,211,102,0.05) 60%, transparent 100%)",
-            clipPath: "polygon(100% 15%, 100% 85%, 0% 50%)",
-            filter: "blur(5px)",
-          }} />
-          {/* Reflexo no chão */}
-          <div className="pointer-events-none absolute right-0 bottom-[-18px]" style={{
-            width: "52px",
-            height: "12px",
-            background: "radial-gradient(ellipse at center, rgba(37,211,102,0.2), transparent 70%)",
-            filter: "blur(4px)",
-          }} />
-
-          <a
-            href={WHATSAPP_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="wa-holo-btn group flex flex-col items-center gap-1.5 rounded-l-2xl px-3 pt-3 pb-2.5 transition-all duration-200 hover:pr-4"
-            style={{
-              background: "rgba(0,15,8,0.55)",
-              border: "1px solid rgba(37,211,102,0.35)",
-              borderRight: "none",
-              backdropFilter: "blur(16px)",
-              WebkitBackdropFilter: "blur(16px)",
-            }}
-          >
-            {/* Linha de luz no topo */}
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-px" style={{ background: "linear-gradient(180deg, transparent 5%, rgba(37,211,102,0.5) 50%, transparent 95%)" }} />
-
-            {/* Ícone */}
-            <div
-              className="flex h-9 w-9 items-center justify-center rounded-full transition-transform duration-200 group-hover:scale-110"
-              style={{
-                background: "rgba(37,211,102,0.12)",
-                border: "1px solid rgba(37,211,102,0.45)",
-              }}
-            >
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" fill="#25D366"/>
-                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.532 5.86L.054 23.25a.75.75 0 00.916.916l5.39-1.478A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.656-.52-5.17-1.426l-.37-.22-3.838 1.052 1.052-3.837-.22-.371A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" fill="#25D366"/>
-              </svg>
-            </div>
-
-            {/* Label */}
-            <span style={{ fontSize: "8px", color: "rgba(37,211,102,0.65)", letterSpacing: "0.18em", fontWeight: 700 }}>
-              CHAT
-            </span>
-          </a>
         </div>
 
       </div>
