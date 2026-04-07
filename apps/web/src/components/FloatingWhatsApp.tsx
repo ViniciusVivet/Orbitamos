@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   whatsappFloatByPage,
   type WhatsappFloatPage,
@@ -10,9 +12,14 @@ interface FloatingWhatsAppProps {
 }
 
 export default function FloatingWhatsApp({ page }: FloatingWhatsAppProps) {
+  const [mounted, setMounted] = useState(false);
   const href = whatsappFloatByPage[page];
 
-  return (
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const button = (
     <a
       href={href}
       target="_blank"
@@ -38,4 +45,8 @@ export default function FloatingWhatsApp({ page }: FloatingWhatsAppProps) {
       </span>
     </a>
   );
+
+  if (!mounted) return null;
+
+  return createPortal(button, document.body);
 }
