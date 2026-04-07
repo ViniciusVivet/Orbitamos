@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 
 export const metadata: Metadata = {
   title: "Contato | Orbitamos",
@@ -7,5 +8,10 @@ export const metadata: Metadata = {
 };
 
 export default function ContatoLayout({ children }: { children: ReactNode }) {
-  return children;
+  return (
+    <>
+      {children}
+      <FloatingWhatsApp page="contato" />
+    </>
+  );
 }

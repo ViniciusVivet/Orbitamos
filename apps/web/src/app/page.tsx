@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import { Button } from "@/components/ui/button";
 import { useRef, useState, useCallback, useEffect } from "react";
 
@@ -266,6 +267,7 @@ export default function Home() {
         </p>
       </Link>
 
+      <FloatingWhatsApp page="home" />
     </div>
   );
 }
