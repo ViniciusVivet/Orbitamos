@@ -1,11 +1,136 @@
 "use client";
 
 import Link from "next/link";
+import {
+  ArrowRight,
+  BarChart3,
+  Bot,
+  CheckCircle2,
+  Clock3,
+  Code2,
+  ExternalLink,
+  Layers3,
+  MessageCircle,
+  Rocket,
+  ShieldCheck,
+  Sparkles,
+  Zap,
+} from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import { Button } from "@/components/ui/button";
-import { useRef, useState, useCallback, useEffect } from "react";
 
-const WHATSAPP_URL = "https://wa.me/5511949138973?text=Ol%C3%A1%2C+vim+pelo+site+da+Orbitamos+e+quero+fazer+um+or%C3%A7amento";
+const WHATSAPP_URL =
+  "https://wa.me/5511949138973?text=Ol%C3%A1%2C+vim+pelo+site+da+Orbitamos+e+quero+fazer+um+or%C3%A7amento";
+
+const stats = [
+  { value: "6+", label: "projetos entregues" },
+  { value: "7 dias", label: "entrega média" },
+  { value: "100%", label: "mobile-first" },
+  { value: "IA", label: "automações e APIs" },
+];
+
+const heroCases = [
+  {
+    name: "Sabrina Lashes",
+    type: "Site institucional",
+    result: "Agendamento e WhatsApp",
+    href: "/projetos?case=sabrina-lashes",
+    image: "/case-sabrina-lashes.png",
+    accent: "from-emerald-300 to-cyan-300",
+    className: "md:translate-x-5 md:-rotate-2",
+  },
+  {
+    name: "YUME",
+    type: "Moda autoral",
+    result: "Catálogo premium",
+    href: "/projetos?case=yume-moda-disruptiva",
+    image: "/case-yume.png",
+    accent: "from-violet-300 to-fuchsia-300",
+    className: "md:-translate-x-8 md:rotate-2",
+  },
+  {
+    name: "Destaque Multimarcas",
+    type: "Estoque digital",
+    result: "Filtros e leads",
+    href: "/projetos?case=destaque-multimarcas",
+    image: "/case-destaque-multimarcas.png",
+    accent: "from-amber-200 to-orange-300",
+    className: "md:translate-x-8 md:-rotate-1",
+  },
+];
+
+const services = [
+  {
+    icon: BarChart3,
+    title: "Landing pages",
+    text: "Páginas rápidas para campanhas, captação de leads e vendas pelo WhatsApp.",
+    points: ["Copy orientada a conversão", "CTA e formulário", "SEO e performance"],
+  },
+  {
+    icon: ShieldCheck,
+    title: "Sites institucionais",
+    text: "Presença digital profissional para negócios que precisam passar confiança.",
+    points: ["Identidade visual", "Serviços claros", "Credibilidade local"],
+  },
+  {
+    icon: Layers3,
+    title: "Sistemas web e MVPs",
+    text: "Produtos sob medida para organizar operações, usuários, dados e processos.",
+    points: ["Login e dashboards", "Banco de dados", "APIs e automações"],
+  },
+];
+
+const featuredProjects = [
+  {
+    name: "Sabrina Lashes",
+    category: "Beleza e atendimento",
+    href: "/projetos?case=sabrina-lashes",
+    image: "/case-sabrina-lashes.png",
+    description:
+      "Site profissional para apresentar serviços, reforçar confiança e levar clientes direto ao agendamento.",
+    outcomes: ["WhatsApp direto", "Serviços organizados", "Presença profissional"],
+  },
+  {
+    name: "YUME",
+    category: "Marca autoral",
+    href: "/projetos?case=yume-moda-disruptiva",
+    image: "/case-yume.png",
+    description:
+      "Vitrine digital com identidade forte para apresentar coleções, editoriais e evoluir para vendas.",
+    outcomes: ["Catálogo visual", "Branding premium", "Mobile-first"],
+  },
+  {
+    name: "Sensimilla Records",
+    category: "Entretenimento",
+    href: "/projetos?case=sensimilla-records",
+    image: "/case-sensimilla-records.png",
+    description:
+      "Hub oficial para lançamentos, equipe, tour, merch e narrativa visual de uma gravadora independente.",
+    outcomes: ["SEO base", "Conteúdo centralizado", "Experiência de marca"],
+  },
+];
+
+const process = [
+  {
+    title: "Conversa",
+    text: "Entendemos objetivo, público, oferta e o que precisa acontecer para o projeto vender.",
+  },
+  {
+    title: "Estrutura",
+    text: "Definimos páginas, seções, integrações, conteúdo e caminho de conversão.",
+  },
+  {
+    title: "Desenvolvimento",
+    text: "Construímos a experiência com responsividade, performance e acabamento visual.",
+  },
+  {
+    title: "Publicacao",
+    text: "Colocamos no ar, revisamos detalhes e deixamos o projeto pronto para campanhas.",
+  },
+];
+
+const stack = ["Next.js", "TypeScript", "APIs", "PostgreSQL", "Supabase", "Cloudinary", "IA", "Automações"];
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -35,239 +160,345 @@ export default function Home() {
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      className="relative overflow-hidden bg-black text-white"
-      style={{ height: "calc(100dvh - 4rem)" }}
-    >
-
-      {/* ── Vídeo full-bleed com parallax ── */}
-      <video
-        ref={videoRef}
-        src="/hero.mp4"
-        autoPlay
-        loop
-        muted
-        playsInline
-        disablePictureInPicture
-        className="absolute inset-0 h-full w-full object-cover [&::-webkit-media-controls-start-playback-button]:hidden [&::-webkit-media-controls]:hidden"
-        style={{
-          transform: `scale(1.08) translate(${mouse.x * -5}%, ${mouse.y * -4}%)`,
-          transition: active ? "transform 0.1s ease-out" : "transform 0.9s ease-out",
-          willChange: "transform",
-        }}
-      />
-
-      {/* ── Overlays ── */}
-      <div className="absolute inset-0 bg-black/55" />
-      <div className="absolute inset-y-0 left-0 w-3/4 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
-      <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/70 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/80 to-transparent" />
-
-      {/* ── Conteúdo principal com tilt leve ── */}
-      <div
-        className="absolute inset-0 z-10 flex items-center"
-        style={{
-          transform: `perspective(1400px) rotateX(${mouse.y * -4}deg) rotateY(${mouse.x * 4}deg)`,
-          transition: active ? "transform 0.1s ease-out" : "transform 0.9s ease-out",
-          willChange: "transform",
-        }}
+    <main className="min-h-screen overflow-hidden bg-[#03050a] text-white">
+      <section
+        ref={containerRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className="relative min-h-[calc(100svh-4rem)] overflow-hidden"
       >
-        <div
-          className="flex w-full max-w-xl flex-col px-8 lg:px-16 xl:px-24"
-          style={{ gap: "clamp(0.9rem, 2.8vh, 2.25rem)" }}
-        >
+        <video
+          ref={videoRef}
+          src="/hero.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          disablePictureInPicture
+          className="absolute inset-0 h-full w-full object-cover opacity-55 [&::-webkit-media-controls-start-playback-button]:hidden [&::-webkit-media-controls]:hidden"
+          style={{
+            transform: `scale(1.08) translate(${mouse.x * -4}%, ${mouse.y * -3}%)`,
+            transition: active ? "transform 0.12s ease-out" : "transform 0.9s ease-out",
+            willChange: "transform",
+          }}
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_28%,rgba(0,212,255,0.20),transparent_34%),radial-gradient(circle_at_88%_76%,rgba(245,158,11,0.12),transparent_26%),linear-gradient(90deg,#03050a_0%,rgba(3,5,10,0.92)_42%,rgba(3,5,10,0.62)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#03050a] to-transparent" />
 
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2.5">
-            <span className="size-1.5 animate-pulse rounded-full bg-orbit-electric" />
-            <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/35">
-              Estúdio Digital · São Paulo
-            </span>
+        <div className="relative z-10 mx-auto grid min-h-[calc(100svh-4rem)] w-full max-w-7xl items-center gap-12 px-5 py-12 sm:px-8 lg:grid-cols-[1.02fr_0.98fr] lg:px-10 lg:py-16">
+          <div className="max-w-3xl">
+            <div className="mb-6 inline-flex items-center gap-2 border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/55 backdrop-blur-xl">
+              <span className="h-1.5 w-1.5 rounded-full bg-orbit-electric shadow-[0_0_18px_rgba(0,212,255,0.9)]" />
+              Estúdio digital em São Paulo
+            </div>
+
+            <h1 className="max-w-4xl text-balance text-5xl font-black leading-[0.95] tracking-normal text-white sm:text-6xl lg:text-7xl">
+              Sites, sistemas e automações para negócios que querem vender mais.
+            </h1>
+
+            <p className="mt-6 max-w-2xl text-base leading-8 text-white/58 sm:text-lg">
+              Criamos landing pages, sites institucionais e sistemas web sob medida, com foco em
+              conversão, presença digital e operação.
+            </p>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
+                <Button
+                  size="lg"
+                  className="h-12 w-full rounded-md bg-white px-6 font-bold text-black hover:bg-orbit-electric sm:w-auto"
+                >
+                  <MessageCircle className="size-4" />
+                  Solicitar orçamento
+                </Button>
+              </a>
+              <Link href="/projetos">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-12 w-full rounded-md border-white/15 bg-white/[0.03] px-6 font-bold text-white hover:bg-white/10 hover:text-white sm:w-auto"
+                >
+                  Ver projetos
+                  <ArrowRight className="size-4" />
+                </Button>
+              </Link>
+            </div>
+
+            <div className="mt-10 grid grid-cols-2 gap-px overflow-hidden border border-white/[0.08] bg-white/[0.08] sm:grid-cols-4">
+              {stats.map((item) => (
+                <div key={item.label} className="bg-[#050812]/88 px-4 py-4 backdrop-blur-xl">
+                  <p className="text-xl font-black text-white">{item.value}</p>
+                  <p className="mt-1 text-xs text-white/42">{item.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Headline */}
-          <h1
-            className="font-black leading-[1.0] tracking-tight"
-            style={{ fontSize: "clamp(2.6rem, 7vmin, 5rem)" }}
+          <div
+            className="relative mx-auto w-full max-w-xl lg:max-w-none"
+            style={{
+              transform: `perspective(1200px) rotateX(${mouse.y * -3}deg) rotateY(${mouse.x * 4}deg)`,
+              transition: active ? "transform 0.1s ease-out" : "transform 0.8s ease-out",
+              willChange: "transform",
+            }}
           >
-            <span className="text-white">Sites e</span><br />
-            <span className="text-white">sistemas que</span><br />
-            <span className="bg-gradient-to-r from-orbit-electric via-sky-300 to-orbit-purple bg-clip-text text-transparent">
-              fazem vender.
-            </span>
-          </h1>
+            <div className="absolute left-1/2 top-1/2 h-[70%] w-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-orbit-electric/15 bg-orbit-electric/[0.03] blur-sm" />
+            <div className="absolute left-1/2 top-1/2 h-[46%] w-[46%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-violet-300/15 bg-violet-400/[0.04]" />
+            <div className="relative flex flex-col gap-4 py-4">
+              {heroCases.map((project, index) => (
+                <Link
+                  key={project.name}
+                  href={project.href}
+                  className={`group relative overflow-hidden border border-white/10 bg-[#080b14]/86 shadow-[0_24px_70px_rgba(0,0,0,0.42)] backdrop-blur-2xl transition duration-200 hover:-translate-y-1 hover:border-white/20 ${project.className}`}
+                >
+                  <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${project.accent}`} />
+                  <div className="grid grid-cols-[1fr_128px] gap-4 p-4 sm:grid-cols-[1fr_174px]">
+                    <div className="flex min-w-0 flex-col justify-between">
+                      <div>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/34">
+                          Case 0{index + 1}
+                        </p>
+                        <h2 className="mt-2 truncate text-xl font-black text-white sm:text-2xl">
+                          {project.name}
+                        </h2>
+                        <p className="mt-1 text-sm text-white/48">{project.type}</p>
+                      </div>
+                      <div className="mt-5 flex items-center gap-2 text-sm font-semibold text-white/70">
+                        <CheckCircle2 className="size-4 text-orbit-electric" />
+                        {project.result}
+                      </div>
+                    </div>
+                    <div className="relative aspect-[4/3] overflow-hidden bg-white/[0.04]">
+                      <img
+                        src={project.image}
+                        alt={`Projeto ${project.name}`}
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
-          {/* Sub */}
-          <p className="max-w-xs text-[0.9375rem] leading-relaxed text-white/35">
-            Landing pages, sites e sistemas com foco em conversão. Do briefing ao ar em até 1 semana.
-          </p>
+      <section className="border-y border-white/[0.08] bg-[#070a12]">
+        <div className="mx-auto grid max-w-7xl gap-4 px-5 py-5 sm:grid-cols-2 sm:px-8 lg:grid-cols-4 lg:px-10">
+          {[
+            { icon: Rocket, text: "Projeto no ar com velocidade de startup" },
+            { icon: Zap, text: "Layout pensado para conversão e clareza" },
+            { icon: Bot, text: "Automações e IA quando fizer sentido" },
+            { icon: Code2, text: "Base tecnica pronta para evoluir" },
+          ].map((item) => (
+            <div key={item.text} className="flex items-center gap-3 text-sm text-white/58">
+              <item.icon className="size-4 shrink-0 text-orbit-electric" />
+              <span>{item.text}</span>
+            </div>
+          ))}
+        </div>
+      </section>
 
-          {/* CTAs */}
-          <div className="flex items-center gap-5">
-            <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
-              <Button
-                size="default"
-                className="px-6 font-bold bg-gradient-to-r from-orbit-electric to-orbit-purple text-black shadow-[0_0_24px_rgba(0,212,255,0.3)] hover:shadow-[0_0_40px_rgba(0,212,255,0.5)] hover:-translate-y-px transform-gpu transition-all duration-150"
+      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:px-10">
+        <div className="grid gap-10 lg:grid-cols-[0.86fr_1.14fr]">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-orbit-electric/80">
+              O que fazemos
+            </p>
+            <h2 className="mt-4 max-w-xl text-4xl font-black leading-tight text-white sm:text-5xl">
+              Empresas não precisam de páginas bonitas. Precisam de resultado.
+            </h2>
+            <p className="mt-5 max-w-lg text-base leading-7 text-white/50">
+              A entrega combina design, código e estratégia para transformar visitantes em contatos,
+              clientes e processos funcionando.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            {services.map((service) => (
+              <article
+                key={service.title}
+                className="border border-white/[0.08] bg-white/[0.035] p-5 transition hover:border-orbit-electric/25 hover:bg-white/[0.055]"
               >
-                💬 Pedir orçamento
+                <service.icon className="size-6 text-orbit-electric" />
+                <h3 className="mt-5 text-xl font-black text-white">{service.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-white/50">{service.text}</p>
+                <div className="mt-5 space-y-2">
+                  {service.points.map((point) => (
+                    <div key={point} className="flex items-center gap-2 text-xs text-white/48">
+                      <span className="h-1 w-1 rounded-full bg-white/35" />
+                      {point}
+                    </div>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white/[0.025]">
+        <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:px-10">
+          <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-orbit-electric/80">
+                Projetos em destaque
+              </p>
+              <h2 className="mt-4 max-w-2xl text-4xl font-black leading-tight text-white sm:text-5xl">
+                Cases reais para mostrar o que você pode vender melhor.
+              </h2>
+            </div>
+            <Link href="/projetos">
+              <Button
+                variant="outline"
+                className="rounded-md border-white/15 bg-transparent text-white hover:bg-white/10 hover:text-white"
+              >
+                Ver portfolio completo
+                <ArrowRight className="size-4" />
               </Button>
-            </a>
-            <Link
-              href="/projetos"
-              className="text-sm font-medium text-white/35 underline underline-offset-4 decoration-white/15 hover:text-white/70 hover:decoration-white/40 transition-all duration-150"
-            >
-              Ver projetos →
             </Link>
           </div>
 
-          {/* Service tags */}
-          <div className="flex flex-wrap items-center gap-2">
-            {[
-              { label: "Landing Page", href: "/contato" },
-              { label: "Site Institucional", href: "/contato" },
-              { label: "Sistema Web / MVP", href: "/contato" },
-            ].map((s) => (
-              <Link
-                key={s.label}
-                href={s.href}
-                className="rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 text-[11px] font-medium text-white/30 transition-all duration-150 hover:border-orbit-electric/30 hover:bg-orbit-electric/[0.07] hover:text-white/60"
+          <div className="mt-10 grid gap-5 lg:grid-cols-3">
+            {featuredProjects.map((project) => (
+              <article
+                key={project.name}
+                className="group overflow-hidden border border-white/[0.08] bg-[#070a12] transition hover:-translate-y-1 hover:border-white/18"
               >
-                {s.label}
-              </Link>
+                <Link href={project.href} className="block">
+                  <div className="relative aspect-[16/10] overflow-hidden bg-white/[0.04]">
+                    <img
+                      src={project.image}
+                      alt={`Case ${project.name}`}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#070a12] via-transparent to-transparent" />
+                  </div>
+                  <div className="p-5">
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/34">
+                      {project.category}
+                    </p>
+                    <h3 className="mt-2 text-2xl font-black text-white">{project.name}</h3>
+                    <p className="mt-3 text-sm leading-6 text-white/52">{project.description}</p>
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      {project.outcomes.map((outcome) => (
+                        <span
+                          key={outcome}
+                          className="border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 text-xs text-white/52"
+                        >
+                          {outcome}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="mt-6 flex items-center gap-2 text-sm font-bold text-orbit-electric">
+                      Ver case
+                      <ExternalLink className="size-4" />
+                    </div>
+                  </div>
+                </Link>
+              </article>
             ))}
           </div>
-
-          {/* Stats */}
-          <Link href="/projetos" className="group inline-flex items-stretch divide-x divide-white/[0.08]">
-            {[
-              { value: "6+", label: "Projetos entregues" },
-              { value: "1 sem", label: "Prazo médio" },
-              { value: "100%", label: "Satisfação" },
-            ].map((s, i) => (
-              <div
-                key={s.label}
-                className={`flex flex-col gap-0.5 transition-opacity duration-150 group-hover:opacity-70 ${i === 0 ? "pr-5" : "px-5"} last:pr-0`}
-              >
-                <p className="text-lg font-extrabold text-white/80">{s.value}</p>
-                <p className="text-[11px] text-white/22">{s.label}</p>
-              </div>
-            ))}
-          </Link>
-
         </div>
-      </div>
+      </section>
 
-      {/* ── Bento cards: tilt mais forte + translateZ ── */}
-      <div
-        className="absolute right-8 top-0 bottom-0 z-10 hidden md:flex flex-col items-end justify-center xl:right-14"
-        style={{
-          width: "clamp(240px, 20vw, 300px)",
-          gap: "clamp(0.5rem, 1.5vh, 0.75rem)",
-          transform: `perspective(800px) rotateX(${mouse.y * -8}deg) rotateY(${mouse.x * 8}deg) translateZ(50px)`,
-          transition: active ? "transform 0.08s ease-out" : "transform 0.9s ease-out",
-          willChange: "transform",
-        }}
-      >
-
-        {/* Card A: Prazo → WhatsApp */}
-        <a
-          href={WHATSAPP_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="group w-full rounded-2xl border border-white/[0.07] bg-[#03050c]/82 px-5 py-3 shadow-[0_20px_60px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-2xl transition-all duration-150 hover:border-orbit-electric/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.7),0_0_20px_rgba(0,212,255,0.06),inset_0_1px_0_rgba(255,255,255,0.04)]"
-        >
-          <div className="mb-2 h-[2px] w-8 rounded-full bg-gradient-to-r from-orbit-electric to-transparent" />
-          <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-white/22">Prazo médio</p>
-          <p className="mt-1 text-2xl font-black tracking-tight text-white">1 semana</p>
-          <p className="mt-0.5 text-[11px] text-white/18 transition-colors duration-150 group-hover:text-orbit-electric/50">
-            Solicitar orçamento →
+      <section className="mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[0.78fr_1.22fr] lg:px-10">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-orbit-electric/80">
+            Como funciona
           </p>
-        </a>
-
-        {/* Cards B+C: Landing Page + Sistema Web */}
-        <div className="flex w-full gap-2">
-          <Link
-            href="/projetos"
-            className="flex-1 rounded-2xl border border-white/[0.07] bg-[#03050c]/82 p-3.5 shadow-[0_20px_60px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-2xl transition-all duration-150 hover:border-white/[0.12] hover:bg-white/[0.05]"
-          >
-            <p className="mb-2 text-lg">📄</p>
-            <p className="text-sm font-bold leading-snug text-white">Landing<br />Page</p>
-            <p className="mt-1.5 text-[9px] font-medium uppercase tracking-[0.18em] text-white/20">Ver cases →</p>
-          </Link>
-          <Link
-            href="/projetos"
-            className="flex-1 rounded-2xl border border-white/[0.07] bg-[#03050c]/82 p-3.5 shadow-[0_20px_60px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-2xl transition-all duration-150 hover:border-white/[0.12] hover:bg-white/[0.05]"
-          >
-            <p className="mb-2 text-lg">⚙️</p>
-            <p className="text-sm font-bold leading-snug text-white">Sistema<br />Web</p>
-            <p className="mt-1.5 text-[9px] font-medium uppercase tracking-[0.18em] text-white/20">Ver cases →</p>
-          </Link>
+          <h2 className="mt-4 text-4xl font-black leading-tight text-white sm:text-5xl">
+            Um processo direto para sair da ideia e ir para o ar.
+          </h2>
+          <p className="mt-5 text-base leading-7 text-white/50">
+            Você acompanha as decisões importantes sem precisar entender de código, hospedagem ou
+            stack técnica.
+          </p>
         </div>
 
-        {/* Card D: Sabrina Lashes */}
-        <Link
-          href="/projetos?case=sabrina-lashes"
-          className="group w-full rounded-2xl border border-white/[0.07] bg-[#03050c]/82 px-4 py-3 shadow-[0_20px_60px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-2xl transition-all duration-150 hover:border-emerald-500/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.7),0_0_20px_rgba(16,185,129,0.06),inset_0_1px_0_rgba(255,255,255,0.04)]"
-        >
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orbit-electric to-orbit-purple text-[11px] font-black text-black">
-                S
+        <div className="grid gap-4 sm:grid-cols-2">
+          {process.map((step, index) => (
+            <article key={step.title} className="border border-white/[0.08] bg-white/[0.035] p-5">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-black text-orbit-electric">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <Clock3 className="size-4 text-white/30" />
               </div>
-              <div>
-                <p className="text-[12px] font-bold leading-none text-white">Sabrina Lashes</p>
-                <p className="mt-0.5 text-[10px] text-white/25 transition-colors duration-150 group-hover:text-white/40">
-                  Ver case completo →
-                </p>
-              </div>
-            </div>
-            <div className="flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1">
-              <span className="size-1 rounded-full bg-emerald-400" />
-              <span className="text-[9px] font-semibold text-emerald-400">Publicado</span>
-            </div>
+              <h3 className="mt-8 text-xl font-black text-white">{step.title}</h3>
+              <p className="mt-3 text-sm leading-6 text-white/50">{step.text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y border-white/[0.08] bg-[#070a12]">
+        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:px-10">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-orbit-electric/80">
+              Engenharia por trás
+            </p>
+            <h2 className="mt-4 text-3xl font-black leading-tight text-white sm:text-4xl">
+              Visual premium com base técnica para crescer.
+            </h2>
           </div>
-        </Link>
-
-        {/* Card E: YUME */}
-        <Link
-          href="/projetos?case=yume-moda-disruptiva"
-          className="group w-full rounded-2xl border border-white/[0.07] bg-[#03050c]/82 px-4 py-3 shadow-[0_20px_60px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-2xl transition-all duration-150 hover:border-orbit-purple/25 hover:shadow-[0_20px_60px_rgba(0,0,0,0.7),0_0_20px_rgba(139,92,246,0.08),inset_0_1px_0_rgba(255,255,255,0.04)]"
-        >
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-400 to-orbit-purple text-[11px] font-black text-white">
-                Y
-              </div>
-              <div>
-                <p className="text-[12px] font-bold leading-none text-white">YUME</p>
-                <p className="mt-0.5 text-[10px] text-white/25 transition-colors duration-150 group-hover:text-white/40">
-                  Ver case completo →
-                </p>
-              </div>
-            </div>
-            <div className="flex shrink-0 items-center gap-1 rounded-full bg-orbit-purple/10 px-2 py-1">
-              <span className="size-1 rounded-full bg-orbit-purple" />
-              <span className="text-[9px] font-semibold text-violet-300">Em evolução</span>
-            </div>
+          <div className="flex flex-wrap gap-3">
+            {stack.map((item) => (
+              <span
+                key={item}
+                className="border border-white/[0.09] bg-white/[0.04] px-4 py-2 text-sm font-semibold text-white/62"
+              >
+                {item}
+              </span>
+            ))}
           </div>
-        </Link>
+        </div>
+      </section>
 
-      </div>
-
-      {/* ── Rodapé: missão ── */}
-      <Link
-        href="/orbitacademy"
-        className="absolute bottom-4 left-8 z-10 transition-opacity duration-150 hover:opacity-60 lg:left-16 xl:left-24"
-      >
-        <p className="text-[10px] text-white/15">
-          Cada projeto entregue financia formação em TI para jovens da periferia. →
-        </p>
-      </Link>
+      <section className="relative overflow-hidden">
+        <video
+          src="/cosmos.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          disablePictureInPicture
+          className="absolute inset-0 h-full w-full object-cover opacity-45"
+        />
+        <div className="absolute inset-0 bg-[#03050a]/78" />
+        <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center px-5 py-24 text-center sm:px-8">
+          <Sparkles className="mb-5 size-7 text-orbit-electric" />
+          <h2 className="max-w-4xl text-4xl font-black leading-tight text-white sm:text-6xl">
+            Seu próximo projeto pode estar no ar mais rápido do que você imagina.
+          </h2>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-white/55">
+            Landing pages, sites, sistemas e automações desenvolvidos sob medida para o seu negócio.
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
+              <Button size="lg" className="h-12 rounded-md bg-white px-6 font-bold text-black hover:bg-orbit-electric">
+                <MessageCircle className="size-4" />
+                Solicitar orçamento no WhatsApp
+              </Button>
+            </a>
+            <Link href="/contato">
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-12 rounded-md border-white/15 bg-white/[0.03] px-6 font-bold text-white hover:bg-white/10 hover:text-white"
+              >
+                Abrir formulário
+                <ArrowRight className="size-4" />
+              </Button>
+            </Link>
+          </div>
+          <p className="mt-10 max-w-2xl text-xs leading-6 text-white/30">
+            Parte da receita da Orbitamos fortalece iniciativas de formação em tecnologia.
+          </p>
+        </div>
+      </section>
 
       <FloatingWhatsApp page="home" />
-    </div>
+    </main>
   );
 }
