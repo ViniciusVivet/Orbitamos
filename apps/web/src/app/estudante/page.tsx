@@ -177,6 +177,9 @@ export default function EstudanteInicio() {
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
           <Button asChild variant="outline" className="border-orbit-electric text-orbit-electric hover:bg-orbit-electric hover:text-black">
+            <Link href="/estudante/orbita">Orbita</Link>
+          </Button>
+          <Button asChild variant="outline" className="border-orbit-electric text-orbit-electric hover:bg-orbit-electric hover:text-black">
             <Link href="/estudante/aulas">🎓 Aulas</Link>
           </Button>
           <Button asChild variant="outline" className="border-orbit-purple text-orbit-purple hover:bg-orbit-purple hover:text-white">
@@ -199,3 +202,4 @@ export default function EstudanteInicio() {
     </div>
   );
 }
+
