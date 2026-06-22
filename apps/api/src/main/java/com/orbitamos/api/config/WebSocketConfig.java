@@ -22,6 +22,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setAllowedOriginPatterns(
                     "http://localhost:3000",
                     "http://localhost:3001",
+                    "https://orbitamosbr.com",
+                    "https://www.orbitamosbr.com",
+                    "https://orbitamos.vercel.app",
                     "https://*.vercel.app"
                 )
                 .withSockJS();

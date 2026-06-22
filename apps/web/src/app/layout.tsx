@@ -17,6 +17,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.orbitamosbr.com"),
   title: "Orbitamos - Portal da Quebrada que Orbita Tecnologia",
   description: "Da quebrada pra tecnologia — A gente sobe junto. Transforme sua vida através da tecnologia com nossos programas de mentoria gratuitos. Do subemprego à T.I. em 9 meses.",
   keywords: "tecnologia, programação, quebrada, periferia, educação, mentoria, desenvolvimento, curso gratuito, T.I., programação, carreira",
@@ -24,9 +25,13 @@ export const metadata: Metadata = {
   creator: "Orbitamos",
   publisher: "Orbitamos",
   robots: "index, follow",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "Orbitamos - Portal da Quebrada que Orbita Tecnologia",
     description: "Da quebrada pra tecnologia — A gente sobe junto. Transforme sua vida através da tecnologia com nossos programas de mentoria gratuitos.",
+    url: "https://www.orbitamosbr.com",
     type: "website",
     locale: "pt_BR",
     siteName: "Orbitamos",

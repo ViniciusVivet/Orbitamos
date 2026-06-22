@@ -9,6 +9,7 @@ import {
   getDisplayAvatarUrl,
   type ChatConversation,
   type ChatUser,
+  type UserId,
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +17,7 @@ import { Input } from "@/components/ui/input";
 interface GroupInfoModalProps {
   token: string | null;
   conversation: ChatConversation;
-  currentUserId: number | undefined;
+  currentUserId: UserId | undefined;
   users: ChatUser[];
   onClose: () => void;
   onUpdate: (conv: ChatConversation) => void;
@@ -37,7 +38,7 @@ export default function GroupInfoModal({
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [addUserOpen, setAddUserOpen] = useState(false);
-  const [removingId, setRemovingId] = useState<number | null>(null);
+  const [removingId, setRemovingId] = useState<UserId | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isCreator = currentUserId != null && conversation.createdByUserId === currentUserId;
@@ -60,7 +61,7 @@ export default function GroupInfoModal({
     }
   };
 
-  const handleAdd = async (userId: number) => {
+  const handleAdd = async (userId: UserId) => {
     if (!token || !isCreator) return;
     const userToAdd = users.find((u) => u.id === userId);
     if (!userToAdd) return;
@@ -77,7 +78,7 @@ export default function GroupInfoModal({
     }
   };
 
-  const handleRemove = async (userId: number) => {
+  const handleRemove = async (userId: UserId) => {
     if (!token) return;
     setRemovingId(userId);
     try {

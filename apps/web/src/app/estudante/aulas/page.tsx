@@ -1,14 +1,16 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { cursos, totalAulas, type Curso } from "@/lib/cursos";
+import { cursos as cursosFallback, listarAulasConcluidas, listarCursosAcademy, totalAulas, type Curso } from "@/lib/cursos";
 import { useAuth } from "@/contexts/AuthContext";
+import type { UserId } from "@/lib/api";
 
 const STORAGE_KEY = "orbitacademy-progress";
 
-function getProgress(cursoSlug: string, userId: number | undefined): { concluidas: number; ultimaAulaId: string | null } {
+function getProgress(cursoSlug: string, userId: UserId | undefined): { concluidas: number; ultimaAulaId: string | null } {
   if (typeof window === "undefined" || !userId) return { concluidas: 0, ultimaAulaId: null };
   try {
     const raw = localStorage.getItem(`${STORAGE_KEY}-${userId}-${cursoSlug}`);
@@ -21,17 +23,59 @@ function getProgress(cursoSlug: string, userId: number | undefined): { concluida
   }
 }
 
-function getPercent(curso: Curso, userId: number | undefined): number {
-  const total = totalAulas(curso);
-  const { concluidas } = getProgress(curso.slug, userId);
-  return total > 0 ? Math.round((concluidas / total) * 100) : 0;
-}
-
 export default function EstudanteAulas() {
   const { user } = useAuth();
   const userId = user?.id;
+  const [cursos, setCursos] = useState<Curso[]>(cursosFallback);
+  const [supabaseConcluidas, setSupabaseConcluidas] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
 
-  const sugerido = cursos.find((c) => getPercent(c, userId) < 100) ?? cursos[0];
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    listarCursosAcademy()
+      .then(async (items) => {
+        if (!active) return;
+        setCursos(items);
+        const lessonIds = items.flatMap((curso) => curso.modulos.flatMap((mod) => mod.aulas.map((aula) => aula.id)));
+        const completed = await listarAulasConcluidas(lessonIds);
+        if (active) setSupabaseConcluidas(new Set(completed));
+      })
+      .catch(() => {
+        if (active) setCursos(cursosFallback);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [userId]);
+
+  const progressByCourse = useMemo(() => {
+    const map = new Map<string, { concluidas: number; ultimaAulaId: string | null }>();
+    cursos.forEach((curso) => {
+      const lessonIds = curso.modulos.flatMap((mod) => mod.aulas.map((aula) => aula.id));
+      const completedFromSupabase = lessonIds.filter((id) => supabaseConcluidas.has(id));
+      if (completedFromSupabase.length > 0) {
+        map.set(curso.slug, {
+          concluidas: completedFromSupabase.length,
+          ultimaAulaId: completedFromSupabase[completedFromSupabase.length - 1] ?? null,
+        });
+        return;
+      }
+      map.set(curso.slug, getProgress(curso.slug, userId));
+    });
+    return map;
+  }, [cursos, supabaseConcluidas, userId]);
+
+  const getCoursePercent = (curso: Curso) => {
+    const total = totalAulas(curso);
+    const progress = progressByCourse.get(curso.slug);
+    return total > 0 ? Math.round(((progress?.concluidas ?? 0) / total) * 100) : 0;
+  };
+
+  const sugerido = cursos.find((c) => getCoursePercent(c) < 100) ?? cursos[0];
 
   return (
     <div className="space-y-6">
@@ -40,7 +84,11 @@ export default function EstudanteAulas() {
         <p className="mt-1 text-white/60">OrbitAcademy — escolha um curso e continue de onde parou</p>
       </div>
 
-      {cursos.length > 0 && (
+      {loading && (
+        <p className="text-sm text-white/50">Carregando cursos...</p>
+      )}
+
+      {cursos.length > 0 && sugerido && (
         <Card className="border-orbit-purple/30 bg-gradient-to-br from-orbit-purple/10 to-orbit-electric/10">
           <CardHeader>
             <CardTitle className="text-orbit-purple">✨ Sugerido para você</CardTitle>
@@ -63,7 +111,7 @@ export default function EstudanteAulas() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cursos.map((curso) => {
           const total = totalAulas(curso);
-          const { concluidas, ultimaAulaId } = getProgress(curso.slug, userId);
+          const { concluidas, ultimaAulaId } = progressByCourse.get(curso.slug) ?? { concluidas: 0, ultimaAulaId: null };
           const percent = total > 0 ? Math.round((concluidas / total) * 100) : 0;
           const concluido = percent === 100;
 

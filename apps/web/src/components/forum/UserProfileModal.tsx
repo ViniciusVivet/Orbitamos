@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getPublicProfile, getDisplayAvatarUrl, type PublicProfile } from "@/lib/api";
+import { getPublicProfile, getDisplayAvatarUrl, type PublicProfile, type UserId } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Badge, BookOpen, MessageCircle, X } from "lucide-react";
 
 interface UserProfileModalProps {
-  userId: number;
+  userId: UserId;
   token: string | null;
   authorName: string;
   onClose: () => void;

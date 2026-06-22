@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { isSupabaseConfigured } from "@/lib/supabase";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -17,7 +18,7 @@ export function usePreWake() {
 
   useEffect(() => {
     // Só executa uma vez, mesmo se o componente re-renderizar
-    if (hasWoken.current) return;
+    if (hasWoken.current || isSupabaseConfigured) return;
     
     hasWoken.current = true;
 

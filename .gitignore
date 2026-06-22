@@ -31,6 +31,7 @@ scripts/ec2-env.sh
 
 # Runbook / notas locais (não commitar)
 docs/local/
+docs/local/SUPABASE_VERCEL_CHECKLIST.md
 .env.development.local
 .env.test.local
 .env.production.local

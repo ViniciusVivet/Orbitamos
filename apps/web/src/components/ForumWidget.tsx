@@ -13,6 +13,7 @@ import {
   searchForumMessages,
   getDisplayAvatarUrl,
   createDirectConversation,
+  type UserId,
 } from "@/lib/api";
 import { getFriendlyApiErrorMessage, formatRelativeDate } from "@/lib/utils";
 import { Minus, X, RefreshCw, ExternalLink, Maximize2, GripVertical } from "lucide-react";
@@ -39,7 +40,7 @@ export default function ForumWidget() {
   const [editingMessage, setEditingMessage] = useState<ForumMessage | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [query, setQuery] = useState("");
-  const [openingChat, setOpeningChat] = useState<number | null>(null);
+  const [openingChat, setOpeningChat] = useState<UserId | null>(null);
 
   const setMinimizedPersisted = (val: boolean) => {
     setMinimized(val);
@@ -124,7 +125,7 @@ export default function ForumWidget() {
     }
   };
 
-  const openChatWithUser = async (userId: number) => {
+  const openChatWithUser = async (userId: UserId) => {
     if (!token || !user || userId === user.id) return;
     setOpeningChat(userId);
     try {

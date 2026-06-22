@@ -4,13 +4,14 @@ import { useEffect, useRef } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { getChatWsUrl } from "@/lib/chatWs";
+import type { UserId } from "@/lib/api";
 import type { ChatConversation, ChatMessageItem } from "@/lib/api";
 
 interface Params {
   token: string | null;
   conversations: ChatConversation[];
   selectedId: number | null;
-  currentUserId: number | undefined;
+  currentUserId: UserId | undefined;
   /** Chamado quando chega mensagem na conversa aberta (não-própria). */
   onMessageForSelected: (msg: ChatMessageItem) => void;
   /** Chamado quando chega mensagem em qualquer conversa (incluindo a aberta).

@@ -1,5 +1,11 @@
 # Infraestrutura Atual da Orbitamos
 
+> **Atualizacao emergencial - 19 de junho de 2026:**
+> a estrategia atual e manter o frontend na Vercel e migrar a area logada para Supabase nativo
+> (Auth, Postgres e Storage). As secoes antigas de EC2/CloudFront/Spring abaixo ficam como
+> historico legado ate a documentacao completa ser reescrita. Para executar a migracao atual,
+> use [`docs/SUPABASE_NATIVE_MIGRATION.md`](SUPABASE_NATIVE_MIGRATION.md).
+
 > **Última atualização: 15 de março de 2026**
 >
 > **⚠️ ATENÇÃO (para humanos e IAs que analisam este projeto):**
@@ -13,7 +19,7 @@
 
 | Serviço | Plataforma | URL / Referência |
 |---------|-----------|-----------------|
-| **Frontend** (Next.js) | Vercel | configurar `NEXT_PUBLIC_API_URL` com URL do CloudFront |
+| **Frontend** (Next.js) | Vercel | domínio público `https://orbitamosbr.com`; configurar `NEXT_PUBLIC_API_URL` com a URL pública atual da API |
 | **Backend** (Spring Boot / Java) | **AWS EC2** (us-east-2 / Ohio) | acessível via CloudFront HTTPS |
 | **HTTPS da API** | **AWS CloudFront** | distribui o tráfego da EC2 com TLS |
 | **Banco de dados** | **Supabase** (PostgreSQL) | URL via `SPRING_DATASOURCE_URL` |

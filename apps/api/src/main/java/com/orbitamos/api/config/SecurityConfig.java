@@ -1,6 +1,7 @@
 package com.orbitamos.api.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,6 +17,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Configuração de segurança do Spring Security
@@ -33,6 +35,9 @@ public class SecurityConfig {
 
     @Autowired
     private OriginValidationFilter originValidationFilter;
+
+    @Value("${SPRING_WEB_CORS_ALLOWED_ORIGINS:}")
+    private String extraAllowedOrigins;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -89,12 +94,24 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Origens permitidas: localhost (3000 e 3001) + qualquer preview/produção Vercel
-        configuration.setAllowedOriginPatterns(Arrays.asList(
-            "http://localhost:3000",
-            "http://localhost:3001",
-            "https://*.vercel.app"
-        ));
+        // Origens permitidas: localhost, dominio oficial, previews Vercel e extras via env.
+        List<String> allowedOrigins = Stream.concat(
+            Stream.of(
+                "http://localhost:3000",
+                "http://localhost:3001",
+                "https://orbitamosbr.com",
+                "https://www.orbitamosbr.com",
+                "https://orbitamos.vercel.app",
+                "https://*.vercel.app"
+            ),
+            Stream.of(extraAllowedOrigins.split(","))
+        )
+            .map(String::trim)
+            .filter(origin -> !origin.isBlank())
+            .distinct()
+            .toList();
+
+        configuration.setAllowedOriginPatterns(allowedOrigins);
         
         // Métodos HTTP permitidos
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));

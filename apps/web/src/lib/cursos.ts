@@ -3,6 +3,8 @@
  * Videos sao embeds do YouTube — ponte pelo proprio site.
  */
 
+import { isSupabaseConfigured, requireSupabase } from "@/lib/supabase";
+
 export interface Aula {
   id: string;
   titulo: string;
@@ -10,6 +12,14 @@ export interface Aula {
   youtubeVideoId: string;
   /** Texto opcional ao lado do video */
   conteudo?: string;
+  materiais?: MaterialAula[];
+}
+
+export interface MaterialAula {
+  id: string;
+  titulo: string;
+  tipo: string;
+  url: string;
 }
 
 export interface Modulo {
@@ -122,4 +132,168 @@ export function proximaAulaId(curso: Curso, aulaId: string): string | null {
     }
   }
   return null;
+}
+
+type SupabaseLessonRow = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  youtube_video_id: string | null;
+  content: string | null;
+  position: number | null;
+  lesson_materials?: Array<{
+    id: string;
+    title: string;
+    kind: string;
+    file_url: string | null;
+    external_url: string | null;
+    position: number | null;
+  }>;
+};
+
+type SupabaseModuleRow = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  position: number | null;
+  lessons?: SupabaseLessonRow[];
+};
+
+type SupabaseCourseRow = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  position: number | null;
+  course_modules?: SupabaseModuleRow[];
+};
+
+function mapSupabaseCourse(row: SupabaseCourseRow): Curso {
+  const modules = [...(row.course_modules ?? [])].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+  return {
+    id: row.id,
+    slug: row.slug,
+    titulo: row.title,
+    descricao: row.description ?? undefined,
+    modulos: modules.map((mod) => ({
+      id: mod.id,
+      titulo: mod.title,
+      aulas: [...(mod.lessons ?? [])]
+        .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+        .map((lesson) => ({
+          id: lesson.id,
+          titulo: lesson.title,
+          youtubeVideoId: lesson.youtube_video_id ?? "",
+          conteudo: lesson.content ?? undefined,
+          materiais: [...(lesson.lesson_materials ?? [])]
+            .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+            .map((material) => ({
+              id: material.id,
+              titulo: material.title,
+              tipo: material.kind,
+              url: material.file_url ?? material.external_url ?? "",
+            }))
+            .filter((material) => material.url),
+        })),
+    })),
+  };
+}
+
+export async function listarCursosAcademy(): Promise<Curso[]> {
+  if (!isSupabaseConfigured) return cursos;
+
+  const { data, error } = await requireSupabase()
+    .from("courses")
+    .select(`
+      id,
+      slug,
+      title,
+      description,
+      position,
+      course_modules (
+        id,
+        slug,
+        title,
+        description,
+        position,
+        lessons (
+          id,
+          slug,
+          title,
+          description,
+          youtube_video_id,
+          content,
+          position,
+          lesson_materials (
+            id,
+            title,
+            kind,
+            file_url,
+            external_url,
+            position
+          )
+        )
+      )
+    `)
+    .eq("is_published", true)
+    .order("position", { ascending: true });
+
+  if (error) {
+    if (process.env.NODE_ENV !== "production") console.error("[cursos] erro ao carregar cursos:", error);
+    return cursos;
+  }
+
+  const mapped = ((data ?? []) as unknown as SupabaseCourseRow[]).map(mapSupabaseCourse);
+  return mapped.length > 0 ? mapped : cursos;
+}
+
+export async function buscarCursoAcademyPorSlug(slug: string): Promise<Curso | undefined> {
+  if (!isSupabaseConfigured) return cursoPorSlug(slug);
+  const all = await listarCursosAcademy();
+  return all.find((curso) => curso.slug === slug);
+}
+
+export async function listarAulasConcluidas(lessonIds: string[]): Promise<string[]> {
+  if (!isSupabaseConfigured || lessonIds.length === 0) return [];
+
+  const { data: sessionData } = await requireSupabase().auth.getSession();
+  const userId = sessionData.session?.user.id;
+  if (!userId) return [];
+
+  const { data, error } = await requireSupabase()
+    .from("lesson_progress")
+    .select("lesson_id")
+    .eq("user_id", userId)
+    .in("lesson_id", lessonIds)
+    .not("completed_at", "is", null);
+
+  if (error) {
+    if (process.env.NODE_ENV !== "production") console.error("[cursos] erro ao carregar progresso:", error);
+    return [];
+  }
+
+  return (data ?? []).map((item: { lesson_id: string }) => item.lesson_id);
+}
+
+export async function marcarAulaAcademyConcluida(lessonId: string): Promise<void> {
+  if (!isSupabaseConfigured) return;
+
+  const { data: sessionData } = await requireSupabase().auth.getSession();
+  const userId = sessionData.session?.user.id;
+  if (!userId) return;
+
+  const { error } = await requireSupabase()
+    .from("lesson_progress")
+    .upsert(
+      {
+        user_id: userId,
+        lesson_id: lessonId,
+        completed_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id,lesson_id" }
+    );
+
+  if (error) throw new Error(error.message);
 }

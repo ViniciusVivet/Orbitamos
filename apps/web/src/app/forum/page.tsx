@@ -11,6 +11,7 @@ import {
   updateForumMessage,
   deleteForumMessage,
   getDisplayAvatarUrl,
+  type UserId,
 } from "@/lib/api";
 import { getFriendlyApiErrorMessage, formatRelativeDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -58,7 +59,7 @@ export default function ForumPage() {
   const [topicTitle, setTopicTitle] = useState("");
   const [topicColor, setTopicColor] = useState("#00D4FF");
   const [topicEmoji, setTopicEmoji] = useState("💬");
-  const [profileUserId, setProfileUserId] = useState<number | null>(null);
+  const [profileUserId, setProfileUserId] = useState<UserId | null>(null);
   const [replyingToId, setReplyingToId] = useState<number | null>(null);
   const [repliesByParent, setRepliesByParent] = useState<Record<number, ForumMessage[]>>({});
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);

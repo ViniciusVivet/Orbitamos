@@ -4,20 +4,22 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  cursoPorSlug,
+  buscarCursoAcademyPorSlug,
   totalAulas,
   aulaNoCurso,
   proximaAulaId,
+  marcarAulaAcademyConcluida,
+  listarAulasConcluidas,
   type Curso,
-  type Aula,
 } from "@/lib/cursos";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProgress } from "@/contexts/ProgressContext";
 import { addProgressLesson } from "@/lib/api";
+import type { UserId } from "@/lib/api";
 
 const STORAGE_KEY = "orbitacademy-progress";
 
-function getStoredProgress(cursoSlug: string, userId: number | undefined): string[] {
+function getStoredProgress(cursoSlug: string, userId: UserId | undefined): string[] {
   if (typeof window === "undefined" || !userId) return [];
   try {
     const raw = localStorage.getItem(`${STORAGE_KEY}-${userId}-${cursoSlug}`);
@@ -31,7 +33,7 @@ function getStoredProgress(cursoSlug: string, userId: number | undefined): strin
 
 function setStoredProgress(
   cursoSlug: string,
-  userId: number | undefined,
+  userId: UserId | undefined,
   concluidas: string[],
   ultimaAulaId: string | null
 ) {
@@ -50,7 +52,7 @@ export default function CursoPage() {
   const { refetchProgress } = useProgress();
   const userId = user?.id;
 
-  const curso = useMemo(() => cursoPorSlug(slug), [slug]);
+  const [curso, setCurso] = useState<Curso | null | undefined>(undefined);
   const total = curso ? totalAulas(curso) : 0;
 
   const [aulaId, setAulaId] = useState<string | null>(null);
@@ -58,10 +60,30 @@ export default function CursoPage() {
   const [modulosAbertos, setModulosAbertos] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
+    let active = true;
+    setCurso(undefined);
+    buscarCursoAcademyPorSlug(slug)
+      .then((item) => {
+        if (active) setCurso(item ?? null);
+      })
+      .catch(() => {
+        if (active) setCurso(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [slug]);
+
+  useEffect(() => {
     if (!curso) return;
     const stored = getStoredProgress(slug, userId);
-    setConcluidas(stored);
-    if (!aulaId && curso.modulos[0]?.aulas[0]) {
+    const lessonIds = curso.modulos.flatMap((mod) => mod.aulas.map((aula) => aula.id));
+    listarAulasConcluidas(lessonIds)
+      .then((completed) => {
+        setConcluidas(completed.length > 0 ? completed : stored);
+      })
+      .catch(() => setConcluidas(stored));
+    if ((!aulaId || !aulaNoCurso(curso, aulaId)) && curso.modulos[0]?.aulas[0]) {
       setAulaId(curso.modulos[0].aulas[0].id);
     }
     curso.modulos.forEach((m) => {
@@ -81,6 +103,7 @@ export default function CursoPage() {
     setStoredProgress(slug, userId, newConcluidas, next ?? aulaId);
     if (token && aula) {
       try {
+        await marcarAulaAcademyConcluida(aulaId);
         await addProgressLesson(token, { xpGained: 10, lessonTitle: aula.titulo });
         await refetchProgress();
       } catch {
@@ -89,6 +112,15 @@ export default function CursoPage() {
     }
     if (next) setAulaId(next);
   }, [aulaId, curso, slug, userId, concluidas, token, aula, refetchProgress]);
+
+  if (curso === undefined) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-12">
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-orbit-electric border-t-transparent" />
+        <p className="text-white/70">Carregando curso...</p>
+      </div>
+    );
+  }
 
   if (!curso) {
     return (

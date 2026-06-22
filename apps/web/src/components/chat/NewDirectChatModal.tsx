@@ -3,12 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import AvatarWithPresence from "@/components/chat/AvatarWithPresence";
-import { type ChatUser } from "@/lib/api";
+import { type ChatUser, type UserId } from "@/lib/api";
 
 interface Props {
   users: ChatUser[];
-  selectedUserId: number | null;
-  onSelectUser: (id: number) => void;
+  selectedUserId: UserId | null;
+  onSelectUser: (id: UserId) => void;
   onStart: () => void;
   onClose: () => void;
 }

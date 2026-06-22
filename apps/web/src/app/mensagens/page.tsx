@@ -19,6 +19,7 @@ import {
   type ChatConversation,
   type ChatMessageItem,
   type ChatUser,
+  type UserId,
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -108,11 +109,11 @@ export default function MensagensPage() {
 
   // Estado de usuários para modais
   const [users, setUsers] = useState<ChatUser[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<UserId | null>(null);
 
   // Estado do novo grupo
   const [groupName, setGroupName] = useState("");
-  const [groupUserIds, setGroupUserIds] = useState<number[]>([]);
+  const [groupUserIds, setGroupUserIds] = useState<UserId[]>([]);
   const [groupAvatarUrl, setGroupAvatarUrl] = useState("");
   const [groupAvatarFile, setGroupAvatarFile] = useState<File | null>(null);
   const [groupAvatarPreviewUrl, setGroupAvatarPreviewUrl] = useState<string | null>(null);
@@ -188,8 +189,7 @@ export default function MensagensPage() {
   const openUserId = searchParams.get("openUserId");
   useEffect(() => {
     if (!token || !openUserId || loadingConvs) return;
-    const uid = parseInt(openUserId, 10);
-    if (Number.isNaN(uid)) return;
+    const uid = openUserId;
     const existing = conversations.find(
       (c) => c.type === "DIRECT" && c.participants.some((p) => p.id === uid)
     );

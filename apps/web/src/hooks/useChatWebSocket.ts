@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { UserId } from "@/lib/api";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { getChatWsUrl } from "@/lib/chatWs";
@@ -9,7 +10,7 @@ import type { ChatMessageItem } from "@/lib/api";
 export function useChatWebSocket(
   token: string | null,
   conversationId: number | null,
-  currentUserId: number | undefined,
+  currentUserId: UserId | undefined,
   onMessage: (msg: ChatMessageItem) => void,
   onUnread: (convId: number) => void,
   isMinimized: boolean

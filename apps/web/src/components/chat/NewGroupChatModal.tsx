@@ -2,14 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getDisplayAvatarUrl, type ChatUser } from "@/lib/api";
+import { getDisplayAvatarUrl, type ChatUser, type UserId } from "@/lib/api";
 
 interface Props {
   users: ChatUser[];
   groupName: string;
   onGroupNameChange: (name: string) => void;
-  groupUserIds: number[];
-  onToggleGroupUser: (id: number) => void;
+  groupUserIds: UserId[];
+  onToggleGroupUser: (id: UserId) => void;
   groupAvatarUrl: string;
   onGroupAvatarUrlChange: (url: string) => void;
   groupAvatarFile: File | null;

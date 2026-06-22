@@ -15,7 +15,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://raw.githubusercontent.com",
       "font-src 'self'",
-      "connect-src 'self' https://*.render.com wss://*.render.com https://*.amazonaws.com wss://*.amazonaws.com",
+      "connect-src 'self' https://orbitamosbr.com https://www.orbitamosbr.com https://api.orbitamosbr.com wss://api.orbitamosbr.com https://*.render.com wss://*.render.com https://*.cloudfront.net wss://*.cloudfront.net https://*.amazonaws.com wss://*.amazonaws.com",
       "media-src 'self'",
       "frame-src https://www.instagram.com https://www.youtube.com",
       "object-src 'none'",

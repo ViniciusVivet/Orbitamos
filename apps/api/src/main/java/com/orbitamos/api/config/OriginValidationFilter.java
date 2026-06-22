@@ -4,11 +4,14 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Valida o header Origin em requisições que alteram estado (POST/PUT/DELETE/PATCH).
@@ -20,11 +23,16 @@ import java.util.Set;
 @Component
 public class OriginValidationFilter extends OncePerRequestFilter {
 
-    private static final Set<String> ALLOWED_ORIGINS = Set.of(
+    private static final Set<String> DEFAULT_ALLOWED_ORIGINS = Set.of(
         "http://localhost:3000",
         "http://localhost:3001",
-        "https://orbitamos.vercel.app"
+        "https://orbitamos.vercel.app",
+        "https://orbitamosbr.com",
+        "https://www.orbitamosbr.com"
     );
+
+    @Value("${SPRING_WEB_CORS_ALLOWED_ORIGINS:}")
+    private String extraAllowedOrigins;
 
     private static final Set<String> MUTATING_METHODS = Set.of("POST", "PUT", "DELETE", "PATCH");
 
@@ -55,7 +63,17 @@ public class OriginValidationFilter extends OncePerRequestFilter {
     }
 
     private boolean isAllowedOrigin(String origin) {
-        if (ALLOWED_ORIGINS.contains(origin)) return true;
+        Set<String> configuredOrigins = Stream.of(extraAllowedOrigins.split(","))
+            .map(String::trim)
+            .filter(value -> !value.isBlank())
+            .collect(Collectors.toSet());
+
+        Set<String> allowedOrigins = Stream.concat(
+            DEFAULT_ALLOWED_ORIGINS.stream(),
+            configuredOrigins.stream()
+        ).collect(Collectors.toSet());
+
+        if (allowedOrigins.contains(origin)) return true;
         // Aceita qualquer preview/produção da Vercel
         return origin.matches("https://[a-zA-Z0-9\\-]+-[a-zA-Z0-9]+-[a-zA-Z0-9]+\\.vercel\\.app")
             || origin.matches("https://[a-zA-Z0-9\\-]+\\.vercel\\.app");
