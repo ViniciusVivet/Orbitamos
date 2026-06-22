@@ -140,14 +140,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const switchToCollaborator = () => {
     if (!user) return;
-    setUser({ ...user, role: "FREELANCER" });
-    router.push("/colaborador");
+    if (user.role === "FREELANCER") router.push("/colaborador");
   };
 
   const switchToStudent = () => {
     if (!user) return;
-    setUser({ ...user, role: "STUDENT" });
-    router.push("/estudante");
+    if (user.role === "STUDENT") router.push("/estudante");
   };
 
   return (

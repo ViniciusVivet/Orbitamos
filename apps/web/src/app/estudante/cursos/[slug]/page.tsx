@@ -18,6 +18,12 @@ import { addProgressLesson } from "@/lib/api";
 import type { UserId } from "@/lib/api";
 
 const STORAGE_KEY = "orbitacademy-progress";
+const YOUTUBE_VIDEO_ID_PATTERN = /^[a-zA-Z0-9_-]{6,20}$/;
+
+function getYoutubeEmbedUrl(videoId: string | undefined): string | null {
+  if (!videoId || !YOUTUBE_VIDEO_ID_PATTERN.test(videoId)) return null;
+  return `https://www.youtube.com/embed/${videoId}`;
+}
 
 function getStoredProgress(cursoSlug: string, userId: UserId | undefined): string[] {
   if (typeof window === "undefined" || !userId) return [];
@@ -92,6 +98,7 @@ export default function CursoPage() {
   }, [curso, slug, userId]);
 
   const aula = useMemo(() => (curso && aulaId ? aulaNoCurso(curso, aulaId) : undefined), [curso, aulaId]);
+  const youtubeEmbedUrl = getYoutubeEmbedUrl(aula?.youtubeVideoId);
   const concluidasCount = concluidas.length;
   const percent = total > 0 ? Math.round((concluidasCount / total) * 100) : 0;
 
@@ -211,13 +218,19 @@ export default function CursoPage() {
             </div>
             <div className="flex flex-col gap-4 lg:flex-row">
               <div className="aspect-video w-full shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black lg:max-w-2xl">
-                <iframe
-                  className="h-full w-full"
-                  src={`https://www.youtube.com/embed/${aula.youtubeVideoId}`}
-                  title={aula.titulo}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+                {youtubeEmbedUrl ? (
+                  <iframe
+                    className="h-full w-full"
+                    src={youtubeEmbedUrl}
+                    title={aula.titulo}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center px-6 text-center text-sm text-white/50">
+                    Video indisponivel para esta aula.
+                  </div>
+                )}
               </div>
               {aula.conteudo && (
                 <div className="flex-1 rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white/80 whitespace-pre-line">

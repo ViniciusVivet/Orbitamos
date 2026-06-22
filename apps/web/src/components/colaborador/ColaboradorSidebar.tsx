@@ -26,7 +26,7 @@ interface ColaboradorSidebarProps {
 
 export default function ColaboradorSidebar({ mobileOpen = false, onCloseMobile }: ColaboradorSidebarProps) {
   const pathname = usePathname();
-  const { user, logout, switchToStudent } = useAuth();
+  const { user, logout } = useAuth();
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -107,14 +107,6 @@ export default function ColaboradorSidebar({ mobileOpen = false, onCloseMobile }
           )}
           <span className="truncate text-sm text-white/80">{user?.name}</span>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="mb-2 w-full border border-orbit-electric/40 text-orbit-electric hover:bg-orbit-electric/10 text-xs min-h-[40px] touch-manipulation"
-          onClick={switchToStudent}
-        >
-          🎓 Ir para área estudante
-        </Button>
         <Button
           variant="outline"
           size="sm"

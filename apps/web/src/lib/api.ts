@@ -11,6 +11,26 @@ const API_URL =
 /** Base da API sem /api (para montar URLs de upload/avatar em produção). */
 export const API_BASE_URL = API_URL.replace(/\/api\/?$/, "");
 
+const MAX_AVATAR_UPLOAD_BYTES = 2 * 1024 * 1024;
+const ALLOWED_AVATAR_TYPES: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+
+function getSafeAvatarExtension(file: File): string {
+  if (file.size > MAX_AVATAR_UPLOAD_BYTES) {
+    throw new Error("Imagem muito grande. Envie um arquivo de ate 2MB.");
+  }
+
+  const extension = ALLOWED_AVATAR_TYPES[file.type];
+  if (!extension) {
+    throw new Error("Formato invalido. Use JPG, PNG ou WEBP.");
+  }
+
+  return extension;
+}
+
 /**
  * Wrapper de fetch que sempre inclui `credentials: "include"`.
  * Isso garante que o cookie httpOnly de sessão seja enviado em toda
@@ -61,21 +81,18 @@ export interface ContactResponse {
  */
 export async function sendContact(data: ContactData): Promise<ContactResponse> {
   if (isSupabaseConfigured) {
-    const { data: inserted, error } = await requireSupabase()
+    const { error } = await requireSupabase()
       .from("v3_contacts")
       .insert({
         name: data.name,
         email: data.email,
         message: data.message,
-      })
-      .select("id")
-      .single();
+      });
 
     if (error) throw new Error(error.message);
     return {
       success: true,
       message: "Mensagem enviada com sucesso",
-      id: inserted?.id,
     };
   }
 
@@ -775,7 +792,7 @@ export async function uploadAvatarViaApi(
     const userId = sessionData.session?.user.id;
     if (!userId) throw new Error("Sessao nao encontrada");
 
-    const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const extension = getSafeAvatarExtension(file);
     const path = `${userId}/avatar.${extension}`;
     const { error: uploadError } = await client.storage
       .from("avatars")
@@ -1666,7 +1683,7 @@ export async function uploadGroupAvatar(
 ): Promise<{ success: boolean; avatarUrl: string; conversation: ChatConversation }> {
   if (isSupabaseConfigured) {
     const client = requireSupabase();
-    const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const extension = getSafeAvatarExtension(file);
     const path = `groups/${conversationId}/avatar.${extension}`;
     const { error: uploadError } = await client.storage
       .from("avatars")

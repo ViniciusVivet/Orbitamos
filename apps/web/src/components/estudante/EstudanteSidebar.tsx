@@ -45,7 +45,7 @@ interface EstudanteSidebarProps {
 
 export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: EstudanteSidebarProps) {
   const pathname = usePathname();
-  const { user, logout, switchToCollaborator } = useAuth();
+  const { user, logout } = useAuth();
   const [aulasOpen, setAulasOpen] = useState(() => pathname.startsWith("/estudante/aulas") || pathname.startsWith("/estudante/cursos"));
 
   const initials = user?.name?.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase() ?? "?";
@@ -163,14 +163,6 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
           )}
           <span className="truncate text-sm text-white/80">{user?.name}</span>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="mb-2 w-full border border-orbit-purple/40 text-orbit-purple hover:bg-orbit-purple/10 text-xs min-h-[40px] touch-manipulation"
-          onClick={switchToCollaborator}
-        >
-          💼 Ir para área colaborador
-        </Button>
         <Button
           variant="outline"
           size="sm"
