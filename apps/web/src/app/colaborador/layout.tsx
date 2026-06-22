@@ -26,6 +26,17 @@ export default function ColaboradorLayout({
     }
   }, [loading, isAuthenticated, user, router]);
 
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
   if (loading || !isAuthenticated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black">
@@ -40,17 +51,6 @@ export default function ColaboradorLayout({
       </div>
     );
   }
-
-  useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [mobileMenuOpen]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white">
