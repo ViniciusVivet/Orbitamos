@@ -154,6 +154,12 @@ on public.v3_profiles for select
 to authenticated
 using (true);
 
+drop policy if exists "v3_profiles_insert_own" on public.v3_profiles;
+create policy "v3_profiles_insert_own"
+on public.v3_profiles for insert
+to authenticated
+with check (auth.uid() = id);
+
 drop policy if exists "v3_profiles_update_own" on public.v3_profiles;
 create policy "v3_profiles_update_own"
 on public.v3_profiles for update
