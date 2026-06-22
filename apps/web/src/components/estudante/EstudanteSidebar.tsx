@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/estudante", label: "Início", icon: "🏠" },
-  { href: "/estudante/orbita", label: "Orbita", icon: "Orb" },
+  { href: "/estudante/orbita", label: "Jornada", icon: "🌌" },
   { href: "/mensagens", label: "Mensagens", icon: "💬" },
   { href: "/estudante/aulas", label: "Aulas", icon: "🎓" },
   { href: "/estudante/mentorias", label: "Mentorias", icon: "👨‍🏫" },
