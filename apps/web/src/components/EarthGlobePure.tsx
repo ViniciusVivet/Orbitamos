@@ -8,6 +8,8 @@ interface Props {
   level?: number;
   xp?: number;
   xpMax?: number;
+  variant?: "default" | "hero";
+  showWidgets?: boolean;
 }
 
 function getTier(level: number) {
@@ -30,7 +32,7 @@ const LEVEL_PHRASES: Record<number, string> = {
   10: "Em órbita. Lendário. 🌟",
 };
 
-export default function EarthGlobePure({ level = 2, xp = 120, xpMax = 300 }: Props) {
+export default function EarthGlobePure({ level = 2, xp = 120, xpMax = 300, variant = "default", showWidgets = true }: Props) {
   const containerRef  = useRef<HTMLDivElement>(null);
   const rootRef       = useRef<HTMLDivElement>(null);
   const labelRef      = useRef<HTMLDivElement>(null);
@@ -66,6 +68,10 @@ export default function EarthGlobePure({ level = 2, xp = 120, xpMax = 300 }: Pro
 
   const tier   = getTier(level);
   const xpPct  = Math.min(100, Math.round((xp / xpMax) * 100));
+  const rootSizeClass =
+    variant === "hero"
+      ? "mt-0 h-[20rem] w-[20rem] sm:h-[24rem] sm:w-[24rem] lg:h-[31rem] lg:w-[31rem]"
+      : "mt-8 h-72 w-72 md:mt-16 md:h-96 md:w-96";
 
   useEffect(() => {
     const container = containerRef.current;
@@ -379,7 +385,7 @@ export default function EarthGlobePure({ level = 2, xp = 120, xpMax = 300 }: Pro
 
   return (
     <>
-    <div ref={rootRef} className="relative mx-auto mt-8 h-72 w-72 md:mt-16 md:h-96 md:w-96 select-none">
+    <div ref={rootRef} className={`relative mx-auto select-none ${rootSizeClass}`}>
 
       {/* Anéis de órbita CSS — fora do canvas, não são cortados */}
       {tier.rings >= 1 && (
@@ -482,7 +488,7 @@ export default function EarthGlobePure({ level = 2, xp = 120, xpMax = 300 }: Pro
       )}
 
       {/* Contador "orbitando agora" — arrastável (só desktop) */}
-      <div
+      {showWidgets && <div
         className="hidden md:block absolute z-20 cursor-grab active:cursor-grabbing whitespace-nowrap rounded-2xl border border-orbit-electric/30 bg-black/60 px-4 py-2 backdrop-blur-md shadow-[0_0_18px_rgba(0,212,255,0.15)] hover:border-orbit-electric/60 transition-colors"
         style={{ left: counterPos.x, top: counterPos.y }}
         onPointerDown={(e) => dragWidget(e, counterPos, setCounterPos)}
@@ -491,11 +497,11 @@ export default function EarthGlobePure({ level = 2, xp = 120, xpMax = 300 }: Pro
           🌐 <span className="text-2xl font-extrabold text-orbit-electric" style={{ textShadow: "0 0 12px rgba(0,212,255,0.7)" }}>{ORBITANDO_AGORA}</span>
           <span className="ml-1">orbitando agora</span>
         </span>
-      </div>
+      </div>}
 
       {/* Botão Voltar ao Brasil — arrastável (só desktop) */}
       <div
-        className="hidden md:block absolute z-20 cursor-grab active:cursor-grabbing rounded-full border border-orbit-electric/40 bg-black/60 px-4 py-2 text-sm font-bold text-orbit-electric/80 backdrop-blur-md shadow-[0_0_10px_rgba(0,212,255,0.1)] transition-all hover:border-orbit-electric hover:text-orbit-electric hover:shadow-[0_0_16px_rgba(0,212,255,0.45)]"
+        className={`${showWidgets ? "hidden md:block" : "hidden"} absolute z-20 cursor-grab active:cursor-grabbing rounded-full border border-orbit-electric/40 bg-black/60 px-4 py-2 text-sm font-bold text-orbit-electric/80 backdrop-blur-md shadow-[0_0_10px_rgba(0,212,255,0.1)] transition-all hover:border-orbit-electric hover:text-orbit-electric hover:shadow-[0_0_16px_rgba(0,212,255,0.45)]`}
         style={{ left: brazilPos.x, top: brazilPos.y }}
         onPointerDown={(e) => dragWidget(e, brazilPos, setBrazilPos, brazilDragged)}
         onClick={() => { if (!brazilDragged.current) goToBrazilRef.current?.(); }}
@@ -538,7 +544,7 @@ export default function EarthGlobePure({ level = 2, xp = 120, xpMax = 300 }: Pro
     </div>
 
     {/* Mobile: widgets estáticos abaixo do globo — hidden em desktop */}
-    <div className="md:hidden mt-4 flex flex-col items-center gap-3 w-full px-4">
+    {showWidgets && <div className="md:hidden mt-4 flex flex-col items-center gap-3 w-full px-4">
       <div className="rounded-2xl border border-orbit-electric/30 bg-black/60 px-4 py-2 text-center backdrop-blur-md">
         <span className="text-sm font-semibold text-white/60">
           🌐{" "}
@@ -552,7 +558,7 @@ export default function EarthGlobePure({ level = 2, xp = 120, xpMax = 300 }: Pro
       >
         🇧🇷 Voltar ao Brasil
       </button>
-    </div>
+    </div>}
     </>
   );
 }

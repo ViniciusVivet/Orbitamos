@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import ConstellationStepper from "@/components/ConstellationStepper";
 import { useAuth } from "@/contexts/AuthContext";
 import { defaultProgress, useProgress } from "@/contexts/ProgressContext";
+import { ORBITANDO_AGORA } from "@/lib/orbitStats";
 
 const GlobeClient = dynamic(() => import("@/components/GlobeClient"), {
   ssr: false,
@@ -32,34 +33,56 @@ export default function EstudanteOrbitaPage() {
   const xpMax = 100;
 
   return (
-    <div className="relative min-h-[calc(100vh-8rem)] overflow-hidden rounded-2xl border border-white/10 bg-black text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(0,212,255,.20),transparent_55%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_80%_50%,rgba(139,92,246,.16),transparent_55%)]" />
+    <div className="relative min-h-[calc(100vh-7rem)] overflow-x-hidden text-white">
+      <div className="pointer-events-none absolute inset-0 bg-black" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_-10%,rgba(0,212,255,.18),transparent_58%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_54%_70%_at_78%_44%,rgba(139,92,246,.14),transparent_58%)]" />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black" />
 
-      <div className="relative z-10 px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 backdrop-blur-xl">
-            <span className="size-2 rounded-full bg-orbit-electric" />
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-white/60">
-              Jornada em orbita
-            </span>
+      <div className="relative z-10 px-1 py-3 sm:px-4 lg:px-6">
+        <header className="mx-auto flex max-w-6xl flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 backdrop-blur-xl">
+              <span className="size-2 rounded-full bg-orbit-electric" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/60">
+                Jornada em orbita
+              </span>
+            </div>
+
+            <h1 className="bg-gradient-to-br from-orbit-electric via-white to-orbit-purple bg-clip-text text-3xl font-extrabold leading-[1.05] text-transparent sm:text-4xl lg:text-5xl">
+              {user?.name ? `${user.name.split(" ")[0]}, esta e sua orbita.` : "Sua orbita de aprendizado"}
+            </h1>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-white/60">
+              Seu mapa vivo de nivel, XP, fase atual e proximas missoes da OrbitAcademy.
+            </p>
           </div>
 
-          <h1 className="bg-gradient-to-br from-orbit-electric via-white to-orbit-purple bg-clip-text text-3xl font-extrabold leading-tight text-transparent md:text-5xl">
-            {user?.name ? `${user.name.split(" ")[0]}, esta e sua orbita.` : "Sua orbita de aprendizado"}
-          </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-sm text-white/65 md:text-base">
-            Acompanhe seu nivel, XP, fase atual e proximas missoes da OrbitAcademy.
-          </p>
-        </div>
+          <div className="grid grid-cols-3 gap-2 rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-xl sm:min-w-[360px]">
+            <div className="rounded-xl bg-white/5 px-3 py-2.5">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">Nivel</div>
+              <div className="text-2xl font-black text-white">{current.level}</div>
+            </div>
+            <div className="rounded-xl bg-white/5 px-3 py-2.5">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">XP</div>
+              <div className="text-2xl font-black text-orbit-electric">{current.xp}</div>
+            </div>
+            <div className="rounded-xl bg-white/5 px-3 py-2.5">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">Total</div>
+              <div className="text-2xl font-black text-orbit-purple">{current.percent}%</div>
+            </div>
+          </div>
+        </header>
 
-        <div className="mt-8 grid items-center gap-6 xl:grid-cols-[1fr_340px]">
-          <div className="relative min-h-[440px]">
-            <GlobeClient level={current.level} xp={current.xp} xpMax={xpMax} />
+        <section className="mx-auto mt-5 grid max-w-6xl items-center gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="relative flex min-h-[430px] items-center justify-center overflow-visible rounded-3xl border border-white/10 bg-black/20 px-2 py-8 backdrop-blur-sm sm:min-h-[520px] lg:min-h-[600px]">
+            <div className="pointer-events-none absolute inset-0 rounded-3xl bg-[radial-gradient(circle_at_50%_48%,rgba(0,212,255,.12),transparent_58%)]" />
+            <div className="pointer-events-none absolute inset-x-8 bottom-10 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+            <div className="relative">
+              <GlobeClient level={current.level} xp={current.xp} xpMax={xpMax} variant="hero" showWidgets={false} />
+            </div>
           </div>
 
-          <div className="space-y-4">
+          <aside className="space-y-3">
             <Card className="border-orbit-electric/25 bg-black/55 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="text-orbit-electric">Status da sessao</CardTitle>
@@ -77,9 +100,14 @@ export default function EstudanteOrbitaPage() {
                   </div>
                 </div>
 
+                <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-left">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">Orbitando agora</div>
+                  <div className="mt-1 text-3xl font-black text-orbit-electric">{ORBITANDO_AGORA}</div>
+                </div>
+
                 <div>
                   <div className="mb-2 flex justify-between text-xs text-white/50">
-                    <span>Progresso geral</span>
+                    <span>Progresso</span>
                     <span>{current.percent}%</span>
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-white/10">
@@ -112,12 +140,12 @@ export default function EstudanteOrbitaPage() {
                 <Link href="/estudante/progresso">Ver progresso detalhado</Link>
               </Button>
             </div>
-          </div>
-        </div>
+          </aside>
+        </section>
 
-        <div className="mt-8 rounded-2xl border border-white/10 bg-black/45 p-4 backdrop-blur-xl">
+        <section className="mx-auto mt-5 max-w-6xl rounded-2xl border border-white/10 bg-black/35 p-1 backdrop-blur-xl sm:p-3">
           <ConstellationStepper current={currentConstellationStep(current.level)} />
-        </div>
+        </section>
       </div>
     </div>
   );
