@@ -74,7 +74,7 @@ export default function ColaboradorContatos() {
         </div>
         <Card className="border-white/10 bg-gray-900/50">
           <CardContent className="py-12 text-center text-white/60">
-            Acesso interno. Use as areas de projetos, vagas, squad e mensagens para aplicar.
+            Acesso interno. Use as areas de projetos, vagas, squad e mensagens para acompanhar oportunidades.
           </CardContent>
         </Card>
       </div>

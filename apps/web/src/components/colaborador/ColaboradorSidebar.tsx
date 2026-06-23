@@ -47,7 +47,7 @@ export default function ColaboradorSidebar({ mobileOpen = false, onCloseMobile }
     <>
       <div className="flex h-14 lg:h-16 items-center justify-between gap-2 border-b border-white/10 px-4">
         <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-lg font-bold text-transparent">
-          Aplicar
+          Ver vagas
         </span>
         <div className="flex items-center gap-1">
           <div className="relative" ref={notifRef}>

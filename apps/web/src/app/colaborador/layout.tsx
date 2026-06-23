@@ -57,7 +57,7 @@ export default function ColaboradorLayout({
             <span className="text-xl">&#9776;</span>
           </button>
           <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-sm font-semibold uppercase tracking-wider text-transparent">
-            Aplicar
+            Ver vagas
           </span>
         </header>
         <div className="container mx-auto px-4 py-4 sm:py-6 lg:px-6 lg:py-8 max-w-full">

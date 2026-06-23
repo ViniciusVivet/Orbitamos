@@ -174,7 +174,7 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
           className="mb-2 w-full border border-orbit-purple/40 text-orbit-purple hover:bg-orbit-purple/10 text-xs min-h-[40px] touch-manipulation"
         >
           <Link href="/colaborador" onClick={() => onCloseMobile?.()}>
-            🚀 Ir para Aplicar
+            🚀 Ver vagas
           </Link>
         </Button>
         <Button
