@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getDisplayAvatarUrl } from "@/lib/api";
+import { courseTracks } from "@/lib/cursos";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -26,15 +27,11 @@ const navItems: NavItem[] = [
     href: "/estudante/aulas",
     label: "Aulas",
     icon: "🎓",
-    children: [
-      { href: "/estudante/cursos/logica-programacao-python", label: "Logica", icon: "🧠" },
-      { href: "/estudante/cursos/html-css-js", label: "HTML/CSS/JS", icon: "🧱" },
-      { href: "/estudante/cursos/csharp-fundamentos", label: "C#", icon: "💻" },
-      { href: "/estudante/cursos/sql-na-pratica", label: "SQL", icon: "📊" },
-      { href: "/estudante/cursos/github-colaborativo", label: "GitHub", icon: "😼" },
-      { href: "/estudante/cursos/excel-procv", label: "Excel", icon: "📗" },
-      { href: "/estudante/cursos/montagem-manutencao", label: "Hardware", icon: "🛠️" },
-    ],
+    children: courseTracks.map((track) => ({
+      href: `/estudante/cursos/${track.slugs[0]}`,
+      label: track.titulo.replace(/^Trilha\s+/i, ""),
+      icon: track.icon,
+    })),
   },
   { href: "/estudante/mentorias", label: "Mentorias", icon: "👨‍🏫" },
   { href: "/estudante/progresso", label: "Progresso", icon: "📊" },

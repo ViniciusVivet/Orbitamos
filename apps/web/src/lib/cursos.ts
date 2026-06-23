@@ -36,6 +36,93 @@ export interface Curso {
   modulos: Modulo[];
 }
 
+export type CourseTrack = {
+  id: string;
+  titulo: string;
+  descricao: string;
+  icon: string;
+  slugs: string[];
+};
+
+export const courseTracks: CourseTrack[] = [
+  {
+    id: "logica",
+    titulo: "Trilha Logica",
+    descricao: "Base de raciocinio, algoritmo e primeiros passos em programacao.",
+    icon: "🧠",
+    slugs: ["logica-programacao-python"],
+  },
+  {
+    id: "web",
+    titulo: "Trilha HTML",
+    descricao: "Fundamentos de paginas, interfaces e experiencias web.",
+    icon: "🧱",
+    slugs: ["html-css-js"],
+  },
+  {
+    id: "csharp",
+    titulo: "Trilha C#",
+    descricao: "Primeiros passos no ecossistema C# e .NET.",
+    icon: "💻",
+    slugs: ["csharp-fundamentos"],
+  },
+  {
+    id: "sql",
+    titulo: "Trilha SQL",
+    descricao: "Banco de dados relacional, consultas e pratica com dados.",
+    icon: "📊",
+    slugs: ["sql-na-pratica"],
+  },
+  {
+    id: "github",
+    titulo: "Trilha GitHub",
+    descricao: "Versionamento, fork, pull request e colaboracao.",
+    icon: "😼",
+    slugs: ["github-colaborativo"],
+  },
+  {
+    id: "office",
+    titulo: "Trilha Office e Dados",
+    descricao: "Excel, VBA e Power BI para analise e automacao.",
+    icon: "📗",
+    slugs: ["excel-procv", "vba-excel", "power-bi"],
+  },
+  {
+    id: "hardware",
+    titulo: "Trilha Hardware",
+    descricao: "Montagem, manutencao e sistema operacional.",
+    icon: "🛠️",
+    slugs: ["montagem-manutencao"],
+  },
+];
+
+export function getCourseTrackGroups(cursosList: Curso[]) {
+  const usedSlugs = new Set<string>();
+  const groups = courseTracks
+    .map((track) => {
+      const cursos = track.slugs
+        .map((slug) => cursosList.find((curso) => curso.slug === slug))
+        .filter((curso): curso is Curso => Boolean(curso));
+      cursos.forEach((curso) => usedSlugs.add(curso.slug));
+      return { ...track, cursos };
+    })
+    .filter((track) => track.cursos.length > 0);
+
+  const extras = cursosList.filter((curso) => !usedSlugs.has(curso.slug));
+  if (extras.length > 0) {
+    groups.push({
+      id: "outros",
+      titulo: "Outras trilhas",
+      descricao: "Cursos complementares da OrbitAcademy.",
+      icon: "🎓",
+      slugs: extras.map((curso) => curso.slug),
+      cursos: extras,
+    });
+  }
+
+  return groups;
+}
+
 function material(id: string, titulo: string, tipo: string, url: string): MaterialAula {
   return { id, titulo, tipo, url: normalizeMaterialUrl(url) };
 }
