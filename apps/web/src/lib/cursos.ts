@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Estrutura de cursos da OrbitAcademy (modulos e aulas).
  * Videos sao embeds do YouTube — ponte pelo proprio site.
  */
@@ -36,67 +36,166 @@ export interface Curso {
   modulos: Modulo[];
 }
 
-/** Lista de cursos disponiveis (mock; depois pode vir da API) */
+function material(id: string, titulo: string, tipo: string, url: string): MaterialAula {
+  return { id, titulo, tipo, url };
+}
+
+/** Lista de cursos disponiveis (fallback local; em producao vem do Supabase). */
 export const cursos: Curso[] = [
   {
-    id: "1",
-    slug: "html-css-basico",
-    titulo: "HTML/CSS Basico",
-    descricao: "Fundamentos de marcação e estilo para a web.",
+    id: "fallback-html-css-js",
+    slug: "html-css-js",
+    titulo: "HTML, CSS e JavaScript",
+    descricao: "Base pratica para criar paginas, dashboards e interfaces web.",
     modulos: [
       {
-        id: "m1",
-        titulo: "Introducao",
+        id: "html-css-js-m1",
+        titulo: "Fundamentos e pratica web",
         aulas: [
-          { id: "a1", titulo: "Introducao e Dicas para quem esta comecando", youtubeVideoId: "b7re8uY8Pf4", conteudo: "• O que e HTML e CSS\n• Ferramentas necessarias" },
-          { id: "a2", titulo: "Instalando as ferramentas (Windows)", youtubeVideoId: "b7re8uY8Pf4" },
-          { id: "a3", titulo: "Instalando as ferramentas (Mac)", youtubeVideoId: "b7re8uY8Pf4" },
-        ],
-      },
-      {
-        id: "m2",
-        titulo: "Primeiros passos",
-        aulas: [
-          { id: "a4", titulo: "Estrutura basica de um HTML", youtubeVideoId: "b7re8uY8Pf4" },
-          { id: "a5", titulo: "Seletores CSS", youtubeVideoId: "b7re8uY8Pf4" },
+          {
+            id: "html-css-js-a1",
+            titulo: "HTML do zero",
+            youtubeVideoId: "",
+            conteudo: "Estrutura inicial de uma pagina HTML antes de entrar em CSS e JavaScript.",
+            materiais: [material("html-css-js-mat-1", "HTML do zero", "DOCX", "/course-materials/html-css-js/04-html-do-zero-sem-css-e-sem-javascript.docx")],
+          },
+          {
+            id: "html-css-js-a2",
+            titulo: "HTML, CSS e JS - atividade pratica",
+            youtubeVideoId: "",
+            conteudo: "Exercicio guiado para aplicar estrutura, estilo e comportamento em uma pagina simples.",
+            materiais: [material("html-css-js-mat-2", "Atividade pratica HTML, CSS e JS", "DOCX", "/course-materials/html-css-js/02-html-js-e-css-atv-pratica-1.docx")],
+          },
+          {
+            id: "html-css-js-a3",
+            titulo: "Dashboard futurista com HTML",
+            youtubeVideoId: "",
+            conteudo: "Material para construir uma interface visual mais elaborada e treinar composicao de tela.",
+            materiais: [material("html-css-js-mat-3", "HTML Dashboard Futurista", "DOCX", "/course-materials/html-css-js/01-html-dashboard-futurista.docx")],
+          },
+          {
+            id: "html-css-js-a4",
+            titulo: "HTML - aula 1",
+            youtubeVideoId: "",
+            conteudo: "Reforco de marcacao e organizacao inicial de conteudo web.",
+            materiais: [material("html-css-js-mat-4", "HTML - aula 1", "DOCX", "/course-materials/html-css-js/03-html-1.docx")],
+          },
         ],
       },
     ],
   },
   {
-    id: "2",
-    slug: "js-essencial",
-    titulo: "JS Essencial",
-    descricao: "JavaScript do zero ao essencial.",
+    id: "fallback-logica-python",
+    slug: "logica-programacao-python",
+    titulo: "Logica de Programacao com Python",
+    descricao: "Primeiros passos de algoritmo, raciocinio logico e pratica com Python.",
     modulos: [
       {
-        id: "m3",
-        titulo: "Comecando com JavaScript",
-        aulas: [
-          { id: "a6", titulo: "O que e JavaScript", youtubeVideoId: "b7re8uY8Pf4" },
-          { id: "a7", titulo: "Variaveis e tipos", youtubeVideoId: "b7re8uY8Pf4" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "3",
-    slug: "react-iniciantes",
-    titulo: "React para Iniciantes",
-    descricao: "Construa interfaces com React.",
-    modulos: [
-      {
-        id: "m4",
+        id: "logica-python-m1",
         titulo: "Fundamentos",
         aulas: [
-          { id: "a8", titulo: "O que e React", youtubeVideoId: "b7re8uY8Pf4" },
-          { id: "a9", titulo: "Seu primeiro componente", youtubeVideoId: "b7re8uY8Pf4" },
+          { id: "logica-python-a0", titulo: "Aula 0 - introducao a logica", youtubeVideoId: "", materiais: [material("logica-python-mat-0", "Logica de programacao - aula 0", "DOCX", "/course-materials/logica-programacao-python/04-logica-de-programacao-aula-0.docx")] },
+          { id: "logica-python-a1", titulo: "Apostila de logica com Python", youtubeVideoId: "", materiais: [material("logica-python-mat-1", "Apostila - logica de programacao com Python", "DOCX", "/course-materials/logica-programacao-python/01-apostila-logica-de-programacao-com-python.docx")] },
+          { id: "logica-python-a2", titulo: "Logica de programacao com Python", youtubeVideoId: "", materiais: [material("logica-python-mat-2", "Logica de programacao com Python", "DOCX", "/course-materials/logica-programacao-python/02-logica-de-programacao-com-python.docx")] },
+          { id: "logica-python-a3", titulo: "Logica de programacao - parte 2", youtubeVideoId: "", materiais: [material("logica-python-mat-3", "Logica de programacao - parte 2", "DOCX", "/course-materials/logica-programacao-python/03-logica-de-programacao-2.docx")] },
+          { id: "logica-python-a4", titulo: "Aula 3 - pratica com Python", youtubeVideoId: "", materiais: [material("logica-python-mat-4", "Logica de programacao - aula 3 com Python", "DOCX", "/course-materials/logica-programacao-python/05-logica-de-programacao-aula-3-com-python.docx")] },
         ],
       },
+    ],
+  },
+  {
+    id: "fallback-csharp",
+    slug: "csharp-fundamentos",
+    titulo: "C# Fundamentos",
+    descricao: "Base de C# para quem esta iniciando no ecossistema .NET.",
+    modulos: [
+      {
+        id: "csharp-m1",
+        titulo: "Primeiras aulas",
+        aulas: [
+          { id: "csharp-a1", titulo: "C# - aula 1", youtubeVideoId: "", materiais: [material("csharp-mat-1", "C# - aula 1", "DOCX", "/course-materials/csharp-fundamentos/03-c-aula-1.docx")] },
+          { id: "csharp-a2", titulo: "C# - atividade pratica 1", youtubeVideoId: "", materiais: [material("csharp-mat-2", "C# - atividade pratica 1", "DOCX", "/course-materials/csharp-fundamentos/01-c-aula-pratica-atv-1.docx")] },
+          { id: "csharp-a3", titulo: "Averiguar C#", youtubeVideoId: "", materiais: [material("csharp-mat-3", "Averiguar C#", "DOCX", "/course-materials/csharp-fundamentos/02-averiguar-c.docx")] },
+          { id: "csharp-a4", titulo: "C# nivel medio - Cinema do Bruno", youtubeVideoId: "", materiais: [material("csharp-mat-4", "C# nivel medio - Cinema do Bruno", "DOCX", "/course-materials/csharp-fundamentos/04-c-2-nivel-medio-cinema-do-bruno.docx")] },
+        ],
+      },
+    ],
+  },
+  {
+    id: "fallback-sql",
+    slug: "sql-na-pratica",
+    titulo: "SQL na Pratica",
+    descricao: "Banco de dados relacional, consultas e exercicios com SQL.",
+    modulos: [
+      { id: "sql-m1", titulo: "Banco de dados", aulas: [
+        { id: "sql-a1", titulo: "Introducao ao SQL", youtubeVideoId: "", materiais: [material("sql-mat-1", "Introducao ao SQL - banco de dados na pratica", "DOCX", "/course-materials/sql-na-pratica/02-introducao-ao-sql-banco-de-dados-na-pratica.docx")] },
+        { id: "sql-a2", titulo: "SQL na pratica 2 - Oracle Live", youtubeVideoId: "", materiais: [material("sql-mat-2", "SQL na pratica 2 - Oracle Live", "DOCX", "/course-materials/sql-na-pratica/01-sql-na-pratica-2-oracle-live.docx")] },
+      ] },
+    ],
+  },
+  {
+    id: "fallback-github",
+    slug: "github-colaborativo",
+    titulo: "GitHub Colaborativo",
+    descricao: "Fluxo basico e intermediario com fork, pull request e colaboracao.",
+    modulos: [
+      { id: "github-m1", titulo: "Fluxo de colaboracao", aulas: [
+        { id: "github-a1", titulo: "GitHub basico ao intermediario", youtubeVideoId: "", materiais: [material("github-mat-1", "GitHub basico ao intermediario", "DOCX", "/course-materials/github-colaborativo/03-github-basico-intermediario.docx")] },
+        { id: "github-a2", titulo: "Fork e pull request", youtubeVideoId: "", materiais: [material("github-mat-2", "GitHub - fork e pull request", "DOCX", "/course-materials/github-colaborativo/01-github-fork-pull-request.docx")] },
+        { id: "github-a3", titulo: "Pull request na pratica", youtubeVideoId: "", materiais: [material("github-mat-3", "GitHub - fork e pull request PR", "DOCX", "/course-materials/github-colaborativo/02-github-fork-pull-request-pr.docx")] },
+      ] },
+    ],
+  },
+  {
+    id: "fallback-excel",
+    slug: "excel-procv",
+    titulo: "Excel - PROCV",
+    descricao: "Consulta de dados e automacao inicial de planilhas com PROCV.",
+    modulos: [
+      { id: "excel-m1", titulo: "Funcoes de busca", aulas: [
+        { id: "excel-a1", titulo: "Excel PROCV", youtubeVideoId: "", materiais: [material("excel-mat-1", "Excel PROCV", "DOCX", "/course-materials/excel-procv/01-excel-procv.docx")] },
+      ] },
+    ],
+  },
+  {
+    id: "fallback-vba",
+    slug: "vba-excel",
+    titulo: "VBA para Excel",
+    descricao: "Macros, formularios e gravacao em planilhas como banco de dados.",
+    modulos: [
+      { id: "vba-m1", titulo: "Automacao no Excel", aulas: [
+        { id: "vba-a1", titulo: "VBA para Excel avancado - atividade pratica", youtubeVideoId: "", materiais: [material("vba-mat-1", "VBA para Excel avancado - atividade pratica", "DOCX", "/course-materials/vba-excel/01-vba-para-excel-avancado-atv-pratica-1.docx")] },
+        { id: "vba-a2", titulo: "Banco de dados em planilha", youtubeVideoId: "", materiais: [material("vba-mat-2", "Banco de dados XLSM", "XLSM", "/course-materials/vba-excel/02-banco-de-dados-xlsm2005.xlsm")] },
+        { id: "vba-a3", titulo: "Formulario que grava no banco de dados", youtubeVideoId: "", materiais: [material("vba-mat-3", "Apostila VBA - formulario com banco de dados", "DOCX", "/course-materials/vba-excel/03-apostila-vba-no-excel-formulario-que-grava-no-banco-de-dados.docx")] },
+      ] },
+    ],
+  },
+  {
+    id: "fallback-power-bi",
+    slug: "power-bi",
+    titulo: "Power BI",
+    descricao: "Primeiros passos em analise visual de dados com Power BI.",
+    modulos: [
+      { id: "power-bi-m1", titulo: "Aula inicial", aulas: [
+        { id: "power-bi-a1", titulo: "Power BI - aula 1", youtubeVideoId: "", materiais: [material("power-bi-mat-1", "Power BI - aula 1", "DOCX", "/course-materials/power-bi/01-aula-1-power-bi.docx")] },
+        { id: "power-bi-a2", titulo: "Gabarito Power BI - aula 1", youtubeVideoId: "", materiais: [material("power-bi-mat-2", "Gabarito Power BI - aula 1", "DOCX", "/course-materials/power-bi/02-gabarito-powerbi-aula-1.docx")] },
+      ] },
+    ],
+  },
+  {
+    id: "fallback-manutencao",
+    slug: "montagem-manutencao",
+    titulo: "Montagem e Manutencao",
+    descricao: "Hardware, manutencao e sistema operacional Linux.",
+    modulos: [
+      { id: "manutencao-m1", titulo: "Hardware e sistema operacional", aulas: [
+        { id: "manutencao-a1", titulo: "Pecas de hardware do computador", youtubeVideoId: "", materiais: [material("manutencao-mat-1", "Pecas de hardware do computador", "DOCX", "/course-materials/montagem-manutencao/01-pecas-de-hardware-do-computador.docx")] },
+        { id: "manutencao-a2", titulo: "Desafio pratico - tecnico de hardware", youtubeVideoId: "", materiais: [material("manutencao-mat-2", "Desafio pratico - tecnico de hardware", "DOCX", "/course-materials/montagem-manutencao/02-desafio-pratico-tecnico-de-hardware.docx")] },
+        { id: "manutencao-a3", titulo: "Sistema operacional Linux", youtubeVideoId: "", materiais: [material("manutencao-mat-3", "Montagem e manutencao - Linux", "DOCX", "/course-materials/montagem-manutencao/03-montagem-manutencao-sistema-operacional-linux.docx")] },
+      ] },
     ],
   },
 ];
-
 /** Total de aulas de um curso */
 export function totalAulas(curso: Curso): number {
   return curso.modulos.reduce((acc, m) => acc + m.aulas.length, 0);
@@ -297,3 +396,4 @@ export async function marcarAulaAcademyConcluida(lessonId: string): Promise<void
 
   if (error) throw new Error(error.message);
 }
+

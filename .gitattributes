@@ -19,6 +19,9 @@
 *.eot binary
 *.otf binary
 *.pdf binary
+*.docx binary
+*.xlsx binary
+*.xlsm binary
 *.zip binary
 *.mov binary
 *.java text eol=lf

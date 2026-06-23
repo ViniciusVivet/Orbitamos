@@ -227,14 +227,42 @@ export default function CursoPage() {
                     allowFullScreen
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center px-6 text-center text-sm text-white/50">
-                    Video indisponivel para esta aula.
+                  <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-6 text-center">
+                    <div className="text-sm font-semibold text-white/70">Aula em material guiado</div>
+                    <div className="max-w-sm text-xs leading-5 text-white/45">
+                      Esta aula ainda nao tem video publicado. Use os materiais anexos para estudar e aplicar a pratica.
+                    </div>
                   </div>
                 )}
               </div>
-              {aula.conteudo && (
-                <div className="flex-1 rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white/80 whitespace-pre-line">
-                  {aula.conteudo}
+              {(aula.conteudo || (aula.materiais?.length ?? 0) > 0) && (
+                <div className="flex-1 space-y-4">
+                  {aula.conteudo && (
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white/80 whitespace-pre-line">
+                      {aula.conteudo}
+                    </div>
+                  )}
+                  {(aula.materiais?.length ?? 0) > 0 && (
+                    <div className="rounded-xl border border-orbit-electric/20 bg-orbit-electric/5 p-4">
+                      <h2 className="text-sm font-bold text-orbit-electric">Materiais da aula</h2>
+                      <div className="mt-3 space-y-2">
+                        {aula.materiais!.map((material) => (
+                          <a
+                            key={material.id}
+                            href={material.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white/75 transition-colors hover:border-orbit-electric/40 hover:text-orbit-electric"
+                          >
+                            <span className="truncate">{material.titulo}</span>
+                            <span className="shrink-0 text-[10px] font-bold uppercase tracking-widest text-white/35">
+                              {material.tipo}
+                            </span>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
