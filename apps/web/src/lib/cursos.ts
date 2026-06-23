@@ -37,7 +37,19 @@ export interface Curso {
 }
 
 function material(id: string, titulo: string, tipo: string, url: string): MaterialAula {
-  return { id, titulo, tipo, url };
+  return { id, titulo, tipo, url: normalizeMaterialUrl(url) };
+}
+
+function normalizeMaterialUrl(url: string | null | undefined): string {
+  if (!url) return "";
+
+  const trimmed = url.trim();
+  const publicPathMatch = trimmed.match(/\/course-materials\/(.+)$/);
+  if (publicPathMatch) {
+    return `/api/course-materials/${publicPathMatch[1]}`;
+  }
+
+  return trimmed;
 }
 
 /** Lista de cursos disponiveis (fallback local; em producao vem do Supabase). */
@@ -292,7 +304,7 @@ function mapSupabaseCourse(row: SupabaseCourseRow): Curso {
               id: material.id,
               titulo: material.title,
               tipo: material.kind,
-              url: material.file_url ?? material.external_url ?? "",
+              url: normalizeMaterialUrl(material.external_url ?? material.file_url),
             }))
             .filter((material) => material.url),
         })),
