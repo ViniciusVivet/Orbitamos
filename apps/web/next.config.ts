@@ -17,7 +17,7 @@ const securityHeaders = [
       "font-src 'self'",
       "connect-src 'self' https://orbitamosbr.com https://www.orbitamosbr.com https://api.orbitamosbr.com wss://api.orbitamosbr.com https://*.supabase.co wss://*.supabase.co https://*.render.com wss://*.render.com https://*.cloudfront.net wss://*.cloudfront.net https://*.amazonaws.com wss://*.amazonaws.com",
       "media-src 'self'",
-      "frame-src https://www.instagram.com https://www.youtube.com https://vercel.live",
+      "frame-src 'self' https://www.instagram.com https://www.youtube.com https://vercel.live https://view.officeapps.live.com",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",

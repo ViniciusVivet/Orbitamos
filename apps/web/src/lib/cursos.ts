@@ -44,6 +44,10 @@ function normalizeMaterialUrl(url: string | null | undefined): string {
   if (!url) return "";
 
   const trimmed = url.trim();
+  if (trimmed.startsWith("/api/course-materials/")) {
+    return trimmed.split("?")[0];
+  }
+
   const publicPathMatch = trimmed.match(/\/course-materials\/(.+)$/);
   if (publicPathMatch) {
     return `/api/course-materials/${publicPathMatch[1]}`;

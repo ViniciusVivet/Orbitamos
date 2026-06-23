@@ -11,6 +11,7 @@ import {
   marcarAulaAcademyConcluida,
   listarAulasConcluidas,
   type Curso,
+  type MaterialAula,
 } from "@/lib/cursos";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProgress } from "@/contexts/ProgressContext";
@@ -23,6 +24,63 @@ const YOUTUBE_VIDEO_ID_PATTERN = /^[a-zA-Z0-9_-]{6,20}$/;
 function getYoutubeEmbedUrl(videoId: string | undefined): string | null {
   if (!videoId || !YOUTUBE_VIDEO_ID_PATTERN.test(videoId)) return null;
   return `https://www.youtube.com/embed/${videoId}`;
+}
+
+function getMaterialDownloadUrl(material: MaterialAula): string {
+  const separator = material.url.includes("?") ? "&" : "?";
+  return `${material.url}${separator}download=1`;
+}
+
+function getMaterialExtension(material: MaterialAula): string {
+  const urlPath = material.url.split("?")[0].toLowerCase();
+  const fromUrl = urlPath.match(/\.([a-z0-9]+)$/)?.[1];
+  if (fromUrl) return fromUrl;
+  return material.tipo.toLowerCase();
+}
+
+function MaterialPreview({ material }: { material: MaterialAula }) {
+  const [origin, setOrigin] = useState("");
+  const extension = getMaterialExtension(material);
+  const downloadUrl = getMaterialDownloadUrl(material);
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+
+  if (extension === "pdf") {
+    return (
+      <iframe
+        className="h-full min-h-[70vh] w-full bg-white"
+        src={material.url}
+        title={material.titulo}
+      />
+    );
+  }
+
+  if (["doc", "docx", "xls", "xlsx", "xlsm", "ppt", "pptx"].includes(extension) && origin) {
+    const absoluteUrl = new URL(material.url, origin).toString();
+    const viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(absoluteUrl)}`;
+
+    return (
+      <iframe
+        className="h-full min-h-[70vh] w-full bg-white"
+        src={viewerUrl}
+        title={material.titulo}
+      />
+    );
+  }
+
+  return (
+    <div className="flex h-full min-h-[360px] w-full flex-col items-center justify-center gap-4 px-6 text-center">
+      <div className="text-sm font-semibold text-white/70">Previa indisponivel para este formato</div>
+      <a
+        href={downloadUrl}
+        className="rounded-full border border-orbit-electric/50 px-4 py-2 text-sm font-semibold text-orbit-electric hover:bg-orbit-electric/10"
+      >
+        Baixar material
+      </a>
+    </div>
+  );
 }
 
 function getStoredProgress(cursoSlug: string, userId: UserId | undefined): string[] {
@@ -99,8 +157,17 @@ export default function CursoPage() {
 
   const aula = useMemo(() => (curso && aulaId ? aulaNoCurso(curso, aulaId) : undefined), [curso, aulaId]);
   const youtubeEmbedUrl = getYoutubeEmbedUrl(aula?.youtubeVideoId);
+  const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(null);
+  const selectedMaterial = useMemo(() => {
+    const materiais = aula?.materiais ?? [];
+    return materiais.find((material) => material.id === selectedMaterialId) ?? materiais[0] ?? null;
+  }, [aula?.materiais, selectedMaterialId]);
   const concluidasCount = concluidas.length;
   const percent = total > 0 ? Math.round((concluidasCount / total) * 100) : 0;
+
+  useEffect(() => {
+    setSelectedMaterialId(null);
+  }, [aulaId]);
 
   const marcarConcluida = useCallback(async () => {
     if (!aulaId || !curso || !userId) return;
@@ -217,17 +284,37 @@ export default function CursoPage() {
               </button>
             </div>
             <div className="flex flex-col gap-4 lg:flex-row">
-              <div className="aspect-video w-full shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black lg:max-w-2xl">
+              <div className="w-full shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black lg:max-w-3xl">
                 {youtubeEmbedUrl ? (
-                  <iframe
-                    className="h-full w-full"
-                    src={youtubeEmbedUrl}
-                    title={aula.titulo}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
+                  <div className="aspect-video w-full">
+                    <iframe
+                      className="h-full w-full"
+                      src={youtubeEmbedUrl}
+                      title={aula.titulo}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                ) : selectedMaterial ? (
+                  <div>
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-white/[0.03] px-4 py-3">
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-semibold text-white">{selectedMaterial.titulo}</div>
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">
+                          {selectedMaterial.tipo}
+                        </div>
+                      </div>
+                      <a
+                        href={getMaterialDownloadUrl(selectedMaterial)}
+                        className="shrink-0 rounded-full border border-orbit-electric/50 px-3 py-1.5 text-xs font-bold text-orbit-electric hover:bg-orbit-electric/10"
+                      >
+                        Baixar arquivo
+                      </a>
+                    </div>
+                    <MaterialPreview material={selectedMaterial} />
+                  </div>
                 ) : (
-                  <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-6 text-center">
+                  <div className="flex min-h-[360px] w-full flex-col items-center justify-center gap-3 px-6 text-center">
                     <div className="text-sm font-semibold text-white/70">Aula em material guiado</div>
                     <div className="max-w-sm text-xs leading-5 text-white/45">
                       Esta aula ainda nao tem video publicado. Use os materiais anexos para estudar e aplicar a pratica.
@@ -247,18 +334,31 @@ export default function CursoPage() {
                       <h2 className="text-sm font-bold text-orbit-electric">Materiais da aula</h2>
                       <div className="mt-3 space-y-2">
                         {aula.materiais!.map((material) => (
-                          <a
+                          <div
                             key={material.id}
-                            href={material.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white/75 transition-colors hover:border-orbit-electric/40 hover:text-orbit-electric"
+                            className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm transition-colors ${
+                              selectedMaterial?.id === material.id
+                                ? "border-orbit-electric/50 bg-orbit-electric/10 text-orbit-electric"
+                                : "border-white/10 bg-black/30 text-white/75 hover:border-orbit-electric/40 hover:text-orbit-electric"
+                            }`}
                           >
-                            <span className="truncate">{material.titulo}</span>
-                            <span className="shrink-0 text-[10px] font-bold uppercase tracking-widest text-white/35">
-                              {material.tipo}
-                            </span>
-                          </a>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedMaterialId(material.id)}
+                              className="min-w-0 flex-1 text-left"
+                            >
+                              <span className="block truncate">{material.titulo}</span>
+                              <span className="mt-1 block text-[10px] font-bold uppercase tracking-widest text-white/35">
+                                {material.tipo}
+                              </span>
+                            </button>
+                            <a
+                              href={getMaterialDownloadUrl(material)}
+                              className="shrink-0 rounded border border-white/10 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white/50 hover:border-orbit-electric/40 hover:text-orbit-electric"
+                            >
+                              Baixar
+                            </a>
+                          </div>
                         ))}
                       </div>
                     </div>

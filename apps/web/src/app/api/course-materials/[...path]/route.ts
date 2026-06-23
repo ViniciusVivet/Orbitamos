@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { NextRequest } from "next/server";
 
@@ -11,29 +11,90 @@ const CONTENT_TYPES: Record<string, string> = {
   ".pdf": "application/pdf",
 };
 
+type ResolvedMaterial = {
+  file: Buffer;
+  filename: string;
+};
+
 function isSafeSegment(segment: string): boolean {
   return Boolean(segment) && segment !== "." && segment !== ".." && !segment.includes("/") && !segment.includes("\\");
 }
 
-async function readCourseMaterial(requestedPath: string[]): Promise<Buffer> {
+function candidateFilenames(filename: string): string[] {
+  const parsed = path.parse(filename);
+  const candidates = [filename];
+
+  if (parsed.ext.toLowerCase() === ".pdf") {
+    candidates.push(`${parsed.name}.docx`, `${parsed.name}.xlsx`, `${parsed.name}.xlsm`);
+  }
+
+  return Array.from(new Set(candidates));
+}
+
+function normalizeFileStem(filename: string): string {
+  return path
+    .parse(filename)
+    .name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/^\d+[-_\s]+/, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+async function fuzzyFilenames(baseDir: string, parentSegments: string[], requestedFilename: string): Promise<string[]> {
+  const directory = path.join(baseDir, ...parentSegments);
+  const relativePath = path.relative(baseDir, directory);
+  if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) return [];
+
+  try {
+    const entries = await readdir(directory, { withFileTypes: true });
+    const requestedStem = normalizeFileStem(requestedFilename);
+    return entries
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name)
+      .filter((filename) => {
+        const stem = normalizeFileStem(filename);
+        return stem.includes(requestedStem) || requestedStem.includes(stem);
+      });
+  } catch {
+    return [];
+  }
+}
+
+async function readCourseMaterial(requestedPath: string[]): Promise<ResolvedMaterial> {
   const candidateBaseDirs = [
     path.join(process.cwd(), "public", "course-materials"),
     path.join(process.cwd(), "apps", "web", "public", "course-materials"),
   ];
+  const parentSegments = requestedPath.slice(0, -1);
+  const filenameCandidates = candidateFilenames(requestedPath[requestedPath.length - 1]);
 
   let lastError: unknown;
   for (const baseDir of candidateBaseDirs) {
-    const filePath = path.join(baseDir, ...requestedPath);
-    const relativePath = path.relative(baseDir, filePath);
+    const allFilenameCandidates = [
+      ...filenameCandidates,
+      ...(await fuzzyFilenames(baseDir, parentSegments, requestedPath[requestedPath.length - 1])),
+    ];
 
-    if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
-      continue;
-    }
+    for (const filename of Array.from(new Set(allFilenameCandidates))) {
+      const candidatePath = [...parentSegments, filename];
+      const filePath = path.join(baseDir, ...candidatePath);
+      const relativePath = path.relative(baseDir, filePath);
 
-    try {
-      return await readFile(filePath);
-    } catch (error) {
-      lastError = error;
+      if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
+        continue;
+      }
+
+      try {
+        return {
+          file: await readFile(filePath),
+          filename,
+        };
+      } catch (error) {
+        lastError = error;
+      }
     }
   }
 
@@ -41,7 +102,7 @@ async function readCourseMaterial(requestedPath: string[]): Promise<Buffer> {
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   context: { params: Promise<{ path: string[] }> }
 ) {
   const { path: requestedPath } = await context.params;
@@ -50,14 +111,14 @@ export async function GET(
   }
 
   try {
-    const file = await readCourseMaterial(requestedPath);
-    const filename = requestedPath[requestedPath.length - 1];
+    const { file, filename } = await readCourseMaterial(requestedPath);
     const contentType = CONTENT_TYPES[path.extname(filename).toLowerCase()] ?? "application/octet-stream";
+    const disposition = request.nextUrl.searchParams.get("download") === "1" ? "attachment" : "inline";
 
     return new Response(new Uint8Array(file), {
       headers: {
         "Content-Type": contentType,
-        "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Disposition": `${disposition}; filename="${filename.replaceAll("\"", "")}"`,
         "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
