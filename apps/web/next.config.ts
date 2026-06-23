@@ -30,6 +30,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  outputFileTracingIncludes: {
+    "/api/course-materials/[...path]": ["./public/course-materials/**/*"],
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
@@ -41,6 +44,14 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: securityHeaders,
+      },
+    ];
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/course-materials/:path*",
+        destination: "/api/course-materials/:path*",
       },
     ];
   },

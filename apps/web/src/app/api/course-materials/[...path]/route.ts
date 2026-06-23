@@ -15,6 +15,31 @@ function isSafeSegment(segment: string): boolean {
   return Boolean(segment) && segment !== "." && segment !== ".." && !segment.includes("/") && !segment.includes("\\");
 }
 
+async function readCourseMaterial(requestedPath: string[]): Promise<Buffer> {
+  const candidateBaseDirs = [
+    path.join(process.cwd(), "public", "course-materials"),
+    path.join(process.cwd(), "apps", "web", "public", "course-materials"),
+  ];
+
+  let lastError: unknown;
+  for (const baseDir of candidateBaseDirs) {
+    const filePath = path.join(baseDir, ...requestedPath);
+    const relativePath = path.relative(baseDir, filePath);
+
+    if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
+      continue;
+    }
+
+    try {
+      return await readFile(filePath);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError;
+}
+
 export async function GET(
   _request: NextRequest,
   context: { params: Promise<{ path: string[] }> }
@@ -24,16 +49,8 @@ export async function GET(
     return new Response("Arquivo invalido", { status: 400 });
   }
 
-  const baseDir = path.join(process.cwd(), "public", "course-materials");
-  const filePath = path.join(baseDir, ...requestedPath);
-  const relativePath = path.relative(baseDir, filePath);
-
-  if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
-    return new Response("Arquivo invalido", { status: 400 });
-  }
-
   try {
-    const file = await readFile(filePath);
+    const file = await readCourseMaterial(requestedPath);
     const filename = requestedPath[requestedPath.length - 1];
     const contentType = CONTENT_TYPES[path.extname(filename).toLowerCase()] ?? "application/octet-stream";
 
