@@ -20,11 +20,7 @@ export default function EstudanteLayout({
       router.replace("/entrar");
       return;
     }
-    // Só redireciona se já temos o user e o role não é STUDENT (evita redirecionar quando user ainda está carregando)
-    if (user && user.role !== "STUDENT") {
-      router.replace(user.role === "FREELANCER" ? "/colaborador" : "/dashboard");
-    }
-  }, [loading, isAuthenticated, user, router]);
+  }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
     if (mobileMenuOpen) {
@@ -44,14 +40,6 @@ export default function EstudanteLayout({
       </div>
     );
   }
-  if (user && user.role !== "STUDENT") {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-black">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-orbit-electric border-t-transparent" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white">
       <EstudanteSidebar

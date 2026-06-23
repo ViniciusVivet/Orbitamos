@@ -29,6 +29,9 @@ export default function ColaboradorSidebar({ mobileOpen = false, onCloseMobile }
   const { user, logout } = useAuth();
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
+  const visibleNavItems = navItems.filter(
+    (item) => item.href !== "/colaborador/contatos" || user?.isInternal
+  );
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -44,7 +47,7 @@ export default function ColaboradorSidebar({ mobileOpen = false, onCloseMobile }
     <>
       <div className="flex h-14 lg:h-16 items-center justify-between gap-2 border-b border-white/10 px-4">
         <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-lg font-bold text-transparent">
-          Colaborador
+          Aplicar
         </span>
         <div className="flex items-center gap-1">
           <div className="relative" ref={notifRef}>
@@ -77,7 +80,7 @@ export default function ColaboradorSidebar({ mobileOpen = false, onCloseMobile }
         </div>
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto p-3" onClick={() => onCloseMobile?.()}>
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== "/colaborador" && pathname.startsWith(item.href));
           return (
             <Link
@@ -107,6 +110,16 @@ export default function ColaboradorSidebar({ mobileOpen = false, onCloseMobile }
           )}
           <span className="truncate text-sm text-white/80">{user?.name}</span>
         </div>
+        <Button
+          asChild
+          variant="ghost"
+          size="sm"
+          className="mb-2 w-full border border-orbit-electric/40 text-orbit-electric hover:bg-orbit-electric/10 text-xs min-h-[40px] touch-manipulation"
+        >
+          <Link href="/estudante" onClick={() => onCloseMobile?.()}>
+            🎓 Ir para Aprender
+          </Link>
+        </Button>
         <Button
           variant="outline"
           size="sm"

@@ -26,14 +26,14 @@ function formatDate(s: string) {
 }
 
 export default function ColaboradorContatos() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [contacts, setContacts] = useState<ContactItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [markingId, setMarkingId] = useState<number | null>(null);
 
   const load = () => {
-    if (!token) return;
+    if (!token || !user?.isInternal) return;
     setLoading(true);
     setError("");
     getContacts(token)
@@ -44,7 +44,7 @@ export default function ColaboradorContatos() {
 
   useEffect(() => {
     load();
-  }, [token]);
+  }, [token, user?.isInternal]);
 
   const handleMarkAsRead = async (c: ContactItem) => {
     if (!token || c.read) return;
@@ -62,6 +62,24 @@ export default function ColaboradorContatos() {
   };
 
   const unreadCount = contacts.filter((c) => !c.read).length;
+
+  if (!user?.isInternal) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Contatos</h1>
+          <p className="mt-1 text-white/60">
+            Leads e mensagens comerciais ficam restritos a perfis internos da Orbitamos.
+          </p>
+        </div>
+        <Card className="border-white/10 bg-gray-900/50">
+          <CardContent className="py-12 text-center text-white/60">
+            Acesso interno. Use as areas de projetos, vagas, squad e mensagens para aplicar.
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

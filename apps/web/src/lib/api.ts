@@ -251,6 +251,7 @@ export interface AuthResponse {
   message: string;
   avatarUrl?: string | null;
   role?: UserRole;
+  isInternal?: boolean;
 }
 
 export interface User {
@@ -260,6 +261,7 @@ export interface User {
   createdAt: string;
   avatarUrl?: string | null;
   role?: UserRole;
+  isInternal?: boolean;
   phone?: string | null;
   birthDate?: string | null;
   address?: string | null;
@@ -368,6 +370,7 @@ type SupabaseProfileRow = {
   name: string | null;
   avatar_url: string | null;
   role: UserRole | null;
+  is_internal: boolean | null;
   phone: string | null;
   birth_date: string | null;
   address: string | null;
@@ -396,6 +399,7 @@ function profileRowToUser(profile: SupabaseProfileRow): User {
     createdAt: profile.created_at ?? new Date().toISOString(),
     avatarUrl: profile.avatar_url,
     role: profile.role ?? "STUDENT",
+    isInternal: profile.is_internal ?? false,
     phone: profile.phone,
     birthDate: profile.birth_date,
     address: profile.address,
@@ -490,6 +494,7 @@ export async function register(data: RegisterData): Promise<AuthResponse> {
       message: "Conta criada com sucesso",
       avatarUrl: user.avatarUrl,
       role: user.role,
+      isInternal: user.isInternal,
     };
   }
 
@@ -583,6 +588,7 @@ export async function login(data: LoginData): Promise<AuthResponse> {
       message: "Login realizado com sucesso",
       avatarUrl: user.avatarUrl,
       role: user.role,
+      isInternal: user.isInternal,
     };
   }
 

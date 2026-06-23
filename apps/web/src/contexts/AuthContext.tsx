@@ -88,6 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString(),
       avatarUrl: response.avatarUrl ?? null,
       role: response.role ?? "STUDENT",
+      isInternal: response.isInternal ?? false,
     });
     // Garante perfil completo (telefone, endereço, etc.) antes de redirecionar
     const full = await getCurrentUser(response.token).catch(() => null);
@@ -105,6 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString(),
       avatarUrl: response.avatarUrl ?? null,
       role: response.role ?? "STUDENT",
+      isInternal: response.isInternal ?? false,
     });
     const full = await getCurrentUser(response.token).catch(() => null);
     if (full?.success && full.user) setUser(full.user);
@@ -140,12 +142,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const switchToCollaborator = () => {
     if (!user) return;
-    if (user.role === "FREELANCER") router.push("/colaborador");
+    router.push("/colaborador");
   };
 
   const switchToStudent = () => {
     if (!user) return;
-    if (user.role === "STUDENT") router.push("/estudante");
+    router.push("/estudante");
   };
 
   return (

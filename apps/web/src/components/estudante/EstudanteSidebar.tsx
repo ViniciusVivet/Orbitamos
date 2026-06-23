@@ -58,7 +58,7 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
     <>
       <div className="flex h-14 lg:h-16 items-center justify-between gap-2 border-b border-white/10 px-4">
         <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-lg font-bold text-transparent">
-          Estudante
+          Aprender
         </span>
         {onCloseMobile && (
           <button
@@ -167,6 +167,16 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
           )}
           <span className="truncate text-sm text-white/80">{user?.name}</span>
         </div>
+        <Button
+          asChild
+          variant="ghost"
+          size="sm"
+          className="mb-2 w-full border border-orbit-purple/40 text-orbit-purple hover:bg-orbit-purple/10 text-xs min-h-[40px] touch-manipulation"
+        >
+          <Link href="/colaborador" onClick={() => onCloseMobile?.()}>
+            🚀 Ir para Aplicar
+          </Link>
+        </Button>
         <Button
           variant="outline"
           size="sm"

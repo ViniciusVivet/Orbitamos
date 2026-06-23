@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ColaboradorSidebar from "@/components/colaborador/ColaboradorSidebar";
 
@@ -10,9 +10,8 @@ export default function ColaboradorLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -21,10 +20,7 @@ export default function ColaboradorLayout({
       router.replace("/entrar");
       return;
     }
-    if (user && user.role !== "FREELANCER") {
-      router.replace(user.role === "STUDENT" ? "/estudante" : "/dashboard");
-    }
-  }, [loading, isAuthenticated, user, router]);
+  }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
     if (mobileMenuOpen) {
@@ -44,14 +40,6 @@ export default function ColaboradorLayout({
       </div>
     );
   }
-  if (user && user.role !== "FREELANCER") {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-black">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-orbit-electric border-t-transparent" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white">
       <ColaboradorSidebar
@@ -69,7 +57,7 @@ export default function ColaboradorLayout({
             <span className="text-xl">&#9776;</span>
           </button>
           <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-sm font-semibold uppercase tracking-wider text-transparent">
-            Colaborador
+            Aplicar
           </span>
         </header>
         <div className="container mx-auto px-4 py-4 sm:py-6 lg:px-6 lg:py-8 max-w-full">
