@@ -6,6 +6,7 @@ import {
   whatsappFloatByPage,
   type WhatsappFloatPage,
 } from "@/lib/social";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface FloatingWhatsAppProps {
   page: WhatsappFloatPage;
@@ -13,6 +14,7 @@ interface FloatingWhatsAppProps {
 
 export default function FloatingWhatsApp({ page }: FloatingWhatsAppProps) {
   const [mounted, setMounted] = useState(false);
+  const { isAuthenticated, loading } = useAuth();
   const href = whatsappFloatByPage[page];
 
   useEffect(() => {
@@ -46,7 +48,7 @@ export default function FloatingWhatsApp({ page }: FloatingWhatsAppProps) {
     </a>
   );
 
-  if (!mounted) return null;
+  if (!mounted || loading || isAuthenticated) return null;
 
   return createPortal(button, document.body);
 }
