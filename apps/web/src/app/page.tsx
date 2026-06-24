@@ -193,7 +193,7 @@ export default function Home() {
           muted
           playsInline
           disablePictureInPicture
-          className="absolute inset-0 h-full w-full object-cover opacity-55 [&::-webkit-media-controls-start-playback-button]:hidden [&::-webkit-media-controls]:hidden"
+          className="absolute inset-0 h-full w-full object-cover object-[62%_center] opacity-55 sm:object-center [&::-webkit-media-controls-start-playback-button]:hidden [&::-webkit-media-controls]:hidden"
           style={{
             transform: `scale(1.08) translate(${mouse.x * -4}%, ${mouse.y * -3}%)`,
             transition: active ? "transform 0.12s ease-out" : "transform 0.9s ease-out",
