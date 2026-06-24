@@ -38,14 +38,58 @@ function getMaterialExtension(material: MaterialAula): string {
   return material.tipo.toLowerCase();
 }
 
+type MaterialMeta = {
+  filename: string;
+  contentType: string;
+  size: number;
+};
+
+function getExtensionFromFilename(filename: string): string {
+  return filename.toLowerCase().match(/\.([a-z0-9]+)$/)?.[1] ?? "";
+}
+
 function MaterialPreview({ material }: { material: MaterialAula }) {
   const [origin, setOrigin] = useState("");
-  const extension = getMaterialExtension(material);
+  const [meta, setMeta] = useState<MaterialMeta | null>(null);
+  const [metaError, setMetaError] = useState(false);
+  const extension = meta ? getExtensionFromFilename(meta.filename) : getMaterialExtension(material);
   const downloadUrl = getMaterialDownloadUrl(material);
 
   useEffect(() => {
     setOrigin(window.location.origin);
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    setMeta(null);
+    setMetaError(false);
+
+    const separator = material.url.includes("?") ? "&" : "?";
+    fetch(`${material.url}${separator}meta=1`)
+      .then((response) => {
+        if (!response.ok) throw new Error("Nao foi possivel resolver o material.");
+        return response.json() as Promise<MaterialMeta>;
+      })
+      .then((data) => {
+        if (active) setMeta(data);
+      })
+      .catch(() => {
+        if (active) setMetaError(true);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [material.url]);
+
+  if (!meta && !metaError) {
+    return (
+      <div className="flex h-full min-h-[360px] w-full flex-col items-center justify-center gap-3 px-6 text-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-orbit-electric border-t-transparent" />
+        <div className="text-sm font-semibold text-white/70">Preparando previa do material...</div>
+      </div>
+    );
+  }
 
   if (extension === "pdf") {
     return (

@@ -115,6 +115,14 @@ export async function GET(
     const contentType = CONTENT_TYPES[path.extname(filename).toLowerCase()] ?? "application/octet-stream";
     const disposition = request.nextUrl.searchParams.get("download") === "1" ? "attachment" : "inline";
 
+    if (request.nextUrl.searchParams.get("meta") === "1") {
+      return Response.json({
+        filename,
+        contentType,
+        size: file.byteLength,
+      });
+    }
+
     return new Response(new Uint8Array(file), {
       headers: {
         "Content-Type": contentType,
