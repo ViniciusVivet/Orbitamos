@@ -24,8 +24,8 @@ const WHATSAPP_URL =
   "https://wa.me/5511949138973?text=Ol%C3%A1%2C+vim+pelo+site+da+Orbitamos+e+quero+fazer+um+or%C3%A7amento";
 
 const stats = [
-  { value: "6+", label: "projetos entregues" },
-  { value: "7 dias", label: "entrega média" },
+  { value: "7+", label: "projetos entregues" },
+  { value: "2 sem", label: "entrega média" },
   { value: "100%", label: "mobile-first" },
   { value: "IA", label: "automações e APIs" },
 ];
@@ -101,13 +101,13 @@ const featuredProjects = [
     outcomes: ["Catálogo visual", "Branding premium", "Mobile-first"],
   },
   {
-    name: "Sensimilla Records",
-    category: "Entretenimento",
-    href: "/projetos?case=sensimilla-records",
-    image: "/case-sensimilla-records.png",
+    name: "MB Multimarcas Infantil",
+    category: "Moda infantil",
+    href: "/projetos?case=mb-multimarcas-infantil",
+    image: "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=900&q=80&auto=format&fit=crop",
     description:
-      "Hub oficial para lançamentos, equipe, tour, merch e narrativa visual de uma gravadora independente.",
-    outcomes: ["SEO base", "Conteúdo centralizado", "Experiência de marca"],
+      "Catalogo digital com produtos filtraveis e atendimento direto pelo WhatsApp.",
+    outcomes: ["Catalogo filtravel", "WhatsApp direto", "Mobile-first"],
   },
 ];
 

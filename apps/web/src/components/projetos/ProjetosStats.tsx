@@ -1,6 +1,6 @@
 const STATS = [
   {
-    valor: "6",
+    valor: "7",
     label: "projetos entregues",
     accent: "#00D4FF",
     glow: "rgba(0,212,255,0.08)",
@@ -15,7 +15,7 @@ const STATS = [
     ),
   },
   {
-    valor: "3",
+    valor: "4",
     label: "clientes ativos",
     accent: "#8B5CF6",
     glow: "rgba(139,92,246,0.08)",
@@ -30,7 +30,7 @@ const STATS = [
     ),
   },
   {
-    valor: "≤1 sem",
+    valor: "2 sem",
     label: "tempo médio de entrega",
     accent: "#00D4FF",
     glow: "rgba(0,212,255,0.08)",

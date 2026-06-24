@@ -3,6 +3,35 @@ import type { Projeto } from "@/types/projeto";
 /** Projetos reais da Orbitamos usados como portfólio comercial. */
 export const projetos: Projeto[] = [
   {
+    slug: "mb-multimarcas-infantil",
+    nome: "MB Multimarcas Infantil",
+    categoria: "ecommerce",
+    resumo:
+      "Catalogo digital de moda infantil com filtros por categoria, vitrine de produtos e atendimento direto pelo WhatsApp.",
+    tags: ["Catalogo digital", "Moda infantil", "WhatsApp", "Mobile-first"],
+    status: "publicado",
+    link: "https://mb-multimarcas-infantil.vercel.app/",
+    thumbnail:
+      "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=900&q=80&auto=format&fit=crop",
+    imagemPrincipal:
+      "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=1400&q=80&auto=format&fit=crop",
+    contexto:
+      "A MB Multimarcas Infantil precisava de uma presenca digital simples e comercial para apresentar pecas infantis e facilitar o atendimento pelo WhatsApp.",
+    problema:
+      "Os produtos dependiam de atendimento manual e redes sociais, dificultando organizar modelos, tamanhos, cores e caminho rapido para compra.",
+    solucao:
+      "Criamos uma vitrine responsiva com catalogo filtravel, detalhes de produtos, chamada direta para WhatsApp, informacoes da loja e acesso ao Instagram.",
+    destaques: [
+      "Catalogo organizado por categorias como conjuntos, calcas e casacos",
+      "Fluxo de compra pensado para WhatsApp, sem checkout complexo",
+      "Secoes de sobre, endereco, contato e redes sociais em uma pagina leve",
+      "Experiencia mobile-first para pais e maes comprarem pelo celular",
+    ],
+    stack: ["Next.js", "TypeScript", "Tailwind CSS", "Vercel"],
+    resultado:
+      "Loja com vitrine digital publicada, produtos mais organizados e caminho direto do interesse ao atendimento.",
+  },
+  {
     slug: "sabrina-lashes",
     nome: "Sabrina Lashes",
     categoria: "sites-institucionais",
