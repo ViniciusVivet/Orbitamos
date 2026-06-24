@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { LockKeyhole } from "lucide-react";
 import { useState } from "react";
 import LogoOrbitamos from "@/components/LogoOrbitamos";
 import { useAuth } from "@/contexts/AuthContext";
@@ -70,29 +69,48 @@ export default function Navigation() {
                 className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:opacity-90 text-black text-sm font-bold shadow-[0_0_16px_rgba(0,212,255,0.2)] hover:shadow-[0_0_24px_rgba(0,212,255,0.35)] transition-all duration-150"
                 asChild
               >
-                <Link href="/entrar">
-                  <LockKeyhole className="size-4" />
-                  Portal
-                </Link>
+                <Link href="/entrar">🪐 Portal</Link>
               </Button>
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            type="button"
-            className="md:hidden flex h-12 min-w-[44px] items-center justify-center text-white touch-manipulation -mr-2"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label={isMenuOpen ? "Fechar menu" : "Abrir menu"}
-          >
-            {isMenuOpen ? (
-              <span className="text-2xl leading-none" aria-hidden>&#10005;</span>
-            ) : (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            )}
-          </button>
+          {!loading && !isAuthenticated ? (
+            <div className="md:hidden flex items-center gap-1.5 text-[12px] font-semibold">
+              <Link
+                href="/projetos"
+                className="rounded-full px-2 py-2 text-white/72 transition-colors hover:text-white"
+              >
+                Projetos
+              </Link>
+              <Link
+                href="/contato"
+                className="rounded-full px-2 py-2 text-white/72 transition-colors hover:text-white"
+              >
+                Contato
+              </Link>
+              <Link
+                href="/entrar"
+                className="rounded-full border border-white/[0.1] bg-white/[0.05] px-2.5 py-2 text-white/88 transition-colors hover:bg-white/[0.1]"
+              >
+                🪐 Portal
+              </Link>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="md:hidden flex h-12 min-w-[44px] items-center justify-center text-white touch-manipulation -mr-2"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label={isMenuOpen ? "Fechar menu" : "Abrir menu"}
+            >
+              {isMenuOpen ? (
+                <span className="text-2xl leading-none" aria-hidden>&#10005;</span>
+              ) : (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+          )}
         </div>
 
         {/* Mobile Menu */}
@@ -165,10 +183,7 @@ export default function Navigation() {
                   className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:opacity-90 text-black text-sm font-bold w-full shadow-[0_0_16px_rgba(0,212,255,0.2)] transition-all duration-150"
                   asChild
                 >
-                  <Link href="/entrar">
-                    <LockKeyhole className="size-4" />
-                    Portal
-                  </Link>
+                  <Link href="/entrar">🪐 Portal</Link>
                 </Button>
               )}
             </div>
