@@ -25,9 +25,9 @@ const WHATSAPP_URL =
 
 const stats = [
   { value: "7+", label: "projetos entregues" },
-  { value: "2 sem", label: "entrega média" },
+  { value: "até 7 dias", label: "landing pages" },
   { value: "100%", label: "mobile-first" },
-  { value: "IA", label: "automações e APIs" },
+  { value: "IA", label: "automações e integrações" },
 ];
 
 const heroCases = [
@@ -69,15 +69,33 @@ const services = [
   },
   {
     icon: ShieldCheck,
-    title: "Sites institucionais",
+    title: "Sites profissionais",
     text: "Presença digital profissional para negócios que precisam passar confiança.",
-    points: ["Identidade visual", "Serviços claros", "Credibilidade local"],
+    points: ["Identidade visual", "Serviços claros", "Credibilidade"],
   },
   {
     icon: Layers3,
+    title: "Loja digital / E-commerce",
+    text: "Vitrine ou catálogo digital para vender melhor e organizar produtos.",
+    points: ["Catálogo filtrável", "WhatsApp direto", "Experiência mobile"],
+  },
+  {
+    icon: Code2,
     title: "Sistemas web e MVPs",
     text: "Produtos sob medida para organizar operações, usuários, dados e processos.",
-    points: ["Login e dashboards", "Banco de dados", "APIs e automações"],
+    points: ["Login e dashboards", "Banco de dados", "APIs"],
+  },
+  {
+    icon: Bot,
+    title: "Automações, IA e integrações",
+    text: "Fluxos inteligentes para reduzir trabalho manual e conectar ferramentas.",
+    points: ["IA aplicada", "Integrações", "Processos automáticos"],
+  },
+  {
+    icon: Sparkles,
+    title: "Projetos especiais",
+    text: "Soluções digitais sob medida quando o projeto não cabe em uma caixinha.",
+    points: ["Discovery técnico", "Arquitetura", "Entrega incremental"],
   },
 ];
 
@@ -113,19 +131,19 @@ const featuredProjects = [
 
 const process = [
   {
-    title: "Conversa",
+    title: "Diagnóstico",
     text: "Entendemos objetivo, público, oferta e o que precisa acontecer para o projeto vender.",
   },
   {
-    title: "Estrutura",
+    title: "Arquitetura",
     text: "Definimos páginas, seções, integrações, conteúdo e caminho de conversão.",
   },
   {
-    title: "Desenvolvimento",
+    title: "Construção",
     text: "Construímos a experiência com responsividade, performance e acabamento visual.",
   },
   {
-    title: "Publicacao",
+    title: "Lançamento",
     text: "Colocamos no ar, revisamos detalhes e deixamos o projeto pronto para campanhas.",
   },
 ];
@@ -189,16 +207,16 @@ export default function Home() {
           <div className="max-w-3xl">
             <div className="mb-6 inline-flex items-center gap-2 border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/55 backdrop-blur-xl">
               <span className="h-1.5 w-1.5 rounded-full bg-orbit-electric shadow-[0_0_18px_rgba(0,212,255,0.9)]" />
-              Estúdio digital em São Paulo
+              Tecnologia sob medida para negócios digitais
             </div>
 
             <h1 className="max-w-4xl text-balance text-5xl font-black leading-[0.95] tracking-normal text-white sm:text-6xl lg:text-7xl">
-              Sites, sistemas e automações para negócios que querem vender mais.
+              Sites, sistemas e automações para negócios que querem vender, organizar e escalar.
             </h1>
 
             <p className="mt-6 max-w-2xl text-base leading-8 text-white/58 sm:text-lg">
-              Criamos landing pages, sites institucionais e sistemas web sob medida, com foco em
-              conversão, presença digital e operação.
+              Criamos soluções digitais com design premium, estratégia e tecnologia aplicada para
+              transformar presença online em resultado real.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -288,8 +306,8 @@ export default function Home() {
           {[
             { icon: Rocket, text: "Projeto no ar com velocidade de startup" },
             { icon: Zap, text: "Layout pensado para conversão e clareza" },
-            { icon: Bot, text: "Automações e IA quando fizer sentido" },
-            { icon: Code2, text: "Base tecnica pronta para evoluir" },
+            { icon: Bot, text: "Automações e IA sob medida" },
+            { icon: Code2, text: "Estrutura pronta para escalar" },
           ].map((item) => (
             <div key={item.text} className="flex items-center gap-3 text-sm text-white/58">
               <item.icon className="size-4 shrink-0 text-orbit-electric" />
@@ -314,7 +332,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {services.map((service) => (
               <article
                 key={service.title}
@@ -439,7 +457,7 @@ export default function Home() {
               Engenharia por trás
             </p>
             <h2 className="mt-4 text-3xl font-black leading-tight text-white sm:text-4xl">
-              Visual premium com base técnica para crescer.
+              Tecnologia moderna por trás. Simples para o cliente usar.
             </h2>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -472,7 +490,7 @@ export default function Home() {
             Seu próximo projeto pode estar no ar mais rápido do que você imagina.
           </h2>
           <p className="mt-5 max-w-2xl text-base leading-7 text-white/55">
-            Landing pages, sites, sistemas e automações desenvolvidos sob medida para o seu negócio.
+            Landing pages, sites, sistemas e automações sob medida para o seu negócio.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
@@ -481,20 +499,17 @@ export default function Home() {
                 Solicitar orçamento no WhatsApp
               </Button>
             </a>
-            <Link href="/contato">
+            <Link href="/projetos">
               <Button
                 size="lg"
                 variant="outline"
                 className="h-12 rounded-md border-white/15 bg-white/[0.03] px-6 font-bold text-white hover:bg-white/10 hover:text-white"
               >
-                Abrir formulário
+                Ver projetos
                 <ArrowRight className="size-4" />
               </Button>
             </Link>
           </div>
-          <p className="mt-10 max-w-2xl text-xs leading-6 text-white/30">
-            Parte da receita da Orbitamos fortalece iniciativas de formação em tecnologia.
-          </p>
         </div>
       </section>
 

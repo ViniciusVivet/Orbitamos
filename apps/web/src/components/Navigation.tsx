@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { LockKeyhole } from "lucide-react";
 import { useState } from "react";
 import LogoOrbitamos from "@/components/LogoOrbitamos";
 import { useAuth } from "@/contexts/AuthContext";
@@ -69,7 +70,10 @@ export default function Navigation() {
                 className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:opacity-90 text-black text-sm font-bold shadow-[0_0_16px_rgba(0,212,255,0.2)] hover:shadow-[0_0_24px_rgba(0,212,255,0.35)] transition-all duration-150"
                 asChild
               >
-                <Link href="/entrar">🚀 Entrar</Link>
+                <Link href="/entrar">
+                  <LockKeyhole className="size-4" />
+                  Portal
+                </Link>
               </Button>
             )}
           </div>
@@ -161,7 +165,10 @@ export default function Navigation() {
                   className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:opacity-90 text-black text-sm font-bold w-full shadow-[0_0_16px_rgba(0,212,255,0.2)] transition-all duration-150"
                   asChild
                 >
-                  <Link href="/entrar">🚀 Entrar</Link>
+                  <Link href="/entrar">
+                    <LockKeyhole className="size-4" />
+                    Portal
+                  </Link>
                 </Button>
               )}
             </div>
