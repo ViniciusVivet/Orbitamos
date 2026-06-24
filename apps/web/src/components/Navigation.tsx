@@ -78,19 +78,19 @@ export default function Navigation() {
             <div className="md:hidden flex items-center gap-1.5 text-[12px] font-semibold">
               <Link
                 href="/projetos"
-                className="rounded-full px-2 py-2 text-white/72 transition-colors hover:text-white"
+                className="rounded-full bg-black/45 px-2 py-2 text-white shadow-[0_0_14px_rgba(0,0,0,0.35)] transition-colors hover:bg-black/60 hover:text-white"
               >
                 Projetos
               </Link>
               <Link
                 href="/contato"
-                className="rounded-full px-2 py-2 text-white/72 transition-colors hover:text-white"
+                className="rounded-full bg-black/45 px-2 py-2 text-white shadow-[0_0_14px_rgba(0,0,0,0.35)] transition-colors hover:bg-black/60 hover:text-white"
               >
                 Contato
               </Link>
               <Link
                 href="/entrar"
-                className="rounded-full border border-white/[0.1] bg-white/[0.05] px-2.5 py-2 text-white/88 transition-colors hover:bg-white/[0.1]"
+                className="rounded-full border border-white/20 bg-black/55 px-2.5 py-2 text-white shadow-[0_0_14px_rgba(0,0,0,0.35)] transition-colors hover:bg-black/70"
               >
                 🪐 Portal
               </Link>
