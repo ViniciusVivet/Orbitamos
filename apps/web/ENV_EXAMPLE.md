@@ -1,27 +1,28 @@
-# 🔧 Variáveis de Ambiente - Frontend
+# Variaveis de ambiente do frontend
 
-Crie um arquivo `.env.local` na pasta `apps/web/` com as seguintes variáveis:
+Crie `apps/web/.env.local` somente para desenvolvimento local.
 
 ```bash
-# Supabase (novo backend principal da area logada)
+# Supabase: backend principal da area logada
 NEXT_PUBLIC_SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=SUA_ANON_KEY
 
-# API legada Spring Boot (fallback; deixe vazio/remova quando Supabase estiver ativo)
+# API Spring legada: deixe ausente/vazio no modo atual
 # NEXT_PUBLIC_API_URL=http://localhost:8080/api
 
-# EmailJS (opcional - para notificações por email)
-NEXT_PUBLIC_EMAILJS_SERVICE_ID=service_iq6m9yr
-NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=template_tq3qtzp
-NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=r-ZyAFqKXXBrfMNHd
+# EmailJS opcional para notificacao de contato via rota /api/contact
+EMAILJS_SERVICE_ID=
+EMAILJS_TEMPLATE_ID=
+EMAILJS_PUBLIC_KEY=
 ```
 
-## 📝 No Vercel
+## Vercel
 
-No dashboard do Vercel, vá em:
-1. **Settings** → **Environment Variables**
-2. Adicione `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-3. Remova/ignore `NEXT_PUBLIC_API_URL` quando a area logada estiver usando Supabase
+No dashboard da Vercel:
 
-**Importante:** Variáveis que começam com `NEXT_PUBLIC_` ficam visíveis no navegador.
+1. Abra `Settings -> Environment Variables`.
+2. Configure `NEXT_PUBLIC_SUPABASE_URL`.
+3. Configure `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+4. Nao configure `NEXT_PUBLIC_API_URL` enquanto Supabase for o backend principal.
 
+Variaveis `NEXT_PUBLIC_*` ficam visiveis no navegador. Nunca coloque senha, service role key ou JWT secret nelas.

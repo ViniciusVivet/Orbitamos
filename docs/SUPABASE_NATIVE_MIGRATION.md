@@ -1,56 +1,57 @@
 # Migracao para Supabase nativo
 
+Ultima atualizacao: 2026-06-24
+
 Objetivo: manter o site publico na Vercel e tirar a dependencia da API Spring/AWS para a area logada.
 
-## O que ja foi preparado no codigo
+## Estado atual
 
-- Auth passa a usar Supabase quando as variaveis `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` existirem.
-- Perfil, progresso, contato, forum e chat basico usam Supabase.
-- Estrutura academica preparada em Supabase: cursos, modulos, aulas, materiais/PDFs, quizzes e progresso por aula.
-- API Spring fica como fallback legado quando Supabase nao estiver configurado.
-- Videos continuam no YouTube.
-- Avatares passam a usar o bucket `avatars` do Supabase Storage.
+Ja esta preparado no codigo:
 
-## Passos no Supabase
+- Auth via Supabase quando `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` existem.
+- Perfil, progresso, contato, forum e chat basico no Supabase.
+- Estrutura academica em Supabase: cursos, modulos, aulas, materiais, quizzes e progresso por aula.
+- Avatares no bucket `avatars`.
+- Materiais de aula servidos pelo Next em `apps/web/public/course-materials`.
+- API Spring mantida apenas como fallback legado.
 
-### 1. Rodar SQL
+## SQL no Supabase
 
 No Supabase Dashboard:
 
 1. Abra o projeto.
 2. Va em `SQL Editor`.
-3. Cole e execute os arquivos nesta ordem:
+3. Execute os arquivos em ordem:
 
 ```txt
 docs/migrations/005_supabase_native_platform.sql
 docs/migrations/006_supabase_academy_content.sql
+docs/migrations/007_security_hardening.sql
+docs/migrations/008_course_materials_seed.sql
 ```
 
-Esses SQLs criam tabelas, triggers, seed inicial e politicas RLS. A migration `005` usa tabelas `v3_*` para conviver com o schema antigo do Spring sem renomear nem apagar dados legados.
+Resumo:
 
-### 2. Criar bucket de avatars
+- `005`: cria a base v3 da plataforma, usando tabelas `v3_*` para conviver com tabelas antigas.
+- `006`: cria cursos, modulos, aulas, materiais, quizzes e progresso por aula.
+- `007`: endurece politicas/RLS e funcoes sensiveis.
+- `008`: popula os materiais de aula importados para a estrutura atual.
 
-Em `Storage`:
+## Storage
 
-1. Crie um bucket chamado:
+Crie o bucket:
 
 ```txt
 avatars
 ```
 
-2. Marque como public bucket.
+Marque como publico enquanto a estrategia for simplicidade e baixo custo operacional.
 
-Para materiais/PDFs de aula, crie tambem:
+Para materiais de aula, a decisao atual e manter arquivos leves versionados em `apps/web/public/course-materials`. Se no futuro o volume crescer, mover para Supabase Storage ou outro provedor com URLs assinadas.
 
-```txt
-course-materials
-```
+## Auth URLs
 
-Pode ser publico por enquanto para simplificar os links. Se depois quiser restringir downloads para alunos logados, a proxima etapa e usar bucket privado com URLs assinadas.
-
-### 3. Configurar Auth URLs
-
-Em `Authentication` -> `URL Configuration`:
+Em `Authentication -> URL Configuration`:
 
 Site URL:
 
@@ -66,18 +67,18 @@ https://orbitamosbr.com/**
 http://localhost:3000/**
 ```
 
-Para evitar bloqueio no cadastro enquanto estamos migrando, deixe a confirmacao de email desligada por enquanto ou configure SMTP corretamente antes.
+Durante a migracao, a confirmacao de email pode ficar desligada para evitar bloqueio de cadastro. Quando SMTP estiver configurado corretamente, reavaliar.
 
-## Passos na Vercel
+## Vercel
 
-Em `Settings` -> `Environment Variables`, adicione:
+Em `Settings -> Environment Variables`:
 
 ```txt
 NEXT_PUBLIC_SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=SUA_ANON_KEY
 ```
 
-Remova ou deixe de usar:
+Remova ou deixe ausente:
 
 ```txt
 NEXT_PUBLIC_API_URL
@@ -87,12 +88,12 @@ Depois faca redeploy.
 
 ## Dados antigos
 
-Nada neste plano apaga dados antigos.
+Nada nesta migracao apaga dados antigos por padrao.
 
-Se os dados antigos estiverem em uma base Postgres acessivel, o caminho correto e exportar CSV/SQL e importar nas tabelas novas. Se a AWS ja caiu e nao temos acesso ao banco antigo, novos cadastros funcionam no Supabase, mas os usuarios antigos precisarao recriar conta ou redefinir senha quando forem recriados.
+As tabelas antigas podem continuar no Supabase para consulta/migracao manual. Quando um usuario antigo precisar voltar, o caminho mais seguro e criar/recuperar a conta no Supabase Auth e garantir uma linha correspondente em `v3_profiles`.
 
-## Limites conhecidos desta fase
+## Limites conhecidos
 
-- Chat funciona como persistencia basica; realtime fica para uma fase seguinte com Supabase Realtime.
-- Projetos/vagas da area colaborador ainda retornam vazio quando Supabase esta ativo.
-- Cursos/aulas ainda usam fallback estatico em `apps/web/src/lib/cursos.ts`, mas as tabelas `courses`, `course_modules`, `lessons`, `lesson_materials`, `quizzes` e progresso por aula ja estao preparadas na migration `006`.
+- Chat ainda e persistencia basica; realtime fica para uma fase seguinte com Supabase Realtime.
+- Vagas/projetos internos da area colaborador ainda precisam de evolucao de produto.
+- Cursos ja aparecem no portal, mas um painel administrativo para editar aulas/materiais ainda e etapa futura.

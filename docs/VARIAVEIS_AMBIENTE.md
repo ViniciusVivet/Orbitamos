@@ -1,99 +1,66 @@
-# Variáveis de ambiente: EC2 (atual) e Render (referência)
+# Variaveis de ambiente
 
-> **Infra atual:** backend no EC2 + CloudFront. Render foi usado anteriormente.
-> Veja o estado completo em [`docs/INFRA_ATUAL.md`](INFRA_ATUAL.md).
+Ultima atualizacao: 2026-06-24
 
-Onde e como configurar as variáveis do backend conforme o ambiente de deploy.
+## Frontend atual: Vercel + Supabase
 
----
+Configure estas variaveis no projeto da Vercel, em `Settings -> Environment Variables`:
 
-## Visão geral
-
-| Variável | Render | EC2 |
-|----------|--------|-----|
-| **Onde configurar** | Dashboard → serviço → **Environment** | Arquivo `scripts/ec2-env.sh` (não commitar) ou `export` na VM antes de rodar o JAR |
-| **Quando carrega** | A cada deploy | Ao rodar `source ec2-env.sh` e em seguida `java -jar ...` |
-
----
-
-## Variáveis do backend (API)
-
-Todas as variáveis abaixo são usadas pela aplicação Spring Boot (`apps/api`).
-
-### Banco de dados (Supabase)
-
-| Variável | Exemplo | Render | EC2 |
-|----------|---------|--------|-----|
-| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://HOST:5432/postgres?sslmode=require` | Colar na aba Environment | Colocar no `ec2-env.sh`: `export SPRING_DATASOURCE_URL="..."` |
-| `SPRING_DATASOURCE_USERNAME` | `postgres` ou `postgres.PROJECT_REF` | Idem | `export SPRING_DATASOURCE_USERNAME="..."` |
-| `SPRING_DATASOURCE_PASSWORD` | (senha do Supabase) | Idem | `export SPRING_DATASOURCE_PASSWORD="..."` |
-
-### JWT
-
-| Variável | Exemplo | Render | EC2 |
-|----------|---------|--------|-----|
-| `JWT_SECRET` | Chave longa (ex.: `openssl rand -base64 32`) | Colar na aba Environment | `export JWT_SECRET="..."` |
-| `JWT_EXPIRATION` | `86400000` (opcional) | Idem | Opcional no `ec2-env.sh` |
-
-### URL da API (legado)
-
-| Variável | Exemplo | Render | EC2 |
-|----------|---------|--------|-----|
-| `API_BASE_URL` | URL pública da API em HTTPS | `https://orbitamos-backend.onrender.com` | `https://SEU_ID.cloudfront.net` |
-
-### Cloudinary (upload de avatars — atual)
-
-| Variável | Onde obter | EC2 |
-|----------|-----------|-----|
-| `CLOUDINARY_CLOUD_NAME` | cloudinary.com → Dashboard | `export CLOUDINARY_CLOUD_NAME="dt6srlfcj"` |
-| `CLOUDINARY_API_KEY` | cloudinary.com → Dashboard → API Keys | `export CLOUDINARY_API_KEY="..."` |
-| `CLOUDINARY_API_SECRET` | cloudinary.com → Dashboard → API Keys | `export CLOUDINARY_API_SECRET="..."` |
-
----
-
-## Render
-
-1. Acesse [Render](https://dashboard.render.com) → serviço do backend (ex.: **orbitamos-backend**).
-2. Menu lateral → **Environment**.
-3. Adicione cada variável (Key / Value). O Render não lê `.env` do repositório; tudo fica na aba Environment.
-4. Após salvar, faça um novo deploy para aplicar.
-
-Documentação detalhada: [docs/RENDER_SUPABASE_SETUP.md](RENDER_SUPABASE_SETUP.md).
-
----
-
-## EC2
-
-1. No seu PC, edite o arquivo **`scripts/ec2-env.sh`** (ele está no `.gitignore`; não será commitado).
-2. Preencha os `export` com os mesmos valores que você usaria no Render (Supabase, JWT, etc.).
-3. Para `API_BASE_URL`: use a URL HTTPS do CloudFront (ex.: `https://d3q0dqkkuuwfle.cloudfront.net`) se a API for acessada via CloudFront.
-4. Na VM, antes de subir a API:
-   ```bash
-   cd ~/app
-   source ec2-env.sh
-   nohup java -jar api-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
-   ```
-
-Exemplo de `scripts/ec2-env.sh`:
-
-```bash
-export SPRING_DATASOURCE_URL="jdbc:postgresql://HOST:5432/postgres?sslmode=require"
-export SPRING_DATASOURCE_USERNAME="postgres"
-export SPRING_DATASOURCE_PASSWORD="SUA_SENHA"
-export JWT_SECRET="sua-chave-jwt"
-export API_BASE_URL="https://SEU_DOMINIO.cloudfront.net"
+```txt
+NEXT_PUBLIC_SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=SUA_ANON_KEY
 ```
 
-Documentação do fluxo EC2 + CloudFront: [docs/EC2_CLOUDFRONT_HTTPS.md](EC2_CLOUDFRONT_HTTPS.md).
+Essas duas variaveis sao publicas por natureza no frontend. A `anon key` nao e senha de banco; a seguranca depende de RLS/policies no Supabase.
 
----
+## Variavel legada
 
-## Frontend (Vercel)
+Nao configure esta variavel no modo atual:
 
-Independente de o backend estar no **Render** ou na **EC2 + CloudFront**, no frontend (Vercel) você configura:
+```txt
+NEXT_PUBLIC_API_URL
+```
 
-- **NEXT_PUBLIC_API_URL**: URL base da API + `/api`
-  - Render: `https://orbitamos-backend.onrender.com/api`
-  - EC2 + CloudFront: `https://SEU_ID.cloudfront.net/api`
+Ela aponta o frontend para o backend Spring legado. Se ela for configurada sem querer, partes da area logada podem tentar falar com uma API antiga/fora do ar.
 
-Em **Vercel** → **Settings** → **Environment Variables** → adicione ou edite `NEXT_PUBLIC_API_URL` e faça redeploy.
+## Email de contato
+
+A rota `apps/web/src/app/api/contact/route.ts` pode enviar email via EmailJS se estas variaveis existirem:
+
+```txt
+EMAILJS_SERVICE_ID
+EMAILJS_TEMPLATE_ID
+EMAILJS_PUBLIC_KEY
+```
+
+Elas sao opcionais. O contato principal deve continuar sendo salvo no Supabase em `v3_contacts`.
+
+## Desenvolvimento local
+
+Para rodar localmente o web app com Supabase, crie:
+
+```txt
+apps/web/.env.local
+```
+
+Exemplo:
+
+```txt
+NEXT_PUBLIC_SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=SUA_ANON_KEY
+```
+
+Nao coloque senha do banco, JWT secret, service role key ou senha pessoal em `.env.local`.
+
+## Backend Spring legado
+
+O backend em `apps/api` pode exigir variaveis como `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` e `JWT_SECRET`.
+
+Isso e legado. Se o Spring for reativado no futuro, crie um novo documento operacional antes de colocar em producao. Nao reutilize arquivos antigos como `ec2-env.sh` sem revisar senha, host, CORS e deploy.
+
+## Regras de seguranca
+
+- Nunca commitar `.env`, `.env.local` ou arquivos com `export ...PASSWORD=`.
+- Senha de banco nao pode ser reaproveitada em conta pessoal.
+- Se uma senha apareceu em arquivo local antigo, trate como vazada e troque no provedor.
+- Secrets de producao devem ficar no dashboard da Vercel/Supabase, nao no repositorio.

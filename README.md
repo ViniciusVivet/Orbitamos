@@ -147,9 +147,9 @@ Checklist local não versionado: `docs/local/SUPABASE_VERCEL_CHECKLIST.md`
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=SUA_ANON_KEY
-NEXT_PUBLIC_EMAILJS_SERVICE_ID=
-NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=
-NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=
+EMAILJS_SERVICE_ID=
+EMAILJS_TEMPLATE_ID=
+EMAILJS_PUBLIC_KEY=
 ```
 
 `NEXT_PUBLIC_API_URL` deve ficar ausente/vazio quando a área logada estiver usando Supabase nativo. Essa variável hoje é fallback para o backend Spring legado.
@@ -173,12 +173,16 @@ Ordem importante para a v3.0:
 ```txt
 docs/migrations/005_supabase_native_platform.sql
 docs/migrations/006_supabase_academy_content.sql
+docs/migrations/007_security_hardening.sql
+docs/migrations/008_course_materials_seed.sql
 ```
 
 Resumo:
 
 - `005` cria a base da plataforma: profiles, progresso, contatos, fórum, conversas, mensagens e RLS.
 - `006` cria a base acadêmica: courses, modules, lessons, materials, quizzes, attempts e progresso por aula.
+- `007` endurece policies/RLS e funções sensíveis.
+- `008` popula os materiais de aula importados.
 
 ## Estrutura do Repositório
 
@@ -190,8 +194,8 @@ orbitamos/
 ├── docs/
 │   ├── migrations/   # SQLs do Supabase
 │   ├── local/        # runbooks/checklists locais ignorados pelo Git
+│   ├── legacy/       # guias históricos de AWS/Render/Spring
 │   └── *.md          # arquitetura, infra e histórico de decisões
-├── scripts/          # scripts operacionais legados
 └── README.md
 ```
 

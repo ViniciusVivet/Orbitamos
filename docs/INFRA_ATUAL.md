@@ -1,118 +1,84 @@
-# Infraestrutura Atual da Orbitamos
+# Infra atual
 
-> **Atualizacao emergencial - 19 de junho de 2026:**
-> a estrategia atual e manter o frontend na Vercel e migrar a area logada para Supabase nativo
-> (Auth, Postgres e Storage). As secoes antigas de EC2/CloudFront/Spring abaixo ficam como
-> historico legado ate a documentacao completa ser reescrita. Para executar a migracao atual,
-> use [`docs/SUPABASE_NATIVE_MIGRATION.md`](SUPABASE_NATIVE_MIGRATION.md).
+Ultima atualizacao: 2026-06-24
 
-> **Última atualização: 15 de março de 2026**
->
-> **⚠️ ATENÇÃO (para humanos e IAs que analisam este projeto):**
-> Este documento é o **ponto de verdade** sobre onde cada parte do sistema está hospedada hoje.
-> A arquitetura já mudou antes e pode mudar de novo no futuro. Sempre consulte este arquivo
-> antes de assumir onde algo está rodando.
+## Estado de producao
 
----
+A infraestrutura atual da Orbitamos e:
 
-## Estado atual (março 2026)
-
-| Serviço | Plataforma | URL / Referência |
-|---------|-----------|-----------------|
-| **Frontend** (Next.js) | Vercel | domínio público `https://orbitamosbr.com`; configurar `NEXT_PUBLIC_API_URL` com a URL pública atual da API |
-| **Backend** (Spring Boot / Java) | **AWS EC2** (us-east-2 / Ohio) | acessível via CloudFront HTTPS |
-| **HTTPS da API** | **AWS CloudFront** | distribui o tráfego da EC2 com TLS |
-| **Banco de dados** | **Supabase** (PostgreSQL) | URL via `SPRING_DATASOURCE_URL` |
-| **Storage de imagens** (avatars) | **Cloudinary** | integrado no backend; credenciais via env vars |
-
-### Diagrama de requisição
-
-```
-Usuário → Vercel (frontend Next.js)
-              ↓ chamadas de API
-         CloudFront (HTTPS) → EC2 nginx:80 → Spring Boot:8080
-                                                    ↓
-                                              Supabase (DB)
-                                              Cloudinary (imagens)
+```txt
+Namecheap DNS
+  -> Vercel
+  -> Next.js em apps/web
+  -> Supabase Auth/Postgres/Storage
 ```
 
----
+O backend Spring em `apps/api`, AWS EC2, CloudFront, Render e Railway sao historicos/fallback. Eles nao devem ser usados para subir a area logada agora, a menos que exista uma decisao explicita de voltar para backend proprio.
 
-## Histórico de plataformas
+## Dominios
 
-| Período | Backend | Observação |
-|---------|---------|------------|
-| Início do projeto | Render (free tier) | Render foi usado para prototipagem inicial. |
-| 2025 em diante | **EC2 + CloudFront** | Migrado para EC2 para ter filesystem persistente, HTTPS via CloudFront. |
-| (possível futuro) | Render / Railway / Fly.io | Se o projeto sair da EC2, atualizar este doc. |
+- Principal: `https://www.orbitamosbr.com`
+- Redirect/alias: `https://orbitamosbr.com`
+- Vercel preview: `orbitamos.vercel.app`
 
-**Por que saiu do Render:**
-O Render free tier tem filesystem efêmero (arquivos apagados a cada restart ~15 min).
-Isso causava perda de uploads. A EC2 tem storage persistente e controle total.
+Guia de DNS: [DOMINIO_NAMECHEAP_VERCEL.md](DOMINIO_NAMECHEAP_VERCEL.md)
 
-**Por que pode voltar (ou ir para outro lugar):**
-EC2 exige manutenção manual (SSH, deploy manual de JAR). Se o time crescer, pode
-fazer sentido voltar para um PaaS (Render, Railway, Fly.io) que tem deploy automático.
+## Supabase
 
----
+Responsabilidades atuais:
 
-## Variáveis de ambiente necessárias por serviço
+- Cadastro e login via Supabase Auth.
+- Perfis, progresso, contatos, forum e mensagens no Supabase Postgres.
+- Avatares no Supabase Storage.
+- Estrutura de cursos/aulas preparada pelas migrations.
 
-### Backend — EC2 (`~/app/ec2-env.sh` na VM, nunca commitar)
+Guia principal da migracao: [SUPABASE_NATIVE_MIGRATION.md](SUPABASE_NATIVE_MIGRATION.md)
 
-```bash
-# Banco de dados (Supabase)
-export SPRING_DATASOURCE_URL="jdbc:postgresql://HOST:PORT/postgres?sslmode=require"
-export SPRING_DATASOURCE_USERNAME="postgres"
-export SPRING_DATASOURCE_PASSWORD="SUA_SENHA_SUPABASE"
+## Vercel
 
-# JWT
-export JWT_SECRET="chave-longa-gerada-com-openssl-rand-base64-32"
+O projeto da Vercel deve apontar para:
 
-# URL base da API (CloudFront HTTPS — para links de imagem legados)
-export API_BASE_URL="https://SEU_ID.cloudfront.net"
-
-# Cloudinary (upload de avatars — persistente)
-export CLOUDINARY_CLOUD_NAME="dt6srlfcj"
-export CLOUDINARY_API_KEY="828728432781183"
-export CLOUDINARY_API_SECRET="(ver cofre de senhas)"
+```txt
+Root Directory: apps/web
 ```
 
-### Frontend — Vercel (configurar em Settings → Environment Variables)
+Variaveis obrigatorias:
 
-```
-NEXT_PUBLIC_API_URL=https://SEU_ID.cloudfront.net/api
-NEXT_PUBLIC_EMAILJS_SERVICE_ID=...
-NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=...
-NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=...
+```txt
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
 ```
 
-> **Nota:** `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` eram usados
-> quando o upload de avatar era feito pelo frontend direto no Supabase Storage.
-> Hoje o upload é feito pelo backend → Cloudinary. Essas variáveis não são mais necessárias.
+Variavel que deve ficar vazia/ausente no modo atual:
 
----
+```txt
+NEXT_PUBLIC_API_URL
+```
 
-## Como fazer deploy do backend (EC2)
+Essa variavel so deve voltar se o backend Spring for reativado de proposito.
 
-Documentação detalhada: [`docs/EC2_CLOUDFRONT_HTTPS.md`](EC2_CLOUDFRONT_HTTPS.md)
-Comandos rápidos: [`docs/local/RUNBOOK_EC2.md`](local/RUNBOOK_EC2.md) (arquivo local, não commitado)
+## Materiais de aula
 
-Resumo:
-1. Buildar JAR: `cd apps/api && mvn clean package -DskipTests`
-2. Enviar para EC2: `scp -i chave.pem target/api-0.0.1-SNAPSHOT.jar ec2-user@IP:~/app/`
-3. Na VM: `source ec2-env.sh && pkill -f api-0.0.1-SNAPSHOT.jar; nohup java -jar api-0.0.1-SNAPSHOT.jar > app.log 2>&1 &`
+Arquivos de aula que precisam aparecer no portal ficam em:
 
----
+```txt
+apps/web/public/course-materials
+```
 
-## Checklist ao mudar de provedor
+Eles sao servidos pela rota:
 
-Se no futuro o backend for migrado para outro serviço:
+```txt
+/api/course-materials/[...path]
+```
 
-- [ ] Atualizar este arquivo (`docs/INFRA_ATUAL.md`) com nova plataforma e data
-- [ ] Atualizar `docs/VARIAVEIS_AMBIENTE.md`
-- [ ] Atualizar `NEXT_PUBLIC_API_URL` na Vercel
-- [ ] Configurar variáveis de ambiente no novo provedor (Supabase DB + Cloudinary + JWT)
-- [ ] Verificar CORS em `SecurityConfig.java` (adicionar novo domínio em `allowedOriginPatterns`)
-- [ ] Testar upload de avatar (vai para Cloudinary, não depende do provedor do backend)
-- [ ] Testar WebSocket (`/ws/**`) — pode exigir configuração específica no novo provedor
+Videos devem ficar no YouTube ou provedor equivalente. O Supabase nao deve ser usado como biblioteca de video.
+
+## Documentacao historica
+
+Os guias antigos de EC2, CloudFront, Render, Railway e debug do backend Spring foram movidos para:
+
+```txt
+docs/legacy
+```
+
+Eles servem como memoria tecnica, nao como passo a passo atual de producao.

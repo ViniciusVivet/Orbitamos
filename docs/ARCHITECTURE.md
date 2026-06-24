@@ -1,256 +1,99 @@
-# 🏗️ Arquitetura da Orbitamos
+# Arquitetura da Orbitamos
 
-## Visão Geral do Sistema
+Ultima atualizacao: 2026-06-24
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        ORBITAMOS ECOSYSTEM                     │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌─────────────────┐    ┌─────────────────┐    ┌──────────────┐ │
-│  │   FRONTEND      │    │    BACKEND      │    │   DATABASE   │ │
-│  │                 │    │                 │    │              │ │
-│  │  Next.js 14     │◄──►│  Spring Boot 3  │◄──►│  PostgreSQL  │ │
-│  │  React 18       │    │  Java 21        │    │  Database    │ │
-│  │  TailwindCSS    │    │  Spring Security│   │              │ │
-│  │  shadcn/ui      │    │  Spring Data JPA│   │              │ │
-│  │                 │    │                 │    │              │ │
-│  └─────────────────┘    └─────────────────┘    └──────────────┘ │
-│           │                       │                            │
-│           │                       │                            │
-│  ┌─────────────────┐    ┌─────────────────┐    ┌──────────────┐ │
-│  │   DEPLOYMENT    │    │   MONITORING    │    │   CI/CD      │ │
-│  │                 │    │                 │    │              │ │
-│  │  Vercel         │    │  Swagger/OpenAPI│   │  GitHub      │ │
-│  │  (Frontend)     │    │  Health Checks  │   │  Actions     │ │
-│  │  EC2+CloudFront │    │  Logs           │   │  Docker      │ │
-│  │  (Backend)      │    │                 │   │  Builds      │ │
-│  └─────────────────┘    └─────────────────┘    └──────────────┘ │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
+## Visao geral
 
-> Estado atual e histórico completo: [`docs/INFRA_ATUAL.md`](INFRA_ATUAL.md)
+A Orbitamos hoje e um produto com duas frentes dentro do mesmo projeto:
 
-## Fluxo de Dados
+- **Studio digital**: site publico que apresenta a Orbitamos, portfolio, servicos e formulario de contato.
+- **Portal de tecnologia**: area logada para estudantes e colaboradores, com aulas, materiais, progresso, mensagens e funcionalidades academicas.
 
-```
-User Request
-     │
-     ▼
-┌─────────────┐
-│   Vercel    │  ← CDN + Edge Functions
-│  (Frontend) │
-└─────────────┘
-     │
-     ▼
-┌──────────────────┐
-│  CloudFront      │  ← HTTPS termination (AWS)
-│  → EC2 nginx:80  │  ← Reverse proxy → Spring Boot:8080
-└──────────────────┘
-     │              └──→ Cloudinary (upload de avatars)
-     ▼
-┌─────────────┐
-│  Supabase   │  ← PostgreSQL (banco de dados)
-│  (Database) │
-└─────────────┘
+A direcao atual e manter tudo online com custo minimo usando **Vercel + Supabase**. O backend Spring/AWS continua no repositorio como legado/fallback, mas nao e o caminho principal para a operacao atual.
+
+## Runtime atual
+
+| Camada | Tecnologia | Status |
+| --- | --- | --- |
+| Frontend | Next.js em `apps/web` | Atual |
+| Hospedagem web | Vercel | Atual |
+| Auth | Supabase Auth | Atual |
+| Banco | Supabase Postgres | Atual |
+| Storage | Supabase Storage e arquivos publicos do Next | Atual |
+| API local do Next | `apps/web/src/app/api/*` | Atual para rotas auxiliares |
+| Backend Java | Spring Boot em `apps/api` | Legado/fallback |
+| AWS EC2/CloudFront | Infra antiga | Legado |
+
+## Fluxo principal
+
+```txt
+Usuario
+  -> orbitamosbr.com / www.orbitamosbr.com
+  -> Vercel / Next.js
+  -> Supabase Auth, Postgres e Storage
 ```
 
-## Estrutura de Pastas Detalhada
+Quando `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` existem, a area logada usa Supabase nativo. `NEXT_PUBLIC_API_URL` deve ficar ausente/vazio nesse modo; ela existe apenas para fallback do backend Spring.
 
-```
-orbitamos/
-├── 📁 apps/                          # Aplicações principais
-│   ├── 📁 web/                       # Frontend Next.js 14
-│   │   ├── 📁 src/
-│   │   │   ├── 📁 app/               # App Router (Next.js 14)
-│   │   │   │   ├── 📄 page.tsx       # Home - "O Movimento"
-│   │   │   │   ├── 📁 sobre/         # Sobre - "Nosso Propósito"
-│   │   │   │   │   └── 📄 page.tsx
-│   │   │   │   ├── 📁 mentorias/     # Mentorias - "Do Subemprego à T.I."
-│   │   │   │   │   └── 📄 page.tsx
-│   │   │   │   ├── 📁 orbitacademy/  # OrbitAcademy - Cursos e Conteúdos
-│   │   │   │   │   └── 📄 page.tsx
-│   │   │   │   ├── 📁 blog/          # Blog - "Diário da Órbita"
-│   │   │   │   │   └── 📄 page.tsx
-│   │   │   │   ├── 📁 contato/       # Contato - "Entre em Órbita"
-│   │   │   │   │   └── 📄 page.tsx
-│   │   │   │   ├── 📄 layout.tsx     # Layout principal com navegação
-│   │   │   │   └── 📄 globals.css    # Estilos globais + paleta Orbitamos
-│   │   │   ├── 📁 components/        # Componentes reutilizáveis
-│   │   │   │   ├── 📁 ui/            # shadcn/ui components
-│   │   │   │   │   ├── 📄 button.tsx
-│   │   │   │   │   ├── 📄 card.tsx
-│   │   │   │   │   ├── 📄 input.tsx
-│   │   │   │   │   └── 📄 textarea.tsx
-│   │   │   │   └── 📄 Navigation.tsx # Navegação principal
-│   │   │   └── 📁 lib/               # Utilitários
-│   │   │       └── 📄 utils.ts       # Funções auxiliares
-│   │   ├── 📄 tailwind.config.js     # Configuração Tailwind + paleta Orbitamos
-│   │   ├── 📄 components.json        # Configuração shadcn/ui
-│   │   ├── 📄 package.json           # Dependências frontend
-│   │   ├── 📄 Dockerfile             # Container frontend
-│   │   └── 📄 README.md              # Docs frontend
-│   └── 📁 api/                       # Backend Spring Boot 3
-│       ├── 📁 src/
-│       │   ├── 📁 main/
-│       │   │   ├── 📁 java/com/orbitamos/api/
-│       │   │   │   ├── 📄 OrbitamosApiApplication.java  # App principal
-│       │   │   │   └── 📁 controller/                   # Controllers REST
-│       │   │   │       ├── 📄 HealthController.java     # GET /api/health
-│       │   │   │       ├── 📄 MentorshipController.java # GET /api/mentorships
-│       │   │   │       └── 📄 ContactController.java    # POST /api/contact
-│       │   │   └── 📁 resources/
-│       │   │       └── 📄 application.yml                # Configurações
-│       │   └── 📁 test/                                 # Testes
-│       ├── 📄 pom.xml                                   # Dependências Maven
-│       ├── 📄 Dockerfile                               # Container backend
-│       └── 📄 README.md                                # Docs backend
-├── 📁 docs/                           # Documentação
-│   ├── 📄 API.md                      # Documentação da API
-│   ├── 📄 DEPLOYMENT.md               # Guia de deploy
-│   ├── 📄 CONTRIBUTING.md             # Guia de contribuição
-│   └── 📄 ARCHITECTURE.md             # Este arquivo
-├── 📄 docker-compose.yml              # Orquestração local
-├── 📄 .github/                        # GitHub Actions
-│   └── 📁 workflows/
-│       ├── 📄 frontend.yml            # CI/CD Frontend
-│       ├── 📄 backend.yml             # CI/CD Backend
-│       └── 📄 deploy.yml               # Deploy produção
-└── 📄 README.md                       # README principal
+## Dados
+
+As tabelas novas usam prefixo `v3_*` quando necessario para conviver com tabelas antigas que vieram do Spring/AWS.
+
+Principais dominios de dados:
+
+- `v3_profiles`: perfil do usuario logado.
+- `v3_contacts`: contatos enviados pelo site publico.
+- `v3_forum_messages`: forum/comunidade.
+- `v3_conversations`, `v3_conversation_participants`, `v3_chat_messages`: mensagens.
+- `courses`, `course_modules`, `lessons`, `lesson_materials`, `quizzes`: estrutura academica.
+- `lesson_progress`, `user_progress`: progresso do aluno.
+
+As migrations ficam em `docs/migrations`.
+
+## Conteudo academico
+
+Videos devem ficar fora do banco, preferencialmente YouTube ou outro provedor de video.
+
+Materiais leves e PDFs podem ser servidos pelo projeto web em:
+
+```txt
+apps/web/public/course-materials
 ```
 
-## Tecnologias e Dependências
+O acesso passa pela rota:
 
-### Frontend (Next.js)
-```json
-{
-  "dependencies": {
-    "next": "14.0.0",
-    "react": "18.0.0",
-    "react-dom": "18.0.0",
-    "typescript": "5.0.0",
-    "tailwindcss": "3.4.0",
-    "@radix-ui/react-*": "1.0.0",
-    "class-variance-authority": "0.7.0",
-    "clsx": "2.0.0",
-    "tailwind-merge": "2.0.0"
-  }
-}
+```txt
+/api/course-materials/[...path]
 ```
 
-### Backend (Spring Boot)
-```xml
-<dependencies>
-  <dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-web</artifactId>
-  </dependency>
-  <dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-data-jpa</artifactId>
-  </dependency>
-  <dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-security</artifactId>
-  </dependency>
-  <dependency>
-    <groupId>org.postgresql</groupId>
-    <artifactId>postgresql</artifactId>
-  </dependency>
-</dependencies>
+Essa rota ajuda a evitar links quebrados e permite preview/download dentro da area de aulas.
+
+## Portfolio e site publico
+
+Os projetos expostos no portfolio ainda ficam hardcoded no frontend, principalmente em:
+
+```txt
+apps/web/src/data/projetos.ts
 ```
 
-## Padrões de Desenvolvimento
+Metricas e textos publicos tambem podem aparecer em componentes/paginas do `apps/web/src`. Um CMS pode ser considerado depois, mas por enquanto hardcode e suficiente para custo zero e baixo volume de alteracoes.
 
-### Frontend
-- **Componentes**: Funcionais com hooks
-- **Styling**: TailwindCSS + CSS Modules
-- **Estado**: React Context + useState
-- **Roteamento**: Next.js App Router
-- **TypeScript**: Strict mode habilitado
+## Estrutura do repositorio
 
-### Backend
-- **Arquitetura**: MVC (Model-View-Controller)
-- **Injeção**: Spring IoC Container
-- **Segurança**: Spring Security + JWT
-- **Persistência**: JPA/Hibernate
-- **API**: RESTful com OpenAPI/Swagger
+```txt
+apps/
+  web/              # Next.js atual
+  api/              # Spring Boot legado/fallback
+docs/
+  migrations/       # SQLs aplicados no Supabase
+  legacy/           # documentos historicos de AWS/Render/Spring
+  local/            # arquivos locais ignorados pelo Git
+```
 
-### DevOps
-- **Containerização**: Docker + Docker Compose
-- **CI/CD**: GitHub Actions
-- **Monitoramento**: Health checks + logs
-- **Deploy**: Blue-green deployment
-- **Backup**: Automated database backups
+## Decisoes importantes
 
-## Segurança
-
-### Frontend
-- **HTTPS**: Forçado em produção
-- **CSP**: Content Security Policy
-- **XSS**: Proteção contra cross-site scripting
-- **CSRF**: Tokens de proteção
-
-### Backend
-- **Autenticação**: JWT tokens
-- **Autorização**: Role-based access
-- **Validação**: Input sanitization
-- **Rate Limiting**: Proteção contra abuse
-- **CORS**: Configurado para domínios específicos
-
-## Performance
-
-### Frontend
-- **SSR**: Server-side rendering
-- **SSG**: Static site generation
-- **CDN**: Vercel Edge Network
-- **Lazy Loading**: Componentes sob demanda
-- **Bundle**: Otimização automática
-
-### Backend
-- **Caching**: Redis para sessões
-- **Connection Pool**: HikariCP
-- **Compression**: Gzip habilitado
-- **Monitoring**: Micrometer + Actuator
-- **Database**: Índices otimizados
-
-## Escalabilidade
-
-### Horizontal
-- **Load Balancer**: Distribuição de carga
-- **Auto-scaling**: Baseado em métricas
-- **Database**: Read replicas
-- **CDN**: Cache distribuído
-
-### Vertical
-- **Resources**: CPU/Memory otimizados
-- **Database**: Connection pooling
-- **Monitoring**: Alertas proativos
-- **Backup**: Estratégia de recuperação
-
-## Monitoramento
-
-### Métricas
-- **Performance**: Response time, throughput
-- **Errors**: 4xx, 5xx status codes
-- **Availability**: Uptime, health checks
-- **Business**: User registrations, conversions
-
-### Alertas
-- **Critical**: Service down, high error rate
-- **Warning**: High latency, resource usage
-- **Info**: Deployments, configuration changes
-
-## Backup e Recuperação
-
-### Estratégia
-- **Database**: Daily automated backups
-- **Files**: Version control + CDN
-- **Configuration**: Infrastructure as Code
-- **Recovery**: Point-in-time recovery
-
-### RTO/RPO
-- **RTO**: 1 hour (Recovery Time Objective)
-- **RPO**: 15 minutes (Recovery Point Objective)
-- **Testing**: Monthly disaster recovery drills
+- Manter Supabase como backend principal enquanto o objetivo for custo minimo.
+- Nao recriar backend em Render free, porque cold start prejudica login e area logada.
+- Nao armazenar videos no Supabase; usar links externos.
+- Preservar o Spring Boot no repositorio como estudo/fallback, sem tratar como producao atual.
+- Separar documentacao atual de documentacao historica para evitar configuracoes erradas.
