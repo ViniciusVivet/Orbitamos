@@ -19,7 +19,7 @@ export default function Navigation() {
       {/* Hairline accent — gradient bottom border */}
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orbit-electric/12 to-transparent" />
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14 md:h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <LogoOrbitamos size={30} />
@@ -74,28 +74,7 @@ export default function Navigation() {
             )}
           </div>
 
-          {!loading && !isAuthenticated ? (
-            <div className="md:hidden flex items-center gap-1.5 text-[12px] font-semibold">
-              <Link
-                href="/projetos"
-                className="rounded-full bg-black/45 px-2 py-2 text-white shadow-[0_0_14px_rgba(0,0,0,0.35)] transition-colors hover:bg-black/60 hover:text-white"
-              >
-                Projetos
-              </Link>
-              <Link
-                href="/contato"
-                className="rounded-full bg-black/45 px-2 py-2 text-white shadow-[0_0_14px_rgba(0,0,0,0.35)] transition-colors hover:bg-black/60 hover:text-white"
-              >
-                Contato
-              </Link>
-              <Link
-                href="/entrar"
-                className="rounded-full border border-white/20 bg-black/55 px-2.5 py-2 text-white shadow-[0_0_14px_rgba(0,0,0,0.35)] transition-colors hover:bg-black/70"
-              >
-                🪐 Portal
-              </Link>
-            </div>
-          ) : (
+          {(loading || isAuthenticated) && (
             <button
               type="button"
               className="md:hidden flex h-12 min-w-[44px] items-center justify-center text-white touch-manipulation -mr-2"
@@ -112,6 +91,31 @@ export default function Navigation() {
             </button>
           )}
         </div>
+
+        {!loading && !isAuthenticated && (
+          <div className="md:hidden pb-3">
+            <div className="mx-auto grid max-w-[21rem] grid-cols-3 overflow-hidden rounded-full border border-white/12 bg-black/45 p-1 text-center text-[12px] font-bold text-white shadow-[0_18px_40px_rgba(0,0,0,0.35)] backdrop-blur-2xl">
+              <Link
+                href="/projetos"
+                className="rounded-full px-2.5 py-2.5 transition-colors hover:bg-white/10"
+              >
+                Projetos
+              </Link>
+              <Link
+                href="/contato"
+                className="rounded-full px-2.5 py-2.5 transition-colors hover:bg-white/10"
+              >
+                Contato
+              </Link>
+              <Link
+                href="/entrar"
+                className="rounded-full bg-white text-black shadow-[0_0_18px_rgba(255,255,255,0.18)] transition-colors hover:bg-orbit-electric"
+              >
+                🪐 Portal
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Mobile Menu */}
         {isMenuOpen && (
