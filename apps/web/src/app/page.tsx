@@ -210,7 +210,7 @@ export default function Home() {
               Tecnologia sob medida para negócios digitais
             </div>
 
-            <h1 className="max-w-4xl text-balance text-5xl font-black leading-[0.95] tracking-normal text-white sm:text-6xl lg:text-7xl">
+            <h1 className="max-w-4xl text-balance text-4xl font-black leading-[0.98] tracking-normal text-white sm:text-5xl lg:text-6xl xl:text-7xl">
               Sites, sistemas e automações para negócios que querem vender, organizar e escalar.
             </h1>
 
