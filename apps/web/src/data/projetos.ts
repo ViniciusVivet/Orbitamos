@@ -11,10 +11,8 @@ export const projetos: Projeto[] = [
     tags: ["Catalogo digital", "Moda infantil", "WhatsApp", "Mobile-first"],
     status: "publicado",
     link: "https://mb-multimarcas-infantil.vercel.app/",
-    thumbnail:
-      "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=900&q=80&auto=format&fit=crop",
-    imagemPrincipal:
-      "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=1400&q=80&auto=format&fit=crop",
+    thumbnail: "/case-mb-multimarcas-infantil.png",
+    imagemPrincipal: "/case-mb-multimarcas-infantil.png",
     contexto:
       "A MB Multimarcas Infantil precisava de uma presenca digital simples e comercial para apresentar pecas infantis e facilitar o atendimento pelo WhatsApp.",
     problema:

@@ -104,7 +104,7 @@ const featuredProjects = [
     name: "MB Multimarcas Infantil",
     category: "Moda infantil",
     href: "/projetos?case=mb-multimarcas-infantil",
-    image: "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=900&q=80&auto=format&fit=crop",
+    image: "/case-mb-multimarcas-infantil.png",
     description:
       "Catalogo digital com produtos filtraveis e atendimento direto pelo WhatsApp.",
     outcomes: ["Catalogo filtravel", "WhatsApp direto", "Mobile-first"],
