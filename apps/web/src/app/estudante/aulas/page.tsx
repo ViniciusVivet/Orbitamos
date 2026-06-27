@@ -132,6 +132,27 @@ export default function EstudanteAulas() {
         <p className="mt-1 text-white/60">OrbitAcademy - escolha uma trilha e continue de onde parou</p>
       </div>
 
+      <Card className="border-white/10 bg-white/[0.04]">
+        <CardHeader>
+          <CardTitle className="text-white">Como estudar por aqui</CardTitle>
+          <CardDescription>O objetivo não é só abrir PDF. É assistir, praticar e marcar progresso.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 text-sm text-white/65 md:grid-cols-3">
+          <div className="rounded-lg border border-white/10 bg-black/25 p-3">
+            <span className="text-orbit-electric font-bold">1. Escolha uma trilha</span>
+            <p className="mt-1">Comece por lógica, HTML, C#, SQL ou dados conforme seu momento.</p>
+          </div>
+          <div className="rounded-lg border border-white/10 bg-black/25 p-3">
+            <span className="text-orbit-electric font-bold">2. Faça a prática</span>
+            <p className="mt-1">Cada aula agora tem objetivo, checklist e exercício para entregar.</p>
+          </div>
+          <div className="rounded-lg border border-white/10 bg-black/25 p-3">
+            <span className="text-orbit-electric font-bold">3. Marque como concluída</span>
+            <p className="mt-1">Seu progresso alimenta a jornada, XP e próxima recomendação.</p>
+          </div>
+        </CardContent>
+      </Card>
+
       {loading && <p className="text-sm text-white/50">Carregando cursos...</p>}
 
       {cursos.length > 0 && sugerido && (

@@ -8,11 +8,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { DashboardSummary, getDashboardSummary } from "@/lib/api";
 import { whatsappMentoriaUrl } from "@/lib/social";
+import { listarAulasConcluidas, listarCursosAcademy, totalAulas, type Curso } from "@/lib/cursos";
+import { getNextIncompleteLesson, type FlatLesson } from "@/lib/learningExperience";
 
 export default function EstudanteInicio() {
   const { user, token } = useAuth();
   const { progress: progressFromContext } = useProgress();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [cursos, setCursos] = useState<Curso[]>([]);
+  const [nextLesson, setNextLesson] = useState<FlatLesson | null>(null);
+  const [completedLessons, setCompletedLessons] = useState(0);
+  const [academyLoading, setAcademyLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -26,6 +32,33 @@ export default function EstudanteInicio() {
       .finally(() => setLoading(false));
   }, [token]);
 
+  useEffect(() => {
+    let active = true;
+    setAcademyLoading(true);
+    listarCursosAcademy()
+      .then(async (items) => {
+        if (!active) return;
+        setCursos(items);
+        const lessonIds = items.flatMap((curso) => curso.modulos.flatMap((mod) => mod.aulas.map((aula) => aula.id)));
+        const completed = await listarAulasConcluidas(lessonIds);
+        if (!active) return;
+        const completedSet = new Set(completed);
+        setCompletedLessons(completedSet.size);
+        setNextLesson(getNextIncompleteLesson(items, completedSet));
+      })
+      .catch(() => {
+        if (!active) return;
+        setCursos([]);
+        setNextLesson(null);
+      })
+      .finally(() => {
+        if (active) setAcademyLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [user?.id]);
+
   const progress = progressFromContext ?? defaultProgress;
   const nextAction = summary?.nextAction ?? {
     title: "Continuar o Módulo 1",
@@ -33,6 +66,9 @@ export default function EstudanteInicio() {
     cta: "/estudante/aulas",
   };
   const checklist = summary?.weeklyChecklist ?? [];
+  const totalLessons = cursos.reduce((acc, curso) => acc + totalAulas(curso), 0);
+  const academyPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : progress.percent;
+  const continueHref = nextLesson ? `/estudante/cursos/${nextLesson.curso.slug}` : "/estudante/aulas";
 
   return (
     <div className="space-y-8">
@@ -43,9 +79,9 @@ export default function EstudanteInicio() {
           </h1>
           <p className="mt-1 text-white/60">Resumo da sua jornada</p>
         </div>
-        <Link href="/estudante/aulas" className="shrink-0">
+        <Link href={continueHref} className="shrink-0">
           <Button className="w-full sm:w-auto bg-gradient-to-r from-orbit-electric to-orbit-purple text-black font-bold hover:opacity-90 text-base px-6 py-3">
-            🎬 Entrar na sala de aula
+            Continuar estudando
           </Button>
         </Link>
       </div>
@@ -62,21 +98,49 @@ export default function EstudanteInicio() {
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Continuar de onde parou */}
-          {progress.lastLesson && (
-            <Card className="border-orbit-electric/30 bg-gradient-to-br from-orbit-electric/10 to-orbit-purple/10 md:col-span-2">
-              <CardHeader>
-                <CardTitle className="text-orbit-electric">▶ Continuar de onde parou</CardTitle>
-                <CardDescription>Última aula vista</CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-white/90 font-medium">{progress.lastLesson}</p>
-                <Button asChild className="w-full sm:w-auto bg-gradient-to-r from-orbit-electric to-orbit-purple text-black font-bold hover:opacity-90">
-                  <Link href="/estudante/aulas">Ir para as aulas</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          <Card className="border-orbit-electric/30 bg-gradient-to-br from-orbit-electric/10 to-orbit-purple/10 md:col-span-2">
+            <CardHeader>
+              <CardTitle className="text-orbit-electric">Continuar sua jornada</CardTitle>
+              <CardDescription>
+                {academyLoading ? "Buscando sua próxima aula..." : "Uma ação clara para estudar hoje"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+              <div>
+                <p className="text-xl font-black text-white">
+                  {nextLesson ? nextLesson.aula.titulo : progress.lastLesson || "Comece pela primeira trilha"}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-white/58">
+                  {nextLesson
+                    ? `${nextLesson.curso.titulo} • ${nextLesson.moduloTitulo} • aula ${nextLesson.index + 1} de ${nextLesson.total}`
+                    : "Escolha uma trilha, abra a primeira aula e conclua uma prática pequena hoje."}
+                </p>
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                  <Button asChild className="bg-gradient-to-r from-orbit-electric to-orbit-purple font-bold text-black hover:opacity-90">
+                    <Link href={continueHref}>Abrir aula recomendada</Link>
+                  </Button>
+                  <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                    <Link href="/estudante/aulas">Ver todas as trilhas</Link>
+                  </Button>
+                </div>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-black/25 p-4">
+                <div className="flex items-center justify-between text-sm text-white/60">
+                  <span>Progresso da academia</span>
+                  <span>{academyPercent}%</span>
+                </div>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple"
+                    style={{ width: `${academyPercent}%` }}
+                  />
+                </div>
+                <p className="mt-3 text-xs text-white/45">
+                  {completedLessons} de {totalLessons || "?"} aulas concluídas
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
           <Card className="border-orbit-electric/20 bg-gray-900/50">
             <CardHeader>

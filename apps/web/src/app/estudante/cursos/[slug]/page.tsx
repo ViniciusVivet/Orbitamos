@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useProgress } from "@/contexts/ProgressContext";
 import { addProgressLesson } from "@/lib/api";
 import type { UserId } from "@/lib/api";
+import { flattenCourseLessons, getLessonGuide } from "@/lib/learningExperience";
 
 const STORAGE_KEY = "orbitacademy-progress";
 const YOUTUBE_VIDEO_ID_PATTERN = /^[a-zA-Z0-9_-]{6,20}$/;
@@ -200,6 +201,15 @@ export default function CursoPage() {
   }, [curso, slug, userId]);
 
   const aula = useMemo(() => (curso && aulaId ? aulaNoCurso(curso, aulaId) : undefined), [curso, aulaId]);
+  const flatLessons = useMemo(() => (curso ? flattenCourseLessons(curso) : []), [curso]);
+  const currentLessonIndex = useMemo(
+    () => flatLessons.findIndex((item) => item.aula.id === aulaId),
+    [flatLessons, aulaId]
+  );
+  const lessonGuide = useMemo(
+    () => (curso && aula ? getLessonGuide(curso, aula, Math.max(currentLessonIndex, 0)) : null),
+    [curso, aula, currentLessonIndex]
+  );
   const youtubeEmbedUrl = getYoutubeEmbedUrl(aula?.youtubeVideoId);
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(null);
   const selectedMaterial = useMemo(() => {
@@ -208,6 +218,7 @@ export default function CursoPage() {
   }, [aula?.materiais, selectedMaterialId]);
   const concluidasCount = concluidas.length;
   const percent = total > 0 ? Math.round((concluidasCount / total) * 100) : 0;
+  const nextAulaId = curso && aulaId ? proximaAulaId(curso, aulaId) : null;
 
   useEffect(() => {
     setSelectedMaterialId(null);
@@ -324,9 +335,51 @@ export default function CursoPage() {
                 onClick={marcarConcluida}
                 className="w-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 py-3 text-sm font-bold text-black hover:opacity-90 touch-manipulation sm:w-auto"
               >
-                Concluir e ir para proxima aula
+                {nextAulaId ? "Concluir e ir para próxima aula" : "Concluir aula"}
               </button>
             </div>
+            {lessonGuide && (
+              <div className="mb-4 grid gap-3 xl:grid-cols-[1.05fr_0.95fr]">
+                <section className="rounded-xl border border-orbit-electric/20 bg-orbit-electric/[0.06] p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.2em] text-orbit-electric/80">
+                        Aula guiada
+                      </p>
+                      <h2 className="mt-1 text-lg font-black text-white">O que fazer agora</h2>
+                    </div>
+                    <span className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs font-semibold text-white/60">
+                      {lessonGuide.estimatedMinutes} min
+                    </span>
+                  </div>
+                  <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                    {lessonGuide.objectives.map((objective) => (
+                      <li key={objective} className="flex gap-2 rounded-lg bg-black/25 px-3 py-2 text-sm text-white/72">
+                        <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-orbit-electric" />
+                        <span>{objective}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+
+                <section className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/38">
+                    Checklist da aula
+                  </p>
+                  <div className="mt-3 space-y-2">
+                    {lessonGuide.checklist.map((item) => (
+                      <label key={item} className="flex items-center gap-3 rounded-lg bg-black/25 px-3 py-2 text-sm text-white/72">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-white/20 bg-black text-orbit-electric accent-cyan-300"
+                        />
+                        <span>{item}</span>
+                      </label>
+                    ))}
+                  </div>
+                </section>
+              </div>
+            )}
             <div className="flex flex-col gap-4 lg:flex-row">
               <div className="w-full shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black lg:max-w-3xl">
                 {youtubeEmbedUrl ? (
@@ -366,8 +419,46 @@ export default function CursoPage() {
                   </div>
                 )}
               </div>
-              {(aula.conteudo || (aula.materiais?.length ?? 0) > 0) && (
+              {(lessonGuide || aula.conteudo || (aula.materiais?.length ?? 0) > 0) && (
                 <div className="flex-1 space-y-4">
+                  {lessonGuide && (
+                    <>
+                      <div className="rounded-xl border border-orbit-purple/25 bg-orbit-purple/[0.07] p-4">
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-orbit-purple/80">
+                          Exercício prático
+                        </p>
+                        <h2 className="mt-2 text-lg font-black text-white">{lessonGuide.practice.title}</h2>
+                        <p className="mt-2 text-sm leading-6 text-white/64">{lessonGuide.practice.description}</p>
+                        <div className="mt-4 rounded-lg border border-white/10 bg-black/25 p-3 text-xs leading-5 text-white/55">
+                          <span className="font-bold text-white/80">Entrega esperada: </span>
+                          {lessonGuide.practice.deliverable}
+                        </div>
+                      </div>
+
+                      <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/38">
+                          Quiz rápido
+                        </p>
+                        {lessonGuide.quiz.map((question) => (
+                          <div key={question.question} className="mt-3">
+                            <p className="text-sm font-semibold text-white/80">{question.question}</p>
+                            <div className="mt-3 space-y-2">
+                              {question.options.map((option) => (
+                                <details key={option} className="group rounded-lg border border-white/10 bg-black/25 px-3 py-2">
+                                  <summary className="cursor-pointer list-none text-sm text-white/65 group-open:text-orbit-electric">
+                                    {option}
+                                  </summary>
+                                  <p className="mt-2 text-xs text-white/45">
+                                    {option === question.answer ? "Resposta certa. Boa." : `Resposta correta: ${question.answer}`}
+                                  </p>
+                                </details>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                   {aula.conteudo && (
                     <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white/80 whitespace-pre-line">
                       {aula.conteudo}
