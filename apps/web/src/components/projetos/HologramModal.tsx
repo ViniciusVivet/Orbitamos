@@ -264,6 +264,13 @@ export default function HologramModal({ projeto, projetos, onClose }: HologramMo
                     Ver projeto
                   </a>
                 )}
+                <a
+                  href={`/projetos/${current.slug}`}
+                  className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all duration-150 hover:brightness-125"
+                  style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.3)", color: "#00D4FF", boxShadow: "0 0 24px rgba(0,212,255,0.08)" }}
+                >
+                  Case completo
+                </a>
                 {current.github && (
                   <a
                     href={current.github}

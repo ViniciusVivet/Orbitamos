@@ -35,7 +35,7 @@ const heroCases = [
     name: "Sabrina Lashes",
     type: "Site institucional",
     result: "Agendamento e WhatsApp",
-    href: "/projetos?case=sabrina-lashes",
+    href: "/projetos/sabrina-lashes",
     image: "/case-sabrina-lashes.png",
     accent: "from-emerald-300 to-cyan-300",
     className: "md:translate-x-5 md:-rotate-2",
@@ -44,7 +44,7 @@ const heroCases = [
     name: "YUME",
     type: "Moda autoral",
     result: "Catálogo premium",
-    href: "/projetos?case=yume-moda-disruptiva",
+    href: "/projetos/yume-moda-disruptiva",
     image: "/case-yume.png",
     accent: "from-violet-300 to-fuchsia-300",
     className: "md:-translate-x-8 md:rotate-2",
@@ -53,7 +53,7 @@ const heroCases = [
     name: "Destaque Multimarcas",
     type: "Estoque digital",
     result: "Filtros e leads",
-    href: "/projetos?case=destaque-multimarcas",
+    href: "/projetos/destaque-multimarcas",
     image: "/case-destaque-multimarcas.png",
     accent: "from-amber-200 to-orange-300",
     className: "md:translate-x-8 md:-rotate-1",
@@ -103,7 +103,7 @@ const featuredProjects = [
   {
     name: "Sabrina Lashes",
     category: "Beleza e atendimento",
-    href: "/projetos?case=sabrina-lashes",
+    href: "/projetos/sabrina-lashes",
     image: "/case-sabrina-lashes.png",
     description:
       "Site profissional para apresentar serviços, reforçar confiança e levar clientes direto ao agendamento.",
@@ -112,7 +112,7 @@ const featuredProjects = [
   {
     name: "YUME",
     category: "Marca autoral",
-    href: "/projetos?case=yume-moda-disruptiva",
+    href: "/projetos/yume-moda-disruptiva",
     image: "/case-yume.png",
     description:
       "Vitrine digital com identidade forte para apresentar coleções, editoriais e evoluir para vendas.",
@@ -121,7 +121,7 @@ const featuredProjects = [
   {
     name: "MB Multimarcas Infantil",
     category: "Moda infantil",
-    href: "/projetos?case=mb-multimarcas-infantil",
+    href: "/projetos/mb-multimarcas-infantil",
     image: "/case-mb-multimarcas-infantil.png",
     description:
       "Catalogo digital com produtos filtraveis e atendimento direto pelo WhatsApp.",

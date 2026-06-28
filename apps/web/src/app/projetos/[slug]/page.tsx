@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getProjetoBySlug } from "@/data/projetos";
+import { getProjetoBySlug, projetos } from "@/data/projetos";
 import CaseHeader from "@/components/projetos/CaseHeader";
 import CaseSection from "@/components/projetos/CaseSection";
 import ProjetosCTA from "@/components/projetos/ProjetosCTA";
@@ -9,6 +9,12 @@ import { Button } from "@/components/ui/button";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export function generateStaticParams() {
+  return projetos.map((projeto) => ({
+    slug: projeto.slug,
+  }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
