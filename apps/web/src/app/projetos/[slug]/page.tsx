@@ -22,8 +22,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const projeto = getProjetoBySlug(slug);
   if (!projeto) return { title: "Projeto não encontrado | Orbitamos" };
   return {
-    title: `${projeto.nome} | Orbitamos`,
-    description: projeto.contexto ?? `Conheça o case ${projeto.nome} desenvolvido pela Orbitamos.`,
+    title: `${projeto.nome} | Case Orbitamos`,
+    description: projeto.resumo,
+    openGraph: {
+      title: `${projeto.nome} | Case Orbitamos`,
+      description: projeto.resumo,
+      images: [projeto.imagemPrincipal],
+    },
   };
 }
 
@@ -33,66 +38,116 @@ export default async function ProjetoCasePage({ params }: PageProps) {
   if (!projeto) notFound();
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-[#03050a] text-white">
       <CaseHeader projeto={projeto} />
-      <CaseSection title="Contexto do projeto">
-        <p>{projeto.contexto}</p>
-      </CaseSection>
-      <CaseSection title="Problema a ser resolvido">
-        <p>{projeto.problema}</p>
-      </CaseSection>
-      <CaseSection title="Solução construída pela Orbitamos">
-        <p>{projeto.solucao}</p>
-      </CaseSection>
-      <CaseSection title="Destaques do projeto">
-        <ul>
-          {projeto.destaques.map((d, i) => (
-            <li key={i}>{d}</li>
-          ))}
-        </ul>
-      </CaseSection>
-      <CaseSection title="Stack usada">
-        <p className="flex flex-wrap gap-2">
-          {projeto.stack.map((s) => (
-            <span
-              key={s}
-              className="rounded bg-white/10 px-2.5 py-1 text-sm text-white/90"
-            >
-              {s}
-            </span>
-          ))}
-        </p>
-      </CaseSection>
-      <CaseSection title="Resultado / impacto">
-        <p>{projeto.resultado}</p>
-      </CaseSection>
-      <section className="border-b border-white/10 py-10 md:py-14">
-        <div className="container mx-auto px-4 flex flex-wrap items-center gap-4">
-          {projeto.link && (
-            <Button
-              asChild
-              className="bg-gradient-to-r from-orbit-electric to-orbit-purple text-black font-semibold hover:from-orbit-purple hover:to-orbit-electric"
-            >
-              <a href={projeto.link} target="_blank" rel="noreferrer">
-                Visitar projeto
-              </a>
-            </Button>
-          )}
-          {projeto.github && (
-            <Button asChild variant="outline" className="border-white/25 text-white hover:bg-white/10">
-              <a href={projeto.github} target="_blank" rel="noreferrer">
-                Ver no GitHub
-              </a>
-            </Button>
-          )}
-          <ProjetosCTA variant="inline" />
+
+      <div className="border-b border-white/10 bg-[#050812]">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-4 text-sm sm:px-8 lg:px-10">
+          <Link href="/projetos" className="text-white/55 transition-colors hover:text-white">
+            Voltar para projetos
+          </Link>
+          <div className="flex flex-wrap gap-2">
+            {projeto.tags.map((tag) => (
+              <span key={tag} className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-white/55">
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
-      </section>
-      <div className="py-6 text-center">
-        <Button asChild variant="ghost" className="text-white/70 hover:text-white">
-          <Link href="/projetos">← Voltar para projetos</Link>
-        </Button>
       </div>
+
+      <main className="py-12">
+        <CaseSection eyebrow="01 / Contexto" title="O ponto de partida" tone="cyan">
+          <p>{projeto.contexto}</p>
+        </CaseSection>
+
+        <CaseSection eyebrow="02 / Problema" title="O que precisava ser resolvido" tone="neutral">
+          <p>{projeto.problema}</p>
+        </CaseSection>
+
+        <CaseSection eyebrow="03 / Solução" title="Como a Orbitamos estruturou a entrega" tone="purple">
+          <p>{projeto.solucao}</p>
+        </CaseSection>
+
+        <section className="mx-auto max-w-7xl px-5 py-5 sm:px-8 lg:px-10">
+          <div className="grid gap-5 lg:grid-cols-[0.78fr_1.22fr]">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-6">
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-orbit-electric/80">
+                04 / Resultado
+              </p>
+              <h2 className="mt-2 text-3xl font-black leading-tight text-white">
+                Impacto entregue
+              </h2>
+              <p className="mt-5 text-base leading-8 text-white/72">{projeto.resultado}</p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {projeto.destaques.map((destaque, index) => (
+                <div key={destaque} className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
+                  <span className="text-sm font-black text-orbit-electric">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <p className="mt-4 text-sm leading-7 text-white/72">{destaque}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-7xl px-5 py-5 sm:px-8 lg:px-10">
+          <div className="rounded-2xl border border-white/10 bg-[#070a12] p-6 sm:p-7">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-orbit-electric/80">
+                  05 / Stack
+                </p>
+                <h2 className="mt-2 text-2xl font-black text-white">Tecnologia usada no projeto</h2>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {projeto.stack.map((tech) => (
+                  <span
+                    key={tech}
+                    className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm font-semibold text-white/70"
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-10">
+          <div className="flex flex-col items-start justify-between gap-5 rounded-2xl border border-orbit-electric/20 bg-orbit-electric/[0.05] p-6 sm:p-7 lg:flex-row lg:items-center">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-orbit-electric/80">
+                Próximo passo
+              </p>
+              <h2 className="mt-2 text-2xl font-black text-white">Quer uma entrega nessa linha?</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/58">
+                A Orbitamos cria sites, sistemas e automações sob medida para negócios que precisam vender, organizar e escalar.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              {projeto.link && (
+                <Button asChild className="rounded-md bg-white px-5 font-bold text-black hover:bg-orbit-electric">
+                  <a href={projeto.link} target="_blank" rel="noreferrer">
+                    Visitar projeto
+                  </a>
+                </Button>
+              )}
+              {projeto.github && (
+                <Button asChild variant="outline" className="rounded-md border-white/20 text-white hover:bg-white/10">
+                  <a href={projeto.github} target="_blank" rel="noreferrer">
+                    Ver GitHub
+                  </a>
+                </Button>
+              )}
+            </div>
+          </div>
+        </section>
+      </main>
+
       <ProjetosCTA />
     </div>
   );
