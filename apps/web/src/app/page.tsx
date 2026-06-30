@@ -150,6 +150,15 @@ const process = [
 
 const stack = ["Next.js", "TypeScript", "APIs", "PostgreSQL", "Supabase", "Cloudinary", "IA", "Automações"];
 
+const stackNodes = [
+  { label: "Next.js", detail: "Interface rápida", className: "left-[6%] top-[18%]" },
+  { label: "TypeScript", detail: "Código robusto", className: "right-[9%] top-[12%]" },
+  { label: "APIs", detail: "Integrações", className: "left-[2%] bottom-[22%]" },
+  { label: "Supabase", detail: "Auth e dados", className: "right-[4%] bottom-[22%]" },
+  { label: "IA", detail: "Automação aplicada", className: "left-[38%] top-[2%]" },
+  { label: "PostgreSQL", detail: "Banco sólido", className: "left-[34%] bottom-[2%]" },
+];
+
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -201,11 +210,12 @@ export default function Home() {
           }}
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_28%,rgba(0,212,255,0.20),transparent_34%),radial-gradient(circle_at_88%_76%,rgba(245,158,11,0.12),transparent_26%),linear-gradient(90deg,#03050a_0%,rgba(3,5,10,0.92)_42%,rgba(3,5,10,0.62)_100%)]" />
+        <div className="orbit-aurora pointer-events-none absolute inset-0 opacity-70" />
         <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#03050a] to-transparent" />
 
         <div className="relative z-10 mx-auto grid min-h-[calc(100svh-4rem)] w-full max-w-7xl items-center gap-12 px-5 py-12 sm:px-8 lg:grid-cols-[1.02fr_0.98fr] lg:px-10 lg:py-16">
           <div className="max-w-3xl">
-            <div className="mb-6 inline-flex items-center gap-2 border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/55 backdrop-blur-xl">
+            <div className="orbit-glass-badge mb-6 inline-flex items-center gap-2 border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/55 backdrop-blur-xl">
               <span className="h-1.5 w-1.5 rounded-full bg-orbit-electric shadow-[0_0_18px_rgba(0,212,255,0.9)]" />
               Tecnologia sob medida para negócios digitais
             </div>
@@ -223,7 +233,7 @@ export default function Home() {
               <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
                 <Button
                   size="lg"
-                  className="h-12 w-full rounded-md bg-white px-6 font-bold text-black hover:bg-orbit-electric sm:w-auto"
+                  className="orbit-cta h-12 w-full rounded-md bg-white px-6 font-bold text-black hover:bg-orbit-electric sm:w-auto"
                 >
                   <MessageCircle className="size-4" />
                   Solicitar orçamento
@@ -243,8 +253,9 @@ export default function Home() {
 
             <div className="mt-10 grid grid-cols-2 gap-px overflow-hidden border border-white/[0.08] bg-white/[0.08] sm:grid-cols-4">
               {stats.map((item) => (
-                <div key={item.label} className="bg-[#050812]/88 px-4 py-4 backdrop-blur-xl">
-                  <p className="text-xl font-black text-white">{item.value}</p>
+                <div key={item.label} className="group relative overflow-hidden bg-[#050812]/88 px-4 py-4 backdrop-blur-xl">
+                  <span className="orbit-sweep absolute inset-y-0 left-0 w-1/2 opacity-0 group-hover:opacity-100" />
+                  <p className="relative text-xl font-black text-white transition-transform duration-300 group-hover:translate-y-[-2px]">{item.value}</p>
                   <p className="mt-1 text-xs text-white/42">{item.label}</p>
                 </div>
               ))}
@@ -266,8 +277,9 @@ export default function Home() {
                 <Link
                   key={project.name}
                   href={project.href}
-                  className={`group relative overflow-hidden border border-white/10 bg-[#080b14]/86 shadow-[0_24px_70px_rgba(0,0,0,0.42)] backdrop-blur-2xl transition duration-200 hover:-translate-y-1 hover:border-white/20 ${project.className}`}
+                  className={`orbit-tilt-card group relative overflow-hidden border border-white/10 bg-[#080b14]/86 shadow-[0_24px_70px_rgba(0,0,0,0.42)] backdrop-blur-2xl transition duration-300 hover:-translate-y-2 hover:border-orbit-electric/35 ${project.className}`}
                 >
+                  <span className="orbit-sweep absolute inset-y-0 -left-1/2 z-10 w-1/2 opacity-0 group-hover:opacity-100" />
                   <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${project.accent}`} />
                   <div className="grid grid-cols-[1fr_128px] gap-4 p-4 sm:grid-cols-[1fr_174px]">
                     <div className="flex min-w-0 flex-col justify-between">
@@ -336,9 +348,10 @@ export default function Home() {
             {services.map((service) => (
               <article
                 key={service.title}
-                className="border border-white/[0.08] bg-white/[0.035] p-5 transition hover:border-orbit-electric/25 hover:bg-white/[0.055]"
+                className="orbit-tilt-card group relative overflow-hidden border border-white/[0.08] bg-white/[0.035] p-5 transition duration-300 hover:-translate-y-1.5 hover:border-orbit-electric/30 hover:bg-white/[0.065]"
               >
-                <service.icon className="size-6 text-orbit-electric" />
+                <span className="orbit-sweep absolute inset-y-0 -left-1/2 w-1/2 opacity-0 group-hover:opacity-100" />
+                <service.icon className="relative size-6 text-orbit-electric transition-transform duration-300 group-hover:scale-110" />
                 <h3 className="mt-5 text-xl font-black text-white">{service.title}</h3>
                 <p className="mt-3 text-sm leading-6 text-white/50">{service.text}</p>
                 <div className="mt-5 space-y-2">
@@ -381,14 +394,14 @@ export default function Home() {
             {featuredProjects.map((project) => (
               <article
                 key={project.name}
-                className="group overflow-hidden border border-white/[0.08] bg-[#070a12] transition hover:-translate-y-1 hover:border-white/18"
+                className="orbit-tilt-card group overflow-hidden border border-white/[0.08] bg-[#070a12] transition duration-300 hover:-translate-y-2 hover:border-orbit-electric/25"
               >
                 <Link href={project.href} className="block">
                   <div className="relative aspect-[16/10] overflow-hidden bg-white/[0.04]">
                     <img
                       src={project.image}
                       alt={`Case ${project.name}`}
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#070a12] via-transparent to-transparent" />
                   </div>
@@ -436,12 +449,12 @@ export default function Home() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           {process.map((step, index) => (
-            <article key={step.title} className="border border-white/[0.08] bg-white/[0.035] p-5">
+            <article key={step.title} className="orbit-tilt-card group border border-white/[0.08] bg-white/[0.035] p-5 transition duration-300 hover:-translate-y-1.5 hover:border-orbit-purple/30">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-black text-orbit-electric">
                   {String(index + 1).padStart(2, "0")}
                 </span>
-                <Clock3 className="size-4 text-white/30" />
+                <Clock3 className="size-4 text-white/30 transition-transform duration-300 group-hover:rotate-12 group-hover:text-orbit-electric" />
               </div>
               <h3 className="mt-8 text-xl font-black text-white">{step.title}</h3>
               <p className="mt-3 text-sm leading-6 text-white/50">{step.text}</p>
@@ -450,25 +463,54 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-y border-white/[0.08] bg-[#070a12]">
-        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:px-10">
-          <div>
+      <section className="relative overflow-hidden border-y border-white/[0.08] bg-[#070a12]">
+        <div className="orbit-aurora pointer-events-none absolute inset-0 opacity-40" />
+        <div className="relative mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[0.78fr_1.22fr] lg:px-10">
+          <div className="max-w-xl">
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-orbit-electric/80">
               Engenharia por trás
             </p>
             <h2 className="mt-4 text-3xl font-black leading-tight text-white sm:text-4xl">
               Tecnologia moderna por trás. Simples para o cliente usar.
             </h2>
+            <p className="mt-5 text-base leading-7 text-white/55">
+              A estrutura combina interface, autenticação, banco de dados e integrações para o cliente operar sem precisar entender a complexidade técnica por baixo.
+            </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            {stack.map((item) => (
-              <span
-                key={item}
-                className="border border-white/[0.09] bg-white/[0.04] px-4 py-2 text-sm font-semibold text-white/62"
-              >
-                {item}
+          <div className="orbit-tilt-card relative min-h-[500px] overflow-hidden rounded-2xl border border-white/10 bg-black/35 p-5 shadow-[0_30px_100px_rgba(0,0,0,0.45)] sm:min-h-[440px] sm:p-6">
+            <div className="absolute left-1/2 top-1/2 h-52 w-52 -translate-x-1/2 -translate-y-1/2 rounded-full border border-orbit-electric/20 bg-orbit-electric/[0.025] animate-orbit-pulse" />
+            <div className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full border border-orbit-purple/15 animate-orbit-pulse [animation-delay:1.2s]" />
+            <div className="absolute left-1/2 top-1/2 h-[22rem] w-[22rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.06] animate-orbit-pulse [animation-delay:2.1s]" />
+
+            <div className="absolute left-1/2 top-1/2 z-10 flex h-36 w-36 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-white/15 bg-[#080b14]/90 text-center shadow-[0_0_70px_rgba(0,212,255,0.16)] backdrop-blur-xl">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-orbit-electric/80">
+                Orbitamos
               </span>
+              <span className="mt-1 text-lg font-black text-white">Core</span>
+              <span className="mt-1 text-[11px] text-white/45">design + código</span>
+            </div>
+
+            {stackNodes.map((node, index) => (
+              <div
+                key={node.label}
+                className={`orbit-node absolute z-20 max-w-[8.5rem] rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2 shadow-[0_18px_50px_rgba(0,0,0,0.32)] backdrop-blur-xl ${node.className}`}
+                style={{ animationDelay: `${index * 0.35}s` }}
+              >
+                <p className="text-sm font-black text-white">{node.label}</p>
+                <p className="mt-1 text-[11px] leading-4 text-white/45">{node.detail}</p>
+              </div>
             ))}
+
+            <div className="absolute bottom-5 left-5 right-5 z-30 flex flex-wrap gap-2">
+              {stack.map((item) => (
+                <span
+                  key={item}
+                  className="rounded-full border border-white/[0.09] bg-black/35 px-3 py-1.5 text-xs font-semibold text-white/62 backdrop-blur-xl"
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </section>
