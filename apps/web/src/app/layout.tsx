@@ -27,6 +27,13 @@ export const metadata: Metadata = {
   creator: "Orbitamos",
   publisher: "Orbitamos",
   robots: "index, follow",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml", sizes: "512x512" },
+      { url: "/icon.svg", type: "image/svg+xml", sizes: "512x512" },
+    ],
+    shortcut: "/favicon.svg",
+  },
   alternates: {
     canonical: "/",
   },
