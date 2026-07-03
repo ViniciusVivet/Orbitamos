@@ -18,9 +18,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.orbitamosbr.com"),
-  title: "Orbitamos - Portal da Quebrada que Orbita Tecnologia",
-  description: "Da quebrada pra tecnologia — A gente sobe junto. Transforme sua vida através da tecnologia com nossos programas de mentoria gratuitos. Do subemprego à T.I. em 9 meses.",
-  keywords: "tecnologia, programação, quebrada, periferia, educação, mentoria, desenvolvimento, curso gratuito, T.I., programação, carreira",
+  title: "Orbitamos - Sites, Sistemas e Automações para Negócios",
+  description:
+    "Criamos landing pages, sites profissionais, catálogos digitais, sistemas web e automações para negócios venderem, organizar e escalar.",
+  keywords:
+    "sites profissionais, landing pages, sistemas web, automações, agência digital, criação de sites, catálogo digital, e-commerce, Next.js, São Paulo",
   authors: [{ name: "Douglas Vinicius Alves da Silva" }],
   creator: "Orbitamos",
   publisher: "Orbitamos",
@@ -29,8 +31,9 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Orbitamos - Portal da Quebrada que Orbita Tecnologia",
-    description: "Da quebrada pra tecnologia — A gente sobe junto. Transforme sua vida através da tecnologia com nossos programas de mentoria gratuitos.",
+    title: "Orbitamos - Sites, Sistemas e Automações para Negócios",
+    description:
+      "Landing pages, sites profissionais, catálogos digitais, sistemas web e automações para negócios venderem, organizar e escalar.",
     url: "https://www.orbitamosbr.com",
     type: "website",
     locale: "pt_BR",
@@ -38,8 +41,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Orbitamos - Portal da Quebrada que Orbita Tecnologia",
-    description: "Da quebrada pra tecnologia — A gente sobe junto. Transforme sua vida através da tecnologia com nossos programas de mentoria gratuitos.",
+    title: "Orbitamos - Sites, Sistemas e Automações para Negócios",
+    description:
+      "Criamos landing pages, sites profissionais, catálogos digitais, sistemas web e automações para negócios venderem, organizar e escalar.",
   },
 };
 
@@ -52,21 +56,21 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={`${inter.variable} font-sans antialiased`}>
         <ErrorBoundaryWrapper>
-        <ClientAuthProvider>
-          <ProgressProviderWithAuth>
-          <ChatProvider>
-          <PreWakeProvider>
-        <CursorOrbit />
-        <Navigation />
-        <ForumWidget />
-        <FloatingChat />
-        <main className="pt-16 min-w-0 overflow-x-hidden">
-          {children}
-        </main>
-          </PreWakeProvider>
-          </ChatProvider>
-          </ProgressProviderWithAuth>
-        </ClientAuthProvider>
+          <ClientAuthProvider>
+            <ProgressProviderWithAuth>
+              <ChatProvider>
+                <PreWakeProvider>
+                  <CursorOrbit />
+                  <Navigation />
+                  <ForumWidget />
+                  <FloatingChat />
+                  <main className="pt-16 min-w-0 overflow-x-hidden">
+                    {children}
+                  </main>
+                </PreWakeProvider>
+              </ChatProvider>
+            </ProgressProviderWithAuth>
+          </ClientAuthProvider>
         </ErrorBoundaryWrapper>
       </body>
     </html>

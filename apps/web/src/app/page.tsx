@@ -64,36 +64,42 @@ const services = [
   {
     icon: BarChart3,
     title: "Landing pages",
+    href: "/servicos/landing-page",
     text: "Páginas rápidas para campanhas, captação de leads e vendas pelo WhatsApp.",
     points: ["Copy orientada a conversão", "CTA e formulário", "SEO e performance"],
   },
   {
     icon: ShieldCheck,
     title: "Sites profissionais",
+    href: "/servicos/site-institucional",
     text: "Presença digital profissional para negócios que precisam passar confiança.",
     points: ["Identidade visual", "Serviços claros", "Credibilidade"],
   },
   {
     icon: Layers3,
     title: "Loja digital / E-commerce",
+    href: "/servicos/catalogo-digital",
     text: "Vitrine ou catálogo digital para vender melhor e organizar produtos.",
     points: ["Catálogo filtrável", "WhatsApp direto", "Experiência mobile"],
   },
   {
     icon: Code2,
     title: "Sistemas web e MVPs",
+    href: "/servicos/sistema-web",
     text: "Produtos sob medida para organizar operações, usuários, dados e processos.",
     points: ["Login e dashboards", "Banco de dados", "APIs"],
   },
   {
     icon: Bot,
     title: "Automações, IA e integrações",
+    href: "/servicos/automacoes",
     text: "Fluxos inteligentes para reduzir trabalho manual e conectar ferramentas.",
     points: ["IA aplicada", "Integrações", "Processos automáticos"],
   },
   {
     icon: Sparkles,
     title: "Projetos especiais",
+    href: "/servicos/dashboard",
     text: "Soluções digitais sob medida quando o projeto não cabe em uma caixinha.",
     points: ["Discovery técnico", "Arquitetura", "Entrega incremental"],
   },
@@ -346,8 +352,9 @@ export default function Home() {
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {services.map((service) => (
-              <article
+              <Link
                 key={service.title}
+                href={service.href}
                 className="orbit-tilt-card group relative overflow-hidden border border-white/[0.08] bg-white/[0.035] p-5 transition duration-300 hover:-translate-y-1.5 hover:border-orbit-electric/30 hover:bg-white/[0.065]"
               >
                 <span className="orbit-sweep absolute inset-y-0 -left-1/2 w-1/2 opacity-0 group-hover:opacity-100" />
@@ -362,7 +369,10 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-              </article>
+                <div className="relative mt-5 text-sm font-bold text-orbit-electric opacity-80 transition-opacity group-hover:opacity-100">
+                  Ver solução
+                </div>
+              </Link>
             ))}
           </div>
         </div>
