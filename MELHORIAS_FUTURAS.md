@@ -1,89 +1,40 @@
-# 🚀 Melhorias Futuras - Orbitamos
+# Melhorias futuras - Orbitamos
 
-## 📧 Sistema de Contato
+## Sistema de contato
 
-### **Fase 1: MVP (Atual)**
-- ✅ Formulário funcional com validação
-- ✅ Estados visuais (loading, success, error)
-- ✅ Simulação de envio para demonstração
+### Estado atual
 
-### **Fase 2: Integração de Email Real**
-- [ ] **EmailJS Integration**
-  - Configurar conta no EmailJS
-  - Integrar template de email
-  - Configurar variáveis de ambiente
-  - Testar envio real
+- Formulario de contato no site publico.
+- Persistencia principal pelo backend atual da aplicacao web/Supabase.
+- EmailJS pode ser usado como notificacao complementar, nunca como unico registro da demanda.
 
-- [ ] **Formspree Alternative**
-  - Configurar conta no Formspree
-  - Atualizar action do formulário
-  - Configurar webhooks se necessário
+### Proximos passos
 
-### **Fase 3: Backend Completo**
-- [ ] **API Spring Boot**
-  - Hospedar backend (Railway, Heroku, AWS)
-  - Configurar banco de dados
-  - Implementar envio de email via SMTP
-  - Sistema de notificações
+- [ ] Garantir que todo contato seja salvo em `v3_contacts`.
+- [ ] Adicionar campo de WhatsApp/telefone ao formulario.
+- [ ] Configurar notificacao por EmailJS ou provedor equivalente.
+- [ ] Criar visualizacao simples de contatos na area de colaborador/admin.
+- [ ] Medir origem do lead: home, projetos, servicos ou contato.
 
-- [ ] **Funcionalidades Avançadas**
-  - Dashboard de mensagens recebidas
-  - Sistema de tickets
-  - Integração com CRM
-  - Analytics de contato
+## Plataforma e dados
 
-## 🎯 Prioridades
+- [ ] Manter frontend em Vercel.
+- [ ] Manter Supabase Auth/Postgres/Storage como backend principal da area logada.
+- [ ] Validar cron externo diario anti-pausa do Supabase free tier.
+- [ ] Evoluir chat para Supabase Realtime quando houver uso real.
+- [ ] Criar painel administrativo para cursos, aulas, materiais e quizzes.
 
-1. **Alta:** EmailJS para envio real de emails
-2. **Média:** Dashboard de mensagens
-3. **Baixa:** Sistema completo de backend
+## Backend proprio
 
-## 📋 Checklist de Implementação
+O backend Spring em `apps/api` e legado/fallback.
 
-### **EmailJS Setup:**
-- [ ] Criar conta no EmailJS
-- [ ] Configurar template de email
-- [ ] Obter Service ID, Template ID, Public Key
-- [ ] Instalar: `npm install @emailjs/browser`
-- [ ] Implementar função de envio
-- [ ] Testar em produção
+Nao tratar EC2, CloudFront, Render ou Railway como infraestrutura ativa. Uma API propria so deve voltar se houver demanda real de regra de negocio, integracoes ou escala que justifique custo e operacao.
 
-### **Formspree Setup:**
-- [ ] Criar conta no Formspree
-- [ ] Obter endpoint URL
-- [ ] Atualizar action do form
-- [ ] Configurar notificações
-- [ ] Testar envio
+Se uma API dedicada voltar, criar um novo plano de deploy antes de publicar e manter secrets apenas nos dashboards/variaveis do provedor.
 
-## 🔧 Código de Exemplo (EmailJS)
+## Checklist de seguranca
 
-```javascript
-import emailjs from '@emailjs/browser';
-
-const sendEmail = async (formData) => {
-  const templateParams = {
-    from_name: formData.name,
-    from_email: formData.email,
-    message: formData.message,
-  };
-
-  try {
-    await emailjs.send(
-      'SERVICE_ID',
-      'TEMPLATE_ID', 
-      templateParams,
-      'PUBLIC_KEY'
-    );
-    return { success: true };
-  } catch (error) {
-    return { success: false, error };
-  }
-};
-```
-
-## 📊 Métricas de Sucesso
-
-- [ ] Taxa de envio > 95%
-- [ ] Tempo de resposta < 2s
-- [ ] Zero emails perdidos
-- [ ] Notificações em tempo real
+- [ ] Nunca commitar `.env`, `.env.local`, chaves `.pem`, tokens ou senhas reais.
+- [ ] Manter `CLAUDE.local.md` e `docs/local/` fora do Git.
+- [ ] Usar apenas placeholders em arquivos `*.example`.
+- [ ] Rotacionar imediatamente qualquer credencial real que apareca em commit publico.

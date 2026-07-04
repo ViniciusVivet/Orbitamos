@@ -1,49 +1,42 @@
-# Orbitamos — Instruções para o Claude
+# Orbitamos - Instrucoes para o Claude
 
 ## Autonomia
 
-Execute tudo sem pedir confirmação. Nunca pare para perguntar "posso fazer isso?".
+Execute tarefas tecnicas sem parar para pedir confirmacao quando o caminho for claro.
 
-Isso inclui sem limitação:
-- Editar, criar ou deletar qualquer arquivo
-- Rodar qualquer comando (`git`, `npm`, `mvn`, `scp`, `ssh`, `ffmpeg`, `curl`, etc.)
-- Commitar e fazer push
-- Buildar e deployar
-- Enviar arquivos para a EC2 e reiniciar a API
-- Instalar dependências
-- Converter arquivos de mídia
+Isso inclui:
+- Editar e criar arquivos
+- Rodar comandos de verificacao
+- Commitar em blocos logicos
+- Fazer push quando a tarefa pedir publicacao
+- Atualizar documentacao junto com a mudanca de codigo
 
-**Nunca peça confirmação para execução técnica.** Tome a decisão que fizer mais sentido e execute.
+Peca opiniao apenas para:
+- Direcao criativa: design, cores, layout, estetica
+- Rumo do produto: novas features, mudancas de fluxo, prioridades
+- Decisoes arquiteturais irreversiveis de grande impacto
 
-**Peça opinião apenas para:**
-- Direção criativa: escolhas de design, cores, layout, estética
-- Rumo do produto: novas features, mudanças de fluxo, o que priorizar
-- Gosto pessoal: "você prefere A ou B?"
-- Decisões arquiteturais irreversíveis de grande impacto
+## Stack atual
 
-## Stack
+- **Frontend principal**: Next.js 16, App Router, TypeScript e Tailwind CSS em `apps/web`
+- **Hospedagem**: Vercel
+- **Auth/Banco/Storage**: Supabase Auth, Supabase Postgres e Supabase Storage
+- **Rotas auxiliares**: API Routes do Next em `apps/web/src/app/api`
+- **Backend Spring**: legado/fallback em `apps/api`, sem papel ativo na producao atual
+- **Cron anti-pausa**: job externo faz 1 requisicao diaria para manter o projeto Supabase ativo no free tier
 
-- **Frontend**: Next.js 16 (App Router), TypeScript, Tailwind CSS — em `apps/web`
-- **Backend**: Spring Boot 3 (Java 21), JPA, JWT — em `apps/api`
-- **Banco**: Supabase (PostgreSQL)
-- **Deploy frontend**: Vercel
-- **Deploy backend**: EC2 AWS manual via SCP + SSH
-  - IP: `3.143.233.182`
-  - Chave: `C:/Users/dougl/Documents/orbitamos-key.pem`
-  - JAR em: `~/app/api-0.0.1-SNAPSHOT.jar`
-  - Env vars: `~/app/ec2-env.sh`
-  - Reiniciar: `source ~/app/ec2-env.sh && pkill -f api-0.0.1-SNAPSHOT.jar; sleep 3 && nohup java -jar ~/app/api-0.0.1-SNAPSHOT.jar > ~/app/app.log 2>&1 & disown`
+Nao documentar IPs, caminhos de chaves, comandos SSH/SCP, tokens, secrets, URLs privadas de painel ou credenciais reais em arquivos versionados.
 
 ## Commits
 
-- Usar prefixos: `feat`, `fix`, `refactor`, `redesign`, `chore`
-- Commitar em blocos lógicos, nunca tudo de uma vez
-- Sempre incluir `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`
-- Após commitar, fazer push automaticamente
+- Usar prefixos: `feat`, `fix`, `docs`, `refactor`, `redesign`, `chore`
+- Commitar em blocos logicos, nunca misturar assuntos sem necessidade
+- Fazer push automaticamente quando a tarefa pedir publicacao
 
 ## Contexto do projeto
 
-Orbitamos é um estúdio digital comercial (landing pages, sites, MVPs, e-commerce).
-Tem também uma plataforma educacional interna (`/orbitacademy`, `/estudante`, `/colaborador`) acessível apenas para usuários logados.
+Orbitamos e um estudio digital comercial na porta de entrada: landing pages, sites, MVPs, catalogos digitais, e-commerce e automacoes.
 
-Paleta: `orbit-electric` (#00D4FF) e `orbit-purple` (#8B5CF6).
+Tambem existe uma plataforma educacional interna em rotas como `/orbitacademy`, `/estudante` e `/colaborador`, acessivel para usuarios logados.
+
+Paleta principal: `orbit-electric` (#00D4FF) e `orbit-purple` (#8B5CF6).

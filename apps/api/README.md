@@ -48,7 +48,7 @@ Variaveis locais opcionais:
 SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/orbitamos
 SPRING_DATASOURCE_USERNAME=orbitamos
 SPRING_DATASOURCE_PASSWORD=senha_local_de_desenvolvimento
-JWT_SECRET=secret_local_de_desenvolvimento
+JWT_SECRET=<defina_um_secret_local_de_32_chars>
 ```
 
 Nao use senha real de Supabase, conta pessoal ou producao nesse projeto local.

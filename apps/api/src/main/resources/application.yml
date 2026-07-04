@@ -11,7 +11,7 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/orbitamos}
     username: ${SPRING_DATASOURCE_USERNAME:orbitamos}
-    password: ${SPRING_DATASOURCE_PASSWORD:orbitamos123}
+    password: ${SPRING_DATASOURCE_PASSWORD:senha_local_de_desenvolvimento}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 2
@@ -72,7 +72,7 @@ springdoc:
 
 # Configuração JWT (em produção defina JWT_SECRET no .env / variáveis de ambiente)
 jwt:
-  secret: ${JWT_SECRET:orbitamos-dev-secret-trocar-em-producao}
+  secret: ${JWT_SECRET:secret-local-de-desenvolvimento-com-32-chars}
   expiration: ${JWT_EXPIRATION:86400000} # 24 horas em millisegundos
 
 # Upload de avatar pela plataforma
@@ -85,7 +85,7 @@ app:
 
 # Cloudinary (storage persistente de avatars)
 cloudinary:
-  cloud-name: ${CLOUDINARY_CLOUD_NAME:dt6srlfcj}
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:}
   api-key: ${CLOUDINARY_API_KEY:}
   api-secret: ${CLOUDINARY_API_SECRET:}
   # Para acrescentar timeouts na URL JDBC (só se precisar), defina APP_DATASOURCE_APPEND_TIMEOUT_PARAMS=true no Render. Padrão: não altera a URL.

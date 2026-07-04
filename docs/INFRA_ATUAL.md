@@ -11,6 +11,7 @@ Namecheap DNS
   -> Vercel
   -> Next.js em apps/web
   -> Supabase Auth/Postgres/Storage
+  -> Cron externo diario anti-pausa do Supabase free tier
 ```
 
 O backend Spring em `apps/api`, AWS EC2, CloudFront, Render e Railway sao historicos/fallback. Eles nao devem ser usados para subir a area logada agora, a menos que exista uma decisao explicita de voltar para backend proprio.
@@ -31,6 +32,7 @@ Responsabilidades atuais:
 - Perfis, progresso, contatos, forum e mensagens no Supabase Postgres.
 - Avatares no Supabase Storage.
 - Estrutura de cursos/aulas preparada pelas migrations.
+- Projeto mantido ativo por um cron externo com 1 requisicao diaria leve, para reduzir risco de pausa por inatividade no free tier.
 
 Guia principal da migracao: [SUPABASE_NATIVE_MIGRATION.md](SUPABASE_NATIVE_MIGRATION.md)
 

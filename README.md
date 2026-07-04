@@ -47,6 +47,7 @@ Motivo da mudança: manter o projeto online com custo mínimo enquanto a operaç
 | Auth | Supabase Auth | Substitui login JWT do backend Spring na v3.0 |
 | Banco | Supabase Postgres | Perfis, progresso, fórum, chat, contatos e academia |
 | Storage | Supabase Storage | Avatars; materiais de aula podem usar bucket dedicado |
+| Cron anti-pausa | Job externo diario | Uma requisicao diaria evita pausa por inatividade no Supabase free tier |
 | Vídeos | YouTube embed | Vídeos de aula não devem ficar no banco/storage |
 | Backend Spring | Legado/fallback | Mantido no repo para referência e possível reuso futuro |
 | AWS EC2/CloudFront | Legado | Não é requisito para manter a área logada online |
@@ -134,6 +135,7 @@ Pendente de execução manual no painel:
 - Criar buckets de Storage.
 - Configurar URLs de Auth.
 - Configurar variáveis na Vercel.
+- Manter ou revisar o cron externo anti-pausa do Supabase free tier.
 - Fazer redeploy.
 
 Guia principal: [docs/SUPABASE_NATIVE_MIGRATION.md](docs/SUPABASE_NATIVE_MIGRATION.md)
@@ -213,6 +215,7 @@ Curto prazo:
 
 - Executar migrations no Supabase.
 - Configurar Vercel com variáveis Supabase.
+- Validar cron externo anti-pausa apontando para uma rota leve do app.
 - Validar cadastro, login, perfil, avatar, contato, fórum e chat em produção.
 - Validar em produção a leitura de cursos/progresso por aula a partir da estrutura acadêmica do Supabase.
 
