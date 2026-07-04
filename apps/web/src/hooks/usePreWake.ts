@@ -3,43 +3,35 @@
 import { useEffect, useRef } from "react";
 import { isSupabaseConfigured } from "@/lib/supabase";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (typeof window !== "undefined" && window.location.hostname !== "localhost"
-    ? "https://orbitamos-backend.onrender.com/api"
-    : "http://localhost:8080/api");
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
 /**
- * Hook para "acordar" o backend antes do usuário precisar
- * Faz um fetch silencioso para /api/health quando o componente monta
+ * Acorda apenas um backend legado local. Em producao, a stack atual usa Supabase
+ * e nao deve tentar conectar em Render/EC2 antigos.
  */
 export function usePreWake() {
   const hasWoken = useRef(false);
 
   useEffect(() => {
-    // Só executa uma vez, mesmo se o componente re-renderizar
-    if (hasWoken.current || isSupabaseConfigured) return;
-    
+    const isLocalhost =
+      typeof window !== "undefined" &&
+      ["localhost", "127.0.0.1"].includes(window.location.hostname);
+
+    if (hasWoken.current || isSupabaseConfigured || !isLocalhost) return;
+
     hasWoken.current = true;
 
-    // Aguarda um pouco para não bloquear o carregamento inicial
     const timeoutId = setTimeout(() => {
-      // Faz um fetch silencioso para acordar o backend
       fetch(`${API_URL}/health`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        // Não espera resposta, só "acorda" o servidor
-      }).catch(() => {
-        // Ignora erros silenciosamente
-        // O objetivo é apenas "acordar" o servidor
-      });
-    }, 1000); // Aguarda 1 segundo após o componente montar
+      }).catch(() => {});
+    }, 1000);
 
     return () => {
       clearTimeout(timeoutId);
     };
   }, []);
 }
-

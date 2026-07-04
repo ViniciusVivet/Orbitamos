@@ -4,7 +4,6 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { sendContact } from "@/lib/api";
 
 const INSTAGRAM_URL = "https://www.instagram.com/orbitamosbr/";
 
@@ -68,21 +67,22 @@ export default function Contato() {
     setError("");
     setIsSuccess(false);
     try {
-      try {
-        await sendContact({ name: formData.name, email: formData.email, message: `[${formData.service}] ${formData.message}` });
-      } catch { /* falha silenciosa */ }
-      try {
-        await fetch("/api/contact", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        });
-      } catch { /* falha silenciosa */ }
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || "Erro ao enviar contato.");
+      }
+
       setIsSuccess(true);
       setFormData({ name: "", email: "", service: "", message: "" });
       setTimeout(() => setIsSuccess(false), 6000);
-    } catch {
-      setError("Erro ao enviar. Tente novamente ou fale pelo WhatsApp.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao enviar. Tente novamente ou fale pelo WhatsApp.");
     } finally {
       setIsLoading(false);
     }
