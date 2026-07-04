@@ -1,5 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import { createServerClient } from "@supabase/ssr";
 import { NextRequest } from "next/server";
 
 export const runtime = "nodejs";
@@ -101,10 +102,38 @@ async function readCourseMaterial(requestedPath: string[]): Promise<ResolvedMate
   throw lastError;
 }
 
+async function isAuthenticated(request: NextRequest): Promise<boolean> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return process.env.NODE_ENV !== "production";
+  }
+
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll() {},
+    },
+  });
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  return Boolean(user);
+}
+
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ path: string[] }> }
 ) {
+  if (!(await isAuthenticated(request))) {
+    return new Response("Nao autorizado", { status: 401 });
+  }
+
   const { path: requestedPath } = await context.params;
   if (!requestedPath?.length || !requestedPath.every(isSafeSegment)) {
     return new Response("Arquivo invalido", { status: 400 });
@@ -128,6 +157,7 @@ export async function GET(
         "Content-Type": contentType,
         "Content-Disposition": `${disposition}; filename="${filename.replaceAll("\"", "")}"`,
         "Cache-Control": "public, max-age=31536000, immutable",
+        "X-Content-Type-Options": "nosniff",
       },
     });
   } catch {

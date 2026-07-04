@@ -14,6 +14,7 @@
     "@react-three/drei": "^9.114.6",
     "@react-three/fiber": "^8.17.10",
     "@stomp/stompjs": "^7.3.0",
+    "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.19",

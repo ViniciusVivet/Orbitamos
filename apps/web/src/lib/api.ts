@@ -80,24 +80,8 @@ export interface ContactResponse {
  * @returns Resposta do backend
  */
 export async function sendContact(data: ContactData): Promise<ContactResponse> {
-  if (isSupabaseConfigured) {
-    const { error } = await requireSupabase()
-      .from("v3_contacts")
-      .insert({
-        name: data.name,
-        email: data.email,
-        message: data.message,
-      });
-
-    if (error) throw new Error(error.message);
-    return {
-      success: true,
-      message: "Mensagem enviada com sucesso",
-    };
-  }
-
   try {
-    const response = await authFetch(`${API_URL}/contact`, {
+    const response = await fetch("/api/contact", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
