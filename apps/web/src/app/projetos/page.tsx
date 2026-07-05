@@ -10,6 +10,7 @@ import ProjetosTestimonials from "@/components/projetos/ProjetosTestimonials";
 import WhatWeBuild from "@/components/projetos/WhatWeBuild";
 import ProjetosCTA from "@/components/projetos/ProjetosCTA";
 import HologramModal from "@/components/projetos/HologramModal";
+import ScrollReveal from "@/components/ScrollReveal";
 import { projetos } from "@/data/projetos";
 import type { CategoriaSlug, Projeto } from "@/types/projeto";
 
@@ -50,18 +51,20 @@ function ProjetosContent() {
             activeFilter={activeFilter}
             onFilter={setActiveFilter}
           />
-          <div
-            id="projetos-grid"
-            className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3"
-          >
-            {filtered.map((projeto) => (
-              <ProjectCard
-                key={projeto.slug}
-                projeto={projeto}
-                onOpenCase={setSelectedProjeto}
-              />
-            ))}
-          </div>
+          <ScrollReveal selectChildren stagger={0.1} from={{ opacity: 0, y: 50, scale: 0.93 }}>
+            <div
+              id="projetos-grid"
+              className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            >
+              {filtered.map((projeto) => (
+                <ProjectCard
+                  key={projeto.slug}
+                  projeto={projeto}
+                  onOpenCase={setSelectedProjeto}
+                />
+              ))}
+            </div>
+          </ScrollReveal>
           {filtered.length === 0 && (
             <p className="py-12 text-center text-white/60">
               Nenhum projeto nesta categoria no momento.

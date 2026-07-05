@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import ScrollReveal from "@/components/ScrollReveal";
+import TextReveal from "@/components/TextReveal";
 
 const SERVICOS = [
   {
@@ -286,15 +288,20 @@ export default function WhatWeBuild() {
       <div className="relative z-10 container mx-auto max-w-5xl px-6">
 
         <div className="mb-12 text-center">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.3em] text-orbit-electric">
-            Capacidade técnica
-          </p>
-          <h2 className="text-2xl font-black text-white sm:text-3xl">
+          <ScrollReveal from={{ opacity: 0, y: -10 }} to={{ duration: 0.5 }}>
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.3em] text-orbit-electric">
+              Capacidade tecnica
+            </p>
+          </ScrollReveal>
+          <TextReveal as="h2" className="text-2xl font-black text-white sm:text-3xl">
             O que entregamos
-          </h2>
-          <p className="mt-3 text-sm text-white/50">Do briefing ao ar. Sem enrolação.</p>
+          </TextReveal>
+          <ScrollReveal from={{ opacity: 0, y: 10 }} to={{ duration: 0.5, delay: 0.2 }}>
+            <p className="mt-3 text-sm text-white/50">Do briefing ao ar. Sem enrolacao.</p>
+          </ScrollReveal>
         </div>
 
+        <ScrollReveal selectChildren stagger={0.08} from={{ opacity: 0, y: 40, scale: 0.95 }}>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {SERVICOS.map((s) => (
             <div
@@ -334,6 +341,7 @@ export default function WhatWeBuild() {
             </div>
           ))}
         </div>
+        </ScrollReveal>
 
       </div>
     </section>
