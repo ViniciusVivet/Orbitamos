@@ -1,56 +1,46 @@
 "use client";
 
-import { useRef } from "react";
-import { useFrame } from "@react-three/fiber";
-import * as THREE from "three";
-import Starfield from "./Starfield";
-import MouseReactiveCamera from "./MouseReactiveCamera";
+import { useCallback, useEffect, useRef } from "react";
+import type { SpaceCanvasHandle } from "./SpaceCanvas";
+import { createStarfield, createAsteroids } from "./scenes";
 
-function Asteroids() {
-  const groupRef = useRef<THREE.Group>(null);
-  const count = 20;
+export default function useProjetosHeroScene() {
+  const mouseRef = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
 
-  const asteroids = useRef(
-    Array.from({ length: count }, () => ({
-      position: [
-        (Math.random() - 0.5) * 16,
-        (Math.random() - 0.5) * 8,
-        (Math.random() - 0.5) * 8 - 3,
-      ] as [number, number, number],
-      rotation: [Math.random() * Math.PI, Math.random() * Math.PI, 0] as [number, number, number],
-      scale: 0.03 + Math.random() * 0.08,
-      speed: 0.1 + Math.random() * 0.4,
-      axis: new THREE.Vector3(Math.random(), Math.random(), Math.random()).normalize(),
-    }))
-  ).current;
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      mouseRef.current.x = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouseRef.current.y = -(e.clientY / window.innerHeight - 0.5) * 2;
+    };
+    window.addEventListener("mousemove", handler);
+    return () => window.removeEventListener("mousemove", handler);
+  }, []);
 
-  useFrame((_, delta) => {
-    if (!groupRef.current) return;
-    groupRef.current.children.forEach((child, i) => {
-      const a = asteroids[i];
-      if (!a) return;
-      child.rotateOnAxis(a.axis, delta * a.speed);
-    });
-  });
+  return useCallback(({ scene, camera, renderer }: SpaceCanvasHandle) => {
+    createStarfield(scene, 300, 12);
+    const asteroids = createAsteroids(scene, 20);
 
-  return (
-    <group ref={groupRef}>
-      {asteroids.map((a, i) => (
-        <mesh key={i} position={a.position} rotation={a.rotation} scale={a.scale}>
-          <dodecahedronGeometry args={[1, 0]} />
-          <meshBasicMaterial color="#8B9DC3" transparent opacity={0.25} wireframe />
-        </mesh>
-      ))}
-    </group>
-  );
-}
+    let animId = 0;
 
-export default function ProjetosHeroScene() {
-  return (
-    <>
-      <MouseReactiveCamera intensity={0.3} />
-      <Starfield count={300} radius={12} speed={0.015} />
-      <Asteroids />
-    </>
-  );
+    const tick = () => {
+      animId = requestAnimationFrame(tick);
+      const dt = 0.016;
+
+      asteroids.forEach((a) => {
+        a.mesh.rotateOnAxis(a.axis, dt * a.speed);
+      });
+
+      const m = mouseRef.current;
+      m.tx += (m.x * 0.3 - m.tx) * dt * 2;
+      m.ty += (m.y * 0.3 - m.ty) * dt * 2;
+      camera.position.x = m.tx;
+      camera.position.y = m.ty;
+      camera.lookAt(0, 0, 0);
+
+      renderer.render(scene, camera);
+    };
+    tick();
+
+    return () => cancelAnimationFrame(animId);
+  }, []);
 }

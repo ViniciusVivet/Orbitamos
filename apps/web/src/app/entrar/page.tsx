@@ -10,9 +10,9 @@ import RocketProgress from "@/components/RocketProgress";
 import { getFriendlyApiErrorMessage } from "@/lib/utils";
 import ScrollReveal from "@/components/ScrollReveal";
 import MagneticButton from "@/components/MagneticButton";
+import useLoginScene from "@/components/three/LoginScene";
 
 const SpaceCanvas = dynamic(() => import("@/components/three/SpaceCanvas"), { ssr: false });
-const LoginScene = dynamic(() => import("@/components/three/LoginScene"), { ssr: false });
 
 export default function Entrar() {
   const [isLogin, setIsLogin] = useState(true);
@@ -25,6 +25,8 @@ export default function Entrar() {
   const [fakeProgress, setFakeProgress] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  const loginSetup = useLoginScene();
 
   let authContext;
   let login: ((email: string, password: string) => Promise<void>) | undefined;
@@ -115,9 +117,7 @@ export default function Entrar() {
       {/* 3D Background */}
       {!isMobile && (
         <div className="absolute inset-0 z-0">
-          <SpaceCanvas>
-            <LoginScene />
-          </SpaceCanvas>
+          <SpaceCanvas setup={loginSetup} />
         </div>
       )}
 

@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import ScrollReveal from "@/components/ScrollReveal";
 import TextReveal from "@/components/TextReveal";
 import MagneticButton from "@/components/MagneticButton";
+import useWarpCTAScene from "@/components/three/WarpCTAScene";
 
 const SpaceCanvas = dynamic(() => import("@/components/three/SpaceCanvas"), { ssr: false });
-const WarpCTAScene = dynamic(() => import("@/components/three/WarpCTAScene"), { ssr: false });
 
 const WHATSAPP_URL = "https://wa.me/5511949138973?text=Ol%C3%A1%2C+vim+pelo+portf%C3%B3lio+da+Orbitamos+e+quero+fazer+um+or%C3%A7amento";
 
@@ -20,6 +20,7 @@ interface ProjetosCTAProps {
 export default function ProjetosCTA({ variant = "section" }: ProjetosCTAProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const warpSetup = useWarpCTAScene();
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -58,9 +59,7 @@ export default function ProjetosCTA({ variant = "section" }: ProjetosCTAProps) {
       {/* 3D Warp on desktop */}
       {!isMobile && (
         <div className="absolute inset-0 z-0">
-          <SpaceCanvas>
-            <WarpCTAScene />
-          </SpaceCanvas>
+          <SpaceCanvas setup={warpSetup} />
         </div>
       )}
 

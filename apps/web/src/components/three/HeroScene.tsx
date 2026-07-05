@@ -1,29 +1,61 @@
 "use client";
 
-import Starfield from "./Starfield";
-import Nebula from "./Nebula";
-import OrbitRing from "./OrbitRing";
-import MouseReactiveCamera from "./MouseReactiveCamera";
+import { useCallback, useEffect, useRef } from "react";
+import type { SpaceCanvasHandle } from "./SpaceCanvas";
+import { createStarfield, createNebula, createOrbitRing, createGlow } from "./scenes";
 
-export default function HeroScene() {
-  return (
-    <>
-      <MouseReactiveCamera intensity={0.4} />
-      <ambientLight intensity={0.1} />
-      <Starfield count={500} radius={14} speed={0.015} />
-      <Nebula count={14} opacity={0.08} speed={0.12} />
-      <OrbitRing radius={3.5} color="#00D4FF" speed={0.2} opacity={0.15} tilt={[0.6, 0.2, 0]} />
-      <OrbitRing radius={2.8} color="#8B5CF6" speed={-0.15} opacity={0.12} tilt={[-0.4, 0.5, 0.3]} />
-      <OrbitRing radius={4.2} color="#00D4FF" speed={0.08} opacity={0.08} tilt={[0.2, -0.3, 0.1]} />
-      {/* Central glow */}
-      <mesh position={[0, 0, -2]}>
-        <sphereGeometry args={[0.8, 32, 32]} />
-        <meshBasicMaterial color="#00D4FF" transparent opacity={0.04} />
-      </mesh>
-      <mesh position={[0, 0, -2]}>
-        <sphereGeometry args={[0.3, 32, 32]} />
-        <meshBasicMaterial color="#8B5CF6" transparent opacity={0.06} />
-      </mesh>
-    </>
-  );
+export default function useHeroScene() {
+  const mouseRef = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      mouseRef.current.x = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouseRef.current.y = -(e.clientY / window.innerHeight - 0.5) * 2;
+    };
+    window.addEventListener("mousemove", handler);
+    return () => window.removeEventListener("mousemove", handler);
+  }, []);
+
+  return useCallback(({ scene, camera, renderer }: SpaceCanvasHandle) => {
+    const stars = createStarfield(scene, 500, 14);
+    const nebula = createNebula(scene, 14, [0x00d4ff, 0x8b5cf6], 0.08);
+    const ring1 = createOrbitRing(scene, 3.5, 0x00d4ff, 0.15, [0.6, 0.2, 0]);
+    const ring2 = createOrbitRing(scene, 2.8, 0x8b5cf6, 0.12, [-0.4, 0.5, 0.3]);
+    const ring3 = createOrbitRing(scene, 4.2, 0x00d4ff, 0.08, [0.2, -0.3, 0.1]);
+    createGlow(scene, 0.8, 0x00d4ff, 0.04);
+    createGlow(scene, 0.3, 0x8b5cf6, 0.06);
+
+    let animId = 0;
+    const clock = { elapsed: 0 };
+
+    const tick = () => {
+      animId = requestAnimationFrame(tick);
+      const dt = 0.016;
+      clock.elapsed += dt;
+      const t = clock.elapsed;
+
+      stars.rotation.y += dt * 0.015;
+      stars.rotation.x += dt * 0.005;
+      ring1.rotation.z += dt * 0.2;
+      ring2.rotation.z -= dt * 0.15;
+      ring3.rotation.z += dt * 0.08;
+
+      nebula.particles.forEach((p) => {
+        p.mesh.position.x = p.basePos[0] + Math.sin(t * 0.12 + p.phase) * 0.4;
+        p.mesh.position.y = p.basePos[1] + Math.cos(t * 0.084 + p.phase) * 0.3;
+      });
+
+      const m = mouseRef.current;
+      m.tx += (m.x * 0.4 - m.tx) * dt * 2;
+      m.ty += (m.y * 0.4 - m.ty) * dt * 2;
+      camera.position.x = m.tx;
+      camera.position.y = m.ty;
+      camera.lookAt(0, 0, 0);
+
+      renderer.render(scene, camera);
+    };
+    tick();
+
+    return () => cancelAnimationFrame(animId);
+  }, []);
 }

@@ -1,91 +1,59 @@
 "use client";
 
-import { useRef, useMemo } from "react";
-import { useFrame } from "@react-three/fiber";
-import * as THREE from "three";
-import Starfield from "./Starfield";
-import Nebula from "./Nebula";
-import OrbitRing from "./OrbitRing";
-import MouseReactiveCamera from "./MouseReactiveCamera";
+import { useCallback, useEffect, useRef } from "react";
+import type { SpaceCanvasHandle } from "./SpaceCanvas";
+import { createStarfield, createNebula, createOrbitRing, createGlow, createEnergyParticles } from "./scenes";
 
-function GlowingSphere() {
-  const ref = useRef<THREE.Mesh>(null);
-  const glowRef = useRef<THREE.Mesh>(null);
+export default function useLoginScene() {
+  const mouseRef = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
 
-  useFrame(({ clock }) => {
-    if (!ref.current || !glowRef.current) return;
-    const t = clock.getElapsedTime();
-    ref.current.rotation.y = t * 0.2;
-    glowRef.current.scale.setScalar(1 + Math.sin(t * 1.5) * 0.12);
-  });
-
-  return (
-    <group position={[0, 0, -1]}>
-      <mesh ref={glowRef}>
-        <sphereGeometry args={[1.2, 32, 32]} />
-        <meshBasicMaterial color="#00D4FF" transparent opacity={0.03} blending={THREE.AdditiveBlending} />
-      </mesh>
-      <mesh ref={ref}>
-        <sphereGeometry args={[0.6, 32, 32]} />
-        <meshBasicMaterial color="#8B5CF6" transparent opacity={0.06} blending={THREE.AdditiveBlending} />
-      </mesh>
-      <mesh>
-        <sphereGeometry args={[0.15, 32, 32]} />
-        <meshBasicMaterial color="#ffffff" transparent opacity={0.15} />
-      </mesh>
-    </group>
-  );
-}
-
-function EnergyParticles() {
-  const ref = useRef<THREE.Points>(null);
-  const count = 60;
-
-  const geometry = useMemo(() => {
-    const pos = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      const angle = (i / count) * Math.PI * 2;
-      const r = 1.8 + Math.random() * 0.5;
-      pos[i * 3] = Math.cos(angle) * r;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 2;
-      pos[i * 3 + 2] = Math.sin(angle) * r - 1;
-    }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
-    return geo;
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      mouseRef.current.x = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouseRef.current.y = -(e.clientY / window.innerHeight - 0.5) * 2;
+    };
+    window.addEventListener("mousemove", handler);
+    return () => window.removeEventListener("mousemove", handler);
   }, []);
 
-  useFrame(({ clock }) => {
-    if (!ref.current) return;
-    ref.current.rotation.y = clock.getElapsedTime() * 0.15;
-  });
+  return useCallback(({ scene, camera, renderer }: SpaceCanvasHandle) => {
+    const stars = createStarfield(scene, 350, 12);
+    createNebula(scene, 8, [0x00d4ff, 0x8b5cf6], 0.05);
+    const outerGlow = createGlow(scene, 1.2, 0x00d4ff, 0.03);
+    const innerGlow = createGlow(scene, 0.6, 0x8b5cf6, 0.06);
+    createGlow(scene, 0.15, 0xffffff, 0.15);
+    const particles = createEnergyParticles(scene);
+    createOrbitRing(scene, 2, 0x00d4ff, 0.12, [0.7, 0, 0]);
+    createOrbitRing(scene, 2.5, 0x8b5cf6, 0.08, [-0.3, 0.5, 0.2]);
 
-  return (
-    <points ref={ref} geometry={geometry}>
-      <pointsMaterial
-        color="#00D4FF"
-        size={1.5}
-        sizeAttenuation
-        transparent
-        opacity={0.6}
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-      />
-    </points>
-  );
-}
+    // Position glow group behind
+    outerGlow.position.z = -1;
+    innerGlow.position.z = -1;
 
-export default function LoginScene() {
-  return (
-    <>
-      <MouseReactiveCamera intensity={0.3} />
-      <ambientLight intensity={0.05} />
-      <Starfield count={350} radius={12} speed={0.012} />
-      <Nebula count={8} opacity={0.05} speed={0.08} />
-      <GlowingSphere />
-      <EnergyParticles />
-      <OrbitRing radius={2} color="#00D4FF" speed={0.3} opacity={0.12} tilt={[0.7, 0, 0]} />
-      <OrbitRing radius={2.5} color="#8B5CF6" speed={-0.2} opacity={0.08} tilt={[-0.3, 0.5, 0.2]} />
-    </>
-  );
+    let animId = 0;
+    let elapsed = 0;
+
+    const tick = () => {
+      animId = requestAnimationFrame(tick);
+      const dt = 0.016;
+      elapsed += dt;
+
+      stars.rotation.y += dt * 0.012;
+      innerGlow.rotation.y = elapsed * 0.2;
+      outerGlow.scale.setScalar(1 + Math.sin(elapsed * 1.5) * 0.12);
+      particles.rotation.y = elapsed * 0.15;
+
+      const m = mouseRef.current;
+      m.tx += (m.x * 0.3 - m.tx) * dt * 2;
+      m.ty += (m.y * 0.3 - m.ty) * dt * 2;
+      camera.position.x = m.tx;
+      camera.position.y = m.ty;
+      camera.lookAt(0, 0, 0);
+
+      renderer.render(scene, camera);
+    };
+    tick();
+
+    return () => cancelAnimationFrame(animId);
+  }, []);
 }

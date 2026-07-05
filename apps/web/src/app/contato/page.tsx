@@ -7,9 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import ScrollReveal from "@/components/ScrollReveal";
 import MagneticButton from "@/components/MagneticButton";
+import useContactScene from "@/components/three/ContactScene";
 
 const SpaceCanvas = dynamic(() => import("@/components/three/SpaceCanvas"), { ssr: false });
-const ContactScene = dynamic(() => import("@/components/three/ContactScene"), { ssr: false });
 
 const SERVICES = [
   { icon: "\u{1F4C4}", label: "Landing Page" },
@@ -27,6 +27,7 @@ export default function Contato() {
   const [error, setError] = useState("");
   const [isMobile, setIsMobile] = useState(false);
   const [sendAnimation, setSendAnimation] = useState(false);
+  const contactSetup = useContactScene();
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
@@ -99,9 +100,7 @@ export default function Contato() {
       {/* 3D Background */}
       {!isMobile && (
         <div className="absolute inset-0 z-0">
-          <SpaceCanvas>
-            <ContactScene />
-          </SpaceCanvas>
+          <SpaceCanvas setup={contactSetup} />
         </div>
       )}
 

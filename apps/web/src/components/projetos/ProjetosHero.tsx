@@ -7,9 +7,9 @@ import { whatsappProjetosUrl } from "@/lib/social";
 import ProjetosHeroParticles from "./ProjetosHeroParticles";
 import ScrollReveal from "@/components/ScrollReveal";
 import MagneticButton from "@/components/MagneticButton";
+import useProjetosHeroScene from "@/components/three/ProjetosHeroScene";
 
 const SpaceCanvas = dynamic(() => import("@/components/three/SpaceCanvas"), { ssr: false });
-const ProjetosHeroScene = dynamic(() => import("@/components/three/ProjetosHeroScene"), { ssr: false });
 
 export default function ProjetosHero() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -17,6 +17,7 @@ export default function ProjetosHero() {
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const [active, setActive] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const projetosSetup = useProjetosHeroScene();
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -67,9 +68,7 @@ export default function ProjetosHero() {
       {/* 3D background on desktop */}
       {!isMobile && (
         <div className="absolute inset-0 z-0">
-          <SpaceCanvas dpr={1}>
-            <ProjetosHeroScene />
-          </SpaceCanvas>
+          <SpaceCanvas dpr={1} setup={projetosSetup} />
         </div>
       )}
 

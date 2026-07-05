@@ -24,12 +24,11 @@ import ScrollReveal from "@/components/ScrollReveal";
 import TextReveal from "@/components/TextReveal";
 import CountUp from "@/components/CountUp";
 import MagneticButton from "@/components/MagneticButton";
+import useHeroScene from "@/components/three/HeroScene";
+import useTechOrbitScene from "@/components/three/TechOrbitScene";
+import useWarpCTAScene from "@/components/three/WarpCTAScene";
 
-// Lazy-load 3D scenes for performance
 const SpaceCanvas = dynamic(() => import("@/components/three/SpaceCanvas"), { ssr: false });
-const HeroScene = dynamic(() => import("@/components/three/HeroScene"), { ssr: false });
-const TechOrbitScene = dynamic(() => import("@/components/three/TechOrbitScene"), { ssr: false });
-const WarpCTAScene = dynamic(() => import("@/components/three/WarpCTAScene"), { ssr: false });
 
 const WHATSAPP_URL =
   "https://wa.me/5511949138973?text=Ol%C3%A1%2C+vim+pelo+site+da+Orbitamos+e+quero+fazer+um+or%C3%A7amento";
@@ -173,6 +172,10 @@ export default function Home() {
   const [active, setActive] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+  const heroSetup = useHeroScene();
+  const techSetup = useTechOrbitScene();
+  const warpSetup = useWarpCTAScene();
+
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
@@ -206,9 +209,7 @@ export default function Home() {
         {/* 3D background on desktop, video on mobile */}
         {!isMobile && (
           <div className="absolute inset-0 z-0">
-            <SpaceCanvas>
-              <HeroScene />
-            </SpaceCanvas>
+            <SpaceCanvas setup={heroSetup} />
           </div>
         )}
 
@@ -578,9 +579,7 @@ export default function Home() {
           <ScrollReveal from={{ opacity: 0, scale: 0.85 }} to={{ duration: 1, delay: 0.2 }}>
             <div className="relative min-h-[500px] overflow-hidden rounded-2xl border border-white/10 bg-black/35 shadow-[0_30px_100px_rgba(0,0,0,0.45)] sm:min-h-[440px]">
               {!isMobile ? (
-                <SpaceCanvas>
-                  <TechOrbitScene />
-                </SpaceCanvas>
+                <SpaceCanvas setup={techSetup} />
               ) : (
                 /* Mobile fallback: CSS orbit */
                 <div className="relative h-full w-full p-5">
@@ -615,9 +614,7 @@ export default function Home() {
         {/* 3D warp on desktop, video on mobile */}
         {!isMobile && (
           <div className="absolute inset-0 z-0">
-            <SpaceCanvas>
-              <WarpCTAScene />
-            </SpaceCanvas>
+            <SpaceCanvas setup={warpSetup} />
           </div>
         )}
         <video
