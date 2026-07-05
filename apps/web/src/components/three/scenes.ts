@@ -1,5 +1,25 @@
 import * as THREE from "three";
 
+/* ── Circular point sprite texture ── */
+let _circleTexture: THREE.Texture | null = null;
+function getCircleTexture() {
+  if (_circleTexture) return _circleTexture;
+  const size = 64;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  const half = size / 2;
+  const gradient = ctx.createRadialGradient(half, half, 0, half, half, half);
+  gradient.addColorStop(0, "rgba(255,255,255,1)");
+  gradient.addColorStop(0.5, "rgba(255,255,255,0.6)");
+  gradient.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+  _circleTexture = new THREE.CanvasTexture(canvas);
+  return _circleTexture;
+}
+
 /* ── Starfield ── */
 export function createStarfield(scene: THREE.Scene, count = 500, radius = 12) {
   const geo = new THREE.BufferGeometry();
@@ -15,12 +35,13 @@ export function createStarfield(scene: THREE.Scene, count = 500, radius = 12) {
   geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
   const mat = new THREE.PointsMaterial({
     color: 0xffffff,
-    size: 1.2,
+    size: 0.06,
     sizeAttenuation: true,
     transparent: true,
     opacity: 0.8,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
+    map: getCircleTexture(),
   });
   const points = new THREE.Points(geo, mat);
   scene.add(points);
@@ -50,12 +71,31 @@ export function createOrbitRing(
 }
 
 /* ── Nebula cloud ── */
+const nebulaVertexShader = `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const nebulaFragmentShader = `
+  uniform vec3 uColor;
+  uniform float uOpacity;
+  varying vec2 vUv;
+  void main() {
+    float dist = length(vUv - 0.5) * 2.0;
+    float alpha = smoothstep(1.0, 0.0, dist);
+    alpha *= alpha;
+    gl_FragColor = vec4(uColor, alpha * uOpacity);
+  }
+`;
+
 export function createNebula(scene: THREE.Scene, count = 14, colors: [number, number] = [0x00d4ff, 0x8b5cf6], opacity = 0.08) {
   const group = new THREE.Group();
   const particles: { mesh: THREE.Mesh; basePos: [number, number, number]; phase: number }[] = [];
 
   for (let i = 0; i < count; i++) {
-    const color = i % 2 === 0 ? colors[0] : colors[1];
+    const color = new THREE.Color(i % 2 === 0 ? colors[0] : colors[1]);
     const scale = 1.5 + Math.random() * 3;
     const basePos: [number, number, number] = [
       (Math.random() - 0.5) * 10,
@@ -63,10 +103,14 @@ export function createNebula(scene: THREE.Scene, count = 14, colors: [number, nu
       (Math.random() - 0.5) * 4 - 2,
     ];
     const geo = new THREE.PlaneGeometry(scale, scale);
-    const mat = new THREE.MeshBasicMaterial({
-      color,
+    const mat = new THREE.ShaderMaterial({
+      uniforms: {
+        uColor: { value: color },
+        uOpacity: { value: opacity },
+      },
+      vertexShader: nebulaVertexShader,
+      fragmentShader: nebulaFragmentShader,
       transparent: true,
-      opacity,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
       side: THREE.DoubleSide,
@@ -144,12 +188,13 @@ export function createEnergyParticles(scene: THREE.Scene, count = 60) {
   geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
   const mat = new THREE.PointsMaterial({
     color: 0x00d4ff,
-    size: 1.5,
+    size: 0.06,
     sizeAttenuation: true,
     transparent: true,
     opacity: 0.6,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
+    map: getCircleTexture(),
   });
   const points = new THREE.Points(geo, mat);
   scene.add(points);
@@ -168,12 +213,13 @@ export function createWarpStars(scene: THREE.Scene, count = 300) {
   geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
   const mat = new THREE.PointsMaterial({
     color: 0xffffff,
-    size: 1,
+    size: 0.05,
     sizeAttenuation: true,
     transparent: true,
     opacity: 0.9,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
+    map: getCircleTexture(),
   });
   const points = new THREE.Points(geo, mat);
   scene.add(points);
