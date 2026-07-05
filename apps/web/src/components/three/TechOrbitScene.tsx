@@ -25,20 +25,24 @@ export default function useTechOrbitScene() {
     return () => window.removeEventListener("mousemove", handler);
   }, []);
 
-  return useCallback(({ scene, camera, renderer }: SpaceCanvasHandle) => {
-    createStarfield(scene, 200, 10);
+  return useCallback(({ scene, camera, renderer, isVisible }: SpaceCanvasHandle) => {
+    createStarfield(scene, 120, 10);
     createGlow(scene, 0.4, 0x00d4ff, 0.15);
     createGlow(scene, 0.15, 0xffffff, 0.3);
     createOrbitRing(scene, 2, 0x00d4ff, 0.2, [0.5, 0, 0]);
     createOrbitRing(scene, 2.8, 0x8b5cf6, 0.15, [-0.3, 0.4, 0.2]);
-    createOrbitRing(scene, 3.5, 0x00d4ff, 0.1, [0.1, -0.2, 0.5]);
     const floatingNodes = createFloatingNodes(scene, nodes);
 
     let animId = 0;
     let elapsed = 0;
+    let lastFrame = 0;
 
-    const tick = () => {
+    const tick = (now: number) => {
       animId = requestAnimationFrame(tick);
+      if (!isVisible()) return;
+      if (now - lastFrame < 32) return;
+      lastFrame = now;
+
       const dt = 0.016;
       elapsed += dt;
 
@@ -58,7 +62,7 @@ export default function useTechOrbitScene() {
 
       renderer.render(scene, camera);
     };
-    tick();
+    animId = requestAnimationFrame(tick);
 
     return () => cancelAnimationFrame(animId);
   }, []);

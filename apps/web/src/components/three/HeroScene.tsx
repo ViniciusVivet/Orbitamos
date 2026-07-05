@@ -16,9 +16,9 @@ export default function useHeroScene() {
     return () => window.removeEventListener("mousemove", handler);
   }, []);
 
-  return useCallback(({ scene, camera, renderer }: SpaceCanvasHandle) => {
-    const stars = createStarfield(scene, 500, 14);
-    const nebula = createNebula(scene, 14, [0x00d4ff, 0x8b5cf6], 0.08);
+  return useCallback(({ scene, camera, renderer, isVisible }: SpaceCanvasHandle) => {
+    const stars = createStarfield(scene, 250, 14);
+    const nebula = createNebula(scene, 8, [0x00d4ff, 0x8b5cf6], 0.08);
     const ring1 = createOrbitRing(scene, 3.5, 0x00d4ff, 0.15, [0.6, 0.2, 0]);
     const ring2 = createOrbitRing(scene, 2.8, 0x8b5cf6, 0.12, [-0.4, 0.5, 0.3]);
     const ring3 = createOrbitRing(scene, 4.2, 0x00d4ff, 0.08, [0.2, -0.3, 0.1]);
@@ -26,13 +26,17 @@ export default function useHeroScene() {
     createGlow(scene, 0.3, 0x8b5cf6, 0.06);
 
     let animId = 0;
-    const clock = { elapsed: 0 };
+    let elapsed = 0;
+    let lastFrame = 0;
 
-    const tick = () => {
+    const tick = (now: number) => {
       animId = requestAnimationFrame(tick);
+      if (!isVisible()) return;
+      if (now - lastFrame < 32) return; // ~30fps cap
+      lastFrame = now;
+
       const dt = 0.016;
-      clock.elapsed += dt;
-      const t = clock.elapsed;
+      elapsed += dt;
 
       stars.rotation.y += dt * 0.015;
       stars.rotation.x += dt * 0.005;
@@ -41,8 +45,8 @@ export default function useHeroScene() {
       ring3.rotation.z += dt * 0.08;
 
       nebula.particles.forEach((p) => {
-        p.mesh.position.x = p.basePos[0] + Math.sin(t * 0.12 + p.phase) * 0.4;
-        p.mesh.position.y = p.basePos[1] + Math.cos(t * 0.084 + p.phase) * 0.3;
+        p.mesh.position.x = p.basePos[0] + Math.sin(elapsed * 0.12 + p.phase) * 0.4;
+        p.mesh.position.y = p.basePos[1] + Math.cos(elapsed * 0.084 + p.phase) * 0.3;
       });
 
       const m = mouseRef.current;
@@ -54,7 +58,7 @@ export default function useHeroScene() {
 
       renderer.render(scene, camera);
     };
-    tick();
+    animId = requestAnimationFrame(tick);
 
     return () => cancelAnimationFrame(animId);
   }, []);

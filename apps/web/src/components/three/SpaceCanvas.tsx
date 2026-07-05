@@ -10,6 +10,8 @@ export interface SpaceCanvasHandle {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
+  /** Returns false when the canvas is scrolled off-screen (skip rendering). */
+  isVisible: () => boolean;
 }
 
 interface SpaceCanvasProps {
@@ -36,16 +38,16 @@ export default function SpaceCanvas({ className, style, dpr, setup }: SpaceCanva
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({
-        antialias: !mobile,
+        antialias: false,
         alpha: true,
         powerPreference: "high-performance",
         failIfMajorPerformanceCaveat: true,
       });
     } catch {
-      return; // WebGL not available
+      return;
     }
 
-    const pixelRatio = Math.min(dpr ?? (mobile ? 1 : 1.5), 2);
+    const pixelRatio = Math.min(dpr ?? 1, 2);
     renderer.setPixelRatio(pixelRatio);
     renderer.setClearColor(0x000000, 0);
     renderer.setSize(container.clientWidth, container.clientHeight);
@@ -57,7 +59,15 @@ export default function SpaceCanvas({ className, style, dpr, setup }: SpaceCanva
 
     const scene = new THREE.Scene();
 
-    const cleanup = setup({ renderer, scene, camera });
+    // Pause rendering when canvas is off-screen
+    let isOnScreen = true;
+    const observer = new IntersectionObserver(
+      ([entry]) => { isOnScreen = entry.isIntersecting; },
+      { threshold: 0 }
+    );
+    observer.observe(container);
+
+    const cleanup = setup({ renderer, scene, camera, isVisible: () => isOnScreen });
 
     const onResize = () => {
       const w = container.clientWidth;
@@ -69,6 +79,7 @@ export default function SpaceCanvas({ className, style, dpr, setup }: SpaceCanva
     window.addEventListener("resize", onResize);
 
     return () => {
+      observer.disconnect();
       window.removeEventListener("resize", onResize);
       cleanup?.();
       renderer.dispose();

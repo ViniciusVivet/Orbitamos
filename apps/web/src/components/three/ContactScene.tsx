@@ -16,9 +16,9 @@ export default function useContactScene() {
     return () => window.removeEventListener("mousemove", handler);
   }, []);
 
-  return useCallback(({ scene, camera, renderer }: SpaceCanvasHandle) => {
-    const stars = createStarfield(scene, 400, 15);
-    const nebula = createNebula(scene, 10, [0x00d4ff, 0x8b5cf6], 0.06);
+  return useCallback(({ scene, camera, renderer, isVisible }: SpaceCanvasHandle) => {
+    const stars = createStarfield(scene, 200, 15);
+    const nebula = createNebula(scene, 6, [0x00d4ff, 0x8b5cf6], 0.06);
     const core = createGlow(scene, 0.5, 0x00d4ff, 0.06);
     createGlow(scene, 0.2, 0xffffff, 0.1);
     const holoGroup = createHoloRings(scene);
@@ -26,21 +26,25 @@ export default function useContactScene() {
 
     let animId = 0;
     let elapsed = 0;
+    let lastFrame = 0;
 
-    const tick = () => {
+    const tick = (now: number) => {
       animId = requestAnimationFrame(tick);
+      if (!isVisible()) return;
+      if (now - lastFrame < 32) return;
+      lastFrame = now;
+
       const dt = 0.016;
       elapsed += dt;
-      const t = elapsed;
 
       stars.rotation.y += dt * 0.01;
-      core.scale.setScalar(1 + Math.sin(t * 2) * 0.08);
-      holoGroup.rotation.y = t * 0.15;
-      holoGroup.rotation.x = Math.sin(t * 0.1) * 0.1;
+      core.scale.setScalar(1 + Math.sin(elapsed * 2) * 0.08);
+      holoGroup.rotation.y = elapsed * 0.15;
+      holoGroup.rotation.x = Math.sin(elapsed * 0.1) * 0.1;
 
       nebula.particles.forEach((p) => {
-        p.mesh.position.x = p.basePos[0] + Math.sin(t * 0.1 + p.phase) * 0.4;
-        p.mesh.position.y = p.basePos[1] + Math.cos(t * 0.07 + p.phase) * 0.3;
+        p.mesh.position.x = p.basePos[0] + Math.sin(elapsed * 0.1 + p.phase) * 0.4;
+        p.mesh.position.y = p.basePos[1] + Math.cos(elapsed * 0.07 + p.phase) * 0.3;
       });
 
       const m = mouseRef.current;
@@ -52,7 +56,7 @@ export default function useContactScene() {
 
       renderer.render(scene, camera);
     };
-    tick();
+    animId = requestAnimationFrame(tick);
 
     return () => cancelAnimationFrame(animId);
   }, []);

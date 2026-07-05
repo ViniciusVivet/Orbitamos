@@ -16,17 +16,22 @@ export default function useWarpCTAScene() {
     return () => window.removeEventListener("mousemove", handler);
   }, []);
 
-  return useCallback(({ scene, camera, renderer }: SpaceCanvasHandle) => {
-    createStarfield(scene, 150, 8);
-    const warp = createWarpStars(scene, 250);
+  return useCallback(({ scene, camera, renderer, isVisible }: SpaceCanvasHandle) => {
+    createStarfield(scene, 100, 8);
+    const warp = createWarpStars(scene, 150);
 
     let animId = 0;
     let speed = 0;
     let started = false;
+    let lastFrame = 0;
     setTimeout(() => { started = true; }, 800);
 
-    const tick = () => {
+    const tick = (now: number) => {
       animId = requestAnimationFrame(tick);
+      if (!isVisible()) return;
+      if (now - lastFrame < 32) return;
+      lastFrame = now;
+
       const dt = 0.016;
       const target = started ? 1 : 0;
       speed += (target - speed) * dt * 2;
@@ -49,7 +54,7 @@ export default function useWarpCTAScene() {
 
       renderer.render(scene, camera);
     };
-    tick();
+    animId = requestAnimationFrame(tick);
 
     return () => cancelAnimationFrame(animId);
   }, []);

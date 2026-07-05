@@ -16,25 +16,29 @@ export default function useLoginScene() {
     return () => window.removeEventListener("mousemove", handler);
   }, []);
 
-  return useCallback(({ scene, camera, renderer }: SpaceCanvasHandle) => {
-    const stars = createStarfield(scene, 350, 12);
-    createNebula(scene, 8, [0x00d4ff, 0x8b5cf6], 0.05);
+  return useCallback(({ scene, camera, renderer, isVisible }: SpaceCanvasHandle) => {
+    const stars = createStarfield(scene, 200, 12);
+    createNebula(scene, 6, [0x00d4ff, 0x8b5cf6], 0.05);
     const outerGlow = createGlow(scene, 1.2, 0x00d4ff, 0.03);
     const innerGlow = createGlow(scene, 0.6, 0x8b5cf6, 0.06);
     createGlow(scene, 0.15, 0xffffff, 0.15);
-    const particles = createEnergyParticles(scene);
+    const particles = createEnergyParticles(scene, 30);
     createOrbitRing(scene, 2, 0x00d4ff, 0.12, [0.7, 0, 0]);
     createOrbitRing(scene, 2.5, 0x8b5cf6, 0.08, [-0.3, 0.5, 0.2]);
 
-    // Position glow group behind
     outerGlow.position.z = -1;
     innerGlow.position.z = -1;
 
     let animId = 0;
     let elapsed = 0;
+    let lastFrame = 0;
 
-    const tick = () => {
+    const tick = (now: number) => {
       animId = requestAnimationFrame(tick);
+      if (!isVisible()) return;
+      if (now - lastFrame < 32) return;
+      lastFrame = now;
+
       const dt = 0.016;
       elapsed += dt;
 
@@ -52,7 +56,7 @@ export default function useLoginScene() {
 
       renderer.render(scene, camera);
     };
-    tick();
+    animId = requestAnimationFrame(tick);
 
     return () => cancelAnimationFrame(animId);
   }, []);

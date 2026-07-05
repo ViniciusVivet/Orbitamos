@@ -56,7 +56,7 @@ export function createOrbitRing(
   opacity = 0.2,
   tilt: [number, number, number] = [0, 0, 0]
 ) {
-  const geo = new THREE.TorusGeometry(radius, 0.008, 16, 100);
+  const geo = new THREE.TorusGeometry(radius, 0.008, 8, 48);
   const mat = new THREE.MeshBasicMaterial({
     color,
     transparent: true,
@@ -127,7 +127,7 @@ export function createNebula(scene: THREE.Scene, count = 14, colors: [number, nu
 
 /* ── Glowing sphere ── */
 export function createGlow(scene: THREE.Scene, radius: number, color: number, opacity: number) {
-  const geo = new THREE.SphereGeometry(radius, 32, 32);
+  const geo = new THREE.SphereGeometry(radius, 16, 16);
   const mat = new THREE.MeshBasicMaterial({
     color,
     transparent: true,
@@ -241,7 +241,7 @@ export function createHoloRings(scene: THREE.Scene) {
 
 /* ── Light beam (contact scene) ── */
 export function createLightBeam(scene: THREE.Scene) {
-  const geo = new THREE.CylinderGeometry(0.01, 0.15, 4, 16, 1, true);
+  const geo = new THREE.CylinderGeometry(0.01, 0.15, 4, 8, 1, true);
   const mat = new THREE.MeshBasicMaterial({
     color: 0x00d4ff,
     transparent: true,

@@ -16,14 +16,19 @@ export default function useProjetosHeroScene() {
     return () => window.removeEventListener("mousemove", handler);
   }, []);
 
-  return useCallback(({ scene, camera, renderer }: SpaceCanvasHandle) => {
-    createStarfield(scene, 300, 12);
-    const asteroids = createAsteroids(scene, 20);
+  return useCallback(({ scene, camera, renderer, isVisible }: SpaceCanvasHandle) => {
+    createStarfield(scene, 180, 12);
+    const asteroids = createAsteroids(scene, 12);
 
     let animId = 0;
+    let lastFrame = 0;
 
-    const tick = () => {
+    const tick = (now: number) => {
       animId = requestAnimationFrame(tick);
+      if (!isVisible()) return;
+      if (now - lastFrame < 32) return;
+      lastFrame = now;
+
       const dt = 0.016;
 
       asteroids.forEach((a) => {
@@ -39,7 +44,7 @@ export default function useProjetosHeroScene() {
 
       renderer.render(scene, camera);
     };
-    tick();
+    animId = requestAnimationFrame(tick);
 
     return () => cancelAnimationFrame(animId);
   }, []);
