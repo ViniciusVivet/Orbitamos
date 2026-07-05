@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -9,7 +9,6 @@ interface StarfieldProps {
   radius?: number;
   speed?: number;
   color?: string;
-  sizeRange?: [number, number];
 }
 
 export default function Starfield({
@@ -17,13 +16,11 @@ export default function Starfield({
   radius = 12,
   speed = 0.02,
   color = "#ffffff",
-  sizeRange = [0.5, 2.5],
 }: StarfieldProps) {
   const ref = useRef<THREE.Points>(null);
 
-  const [positions, sizes] = useMemo(() => {
+  const positions = useMemo(() => {
     const pos = new Float32Array(count * 3);
-    const sz = new Float32Array(count);
     for (let i = 0; i < count; i++) {
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
@@ -31,10 +28,15 @@ export default function Starfield({
       pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
       pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
       pos[i * 3 + 2] = r * Math.cos(phi);
-      sz[i] = sizeRange[0] + Math.random() * (sizeRange[1] - sizeRange[0]);
     }
-    return [pos, sz];
-  }, [count, radius, sizeRange]);
+    return pos;
+  }, [count, radius]);
+
+  const geometry = useMemo(() => {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    return geo;
+  }, [positions]);
 
   useFrame((_, delta) => {
     if (ref.current) {
@@ -44,11 +46,7 @@ export default function Starfield({
   });
 
   return (
-    <points ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-        <bufferAttribute attach="attributes-size" args={[sizes, 1]} />
-      </bufferGeometry>
+    <points ref={ref} geometry={geometry}>
       <pointsMaterial
         color={color}
         size={1.2}

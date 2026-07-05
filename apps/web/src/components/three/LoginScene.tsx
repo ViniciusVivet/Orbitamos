@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import Starfield from "./Starfield";
@@ -41,19 +41,19 @@ function EnergyParticles() {
   const ref = useRef<THREE.Points>(null);
   const count = 60;
 
-  const positions = useRef(
-    (() => {
-      const pos = new Float32Array(count * 3);
-      for (let i = 0; i < count; i++) {
-        const angle = (i / count) * Math.PI * 2;
-        const r = 1.8 + Math.random() * 0.5;
-        pos[i * 3] = Math.cos(angle) * r;
-        pos[i * 3 + 1] = (Math.random() - 0.5) * 2;
-        pos[i * 3 + 2] = Math.sin(angle) * r - 1;
-      }
-      return pos;
-    })()
-  ).current;
+  const geometry = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2;
+      const r = 1.8 + Math.random() * 0.5;
+      pos[i * 3] = Math.cos(angle) * r;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 2;
+      pos[i * 3 + 2] = Math.sin(angle) * r - 1;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    return geo;
+  }, []);
 
   useFrame(({ clock }) => {
     if (!ref.current) return;
@@ -61,10 +61,7 @@ function EnergyParticles() {
   });
 
   return (
-    <points ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-      </bufferGeometry>
+    <points ref={ref} geometry={geometry}>
       <pointsMaterial
         color="#00D4FF"
         size={1.5}

@@ -13,22 +13,22 @@ export default function WarpSpeed({ active = false, count = 300 }: WarpSpeedProp
   const ref = useRef<THREE.Points>(null);
   const speedRef = useRef(0);
 
-  const positions = useMemo(() => {
+  const geometry = useMemo(() => {
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       pos[i * 3] = (Math.random() - 0.5) * 20;
       pos[i * 3 + 1] = (Math.random() - 0.5) * 20;
       pos[i * 3 + 2] = (Math.random() - 0.5) * 20;
     }
-    return pos;
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    return geo;
   }, [count]);
 
   useFrame((_, delta) => {
     if (!ref.current) return;
-    const geo = ref.current.geometry;
-    const pos = geo.attributes.position as THREE.BufferAttribute;
+    const pos = ref.current.geometry.attributes.position as THREE.BufferAttribute;
 
-    // Smooth lerp to target speed
     const target = active ? 1 : 0;
     speedRef.current += (target - speedRef.current) * delta * 2;
     const speed = speedRef.current;
@@ -38,21 +38,12 @@ export default function WarpSpeed({ active = false, count = 300 }: WarpSpeedProp
       z += delta * (1 + speed * 40);
       if (z > 10) z = -10;
       pos.setZ(i, z);
-
-      // Elongate stars when warping
-      if (speed > 0.1) {
-        const stretch = speed * 0.3;
-        pos.setY(i, pos.getY(i) + Math.sin(z * 2) * stretch * delta);
-      }
     }
     pos.needsUpdate = true;
   });
 
   return (
-    <points ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-      </bufferGeometry>
+    <points ref={ref} geometry={geometry}>
       <pointsMaterial
         color="#ffffff"
         size={active ? 2 : 1}

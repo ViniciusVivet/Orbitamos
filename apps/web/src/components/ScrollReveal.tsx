@@ -4,7 +4,9 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-gsap.registerPlugin(ScrollTrigger);
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 interface ScrollRevealProps {
   children: React.ReactNode;
@@ -28,24 +30,26 @@ export default function ScrollReveal({
   start = "top 85%",
 }: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const initialized = useRef(false);
 
   useEffect(() => {
-    if (!ref.current) return;
+    if (!ref.current || initialized.current) return;
+    initialized.current = true;
 
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReduced) return;
 
     const targets = selectChildren ? ref.current.children : ref.current;
 
-    const defaults: gsap.TweenVars = {
+    gsap.set(targets, {
       opacity: 0,
       y: 40,
       scale: 0.97,
       filter: "blur(6px)",
       ...from,
-    };
+    });
 
-    const toVars: gsap.TweenVars = {
+    gsap.to(targets, {
       opacity: 1,
       y: 0,
       scale: 1,
@@ -55,26 +59,13 @@ export default function ScrollReveal({
       stagger: stagger || 0,
       delay,
       ...to,
-    };
-
-    gsap.set(targets, defaults);
-
-    const tween = gsap.to(targets, {
-      ...toVars,
       scrollTrigger: {
         trigger: ref.current,
         start,
         once: true,
       },
     });
-
-    return () => {
-      tween.kill();
-      ScrollTrigger.getAll().forEach((t) => {
-        if (t.trigger === ref.current) t.kill();
-      });
-    };
-  }, [from, to, stagger, selectChildren, delay, start]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div ref={ref} className={className}>

@@ -4,7 +4,9 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-gsap.registerPlugin(ScrollTrigger);
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 interface TextRevealProps {
   children: string;
@@ -22,9 +24,12 @@ export default function TextReveal({
   start = "top 85%",
 }: TextRevealProps) {
   const ref = useRef<HTMLElement>(null);
+  const initialized = useRef(false);
 
   useEffect(() => {
-    if (!ref.current) return;
+    if (!ref.current || initialized.current) return;
+    initialized.current = true;
+
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReduced) return;
 
@@ -32,7 +37,6 @@ export default function TextReveal({
     const text = el.textContent || "";
     el.innerHTML = "";
 
-    // Split into words, then chars
     const words = text.split(" ");
     words.forEach((word, wi) => {
       const wordSpan = document.createElement("span");
@@ -60,7 +64,7 @@ export default function TextReveal({
 
     const chars = el.querySelectorAll("span > span");
 
-    const tween = gsap.to(chars, {
+    gsap.to(chars, {
       opacity: 1,
       y: 0,
       filter: "blur(0px)",
@@ -73,12 +77,7 @@ export default function TextReveal({
         once: true,
       },
     });
-
-    return () => {
-      tween.kill();
-      el.textContent = text;
-    };
-  }, [children, stagger, start]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return <Tag ref={ref as React.Ref<never>} className={className}>{children}</Tag>;
 }

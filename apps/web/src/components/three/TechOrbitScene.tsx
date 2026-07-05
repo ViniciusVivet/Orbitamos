@@ -19,7 +19,7 @@ export default function TechOrbitScene() {
     <>
       <MouseReactiveCamera intensity={0.25} />
       <ambientLight intensity={0.15} />
-      <Starfield count={200} radius={10} speed={0.01} sizeRange={[0.3, 1.5]} />
+      <Starfield count={200} radius={10} speed={0.01} />
 
       {/* Core sphere */}
       <mesh position={[0, 0, 0]}>

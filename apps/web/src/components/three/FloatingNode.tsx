@@ -2,7 +2,6 @@
 
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Html } from "@react-three/drei";
 import * as THREE from "three";
 
 interface FloatingNodeProps {
@@ -16,8 +15,6 @@ interface FloatingNodeProps {
 }
 
 export default function FloatingNode({
-  label,
-  detail,
   position,
   orbitRadius,
   orbitSpeed,
@@ -40,12 +37,16 @@ export default function FloatingNode({
         <sphereGeometry args={[0.06, 16, 16]} />
         <meshBasicMaterial color={color} />
       </mesh>
-      <Html distanceFactor={8} center style={{ pointerEvents: "none" }}>
-        <div className="rounded-xl border border-white/15 bg-black/60 px-3 py-1.5 backdrop-blur-xl whitespace-nowrap">
-          <p className="text-xs font-bold text-white">{label}</p>
-          <p className="text-[10px] text-white/50">{detail}</p>
-        </div>
-      </Html>
+      {/* Glow around node */}
+      <mesh>
+        <sphereGeometry args={[0.12, 16, 16]} />
+        <meshBasicMaterial
+          color={color}
+          transparent
+          opacity={0.15}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
     </group>
   );
 }
