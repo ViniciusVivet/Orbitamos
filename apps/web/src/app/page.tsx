@@ -35,7 +35,7 @@ const WHATSAPP_URL =
 
 const stats = [
   { value: "7+", label: "projetos entregues" },
-  { value: "7 dias", label: "landing pages" },
+  { value: "até 7 dias", label: "landing pages" },
   { value: "100%", label: "mobile-first" },
   { value: "IA", label: "automações e integrações" },
 ];
@@ -251,8 +251,8 @@ export default function Home() {
 
             <ScrollReveal from={{ opacity: 0, y: 30 }} to={{ duration: 0.8, delay: 0.3 }}>
               <p className="mt-6 max-w-2xl text-base leading-8 text-white/58 sm:text-lg">
-                Criamos solucoes digitais com design premium, estrategia e tecnologia aplicada para
-                transformar presenca online em resultado real.
+                Criamos soluções digitais com design premium, estratégia e tecnologia aplicada para
+                transformar presença online em resultado real.
               </p>
             </ScrollReveal>
 
