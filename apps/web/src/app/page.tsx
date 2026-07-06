@@ -35,7 +35,7 @@ const WHATSAPP_URL =
 
 const stats = [
   { value: "7+", label: "projetos entregues" },
-  { value: "até 7 dias", label: "landing pages" },
+  { value: "em até 7 dias", label: "landing pages" },
   { value: "100%", label: "mobile-first" },
   { value: "IA", label: "automações e integrações" },
 ];
