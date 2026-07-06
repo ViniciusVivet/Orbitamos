@@ -48,7 +48,6 @@ const heroCases = [
     href: "/projetos/sabrina-lashes",
     image: "/case-sabrina-lashes.png",
     accent: "from-emerald-300 to-cyan-300",
-    className: "md:translate-x-5 md:-rotate-2",
   },
   {
     name: "YUME",
@@ -57,7 +56,6 @@ const heroCases = [
     href: "/projetos/yume-moda-disruptiva",
     image: "/case-yume.png",
     accent: "from-violet-300 to-fuchsia-300",
-    className: "md:-translate-x-8 md:rotate-2",
   },
   {
     name: "Destaque Multimarcas",
@@ -66,7 +64,6 @@ const heroCases = [
     href: "/projetos/destaque-multimarcas",
     image: "/case-destaque-multimarcas.png",
     accent: "from-amber-200 to-orange-300",
-    className: "md:translate-x-8 md:-rotate-1",
   },
 ];
 
@@ -305,53 +302,49 @@ export default function Home() {
             </ScrollReveal>
           </div>
 
-          {/* Right: 3D-tilt cards */}
+          {/* Right: case cards */}
           <div
             className="relative mx-auto w-full max-w-xl lg:max-w-none"
             style={{
-              transform: `perspective(1200px) rotateX(${mouse.y * -3}deg) rotateY(${mouse.x * 4}deg)`,
+              transform: isMobile ? "none" : `perspective(1200px) rotateX(${mouse.y * -3}deg) rotateY(${mouse.x * 4}deg)`,
               transition: active ? "transform 0.1s ease-out" : "transform 0.8s ease-out",
-              willChange: "transform",
+              willChange: isMobile ? "auto" : "transform",
             }}
           >
-            <div className="absolute left-1/2 top-1/2 h-[70%] w-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-orbit-electric/15 bg-orbit-electric/[0.03] blur-sm" />
-            <div className="absolute left-1/2 top-1/2 h-[46%] w-[46%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-violet-300/15 bg-violet-400/[0.04]" />
-            <div className="relative flex flex-col gap-4 py-4">
+            <div className="flex flex-col gap-4">
               {heroCases.map((project, index) => (
                 <ScrollReveal
                   key={project.name}
-                  from={{ opacity: 0, x: index % 2 === 0 ? 60 : -60, rotateY: index % 2 === 0 ? 8 : -8 }}
-                  to={{ duration: 0.8, delay: 0.2 + index * 0.15 }}
+                  from={{ opacity: 0, y: 30 }}
+                  to={{ duration: 0.6, delay: 0.2 + index * 0.12 }}
                 >
                   <Link
                     href={project.href}
-                    className={`orbit-tilt-card group relative overflow-hidden border border-white/10 bg-[#080b14]/86 shadow-[0_24px_70px_rgba(0,0,0,0.42)] backdrop-blur-2xl transition duration-300 hover:-translate-y-2 hover:border-orbit-electric/35 ${project.className}`}
+                    className="orbit-tilt-card group relative block overflow-hidden rounded-xl border border-white/10 bg-[#080b14]/90 backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:border-orbit-electric/30"
                   >
                     <span className="orbit-sweep absolute inset-y-0 -left-1/2 z-10 w-1/2 opacity-0 group-hover:opacity-100" />
-                    <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${project.accent}`} />
-                    <div className="grid grid-cols-[1fr_128px] gap-4 p-4 sm:grid-cols-[1fr_174px]">
-                      <div className="flex min-w-0 flex-col justify-between">
-                        <div>
-                          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/34">
-                            Case 0{index + 1}
-                          </p>
-                          <h2 className="mt-2 truncate text-xl font-black text-white sm:text-2xl">
-                            {project.name}
-                          </h2>
-                          <p className="mt-1 text-sm text-white/48">{project.type}</p>
-                        </div>
-                        <div className="mt-5 flex items-center gap-2 text-sm font-semibold text-white/70">
-                          <CheckCircle2 className="size-4 text-orbit-electric" />
-                          {project.result}
-                        </div>
-                      </div>
-                      <div className="relative aspect-[4/3] overflow-hidden bg-white/[0.04]">
+                    <div className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${project.accent}`} />
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 p-4">
+                      <div className="relative aspect-video w-full overflow-hidden rounded-lg sm:aspect-[4/3] sm:w-36 sm:shrink-0">
                         <img
                           src={project.image}
                           alt={`Projeto ${project.name}`}
                           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                      </div>
+                      <div className="mt-3 flex min-w-0 flex-col sm:mt-0">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/34">
+                          Case 0{index + 1}
+                        </p>
+                        <h2 className="mt-1 truncate text-lg font-black text-white sm:text-xl">
+                          {project.name}
+                        </h2>
+                        <p className="mt-0.5 text-sm text-white/48">{project.type}</p>
+                        <div className="mt-3 flex items-center gap-2 text-sm font-semibold text-white/70">
+                          <CheckCircle2 className="size-4 shrink-0 text-orbit-electric" />
+                          {project.result}
+                        </div>
                       </div>
                     </div>
                   </Link>
