@@ -28,8 +28,8 @@ export default function FloatingWhatsApp({ page }: FloatingWhatsAppProps) {
       rel="noopener noreferrer"
       className="fixed z-[60] block h-14 w-14 rounded-full transition-transform duration-200 hover:scale-110 active:scale-95 md:h-[3.75rem] md:w-[3.75rem]"
       style={{
-        right: "max(1rem, env(safe-area-inset-right))",
-        bottom: "max(1rem, env(safe-area-inset-bottom))",
+        right: "max(1rem, env(safe-área-inset-right))",
+        bottom: "max(1rem, env(safe-área-inset-bottom))",
       }}
       aria-label="Falar no WhatsApp"
       title="WhatsApp"

@@ -65,7 +65,7 @@ export const servicos: Servico[] = [
       { titulo: "Diagnóstico", texto: "Entendo oferta, público, prazo e o que precisa acontecer para virar lead." },
       { titulo: "Estrutura", texto: "Monto a sequência de seções: promessa, prova, benefícios, objeções e CTA." },
       { titulo: "Construção", texto: "Desenvolvo a página responsiva, rápida e pronta para WhatsApp." },
-      { titulo: "Lançamento", texto: "Publico, reviso detalhes e deixo pronta para receber tráfego." },
+      { titulo: "Lançamento", texto: "Público, reviso detalhes e deixo pronta para receber tráfego." },
     ],
     faq: [
       { pergunta: "Quanto tempo leva?", resposta: "Uma landing page objetiva pode ir ao ar em até 7 dias quando conteúdo e direção estão claros." },
@@ -300,7 +300,7 @@ export const servicos: Servico[] = [
       { titulo: "Indicadores", texto: "Defino quais números e listas realmente importam." },
       { titulo: "Fluxo", texto: "Organizo como os dados entram, mudam de status e são consultados." },
       { titulo: "Interface", texto: "Crio uma tela objetiva para uso repetido, não só para apresentação." },
-      { titulo: "Entrega", texto: "Publico, testo e ajusto com base na rotina real." },
+      { titulo: "Entrega", texto: "Público, testo e ajusto com base na rotina real." },
     ],
     faq: [
       { pergunta: "Dashboard precisa ser complexo?", resposta: "Não. O melhor painel começa com poucos indicadores que mudam decisões." },

@@ -110,7 +110,7 @@ export default function ProjetosHero() {
 
         <ScrollReveal from={{ opacity: 0, y: 15 }} to={{ duration: 0.6, delay: 0.25 }}>
           <p className="mx-auto mt-4 max-w-xl text-sm md:text-base text-white/90 rounded-lg px-4 py-2" style={{ background: "linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.6) 20%, rgba(0,0,0,0.6) 80%, transparent 100%)" }}>
-            Em poucos minutos, veja exemplos reais de landing pages, sites, sistemas e automacoes que a Orbitamos ja colocou no ar.
+            Em poucos minutos, veja exemplos reais de landing pages, sites, sistemas e automações que a Orbitamos já colocou no ar.
           </p>
         </ScrollReveal>
 

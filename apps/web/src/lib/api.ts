@@ -20,7 +20,7 @@ const ALLOWED_AVATAR_TYPES: Record<string, string> = {
 
 function getSafeAvatarExtension(file: File): string {
   if (file.size > MAX_AVATAR_UPLOAD_BYTES) {
-    throw new Error("Imagem muito grande. Envie um arquivo de ate 2MB.");
+    throw new Error("Imagem muito grande. Envie um arquivo de até 2MB.");
   }
 
   const extension = ALLOWED_AVATAR_TYPES[file.type];
@@ -379,7 +379,7 @@ function profileRowToUser(profile: SupabaseProfileRow): User {
   return {
     id: profile.id,
     email: profile.email ?? "",
-    name: profile.name ?? "Usuario",
+    name: profile.name ?? "Usuário",
     createdAt: profile.created_at ?? new Date().toISOString(),
     avatarUrl: profile.avatar_url,
     role: profile.role ?? "STUDENT",
@@ -398,7 +398,7 @@ function progressRowToDashboardProgress(progress?: SupabaseProgressRow | null): 
   return {
     percent: progress?.percent ?? 0,
     phase: progress?.phase ?? "Planeta Terra - Fundacao",
-    nextGoal: progress?.next_goal ?? "Finalizar o Modulo 1 de fundamentos",
+    nextGoal: progress?.next_goal ?? "Finalizar o Módulo 1 de fundamentos",
     level: progress?.level ?? 1,
     xp: progress?.xp ?? 0,
     streakDays: progress?.streak_days ?? 0,
@@ -461,7 +461,7 @@ export async function register(data: RegisterData): Promise<AuthResponse> {
     });
 
     if (error) throw new Error(error.message);
-    if (!authData.user) throw new Error("Nao foi possivel criar a conta.");
+    if (!authData.user) throw new Error("Não foi possível criar a conta.");
 
     const user = await ensureSupabaseProfile({
       id: authData.user.id,
@@ -546,7 +546,7 @@ export async function login(data: LoginData): Promise<AuthResponse> {
 
     if (error) throw new Error(error.message);
     if (!authData.user || !authData.session) {
-      throw new Error("Nao foi possivel fazer login.");
+      throw new Error("Não foi possível fazer login.");
     }
 
     let user: User;
@@ -559,7 +559,7 @@ export async function login(data: LoginData): Promise<AuthResponse> {
         name:
           (authData.user.user_metadata?.name as string | undefined) ??
           authData.user.email?.split("@")[0] ??
-          "Usuario",
+          "Usuário",
         role: (authData.user.user_metadata?.role as UserRole | undefined) ?? "STUDENT",
       });
     }
@@ -635,7 +635,7 @@ export async function getCurrentUser(token: string | null): Promise<{ success: b
     const client = requireSupabase();
     const { data: sessionData, error: sessionError } = await client.auth.getSession();
     if (sessionError || !sessionData.session?.user) {
-      throw new Error("Sessao nao encontrada");
+      throw new Error("Sessão não encontrada");
     }
     const user = await getSupabaseProfile(sessionData.session.user.id);
     return { success: true, user, token: sessionData.session.access_token };
@@ -718,7 +718,7 @@ export async function updateProfile(
     const client = requireSupabase();
     const { data: sessionData } = await client.auth.getSession();
     const userId = sessionData.session?.user.id;
-    if (!userId) throw new Error("Sessao nao encontrada");
+    if (!userId) throw new Error("Sessão não encontrada");
 
     const payload = {
       name: data.name,
@@ -780,7 +780,7 @@ export async function uploadAvatarViaApi(
     const client = requireSupabase();
     const { data: sessionData } = await client.auth.getSession();
     const userId = sessionData.session?.user.id;
-    if (!userId) throw new Error("Sessao nao encontrada");
+    if (!userId) throw new Error("Sessão não encontrada");
 
     const extension = getSafeAvatarExtension(file);
     const path = `${userId}/avatar.${extension}`;
@@ -818,7 +818,7 @@ export async function getDashboardSummary(token: string): Promise<DashboardSumma
     const client = requireSupabase();
     const { data: sessionData } = await client.auth.getSession();
     const userId = sessionData.session?.user.id;
-    if (!userId) throw new Error("Sessao nao encontrada");
+    if (!userId) throw new Error("Sessão não encontrada");
 
     const user = await getSupabaseProfile(userId);
     const { data: progressRow } = await client
@@ -836,14 +836,14 @@ export async function getDashboardSummary(token: string): Promise<DashboardSumma
       user,
       progress: progressRowToDashboardProgress(progressRow as SupabaseProgressRow | null),
       nextAction: {
-        title: "Continuar o Modulo 1",
-        description: "Registrar a primeira duvida",
+        title: "Continuar o Módulo 1",
+        description: "Registrar a primeira dúvida",
         cta: "/estudante/aulas",
       },
       weeklyChecklist: [
         { label: "Assistir 2 aulas base", done: false },
-        { label: "Fazer 1 exercicio pratico", done: false },
-        { label: "Postar 1 duvida na comunidade", done: false },
+        { label: "Fazer 1 exercicio prático", done: false },
+        { label: "Postar 1 dúvida na comunidade", done: false },
         { label: "Marcar 1 mentoria", done: false },
       ],
       mentorship: { nextSession: "A definir", totalSessions: 0 },
@@ -895,7 +895,7 @@ export async function addProgressLesson(
     const client = requireSupabase();
     const { data: sessionData } = await client.auth.getSession();
     const userId = sessionData.session?.user.id;
-    if (!userId) throw new Error("Sessao nao encontrada");
+    if (!userId) throw new Error("Sessão não encontrada");
 
     const { data: current } = await client
       .from("v3_user_progress")
@@ -1061,7 +1061,7 @@ export async function getForumMessages(parentId?: number): Promise<ForumMessage[
     return (data ?? []).map((item) => ({
       id: item.id,
       content: item.content,
-      author: item.profiles?.name ?? "Usuario",
+      author: item.profiles?.name ?? "Usuário",
       userId: item.user_id,
       authorAvatarUrl: item.profiles?.avatar_url ?? null,
       city: item.city ?? null,
@@ -1139,7 +1139,7 @@ export async function postForumMessage(
     const client = requireSupabase();
     const { data: sessionData } = await client.auth.getSession();
     const userId = sessionData.session?.user.id;
-    if (!userId) throw new Error("Sessao nao encontrada");
+    if (!userId) throw new Error("Sessão não encontrada");
 
     const { data, error } = await client
       .from("v3_forum_messages")
@@ -1159,7 +1159,7 @@ export async function postForumMessage(
     return {
       id: data.id,
       content: data.content,
-      author: data.profiles?.name ?? "Usuario",
+      author: data.profiles?.name ?? "Usuário",
       userId: data.user_id,
       authorAvatarUrl: data.profiles?.avatar_url ?? null,
       city: data.city ?? null,
@@ -1222,7 +1222,7 @@ export async function updateForumMessage(
     return {
       id: data.id,
       content: data.content,
-      author: data.profiles?.name ?? "Usuario",
+      author: data.profiles?.name ?? "Usuário",
       userId: data.user_id,
       authorAvatarUrl: data.profiles?.avatar_url ?? null,
       city: data.city ?? null,
@@ -1331,14 +1331,14 @@ export interface ChatMessageItem {
 async function getCurrentSupabaseUserId(): Promise<string> {
   const { data } = await requireSupabase().auth.getSession();
   const userId = data.session?.user.id;
-  if (!userId) throw new Error("Sessao nao encontrada");
+  if (!userId) throw new Error("Sessão não encontrada");
   return userId;
 }
 
 function profileToChatUser(profile: any): ChatUser {
   return {
     id: profile.id,
-    name: profile.name ?? "Usuario",
+    name: profile.name ?? "Usuário",
     email: profile.email ?? "",
     avatarUrl: profile.avatar_url ?? "",
     role: profile.role ?? "STUDENT",
@@ -1446,7 +1446,7 @@ export async function getChatMessages(token: string, conversationId: number): Pr
       id: message.id,
       content: message.content,
       senderId: message.sender_id,
-      senderName: message.profiles?.name ?? "Usuario",
+      senderName: message.profiles?.name ?? "Usuário",
       senderAvatarUrl: message.profiles?.avatar_url ?? "",
       createdAt: message.created_at,
       readAt: null,
@@ -1485,7 +1485,7 @@ export async function sendChatMessage(
       id: message.id,
       content: message.content,
       senderId: message.sender_id,
-      senderName: senderProfile?.name ?? "Usuario",
+      senderName: senderProfile?.name ?? "Usuário",
       senderAvatarUrl: senderProfile?.avatar_url ?? "",
       createdAt: message.created_at,
       readAt: null,
@@ -1717,5 +1717,4 @@ export async function getChatUsers(token: string): Promise<ChatUser[]> {
   if (!response.ok) throw new Error(result.message || "Erro ao carregar usuários");
   return result.users ?? [];
 }
-
 

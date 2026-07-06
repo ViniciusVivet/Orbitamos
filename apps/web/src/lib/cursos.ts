@@ -1,5 +1,5 @@
 ﻿/**
- * Estrutura de cursos da OrbitAcademy (modulos e aulas).
+ * Estrutura de cursos da OrbitAcademy (módulos e aulas).
  * Videos sao embeds do YouTube — ponte pelo proprio site.
  */
 
@@ -47,15 +47,15 @@ export type CourseTrack = {
 export const courseTracks: CourseTrack[] = [
   {
     id: "logica",
-    titulo: "Trilha Logica",
-    descricao: "Base de raciocinio, algoritmo e primeiros passos em programacao.",
+    titulo: "Trilha Lógica",
+    descricao: "Base de raciocínio, algoritmo e primeiros passos em programação.",
     icon: "🧠",
     slugs: ["logica-programacao-python"],
   },
   {
     id: "web",
     titulo: "Trilha HTML",
-    descricao: "Fundamentos de paginas, interfaces e experiencias web.",
+    descricao: "Fundamentos de páginas, interfaces e experiencias web.",
     icon: "🧱",
     slugs: ["html-css-js"],
   },
@@ -69,28 +69,28 @@ export const courseTracks: CourseTrack[] = [
   {
     id: "sql",
     titulo: "Trilha SQL",
-    descricao: "Banco de dados relacional, consultas e pratica com dados.",
+    descricao: "Banco de dados relacional, consultas e prática com dados.",
     icon: "📊",
     slugs: ["sql-na-pratica"],
   },
   {
     id: "github",
     titulo: "Trilha GitHub",
-    descricao: "Versionamento, fork, pull request e colaboracao.",
+    descricao: "Versionamento, fork, pull request e colaboração.",
     icon: "😼",
     slugs: ["github-colaborativo"],
   },
   {
     id: "office",
     titulo: "Trilha Office e Dados",
-    descricao: "Excel, VBA e Power BI para analise e automacao.",
+    descricao: "Excel, VBA e Power BI para análise e automação.",
     icon: "📗",
     slugs: ["excel-procv", "vba-excel", "power-bi"],
   },
   {
     id: "hardware",
     titulo: "Trilha Hardware",
-    descricao: "Montagem, manutencao e sistema operacional.",
+    descricao: "Montagem, manutenção e sistema operacional.",
     icon: "🛠️",
     slugs: ["montagem-manutencao"],
   },
@@ -149,38 +149,38 @@ export const cursos: Curso[] = [
     id: "fallback-html-css-js",
     slug: "html-css-js",
     titulo: "HTML, CSS e JavaScript",
-    descricao: "Base pratica para criar paginas, dashboards e interfaces web.",
+    descricao: "Base prática para criar páginas, dashboards e interfaces web.",
     modulos: [
       {
         id: "html-css-js-m1",
-        titulo: "Fundamentos e pratica web",
+        titulo: "Fundamentos e prática web",
         aulas: [
           {
             id: "html-css-js-a1",
             titulo: "HTML do zero",
             youtubeVideoId: "",
-            conteudo: "Estrutura inicial de uma pagina HTML antes de entrar em CSS e JavaScript.",
+            conteudo: "Estrutura inicial de uma página HTML antes de entrar em CSS e JavaScript.",
             materiais: [material("html-css-js-mat-1", "HTML do zero", "DOCX", "/course-materials/html-css-js/04-html-do-zero-sem-css-e-sem-javascript.docx")],
           },
           {
             id: "html-css-js-a2",
-            titulo: "HTML, CSS e JS - atividade pratica",
+            titulo: "HTML, CSS e JS - atividade prática",
             youtubeVideoId: "",
-            conteudo: "Exercicio guiado para aplicar estrutura, estilo e comportamento em uma pagina simples.",
-            materiais: [material("html-css-js-mat-2", "Atividade pratica HTML, CSS e JS", "DOCX", "/course-materials/html-css-js/02-html-js-e-css-atv-pratica-1.docx")],
+            conteudo: "Exercício guiado para aplicar estrutura, estilo e comportamento em uma página simples.",
+            materiais: [material("html-css-js-mat-2", "Atividade prática HTML, CSS e JS", "DOCX", "/course-materials/html-css-js/02-html-js-e-css-atv-pratica-1.docx")],
           },
           {
             id: "html-css-js-a3",
             titulo: "Dashboard futurista com HTML",
             youtubeVideoId: "",
-            conteudo: "Material para construir uma interface visual mais elaborada e treinar composicao de tela.",
+            conteudo: "Material para construir uma interface visual mais elaborada e treinar composição de tela.",
             materiais: [material("html-css-js-mat-3", "HTML Dashboard Futurista", "DOCX", "/course-materials/html-css-js/01-html-dashboard-futurista.docx")],
           },
           {
             id: "html-css-js-a4",
             titulo: "HTML - aula 1",
             youtubeVideoId: "",
-            conteudo: "Reforco de marcacao e organizacao inicial de conteudo web.",
+            conteudo: "Reforço de marcação e organização inicial de conteúdo web.",
             materiais: [material("html-css-js-mat-4", "HTML - aula 1", "DOCX", "/course-materials/html-css-js/03-html-1.docx")],
           },
         ],
@@ -190,18 +190,18 @@ export const cursos: Curso[] = [
   {
     id: "fallback-logica-python",
     slug: "logica-programacao-python",
-    titulo: "Logica de Programacao com Python",
-    descricao: "Primeiros passos de algoritmo, raciocinio logico e pratica com Python.",
+    titulo: "Lógica de Programação com Python",
+    descricao: "Primeiros passos de algoritmo, raciocínio logico e prática com Python.",
     modulos: [
       {
         id: "logica-python-m1",
         titulo: "Fundamentos",
         aulas: [
-          { id: "logica-python-a0", titulo: "Aula 0 - introducao a logica", youtubeVideoId: "", materiais: [material("logica-python-mat-0", "Logica de programacao - aula 0", "DOCX", "/course-materials/logica-programacao-python/04-logica-de-programacao-aula-0.docx")] },
-          { id: "logica-python-a1", titulo: "Apostila de logica com Python", youtubeVideoId: "", materiais: [material("logica-python-mat-1", "Apostila - logica de programacao com Python", "DOCX", "/course-materials/logica-programacao-python/01-apostila-logica-de-programacao-com-python.docx")] },
-          { id: "logica-python-a2", titulo: "Logica de programacao com Python", youtubeVideoId: "", materiais: [material("logica-python-mat-2", "Logica de programacao com Python", "DOCX", "/course-materials/logica-programacao-python/02-logica-de-programacao-com-python.docx")] },
-          { id: "logica-python-a3", titulo: "Logica de programacao - parte 2", youtubeVideoId: "", materiais: [material("logica-python-mat-3", "Logica de programacao - parte 2", "DOCX", "/course-materials/logica-programacao-python/03-logica-de-programacao-2.docx")] },
-          { id: "logica-python-a4", titulo: "Aula 3 - pratica com Python", youtubeVideoId: "", materiais: [material("logica-python-mat-4", "Logica de programacao - aula 3 com Python", "DOCX", "/course-materials/logica-programacao-python/05-logica-de-programacao-aula-3-com-python.docx")] },
+          { id: "logica-python-a0", titulo: "Aula 0 - introdução à lógica", youtubeVideoId: "", materiais: [material("logica-python-mat-0", "Lógica de programação - aula 0", "DOCX", "/course-materials/logica-programacao-python/04-logica-de-programacao-aula-0.docx")] },
+          { id: "logica-python-a1", titulo: "Apostila de lógica com Python", youtubeVideoId: "", materiais: [material("logica-python-mat-1", "Apostila - lógica de programação com Python", "DOCX", "/course-materials/logica-programacao-python/01-apostila-logica-de-programacao-com-python.docx")] },
+          { id: "logica-python-a2", titulo: "Lógica de programação com Python", youtubeVideoId: "", materiais: [material("logica-python-mat-2", "Lógica de programação com Python", "DOCX", "/course-materials/logica-programacao-python/02-logica-de-programacao-com-python.docx")] },
+          { id: "logica-python-a3", titulo: "Lógica de programação - parte 2", youtubeVideoId: "", materiais: [material("logica-python-mat-3", "Lógica de programação - parte 2", "DOCX", "/course-materials/logica-programacao-python/03-logica-de-programacao-2.docx")] },
+          { id: "logica-python-a4", titulo: "Aula 3 - prática com Python", youtubeVideoId: "", materiais: [material("logica-python-mat-4", "Lógica de programação - aula 3 com Python", "DOCX", "/course-materials/logica-programacao-python/05-logica-de-programacao-aula-3-com-python.docx")] },
         ],
       },
     ],
@@ -210,16 +210,16 @@ export const cursos: Curso[] = [
     id: "fallback-csharp",
     slug: "csharp-fundamentos",
     titulo: "C# Fundamentos",
-    descricao: "Base de C# para quem esta iniciando no ecossistema .NET.",
+    descricao: "Base de C# para quem está iniciando no ecossistema .NET.",
     modulos: [
       {
         id: "csharp-m1",
         titulo: "Primeiras aulas",
         aulas: [
           { id: "csharp-a1", titulo: "C# - aula 1", youtubeVideoId: "", materiais: [material("csharp-mat-1", "C# - aula 1", "DOCX", "/course-materials/csharp-fundamentos/03-c-aula-1.docx")] },
-          { id: "csharp-a2", titulo: "C# - atividade pratica 1", youtubeVideoId: "", materiais: [material("csharp-mat-2", "C# - atividade pratica 1", "DOCX", "/course-materials/csharp-fundamentos/01-c-aula-pratica-atv-1.docx")] },
+          { id: "csharp-a2", titulo: "C# - atividade prática 1", youtubeVideoId: "", materiais: [material("csharp-mat-2", "C# - atividade prática 1", "DOCX", "/course-materials/csharp-fundamentos/01-c-aula-pratica-atv-1.docx")] },
           { id: "csharp-a3", titulo: "Averiguar C#", youtubeVideoId: "", materiais: [material("csharp-mat-3", "Averiguar C#", "DOCX", "/course-materials/csharp-fundamentos/02-averiguar-c.docx")] },
-          { id: "csharp-a4", titulo: "C# nivel medio - Cinema do Bruno", youtubeVideoId: "", materiais: [material("csharp-mat-4", "C# nivel medio - Cinema do Bruno", "DOCX", "/course-materials/csharp-fundamentos/04-c-2-nivel-medio-cinema-do-bruno.docx")] },
+          { id: "csharp-a4", titulo: "C# nível medio - Cinema do Bruno", youtubeVideoId: "", materiais: [material("csharp-mat-4", "C# nível medio - Cinema do Bruno", "DOCX", "/course-materials/csharp-fundamentos/04-c-2-nivel-medio-cinema-do-bruno.docx")] },
         ],
       },
     ],
@@ -227,12 +227,12 @@ export const cursos: Curso[] = [
   {
     id: "fallback-sql",
     slug: "sql-na-pratica",
-    titulo: "SQL na Pratica",
-    descricao: "Banco de dados relacional, consultas e exercicios com SQL.",
+    titulo: "SQL na Prática",
+    descricao: "Banco de dados relacional, consultas e exercícios com SQL.",
     modulos: [
       { id: "sql-m1", titulo: "Banco de dados", aulas: [
-        { id: "sql-a1", titulo: "Introducao ao SQL", youtubeVideoId: "", materiais: [material("sql-mat-1", "Introducao ao SQL - banco de dados na pratica", "DOCX", "/course-materials/sql-na-pratica/02-introducao-ao-sql-banco-de-dados-na-pratica.docx")] },
-        { id: "sql-a2", titulo: "SQL na pratica 2 - Oracle Live", youtubeVideoId: "", materiais: [material("sql-mat-2", "SQL na pratica 2 - Oracle Live", "DOCX", "/course-materials/sql-na-pratica/01-sql-na-pratica-2-oracle-live.docx")] },
+        { id: "sql-a1", titulo: "Introdução ao SQL", youtubeVideoId: "", materiais: [material("sql-mat-1", "Introdução ao SQL - banco de dados na prática", "DOCX", "/course-materials/sql-na-pratica/02-introducao-ao-sql-banco-de-dados-na-pratica.docx")] },
+        { id: "sql-a2", titulo: "SQL na prática 2 - Oracle Live", youtubeVideoId: "", materiais: [material("sql-mat-2", "SQL na prática 2 - Oracle Live", "DOCX", "/course-materials/sql-na-pratica/01-sql-na-pratica-2-oracle-live.docx")] },
       ] },
     ],
   },
@@ -240,12 +240,12 @@ export const cursos: Curso[] = [
     id: "fallback-github",
     slug: "github-colaborativo",
     titulo: "GitHub Colaborativo",
-    descricao: "Fluxo basico e intermediario com fork, pull request e colaboracao.",
+    descricao: "Fluxo básico e intermediário com fork, pull request e colaboração.",
     modulos: [
-      { id: "github-m1", titulo: "Fluxo de colaboracao", aulas: [
-        { id: "github-a1", titulo: "GitHub basico ao intermediario", youtubeVideoId: "", materiais: [material("github-mat-1", "GitHub basico ao intermediario", "DOCX", "/course-materials/github-colaborativo/03-github-basico-intermediario.docx")] },
+      { id: "github-m1", titulo: "Fluxo de colaboração", aulas: [
+        { id: "github-a1", titulo: "GitHub básico ao intermediário", youtubeVideoId: "", materiais: [material("github-mat-1", "GitHub básico ao intermediário", "DOCX", "/course-materials/github-colaborativo/03-github-basico-intermediario.docx")] },
         { id: "github-a2", titulo: "Fork e pull request", youtubeVideoId: "", materiais: [material("github-mat-2", "GitHub - fork e pull request", "DOCX", "/course-materials/github-colaborativo/01-github-fork-pull-request.docx")] },
-        { id: "github-a3", titulo: "Pull request na pratica", youtubeVideoId: "", materiais: [material("github-mat-3", "GitHub - fork e pull request PR", "DOCX", "/course-materials/github-colaborativo/02-github-fork-pull-request-pr.docx")] },
+        { id: "github-a3", titulo: "Pull request na prática", youtubeVideoId: "", materiais: [material("github-mat-3", "GitHub - fork e pull request PR", "DOCX", "/course-materials/github-colaborativo/02-github-fork-pull-request-pr.docx")] },
       ] },
     ],
   },
@@ -253,9 +253,9 @@ export const cursos: Curso[] = [
     id: "fallback-excel",
     slug: "excel-procv",
     titulo: "Excel - PROCV",
-    descricao: "Consulta de dados e automacao inicial de planilhas com PROCV.",
+    descricao: "Consulta de dados e automação inicial de planilhas com PROCV.",
     modulos: [
-      { id: "excel-m1", titulo: "Funcoes de busca", aulas: [
+      { id: "excel-m1", titulo: "Funções de busca", aulas: [
         { id: "excel-a1", titulo: "Excel PROCV", youtubeVideoId: "", materiais: [material("excel-mat-1", "Excel PROCV", "DOCX", "/course-materials/excel-procv/01-excel-procv.docx")] },
       ] },
     ],
@@ -264,12 +264,12 @@ export const cursos: Curso[] = [
     id: "fallback-vba",
     slug: "vba-excel",
     titulo: "VBA para Excel",
-    descricao: "Macros, formularios e gravacao em planilhas como banco de dados.",
+    descricao: "Macros, formulários e gravação em planilhas como banco de dados.",
     modulos: [
-      { id: "vba-m1", titulo: "Automacao no Excel", aulas: [
-        { id: "vba-a1", titulo: "VBA para Excel avancado - atividade pratica", youtubeVideoId: "", materiais: [material("vba-mat-1", "VBA para Excel avancado - atividade pratica", "DOCX", "/course-materials/vba-excel/01-vba-para-excel-avancado-atv-pratica-1.docx")] },
+      { id: "vba-m1", titulo: "Automação no Excel", aulas: [
+        { id: "vba-a1", titulo: "VBA para Excel avançado - atividade prática", youtubeVideoId: "", materiais: [material("vba-mat-1", "VBA para Excel avançado - atividade prática", "DOCX", "/course-materials/vba-excel/01-vba-para-excel-avancado-atv-pratica-1.docx")] },
         { id: "vba-a2", titulo: "Banco de dados em planilha", youtubeVideoId: "", materiais: [material("vba-mat-2", "Banco de dados XLSM", "XLSM", "/course-materials/vba-excel/02-banco-de-dados-xlsm2005.xlsm")] },
-        { id: "vba-a3", titulo: "Formulario que grava no banco de dados", youtubeVideoId: "", materiais: [material("vba-mat-3", "Apostila VBA - formulario com banco de dados", "DOCX", "/course-materials/vba-excel/03-apostila-vba-no-excel-formulario-que-grava-no-banco-de-dados.docx")] },
+        { id: "vba-a3", titulo: "Formulário que grava no banco de dados", youtubeVideoId: "", materiais: [material("vba-mat-3", "Apostila VBA - formulário com banco de dados", "DOCX", "/course-materials/vba-excel/03-apostila-vba-no-excel-formulario-que-grava-no-banco-de-dados.docx")] },
       ] },
     ],
   },
@@ -277,7 +277,7 @@ export const cursos: Curso[] = [
     id: "fallback-power-bi",
     slug: "power-bi",
     titulo: "Power BI",
-    descricao: "Primeiros passos em analise visual de dados com Power BI.",
+    descricao: "Primeiros passos em análise visual de dados com Power BI.",
     modulos: [
       { id: "power-bi-m1", titulo: "Aula inicial", aulas: [
         { id: "power-bi-a1", titulo: "Power BI - aula 1", youtubeVideoId: "", materiais: [material("power-bi-mat-1", "Power BI - aula 1", "DOCX", "/course-materials/power-bi/01-aula-1-power-bi.docx")] },
@@ -288,13 +288,13 @@ export const cursos: Curso[] = [
   {
     id: "fallback-manutencao",
     slug: "montagem-manutencao",
-    titulo: "Montagem e Manutencao",
-    descricao: "Hardware, manutencao e sistema operacional Linux.",
+    titulo: "Montagem e Manutenção",
+    descricao: "Hardware, manutenção e sistema operacional Linux.",
     modulos: [
       { id: "manutencao-m1", titulo: "Hardware e sistema operacional", aulas: [
-        { id: "manutencao-a1", titulo: "Pecas de hardware do computador", youtubeVideoId: "", materiais: [material("manutencao-mat-1", "Pecas de hardware do computador", "DOCX", "/course-materials/montagem-manutencao/01-pecas-de-hardware-do-computador.docx")] },
-        { id: "manutencao-a2", titulo: "Desafio pratico - tecnico de hardware", youtubeVideoId: "", materiais: [material("manutencao-mat-2", "Desafio pratico - tecnico de hardware", "DOCX", "/course-materials/montagem-manutencao/02-desafio-pratico-tecnico-de-hardware.docx")] },
-        { id: "manutencao-a3", titulo: "Sistema operacional Linux", youtubeVideoId: "", materiais: [material("manutencao-mat-3", "Montagem e manutencao - Linux", "DOCX", "/course-materials/montagem-manutencao/03-montagem-manutencao-sistema-operacional-linux.docx")] },
+        { id: "manutencao-a1", titulo: "Peças de hardware do computador", youtubeVideoId: "", materiais: [material("manutencao-mat-1", "Peças de hardware do computador", "DOCX", "/course-materials/montagem-manutencao/01-pecas-de-hardware-do-computador.docx")] },
+        { id: "manutencao-a2", titulo: "Desafio prático - técnico de hardware", youtubeVideoId: "", materiais: [material("manutencao-mat-2", "Desafio prático - técnico de hardware", "DOCX", "/course-materials/montagem-manutencao/02-desafio-pratico-tecnico-de-hardware.docx")] },
+        { id: "manutencao-a3", titulo: "Sistema operacional Linux", youtubeVideoId: "", materiais: [material("manutencao-mat-3", "Montagem e manutenção - Linux", "DOCX", "/course-materials/montagem-manutencao/03-montagem-manutencao-sistema-operacional-linux.docx")] },
       ] },
     ],
   },
@@ -499,4 +499,3 @@ export async function marcarAulaAcademyConcluida(lessonId: string): Promise<void
 
   if (error) throw new Error(error.message);
 }
-

@@ -68,7 +68,7 @@ function MaterialPreview({ material }: { material: MaterialAula }) {
     const separator = material.url.includes("?") ? "&" : "?";
     fetch(`${material.url}${separator}meta=1`)
       .then((response) => {
-        if (!response.ok) throw new Error("Nao foi possivel resolver o material.");
+        if (!response.ok) throw new Error("Não foi possível resolver o material.");
         return response.json() as Promise<MaterialMeta>;
       })
       .then((data) => {
@@ -117,7 +117,7 @@ function MaterialPreview({ material }: { material: MaterialAula }) {
 
   return (
     <div className="flex h-full min-h-[360px] w-full flex-col items-center justify-center gap-4 px-6 text-center">
-      <div className="text-sm font-semibold text-white/70">Previa indisponivel para este formato</div>
+      <div className="text-sm font-semibold text-white/70">Prévia indisponível para este formato</div>
       <a
         href={downloadUrl}
         className="rounded-full border border-orbit-electric/50 px-4 py-2 text-sm font-semibold text-orbit-electric hover:bg-orbit-electric/10"
@@ -254,7 +254,7 @@ export default function CursoPage() {
   if (!curso) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-12">
-        <p className="text-white/70">Curso nao encontrado.</p>
+        <p className="text-white/70">Curso não encontrado.</p>
         <Link href="/estudante/aulas" className="text-orbit-electric hover:underline">
           Voltar para Aulas
         </Link>
@@ -264,7 +264,7 @@ export default function CursoPage() {
 
   return (
     <div className="flex flex-col gap-4 md:flex-row md:gap-6">
-      {/* Sidebar do curso: modulos e aulas */}
+      {/* Sidebar do curso: módulos e aulas */}
       <aside className="w-full shrink-0 rounded-xl border border-white/10 bg-black/40 p-4 backdrop-blur-sm md:w-72">
         <Link href="/estudante/aulas" className="mb-2 block text-sm text-orbit-electric hover:underline">
           ← Voltar aos cursos
@@ -324,7 +324,7 @@ export default function CursoPage() {
         </nav>
       </aside>
 
-      {/* Area principal: video e conteudo */}
+      {/* Área principal: vídeo e conteúdo */}
       <main className="min-w-0 flex-1">
         {aula ? (
           <>
@@ -414,7 +414,7 @@ export default function CursoPage() {
                   <div className="flex min-h-[360px] w-full flex-col items-center justify-center gap-3 px-6 text-center">
                     <div className="text-sm font-semibold text-white/70">Aula em material guiado</div>
                     <div className="max-w-sm text-xs leading-5 text-white/45">
-                      Esta aula ainda nao tem video publicado. Use os materiais anexos para estudar e aplicar a pratica.
+                      Esta aula ainda não tem vídeo publicado. Use os materiais anexos para estudar e aplicar a prática.
                     </div>
                   </div>
                 )}

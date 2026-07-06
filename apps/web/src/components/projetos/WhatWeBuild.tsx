@@ -290,14 +290,14 @@ export default function WhatWeBuild() {
         <div className="mb-12 text-center">
           <ScrollReveal from={{ opacity: 0, y: -10 }} to={{ duration: 0.5 }}>
             <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.3em] text-orbit-electric">
-              Capacidade tecnica
+              Capacidade técnica
             </p>
           </ScrollReveal>
           <TextReveal as="h2" className="text-2xl font-black text-white sm:text-3xl">
             O que entregamos
           </TextReveal>
           <ScrollReveal from={{ opacity: 0, y: 10 }} to={{ duration: 0.5, delay: 0.2 }}>
-            <p className="mt-3 text-sm text-white/50">Do briefing ao ar. Sem enrolacao.</p>
+            <p className="mt-3 text-sm text-white/50">Do briefing ao ar. Sem enrolação.</p>
           </ScrollReveal>
         </div>
 

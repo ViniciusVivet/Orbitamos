@@ -131,7 +131,7 @@ export async function GET(
   context: { params: Promise<{ path: string[] }> }
 ) {
   if (!(await isAuthenticated(request))) {
-    return new Response("Nao autorizado", { status: 401 });
+    return new Response("Não autorizado", { status: 401 });
   }
 
   const { path: requestedPath } = await context.params;
@@ -161,6 +161,6 @@ export async function GET(
       },
     });
   } catch {
-    return new Response("Arquivo nao encontrado", { status: 404 });
+    return new Response("Arquivo não encontrado", { status: 404 });
   }
 }

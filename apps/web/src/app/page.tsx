@@ -37,7 +37,7 @@ const stats = [
   { value: "7+", label: "projetos entregues" },
   { value: "7 dias", label: "landing pages" },
   { value: "100%", label: "mobile-first" },
-  { value: "IA", label: "automacoes e integracoes" },
+  { value: "IA", label: "automações e integrações" },
 ];
 
 const heroCases = [
@@ -52,7 +52,7 @@ const heroCases = [
   {
     name: "YUME",
     type: "Moda autoral",
-    result: "Catalogo premium",
+    result: "Catálogo premium",
     href: "/projetos/yume-moda-disruptiva",
     image: "/case-yume.png",
     accent: "from-violet-300 to-fuchsia-300",
@@ -72,43 +72,43 @@ const services = [
     icon: BarChart3,
     title: "Landing pages",
     href: "/servicos/landing-page",
-    text: "Paginas rapidas para campanhas, captacao de leads e vendas pelo WhatsApp.",
-    points: ["Copy orientada a conversao", "CTA e formulario", "SEO e performance"],
+    text: "Páginas rápidas para campanhas, captação de leads e vendas pelo WhatsApp.",
+    points: ["Copy orientada a conversão", "CTA e formulário", "SEO e performance"],
   },
   {
     icon: ShieldCheck,
     title: "Sites profissionais",
     href: "/servicos/site-institucional",
-    text: "Presenca digital profissional para negocios que precisam passar confianca.",
-    points: ["Identidade visual", "Servicos claros", "Credibilidade"],
+    text: "Presença digital profissional para negócios que precisam passar confiança.",
+    points: ["Identidade visual", "Serviços claros", "Credibilidade"],
   },
   {
     icon: Layers3,
     title: "Loja digital / E-commerce",
     href: "/servicos/catalogo-digital",
-    text: "Vitrine ou catalogo digital para vender melhor e organizar produtos.",
-    points: ["Catalogo filtravel", "WhatsApp direto", "Experiencia mobile"],
+    text: "Vitrine ou catálogo digital para vender melhor e organizar produtos.",
+    points: ["Catálogo filtrável", "WhatsApp direto", "Experiência mobile"],
   },
   {
     icon: Code2,
     title: "Sistemas web e MVPs",
     href: "/servicos/sistema-web",
-    text: "Produtos sob medida para organizar operacoes, usuarios, dados e processos.",
+    text: "Produtos sob medida para organizar operações, usuários, dados e processos.",
     points: ["Login e dashboards", "Banco de dados", "APIs"],
   },
   {
     icon: Bot,
-    title: "Automacoes, IA e integracoes",
+    title: "Automações, IA e integrações",
     href: "/servicos/automacoes",
     text: "Fluxos inteligentes para reduzir trabalho manual e conectar ferramentas.",
-    points: ["IA aplicada", "Integracoes", "Processos automaticos"],
+    points: ["IA aplicada", "Integrações", "Processos automáticos"],
   },
   {
     icon: Sparkles,
     title: "Projetos especiais",
     href: "/servicos/dashboard",
-    text: "Solucoes digitais sob medida quando o projeto nao cabe em uma caixinha.",
-    points: ["Discovery tecnico", "Arquitetura", "Entrega incremental"],
+    text: "Soluções digitais sob medida quando o projeto não cabe em uma caixinha.",
+    points: ["Discovery técnico", "Arquitetura", "Entrega incremental"],
   },
 ];
 
@@ -119,8 +119,8 @@ const featuredProjects = [
     href: "/projetos/sabrina-lashes",
     image: "/case-sabrina-lashes.png",
     description:
-      "Site profissional para apresentar servicos, reforcar confianca e levar clientes direto ao agendamento.",
-    outcomes: ["WhatsApp direto", "Servicos organizados", "Presenca profissional"],
+      "Site profissional para apresentar serviços, reforçar confiança e levar clientes direto ao agendamento.",
+    outcomes: ["WhatsApp direto", "Serviços organizados", "Presença profissional"],
   },
   {
     name: "YUME",
@@ -128,8 +128,8 @@ const featuredProjects = [
     href: "/projetos/yume-moda-disruptiva",
     image: "/case-yume.png",
     description:
-      "Vitrine digital com identidade forte para apresentar colecoes, editoriais e evoluir para vendas.",
-    outcomes: ["Catalogo visual", "Branding premium", "Mobile-first"],
+      "Vitrine digital com identidade forte para apresentar coleções, editoriais e evoluir para vendas.",
+    outcomes: ["Catálogo visual", "Branding premium", "Mobile-first"],
   },
   {
     name: "MB Multimarcas Infantil",
@@ -137,31 +137,31 @@ const featuredProjects = [
     href: "/projetos/mb-multimarcas-infantil",
     image: "/case-mb-multimarcas-infantil.png",
     description:
-      "Catalogo digital com produtos filtraveis e atendimento direto pelo WhatsApp.",
-    outcomes: ["Catalogo filtravel", "WhatsApp direto", "Mobile-first"],
+      "Catálogo digital com produtos filtráveis e atendimento direto pelo WhatsApp.",
+    outcomes: ["Catálogo filtrável", "WhatsApp direto", "Mobile-first"],
   },
 ];
 
 const processSteps = [
   {
-    title: "Diagnostico",
-    text: "Entendemos objetivo, publico, oferta e o que precisa acontecer para o projeto vender.",
+    title: "Diagnóstico",
+    text: "Entendemos objetivo, público, oferta e o que precisa acontecer para o projeto vender.",
   },
   {
     title: "Arquitetura",
-    text: "Definimos paginas, secoes, integracoes, conteudo e caminho de conversao.",
+    text: "Definimos páginas, seções, integrações, conteúdo e caminho de conversão.",
   },
   {
-    title: "Construcao",
-    text: "Construimos a experiencia com responsividade, performance e acabamento visual.",
+    title: "Construção",
+    text: "Construímos a experiência com responsividade, performance e acabamento visual.",
   },
   {
-    title: "Lancamento",
+    title: "Lançamento",
     text: "Colocamos no ar, revisamos detalhes e deixamos o projeto pronto para campanhas.",
   },
 ];
 
-const stackTags = ["Next.js", "TypeScript", "APIs", "PostgreSQL", "Supabase", "Cloudinary", "IA", "Automacoes"];
+const stackTags = ["Next.js", "TypeScript", "APIs", "PostgreSQL", "Supabase", "Cloudinary", "IA", "Automações"];
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -236,7 +236,7 @@ export default function Home() {
             <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.6 }}>
               <div className="orbit-glass-badge mb-6 inline-flex items-center gap-2 border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/55 backdrop-blur-xl">
                 <span className="h-1.5 w-1.5 rounded-full bg-orbit-electric shadow-[0_0_18px_rgba(0,212,255,0.9)]" />
-                Tecnologia sob medida para negocios digitais
+                Tecnologia sob medida para negócios digitais
               </div>
             </ScrollReveal>
 
@@ -246,7 +246,7 @@ export default function Home() {
               stagger={0.015}
               start="top 95%"
             >
-              Sites, sistemas e automacoes para negocios que querem vender, organizar e escalar.
+              Sites, sistemas e automações para negócios que querem vender, organizar e escalar.
             </TextReveal>
 
             <ScrollReveal from={{ opacity: 0, y: 30 }} to={{ duration: 0.8, delay: 0.3 }}>
@@ -265,7 +265,7 @@ export default function Home() {
                       className="orbit-cta h-12 w-full rounded-md bg-white px-6 font-bold text-black hover:bg-orbit-electric sm:w-auto"
                     >
                       <MessageCircle className="size-4" />
-                      Solicitar orcamento
+                      Solicitar orçamento
                     </Button>
                   </a>
                 </MagneticButton>
@@ -361,8 +361,8 @@ export default function Home() {
           <div className="mx-auto grid max-w-7xl gap-4 px-5 py-5 sm:grid-cols-2 sm:px-8 lg:grid-cols-4 lg:px-10">
             {[
               { icon: Rocket, text: "Projeto no ar com velocidade de startup" },
-              { icon: Zap, text: "Layout pensado para conversao e clareza" },
-              { icon: Bot, text: "Automacoes e IA sob medida" },
+              { icon: Zap, text: "Layout pensado para conversão e clareza" },
+              { icon: Bot, text: "Automações e IA sob medida" },
               { icon: Code2, text: "Estrutura pronta para escalar" },
             ].map((item) => (
               <div key={item.text} className="flex items-center gap-3 text-sm text-white/58">
@@ -387,11 +387,11 @@ export default function Home() {
               as="h2"
               className="mt-4 max-w-xl text-4xl font-black leading-tight text-white sm:text-5xl"
             >
-              Empresas nao precisam de paginas bonitas. Precisam de resultado.
+              Empresas não precisam de páginas bonitas. Precisam de resultado.
             </TextReveal>
             <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.6, delay: 0.3 }}>
               <p className="mt-5 max-w-lg text-base leading-7 text-white/50">
-                A entrega combina design, codigo e estrategia para transformar visitantes em contatos,
+                A entrega combina design, código e estratégia para transformar visitantes em contatos,
                 clientes e processos funcionando.
               </p>
             </ScrollReveal>
@@ -418,7 +418,7 @@ export default function Home() {
                       ))}
                     </div>
                     <div className="relative mt-5 text-sm font-bold text-orbit-electric opacity-80 transition-opacity group-hover:opacity-100">
-                      Ver solucao
+                      Ver solução
                     </div>
                   </Link>
                 </MagneticButton>
@@ -442,7 +442,7 @@ export default function Home() {
                 as="h2"
                 className="mt-4 max-w-2xl text-4xl font-black leading-tight text-white sm:text-5xl"
               >
-                Cases reais para mostrar o que voce pode vender melhor.
+                Cases reais para mostrar o que você pode vender melhor.
               </TextReveal>
             </div>
             <ScrollReveal from={{ opacity: 0, x: 20 }} to={{ duration: 0.5 }}>
@@ -452,7 +452,7 @@ export default function Home() {
                     variant="outline"
                     className="rounded-md border-white/15 bg-transparent text-white hover:bg-white/10 hover:text-white"
                   >
-                    Ver portfolio completo
+                    Ver portfólio completo
                     <ArrowRight className="size-4" />
                   </Button>
                 </Link>
@@ -521,8 +521,8 @@ export default function Home() {
           </TextReveal>
           <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.6, delay: 0.3 }}>
             <p className="mt-5 text-base leading-7 text-white/50">
-              Voce acompanha as decisoes importantes sem precisar entender de codigo, hospedagem ou
-              stack tecnica.
+              Você acompanha as decisões importantes sem precisar entender de código, hospedagem ou
+              stack técnica.
             </p>
           </ScrollReveal>
         </div>
@@ -552,18 +552,18 @@ export default function Home() {
           <div className="max-w-xl">
             <ScrollReveal from={{ opacity: 0, x: -30 }} to={{ duration: 0.7 }}>
               <p className="text-xs font-bold uppercase tracking-[0.24em] text-orbit-electric/80">
-                Engenharia por tras
+                Engenharia por trás
               </p>
             </ScrollReveal>
             <TextReveal
               as="h2"
               className="mt-4 text-3xl font-black leading-tight text-white sm:text-4xl"
             >
-              Tecnologia moderna por tras. Simples para o cliente usar.
+              Tecnologia moderna por trás. Simples para o cliente usar.
             </TextReveal>
             <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.6, delay: 0.3 }}>
               <p className="mt-5 text-base leading-7 text-white/55">
-                A estrutura combina interface, autenticacao, banco de dados e integracoes para o cliente operar sem precisar entender a complexidade tecnica por baixo.
+                A estrutura combina interface, autenticação, banco de dados e integrações para o cliente operar sem precisar entender a complexidade técnica por baixo.
               </p>
             </ScrollReveal>
           </div>
@@ -582,7 +582,7 @@ export default function Home() {
                   <div className="absolute left-1/2 top-1/2 z-10 flex h-36 w-36 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-white/15 bg-[#080b14]/90 text-center shadow-[0_0_70px_rgba(0,212,255,0.16)] backdrop-blur-xl">
                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-orbit-electric/80">Orbitamos</span>
                     <span className="mt-1 text-lg font-black text-white">Core</span>
-                    <span className="mt-1 text-[11px] text-white/45">design + codigo</span>
+                    <span className="mt-1 text-[11px] text-white/45">design + código</span>
                   </div>
                 </div>
               )}
@@ -630,11 +630,11 @@ export default function Home() {
             as="h2"
             className="max-w-4xl text-4xl font-black leading-tight text-white sm:text-6xl"
           >
-            Seu proximo projeto pode estar no ar mais rapido do que voce imagina.
+            Seu próximo projeto pode estar no ar mais rápido do que você imagina.
           </TextReveal>
           <ScrollReveal from={{ opacity: 0, y: 30 }} to={{ duration: 0.7, delay: 0.5 }}>
             <p className="mt-5 max-w-2xl text-base leading-7 text-white/55">
-              Landing pages, sites, sistemas e automacoes sob medida para o seu negocio.
+              Landing pages, sites, sistemas e automações sob medida para o seu negócio.
             </p>
           </ScrollReveal>
           <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.6, delay: 0.7 }}>
@@ -643,7 +643,7 @@ export default function Home() {
                 <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
                   <Button size="lg" className="h-12 rounded-md bg-white px-6 font-bold text-black hover:bg-orbit-electric">
                     <MessageCircle className="size-4" />
-                    Solicitar orcamento no WhatsApp
+                    Solicitar orçamento no WhatsApp
                   </Button>
                 </a>
               </MagneticButton>

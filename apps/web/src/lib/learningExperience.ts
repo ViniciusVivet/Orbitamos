@@ -49,7 +49,7 @@ function inferArea(curso: Curso, aula: Aula): "web" | "csharp" | "sql" | "github
   if (text.includes("sql") || text.includes("banco")) return "sql";
   if (text.includes("github") || text.includes("git")) return "github";
   if (text.includes("excel") || text.includes("vba") || text.includes("power bi")) return "dados";
-  if (text.includes("hardware") || text.includes("manutencao") || text.includes("manutenção")) return "hardware";
+  if (text.includes("hardware") || text.includes("manutenção") || text.includes("manutenção")) return "hardware";
   if (text.includes("logica") || text.includes("lógica") || text.includes("python")) return "logica";
   return "geral";
 }

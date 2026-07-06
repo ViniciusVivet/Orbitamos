@@ -13,7 +13,7 @@ const GlobeClient = dynamic(() => import("@/components/GlobeClient"), {
   ssr: false,
   loading: () => (
     <div className="mx-auto mt-8 flex h-72 w-72 items-center justify-center rounded-full border border-white/10 bg-white/5 md:mt-16 md:h-96 md:w-96">
-      <span className="text-sm text-white/40">Carregando orbita...</span>
+      <span className="text-sm text-white/40">Carregando órbita...</span>
     </div>
   ),
 });
@@ -45,12 +45,12 @@ export default function EstudanteOrbitaPage() {
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 backdrop-blur-xl">
               <span className="size-2 rounded-full bg-orbit-electric" />
               <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/60">
-                Jornada em orbita
+                Jornada em órbita
               </span>
             </div>
 
             <h1 className="bg-gradient-to-br from-orbit-electric via-white to-orbit-purple bg-clip-text text-3xl font-extrabold leading-[1.05] text-transparent sm:text-4xl lg:text-5xl">
-              {user?.name ? `${user.name.split(" ")[0]}, esta e sua orbita.` : "Sua orbita de aprendizado"}
+              {user?.name ? `${user.name.split(" ")[0]}, está e sua órbita.` : "Sua órbita de aprendizado"}
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-white/60">
               Seu mapa vivo de nivel, XP, fase atual e proximas missoes da OrbitAcademy.
@@ -59,7 +59,7 @@ export default function EstudanteOrbitaPage() {
 
           <div className="grid grid-cols-3 gap-2 rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-xl sm:min-w-[360px]">
             <div className="rounded-xl bg-white/5 px-3 py-2.5">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">Nivel</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">Nível</div>
               <div className="text-2xl font-black text-white">{current.level}</div>
             </div>
             <div className="rounded-xl bg-white/5 px-3 py-2.5">
@@ -85,13 +85,13 @@ export default function EstudanteOrbitaPage() {
           <aside className="space-y-3">
             <Card className="border-orbit-electric/25 bg-black/55 backdrop-blur-xl">
               <CardHeader>
-                <CardTitle className="text-orbit-electric">Status da sessao</CardTitle>
+                <CardTitle className="text-orbit-electric">Status da sessão</CardTitle>
                 <CardDescription>{loading ? "Sincronizando progresso..." : current.phase || "Fase inicial"}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">Nivel</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">Nível</div>
                     <div className="mt-1 text-3xl font-black text-white">{current.level}</div>
                   </div>
                   <div className="rounded-xl border border-white/10 bg-white/5 p-3">

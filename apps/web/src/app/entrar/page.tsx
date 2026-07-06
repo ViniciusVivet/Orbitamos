@@ -71,7 +71,7 @@ export default function Entrar() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!login || !registerUser) {
-      setError("Sistema de autenticacao nao esta pronto. Aguarde alguns segundos e tente novamente.");
+      setError("Sistema de autenticação não está pronto. Aguarde alguns segundos e tente novamente.");
       return;
     }
 
@@ -146,9 +146,9 @@ export default function Entrar() {
             <ul className="space-y-3">
               {[
                 { icon: "\u{1F3AF}", text: "Trilha do zero ao primeiro emprego" },
-                { icon: "\u26A1", text: "Sistema de XP, niveis e missoes" },
+                { icon: "\u26A1", text: "Sistema de XP, niveis e missões" },
                 { icon: "\u{1F91D}", text: "Comunidade e forum exclusivo" },
-                { icon: "\u{1F680}", text: "Projetos reais no portfolio" },
+                { icon: "\u{1F680}", text: "Projetos reais no portfólio" },
               ].map((item) => (
                 <li key={item.text} className="flex items-center gap-3 text-sm text-white/65">
                   <span className="text-base">{item.icon}</span>
@@ -185,10 +185,10 @@ export default function Entrar() {
                   <div className="mb-6 sm:mb-8 text-center">
                     <div className="mx-auto mb-3 sm:mb-4 h-10 w-10 sm:h-12 sm:w-12 animate-orbit rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple shadow-[0_0_25px_rgba(0,212,255,0.5)]" />
                     <h1 className="bg-gradient-to-br from-orbit-electric via-white to-orbit-purple bg-clip-text text-2xl sm:text-3xl font-extrabold text-transparent">
-                      {isLogin ? "Entrar na Orbita" : "Criar Conta"}
+                      {isLogin ? "Entrar na Órbita" : "Criar Conta"}
                     </h1>
                     <p className="mt-2 text-white/45 text-sm">
-                      {isLogin ? "Acesse sua conta para continuar sua jornada." : "Comece sua transformacao hoje!"}
+                      {isLogin ? "Acesse sua conta para continuar sua jornada." : "Comece sua transformação hoje!"}
                     </p>
                   </div>
 
@@ -228,7 +228,7 @@ export default function Entrar() {
                           </button>
                         </div>
                         <p className="mt-1.5 text-xs text-white/40">
-                          {registerRole === "STUDENT" ? "Acesso a video-aulas e mentorias." : "Projetos reais, vagas e contato com o squad."}
+                          {registerRole === "STUDENT" ? "Acesso a vídeo-aulas e mentorias." : "Projetos reais, vagas e contato com o squad."}
                         </p>
                       </div>
                     )}
@@ -302,7 +302,7 @@ export default function Entrar() {
                       }}
                       className="hover:text-white transition-colors underline bg-transparent border-0 cursor-pointer p-0 font-inherit"
                     >
-                      {isLogin ? "Criar conta" : "Ja tem conta? Fazer login"}
+                      {isLogin ? "Criar conta" : "Já tem conta? Fazer login"}
                     </button>
                   </div>
                 </div>

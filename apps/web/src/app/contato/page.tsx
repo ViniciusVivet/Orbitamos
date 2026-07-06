@@ -16,7 +16,7 @@ const SERVICES = [
   { icon: "\u{1F3E2}", label: "Site Institucional" },
   { icon: "\u2699\uFE0F", label: "Sistema Web / MVP" },
   { icon: "\u{1F6D2}", label: "E-commerce" },
-  { icon: "\u{1F916}", label: "Automacao" },
+  { icon: "\u{1F916}", label: "Automação" },
   { icon: "\u2753", label: "Outro" },
 ];
 
@@ -135,16 +135,16 @@ export default function Contato() {
             <div className="mb-8 text-center">
               <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-orbit-electric/25 bg-orbit-electric/[0.08] px-4 py-1.5 backdrop-blur-xl">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orbit-electric shadow-[0_0_12px_rgba(0,212,255,0.8)]" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-orbit-electric">Transmissao aberta</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-orbit-electric">Transmissão aberta</span>
               </div>
               <h1 className="text-3xl font-black leading-tight sm:text-4xl md:text-5xl">
                 Vamos construir{" "}
                 <span className="bg-gradient-to-r from-orbit-electric via-sky-300 to-orbit-purple bg-clip-text text-transparent">
-                  algo incrivel?
+                  algo incrível?
                 </span>
               </h1>
               <p className="mx-auto mt-3 max-w-sm text-sm text-white/50">
-                Orcamento sem compromisso. Resposta em ate 24h.
+                Orçamento sem compromisso. Resposta em até 24h.
               </p>
             </div>
           </ScrollReveal>
@@ -219,7 +219,7 @@ export default function Contato() {
                   <div>
                     <label htmlFor="message" className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">Descreva o projeto</label>
                     <Textarea id="message" name="message" value={formData.message} onChange={handleChange}
-                      placeholder="O que voce precisa, qual o objetivo, tem prazo?"
+                      placeholder="O que você precisa, qual o objetivo, tem prazo?"
                       rows={isMobile ? 3 : 4} required
                       className="border-white/[0.1] bg-white/[0.06] text-white placeholder:text-white/25 focus:border-orbit-electric/60 resize-none text-sm" />
                   </div>
@@ -229,7 +229,7 @@ export default function Contato() {
                     <div className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm"
                       style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.25)", color: "rgba(52,211,153,1)" }}>
                       <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
-                      Mensagem recebida! Entro em contato em ate 24h.
+                      Mensagem recebida! Entro em contato em até 24h.
                     </div>
                   )}
 
@@ -254,7 +254,7 @@ export default function Contato() {
                 <div className="mt-5 flex items-center justify-center gap-4 text-[10px] text-white/30">
                   <span className="flex items-center gap-1.5">
                     <span className="h-1 w-1 rounded-full bg-orbit-electric/50" />
-                    Conexao segura
+                    Conexão segura
                   </span>
                   <span className="flex items-center gap-1.5">
                     <span className="h-1 w-1 rounded-full bg-orbit-purple/50" />

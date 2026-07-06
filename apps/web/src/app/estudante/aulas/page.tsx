@@ -158,7 +158,7 @@ export default function EstudanteAulas() {
       {cursos.length > 0 && sugerido && (
         <Card className="border-orbit-purple/30 bg-gradient-to-br from-orbit-purple/10 to-orbit-electric/10">
           <CardHeader>
-            <CardTitle className="text-orbit-purple">Sugerido para voce</CardTitle>
+            <CardTitle className="text-orbit-purple">Sugerido para você</CardTitle>
             <CardDescription>Com base no seu progresso</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -217,7 +217,7 @@ export default function EstudanteAulas() {
         <CardHeader>
           <CardTitle className="text-orbit-electric">Mais cursos em breve</CardTitle>
           <CardDescription>
-            QA, Bootcamp Portfolio e outras trilhas estao sendo preparadas. Continue acompanhando.
+            QA, Bootcamp Portfolio e outras trilhas estão sendo preparadas. Continue acompanhando.
           </CardDescription>
         </CardHeader>
       </Card>

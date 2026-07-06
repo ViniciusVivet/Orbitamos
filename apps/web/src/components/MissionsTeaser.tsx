@@ -4,7 +4,7 @@ import Link from "next/link";
 
 type Missao = {
   id: string;
-  dificuldade: "Facil" | "Normal" | "Epica";
+  dificuldade: "Fácil" | "Normal" | "Épica";
   titulo: string;
   xp: number;
   duracao: string;
@@ -12,15 +12,15 @@ type Missao = {
 };
 
 const missoes: Missao[] = [
-  { id: "easy-study",      dificuldade: "Facil",  titulo: "10min de estudo focado",            xp: 10, duracao: "10 min", locked: false },
+  { id: "easy-study",      dificuldade: "Fácil",  titulo: "10min de estudo focado",            xp: 10, duracao: "10 min", locked: false },
   { id: "normal-linkedin", dificuldade: "Normal", titulo: "Atualizar LinkedIn com perfil dev",  xp: 25, duracao: "30 min", locked: false },
-  { id: "epic-project",    dificuldade: "Epica",  titulo: "Subir 1 projeto no GitHub",          xp: 60, duracao: "1–2 h",  locked: true  },
+  { id: "epic-project",    dificuldade: "Épica",  titulo: "Subir 1 projeto no GitHub",          xp: 60, duracao: "1–2 h",  locked: true  },
 ];
 
-const DIFF = {
-  Facil:  { label: "Fácil",  badge: "bg-emerald-500/25 text-emerald-300 border-emerald-400/60", glow: "shadow-[0_0_24px_rgba(52,211,153,0.25)]",  border: "border-emerald-400/40", icon: "🟢" },
-  Normal: { label: "Normal", badge: "bg-sky-500/25 text-sky-200 border-sky-400/60",             glow: "shadow-[0_0_24px_rgba(56,189,248,0.25)]",   border: "border-sky-400/40",     icon: "🔵" },
-  Epica:  { label: "Épica",  badge: "bg-purple-500/30 text-purple-200 border-purple-400/70",    glow: "shadow-[0_0_28px_rgba(167,139,250,0.35)]",  border: "border-purple-400/50",  icon: "🟣" },
+const DIFF: Record<Missao["dificuldade"], { label: string; badge: string; glow: string; border: string; icon: string }> = {
+  ["F\u00e1cil"]: { label: "F\u00e1cil", badge: "bg-emerald-500/25 text-emerald-300 border-emerald-400/60", glow: "shadow-[0_0_24px_rgba(52,211,153,0.25)]", border: "border-emerald-400/40", icon: "🟢" },
+  Normal: { label: "Normal", badge: "bg-sky-500/25 text-sky-200 border-sky-400/60", glow: "shadow-[0_0_24px_rgba(56,189,248,0.25)]", border: "border-sky-400/40", icon: "🔵" },
+  ["\u00c9pica"]: { label: "\u00c9pica", badge: "bg-purple-500/30 text-purple-200 border-purple-400/70", glow: "shadow-[0_0_28px_rgba(167,139,250,0.35)]", border: "border-purple-400/50", icon: "🟣" },
 };
 
 function DificuldadeBadge({ tipo }: { tipo: Missao["dificuldade"] }) {
