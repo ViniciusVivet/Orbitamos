@@ -130,21 +130,26 @@ export default function Contato() {
       <div className="relative z-10 flex min-h-[calc(100dvh-4rem)] items-center justify-center px-4 py-8 sm:py-12">
         <div className="w-full max-w-lg">
 
-          {/* Header */}
+          {/* Header with Orbi */}
           <ScrollReveal from={{ opacity: 0, y: -20 }} to={{ duration: 0.7 }}>
             <div className="mb-8 text-center">
+              <img
+                src="/orbi-contact.png"
+                alt="Orbi, mascote da Orbitamos"
+                className="mx-auto mb-4 w-24 drop-shadow-[0_0_24px_rgba(0,212,255,0.25)] sm:w-28"
+              />
               <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-orbit-electric/25 bg-orbit-electric/[0.08] px-4 py-1.5 backdrop-blur-xl">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orbit-electric shadow-[0_0_12px_rgba(0,212,255,0.8)]" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-orbit-electric">Transmissão aberta</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-orbit-electric">Transmissao aberta</span>
               </div>
               <h1 className="text-3xl font-black leading-tight sm:text-4xl md:text-5xl">
                 Vamos construir{" "}
                 <span className="bg-gradient-to-r from-orbit-electric via-sky-300 to-orbit-purple bg-clip-text text-transparent">
-                  algo incrível?
+                  algo incrivel?
                 </span>
               </h1>
               <p className="mx-auto mt-3 max-w-sm text-sm text-white/50">
-                Orçamento sem compromisso. Resposta em até 24h.
+                Orcamento sem compromisso. Resposta em ate 24h.
               </p>
             </div>
           </ScrollReveal>
