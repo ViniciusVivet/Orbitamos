@@ -30,7 +30,6 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/orbi-favicon.png", type: "image/png", sizes: "512x512" },
-      { url: "/favicon.svg", type: "image/svg+xml", sizes: "512x512" },
     ],
     shortcut: "/orbi-favicon.png",
     apple: "/orbi-favicon.png",
