@@ -395,6 +395,14 @@ export default function Home() {
                 clientes e processos funcionando.
               </p>
             </ScrollReveal>
+
+            <ScrollReveal from={{ opacity: 0, y: 30, scale: 0.9 }} to={{ duration: 0.8, delay: 0.5 }}>
+              <img
+                src="/orbi-tech.png"
+                alt="Orbi apresentando servicos"
+                className="mx-auto mt-8 hidden w-56 drop-shadow-[0_0_30px_rgba(0,212,255,0.2)] lg:block xl:w-64"
+              />
+            </ScrollReveal>
           </div>
 
           <ScrollReveal selectChildren stagger={0.1} from={{ opacity: 0, y: 40, rotateX: 8 }}>
