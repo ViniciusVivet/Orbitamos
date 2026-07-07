@@ -69,7 +69,7 @@ export default function Navigation() {
                 className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:opacity-90 text-black text-sm font-bold shadow-[0_0_16px_rgba(0,212,255,0.2)] hover:shadow-[0_0_24px_rgba(0,212,255,0.35)] transition-all duration-150"
                 asChild
               >
-                <Link href="/entrar"><img src="/orbi-favicon.png" alt="" className="inline-block h-5 w-5" /> Portal</Link>
+                <Link href="/entrar"><img src="/orbi-branco.png" alt="" className="inline-block h-5 w-5" /> Portal</Link>
               </Button>
             )}
           </div>
@@ -111,7 +111,7 @@ export default function Navigation() {
                 href="/entrar"
                 className="rounded-full bg-white text-black shadow-[0_0_18px_rgba(255,255,255,0.18)] transition-colors hover:bg-orbit-electric"
               >
-                <img src="/orbi-favicon.png" alt="" className="inline-block h-5 w-5" /> Portal
+                <img src="/orbi-branco.png" alt="" className="inline-block h-5 w-5" /> Portal
               </Link>
             </div>
           </div>
@@ -187,7 +187,7 @@ export default function Navigation() {
                   className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:opacity-90 text-black text-sm font-bold w-full shadow-[0_0_16px_rgba(0,212,255,0.2)] transition-all duration-150"
                   asChild
                 >
-                  <Link href="/entrar"><img src="/orbi-favicon.png" alt="" className="inline-block h-5 w-5" /> Portal</Link>
+                  <Link href="/entrar"><img src="/orbi-branco.png" alt="" className="inline-block h-5 w-5" /> Portal</Link>
                 </Button>
               )}
             </div>
