@@ -7,7 +7,6 @@ import {
   BarChart3,
   Bot,
   CheckCircle2,
-  Clock3,
   Code2,
   ExternalLink,
   Layers3,
@@ -143,22 +142,10 @@ const featuredProjects = [
 ];
 
 const processSteps = [
-  {
-    title: "Diagnóstico",
-    text: "Entendemos objetivo, público, oferta e o que precisa acontecer para o projeto vender.",
-  },
-  {
-    title: "Arquitetura",
-    text: "Definimos páginas, seções, integrações, conteúdo e caminho de conversão.",
-  },
-  {
-    title: "Construção",
-    text: "Construímos a experiência com responsividade, performance e acabamento visual.",
-  },
-  {
-    title: "Lançamento",
-    text: "Colocamos no ar, revisamos detalhes e deixamos o projeto pronto para campanhas.",
-  },
+  { title: "Diagnóstico", image: "/card-diagnostico.png" },
+  { title: "Arquitetura", image: "/card-arquitetura.png" },
+  { title: "Construção", image: "/card-construcao.png" },
+  { title: "Lançamento", image: "/card-lancamento.png" },
 ];
 
 const stackTags = ["Next.js", "TypeScript", "APIs", "PostgreSQL", "Supabase", "Cloudinary", "IA", "Automações"];
@@ -537,16 +524,14 @@ export default function Home() {
 
         <ScrollReveal selectChildren stagger={0.12} from={{ opacity: 0, y: 50, scale: 0.9 }}>
           <div className="grid gap-4 sm:grid-cols-2">
-            {processSteps.map((step, index) => (
-              <article key={step.title} className="orbit-tilt-card group border border-white/[0.08] bg-white/[0.035] p-5 transition duration-300 hover:-translate-y-1.5 hover:border-orbit-purple/30">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-black text-orbit-electric">
-                    <CountUp value={String(index + 1).padStart(2, "0")} />
-                  </span>
-                  <Clock3 className="size-4 text-white/30 transition-transform duration-300 group-hover:rotate-12 group-hover:text-orbit-electric" />
-                </div>
-                <h3 className="mt-8 text-xl font-black text-white">{step.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-white/50">{step.text}</p>
+            {processSteps.map((step) => (
+              <article key={step.title} className="group overflow-hidden rounded-2xl transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_0_30px_rgba(0,212,255,0.15)]">
+                <img
+                  src={step.image}
+                  alt={step.title}
+                  className="w-full h-auto rounded-2xl"
+                  loading="lazy"
+                />
               </article>
             ))}
           </div>
