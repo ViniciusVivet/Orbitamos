@@ -29,10 +29,11 @@ export const metadata: Metadata = {
   robots: "index, follow",
   icons: {
     icon: [
+      { url: "/orbi-favicon.png", type: "image/png", sizes: "512x512" },
       { url: "/favicon.svg", type: "image/svg+xml", sizes: "512x512" },
-      { url: "/icon.svg", type: "image/svg+xml", sizes: "512x512" },
     ],
-    shortcut: "/favicon.svg",
+    shortcut: "/orbi-favicon.png",
+    apple: "/orbi-favicon.png",
   },
   alternates: {
     canonical: "/",
