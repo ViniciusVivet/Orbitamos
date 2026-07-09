@@ -40,6 +40,7 @@ const SLIDE_INTERVAL = 5000;
 
 export default function Entrar() {
   const [isLogin, setIsLogin] = useState(true);
+  const [registerStep, setRegisterStep] = useState(1); // 1 = email+senha, 2 = nome+role
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -117,6 +118,7 @@ export default function Entrar() {
 
   const resetFormMode = (nextIsLogin: boolean) => {
     setIsLogin(nextIsLogin);
+    setRegisterStep(1);
     setError("");
     setName("");
     setEmail("");
@@ -125,6 +127,16 @@ export default function Entrar() {
     setShowProgress(false);
     setFakeProgress(0);
     if (nextIsLogin) setRegisterRole("STUDENT");
+  };
+
+  const handleNextStep = () => {
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
+    if (!cleanEmail) { setError("Informe seu e-mail para continuar."); return; }
+    if (!cleanPassword) { setError("Informe sua senha para continuar."); return; }
+    if (cleanPassword.length < 6) { setError("A senha precisa ter pelo menos 6 caracteres."); return; }
+    setError("");
+    setRegisterStep(2);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -247,7 +259,7 @@ export default function Entrar() {
         {/* ══ RIGHT — Login Form ══ */}
         <ScrollReveal from={{ opacity: 0, y: 28, scale: 0.97 }} to={{ duration: 0.75, delay: 0.1 }}>
           <section className="mx-auto flex h-full w-full max-w-md items-center px-4 py-5 sm:px-6 lg:mx-0 lg:pl-6 lg:pr-6">
-            <div className="w-full max-h-[calc(100dvh-6rem)] overflow-y-auto scrollbar-none">
+            <div className="w-full">
               <div className="mb-3 text-center lg:hidden">
                 <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-orbit-electric/25 bg-black/35 px-3 py-1.5 backdrop-blur-xl">
                   <Sparkles className="h-3.5 w-3.5 text-orbit-electric" />
@@ -260,203 +272,303 @@ export default function Entrar() {
                 </h1>
               </div>
 
-              <div>
-                <div className="space-y-5">
+              {/* Tab toggle */}
+              <div className="mb-4">
+                <div className="mb-3 flex rounded-xl border border-white/10 bg-white/[0.04] p-1">
+                  <button
+                    type="button"
+                    onClick={() => resetFormMode(true)}
+                    className={`flex h-10 flex-1 items-center justify-center rounded-lg text-sm font-bold transition-colors ${
+                      isLogin ? "bg-white text-black" : "text-white/55 hover:text-white"
+                    }`}
+                  >
+                    Entrar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => resetFormMode(false)}
+                    className={`flex h-10 flex-1 items-center justify-center rounded-lg text-sm font-bold transition-colors ${
+                      !isLogin ? "bg-white text-black" : "text-white/55 hover:text-white"
+                    }`}
+                  >
+                    Criar conta
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orbit-electric to-orbit-purple text-black">
+                    {isLogin ? <ShieldCheck className="h-5 w-5" /> : <GraduationCap className="h-5 w-5" />}
+                  </div>
                   <div>
-                    <div className="mb-4">
-                      <div className="mb-3 flex rounded-xl border border-white/10 bg-white/[0.04] p-1">
-                        <button
-                          type="button"
-                          onClick={() => resetFormMode(true)}
-                          className={`flex h-9 flex-1 items-center justify-center rounded-lg text-sm font-bold transition-colors ${
-                            isLogin ? "bg-white text-black" : "text-white/55 hover:text-white"
-                          }`}
-                        >
-                          Entrar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => resetFormMode(false)}
-                          className={`flex h-9 flex-1 items-center justify-center rounded-lg text-sm font-bold transition-colors ${
-                            !isLogin ? "bg-white text-black" : "text-white/55 hover:text-white"
-                          }`}
-                        >
-                          Criar conta
-                        </button>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orbit-electric to-orbit-purple text-black">
-                          {isLogin ? <ShieldCheck className="h-5 w-5" /> : <GraduationCap className="h-5 w-5" />}
-                        </div>
-                        <div>
-                          <h2 className="text-lg font-black text-white">
-                            {isLogin ? "Acesse sua conta" : "Crie seu acesso"}
-                          </h2>
-                          <p className="text-sm text-white/50">
-                            {isLogin
-                              ? "Volte para suas aulas, progresso e comunidade."
-                              : "Comece como aluno ou entre como colaborador da rede."}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      {!isLogin && (
-                        <div>
-                          <label htmlFor="name" className="mb-1 block text-sm font-medium text-white/60">
-                            Nome completo
-                          </label>
-                          <div className="relative">
-                            <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
-                            <Input
-                              id="name"
-                              type="text"
-                              value={name}
-                              onChange={(e) => setName(e.target.value)}
-                              placeholder="Seu nome completo"
-                              className="h-11 rounded-xl border-white/10 bg-white/[0.05] pl-10 text-white placeholder:text-white/25 focus-visible:border-orbit-electric/60"
-                              required={!isLogin}
-                              autoComplete="name"
-                              autoCapitalize="words"
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {!isLogin && (
-                        <div>
-                          <label className="mb-1 block text-sm font-medium text-white/60">Tipo de conta</label>
-                          <div className="grid grid-cols-2 gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setRegisterRole("STUDENT")}
-                              className={`rounded-xl border p-2 text-left transition-all ${
-                                registerRole === "STUDENT"
-                                  ? "border-orbit-electric/60 bg-orbit-electric/14 text-white"
-                                  : "border-white/10 bg-white/[0.03] text-white/58 hover:bg-white/[0.06]"
-                              }`}
-                            >
-                              <GraduationCap className="mb-0.5 h-4 w-4 text-orbit-electric" />
-                              <span className="block text-xs font-bold">Aluno</span>
-                              <span className="mt-0.5 block text-[11px] leading-3 text-white/42">Aulas</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setRegisterRole("FREELANCER")}
-                              className={`rounded-xl border p-2 text-left transition-all ${
-                                registerRole === "FREELANCER"
-                                  ? "border-orbit-purple/60 bg-orbit-purple/14 text-white"
-                                  : "border-white/10 bg-white/[0.03] text-white/58 hover:bg-white/[0.06]"
-                              }`}
-                            >
-                              <BriefcaseBusiness className="mb-0.5 h-4 w-4 text-orbit-purple" />
-                              <span className="block text-xs font-bold">Colaborador</span>
-                              <span className="mt-0.5 block text-[11px] leading-3 text-white/42">Squad</span>
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      <div>
-                        <label htmlFor="email" className="mb-1 block text-sm font-medium text-white/60">
-                          E-mail
-                        </label>
-                        <div className="relative">
-                          <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
-                          <Input
-                            id="email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="voce@email.com"
-                            className="h-11 rounded-xl border-white/10 bg-white/[0.05] pl-10 text-white placeholder:text-white/25 focus-visible:border-orbit-electric/60"
-                            required
-                            autoComplete="email"
-                            autoCapitalize="none"
-                            inputMode="email"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="mb-1 flex items-center justify-between gap-3">
-                          <label htmlFor="password" className="block text-sm font-medium text-white/60">
-                            Senha
-                          </label>
-                          {isLogin && (
-                            <Link href="/contato" className="text-xs font-medium text-orbit-electric hover:text-white">
-                              Esqueci minha senha
-                            </Link>
-                          )}
-                        </div>
-                        <div className="relative">
-                          <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
-                          <Input
-                            id="password"
-                            type={showPassword ? "text" : "password"}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Sua senha"
-                            className="h-11 rounded-xl border-white/10 bg-white/[0.05] px-10 text-white placeholder:text-white/25 focus-visible:border-orbit-electric/60"
-                            required
-                            autoComplete={isLogin ? "current-password" : "new-password"}
-                            autoCapitalize="none"
-                            minLength={6}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword((value) => !value)}
-                            className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-white/42 transition-colors hover:bg-white/10 hover:text-white"
-                            aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                          >
-                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </button>
-                        </div>
-                        {!isLogin && <p className="mt-0.5 text-[11px] text-white/42">Use pelo menos 6 caracteres.</p>}
-                      </div>
-
-                      {showProgress && (
-                        <div className="py-0.5">
-                          <RocketProgress
-                            progress={fakeProgress}
-                            message={isLogin ? "Conectando sua conta..." : "Criando seu acesso..."}
-                          />
-                        </div>
-                      )}
-
-                      {error && (
-                        <div className="rounded-xl border border-red-500/30 bg-red-500/15 p-2.5 text-center text-sm text-red-200">
-                          {error}
-                          {error.includes("iniciando") && (
-                            <p className="mt-2 text-xs text-white/52">
-                              Servicos gratuitos podem levar alguns segundos para responder. Aguarde e tente novamente.
-                            </p>
-                          )}
-                        </div>
-                      )}
-
-                      <MagneticButton strength={0.12}>
-                        <Button
-                          type="submit"
-                          disabled={isBusy}
-                          className="mt-1 h-12 w-full rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple text-sm font-black text-black transition-all hover:from-orbit-purple hover:to-orbit-electric hover:shadow-[0_0_25px_rgba(0,212,255,0.25)] disabled:opacity-50"
-                        >
-                          {isBusy ? "Processando..." : isLogin ? "Entrar no portal" : "Criar acesso"}
-                          {!isBusy && <ArrowRight className="h-4 w-4" />}
-                        </Button>
-                      </MagneticButton>
-                    </form>
-
-                    <p className="mt-3 text-center text-xs text-white/35">
+                    <h2 className="text-lg font-black text-white">
                       {isLogin
-                        ? "Alunos vao para a area de estudos. Colaboradores acessam o painel de squad."
-                        : "Escolha Aluno para estudar na OrbitAcademy. Colaborador e para quem participa de projetos."}
+                        ? "Acesse sua conta"
+                        : registerStep === 1
+                          ? "Crie seu acesso"
+                          : "Quase la!"}
+                    </h2>
+                    <p className="text-sm text-white/50">
+                      {isLogin
+                        ? "Volte para suas aulas, progresso e comunidade."
+                        : registerStep === 1
+                          ? "Primeiro, defina seu e-mail e senha."
+                          : "Agora nos conte sobre voce."}
                     </p>
                   </div>
                 </div>
+
+                {/* Step indicator for register */}
+                {!isLogin && (
+                  <div className="mt-3 flex items-center gap-2">
+                    <div className={`h-1 flex-1 rounded-full transition-colors duration-300 ${registerStep >= 1 ? "bg-orbit-electric" : "bg-white/10"}`} />
+                    <div className={`h-1 flex-1 rounded-full transition-colors duration-300 ${registerStep >= 2 ? "bg-orbit-electric" : "bg-white/10"}`} />
+                  </div>
+                )}
               </div>
+
+              {/* ── LOGIN FORM ── */}
+              {isLogin && (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label htmlFor="email" className="mb-1 block text-sm font-medium text-white/60">E-mail</label>
+                    <div className="relative">
+                      <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="voce@email.com"
+                        className="h-11 rounded-xl border-white/10 bg-white/[0.05] pl-10 text-white placeholder:text-white/25 focus-visible:border-orbit-electric/60"
+                        required
+                        autoComplete="email"
+                        autoCapitalize="none"
+                        inputMode="email"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="mb-1 flex items-center justify-between gap-3">
+                      <label htmlFor="password" className="block text-sm font-medium text-white/60">Senha</label>
+                      <Link href="/contato" className="text-xs font-medium text-orbit-electric hover:text-white">
+                        Esqueci minha senha
+                      </Link>
+                    </div>
+                    <div className="relative">
+                      <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Sua senha"
+                        className="h-11 rounded-xl border-white/10 bg-white/[0.05] px-10 text-white placeholder:text-white/25 focus-visible:border-orbit-electric/60"
+                        required
+                        autoComplete="current-password"
+                        autoCapitalize="none"
+                        minLength={6}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-white/42 transition-colors hover:bg-white/10 hover:text-white"
+                        aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {showProgress && (
+                    <RocketProgress progress={fakeProgress} message="Conectando sua conta..." />
+                  )}
+
+                  {error && (
+                    <div className="rounded-xl border border-red-500/30 bg-red-500/15 p-2.5 text-center text-sm text-red-200">
+                      {error}
+                      {error.includes("iniciando") && (
+                        <p className="mt-2 text-xs text-white/52">Servicos gratuitos podem levar alguns segundos. Aguarde e tente novamente.</p>
+                      )}
+                    </div>
+                  )}
+
+                  <MagneticButton strength={0.12}>
+                    <Button
+                      type="submit"
+                      disabled={isBusy}
+                      className="mt-1 h-12 w-full rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple text-sm font-black text-black transition-all hover:from-orbit-purple hover:to-orbit-electric hover:shadow-[0_0_25px_rgba(0,212,255,0.25)] disabled:opacity-50"
+                    >
+                      {isBusy ? "Processando..." : "Entrar no portal"}
+                      {!isBusy && <ArrowRight className="h-4 w-4" />}
+                    </Button>
+                  </MagneticButton>
+                </form>
+              )}
+
+              {/* ── REGISTER STEP 1: email + senha ── */}
+              {!isLogin && registerStep === 1 && (
+                <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                  <div>
+                    <label htmlFor="reg-email" className="mb-1 block text-sm font-medium text-white/60">E-mail</label>
+                    <div className="relative">
+                      <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+                      <Input
+                        id="reg-email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="voce@email.com"
+                        className="h-11 rounded-xl border-white/10 bg-white/[0.05] pl-10 text-white placeholder:text-white/25 focus-visible:border-orbit-electric/60"
+                        required
+                        autoComplete="email"
+                        autoCapitalize="none"
+                        inputMode="email"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="reg-password" className="mb-1 block text-sm font-medium text-white/60">Senha</label>
+                    <div className="relative">
+                      <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+                      <Input
+                        id="reg-password"
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Crie uma senha"
+                        className="h-11 rounded-xl border-white/10 bg-white/[0.05] px-10 text-white placeholder:text-white/25 focus-visible:border-orbit-electric/60"
+                        required
+                        autoComplete="new-password"
+                        autoCapitalize="none"
+                        minLength={6}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-white/42 transition-colors hover:bg-white/10 hover:text-white"
+                        aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    <p className="mt-1 text-xs text-white/35">Use pelo menos 6 caracteres.</p>
+                  </div>
+
+                  {error && (
+                    <div className="rounded-xl border border-red-500/30 bg-red-500/15 p-2.5 text-center text-sm text-red-200">{error}</div>
+                  )}
+
+                  <MagneticButton strength={0.12}>
+                    <Button
+                      type="button"
+                      onClick={handleNextStep}
+                      className="mt-1 h-12 w-full rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple text-sm font-black text-black transition-all hover:from-orbit-purple hover:to-orbit-electric hover:shadow-[0_0_25px_rgba(0,212,255,0.25)]"
+                    >
+                      Continuar <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </MagneticButton>
+                </div>
+              )}
+
+              {/* ── REGISTER STEP 2: nome + role ── */}
+              {!isLogin && registerStep === 2 && (
+                <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                  <div>
+                    <label htmlFor="name" className="mb-1 block text-sm font-medium text-white/60">Nome completo</label>
+                    <div className="relative">
+                      <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+                      <Input
+                        id="name"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Seu nome completo"
+                        className="h-11 rounded-xl border-white/10 bg-white/[0.05] pl-10 text-white placeholder:text-white/25 focus-visible:border-orbit-electric/60"
+                        required
+                        autoComplete="name"
+                        autoCapitalize="words"
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-white/60">Tipo de conta</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setRegisterRole("STUDENT")}
+                        className={`rounded-xl border p-3 text-left transition-all ${
+                          registerRole === "STUDENT"
+                            ? "border-orbit-electric/60 bg-orbit-electric/14 text-white"
+                            : "border-white/10 bg-white/[0.03] text-white/58 hover:bg-white/[0.06]"
+                        }`}
+                      >
+                        <GraduationCap className="mb-1 h-5 w-5 text-orbit-electric" />
+                        <span className="block text-sm font-bold">Aluno</span>
+                        <span className="mt-0.5 block text-xs text-white/42">Acesso as aulas</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRegisterRole("FREELANCER")}
+                        className={`rounded-xl border p-3 text-left transition-all ${
+                          registerRole === "FREELANCER"
+                            ? "border-orbit-purple/60 bg-orbit-purple/14 text-white"
+                            : "border-white/10 bg-white/[0.03] text-white/58 hover:bg-white/[0.06]"
+                        }`}
+                      >
+                        <BriefcaseBusiness className="mb-1 h-5 w-5 text-orbit-purple" />
+                        <span className="block text-sm font-bold">Colaborador</span>
+                        <span className="mt-0.5 block text-xs text-white/42">Squad de projetos</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {showProgress && (
+                    <RocketProgress progress={fakeProgress} message="Criando seu acesso..." />
+                  )}
+
+                  {error && (
+                    <div className="rounded-xl border border-red-500/30 bg-red-500/15 p-2.5 text-center text-sm text-red-200">
+                      {error}
+                      {error.includes("iniciando") && (
+                        <p className="mt-2 text-xs text-white/52">Servicos gratuitos podem levar alguns segundos. Aguarde e tente novamente.</p>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex gap-3">
+                    <Button
+                      type="button"
+                      onClick={() => { setRegisterStep(1); setError(""); }}
+                      className="h-12 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm font-bold text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Voltar
+                    </Button>
+                    <MagneticButton strength={0.12} className="flex-1">
+                      <Button
+                        type="submit"
+                        disabled={isBusy}
+                        className="h-12 w-full rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple text-sm font-black text-black transition-all hover:from-orbit-purple hover:to-orbit-electric hover:shadow-[0_0_25px_rgba(0,212,255,0.25)] disabled:opacity-50"
+                      >
+                        {isBusy ? "Processando..." : "Criar acesso"}
+                        {!isBusy && <ArrowRight className="h-4 w-4" />}
+                      </Button>
+                    </MagneticButton>
+                  </div>
+                </form>
+              )}
+
+              <p className="mt-4 text-center text-xs text-white/30">
+                {isLogin
+                  ? "Alunos vao para a area de estudos. Colaboradores acessam o painel de squad."
+                  : registerStep === 1
+                    ? "Na proxima etapa voce escolhe o tipo de conta."
+                    : "Alunos estudam na OrbitAcademy. Colaboradores participam de projetos."}
+              </p>
             </div>
           </section>
         </ScrollReveal>
