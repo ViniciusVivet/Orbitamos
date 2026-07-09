@@ -30,10 +30,10 @@ const SpaceCanvas = dynamic(() => import("@/components/three/SpaceCanvas"), { ss
 
 const slides = [
   { kind: "image" as const, src: "/case-destaque-multimarcas.png", alt: "Case Multimarcas" },
-  { kind: "image" as const, src: "/mockup-yume.png", alt: "Case Yume" },
   { kind: "video" as const, src: "/hero.mp4", alt: "Orbitamos em acao" },
+  { kind: "image" as const, src: "/mockup-yume.png", alt: "Case Yume" },
+  { kind: "video" as const, src: "/cosmos.mp4", alt: "Cosmos Orbitamos" },
   { kind: "image" as const, src: "/mockup-sabrina.png", alt: "Case Sabrina Lashes" },
-  { kind: "image" as const, src: "/case-kitcerto.png", alt: "Case KitCerto" },
 ];
 
 const SLIDE_INTERVAL = 5000;
@@ -173,11 +173,11 @@ export default function Entrar() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/70 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black to-transparent" />
 
-      <div className="relative z-10 mx-auto grid h-full max-h-full w-full max-w-6xl items-stretch gap-0 overflow-hidden px-4 py-5 sm:px-6 lg:grid-cols-[1fr_420px] lg:gap-6">
+      <div className="relative z-10 grid h-full max-h-full w-full items-stretch gap-0 overflow-hidden lg:grid-cols-[1fr_420px]">
 
         {/* ══ LEFT — Carousel ══ */}
-        <div className="hidden lg:flex lg:flex-col lg:justify-center">
-          <div className="relative h-[calc(100dvh-7rem)] w-full overflow-hidden rounded-2xl">
+        <div className="hidden lg:block">
+          <div className="relative ml-0 h-full w-full overflow-hidden rounded-r-2xl">
             {/* Slides */}
             {slides.map((slide, i) => (
               <div
@@ -246,7 +246,7 @@ export default function Entrar() {
 
         {/* ══ RIGHT — Login Form ══ */}
         <ScrollReveal from={{ opacity: 0, y: 28, scale: 0.97 }} to={{ duration: 0.75, delay: 0.1 }}>
-          <section className="mx-auto flex h-full w-full max-w-md items-center lg:mx-0">
+          <section className="mx-auto flex h-full w-full max-w-md items-center px-4 py-5 sm:px-6 lg:mx-0 lg:pl-6 lg:pr-6">
             <div className="w-full">
               <div className="mb-3 text-center lg:hidden">
                 <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-orbit-electric/25 bg-black/35 px-3 py-1.5 backdrop-blur-xl">
