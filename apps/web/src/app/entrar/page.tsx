@@ -177,7 +177,7 @@ export default function Entrar() {
 
         {/* ══ LEFT — Carousel ══ */}
         <div className="hidden lg:block">
-          <div className="relative ml-0 h-full w-full overflow-hidden rounded-r-2xl">
+          <div className="relative ml-0 h-full w-full overflow-hidden rounded-r-2xl rounded-tl-2xl">
             {/* Slides */}
             {slides.map((slide, i) => (
               <div
