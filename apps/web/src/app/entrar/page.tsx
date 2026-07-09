@@ -260,15 +260,11 @@ export default function Entrar() {
                 </h1>
               </div>
 
-              <div className="relative">
-                <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-orbit-electric/45 via-white/10 to-orbit-purple/45" />
-                <div className="absolute -inset-5 rounded-[2rem] bg-orbit-electric/10 blur-3xl" />
-
-                <div className="relative max-h-[calc(100dvh-5.5rem)] overflow-hidden rounded-2xl border border-white/10 bg-[#05080f]/95 p-3.5 shadow-2xl shadow-black/40 backdrop-blur-xl sm:p-4">
-                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(0,212,255,0.09),transparent_62%)]" />
-                  <div className="relative">
-                    <div className="mb-3">
-                      <div className="mb-2.5 flex rounded-xl border border-white/10 bg-black/35 p-1">
+              <div>
+                <div className="space-y-5">
+                  <div>
+                    <div className="mb-4">
+                      <div className="mb-3 flex rounded-xl border border-white/10 bg-white/[0.04] p-1">
                         <button
                           type="button"
                           onClick={() => resetFormMode(true)}
@@ -289,15 +285,15 @@ export default function Entrar() {
                         </button>
                       </div>
 
-                      <div className="flex items-start gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orbit-electric to-orbit-purple text-black">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orbit-electric to-orbit-purple text-black">
                           {isLogin ? <ShieldCheck className="h-5 w-5" /> : <GraduationCap className="h-5 w-5" />}
                         </div>
                         <div>
-                          <h2 className="text-base font-black text-white">
+                          <h2 className="text-lg font-black text-white">
                             {isLogin ? "Acesse sua conta" : "Crie seu acesso"}
                           </h2>
-                          <p className="mt-0.5 text-xs leading-4 text-white/48">
+                          <p className="text-sm text-white/50">
                             {isLogin
                               ? "Volte para suas aulas, progresso e comunidade."
                               : "Comece como aluno ou entre como colaborador da rede."}
@@ -306,10 +302,10 @@ export default function Entrar() {
                       </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-2.5">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                       {!isLogin && (
                         <div>
-                          <label htmlFor="name" className="mb-1 block text-xs font-medium text-white/72">
+                          <label htmlFor="name" className="mb-1 block text-sm font-medium text-white/60">
                             Nome completo
                           </label>
                           <div className="relative">
@@ -320,7 +316,7 @@ export default function Entrar() {
                               value={name}
                               onChange={(e) => setName(e.target.value)}
                               placeholder="Seu nome completo"
-                              className="h-10 rounded-xl border-white/10 bg-white/[0.05] pl-10 text-white placeholder:text-white/25 focus-visible:border-orbit-electric/60"
+                              className="h-11 rounded-xl border-white/10 bg-white/[0.05] pl-10 text-white placeholder:text-white/25 focus-visible:border-orbit-electric/60"
                               required={!isLogin}
                               autoComplete="name"
                               autoCapitalize="words"
@@ -331,7 +327,7 @@ export default function Entrar() {
 
                       {!isLogin && (
                         <div>
-                          <label className="mb-1 block text-xs font-medium text-white/72">Tipo de conta</label>
+                          <label className="mb-1 block text-sm font-medium text-white/60">Tipo de conta</label>
                           <div className="grid grid-cols-2 gap-2">
                             <button
                               type="button"
@@ -364,7 +360,7 @@ export default function Entrar() {
                       )}
 
                       <div>
-                        <label htmlFor="email" className="mb-1 block text-xs font-medium text-white/72">
+                        <label htmlFor="email" className="mb-1 block text-sm font-medium text-white/60">
                           E-mail
                         </label>
                         <div className="relative">
@@ -375,7 +371,7 @@ export default function Entrar() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="voce@email.com"
-                            className="h-10 rounded-xl border-white/10 bg-white/[0.05] pl-10 text-white placeholder:text-white/25 focus-visible:border-orbit-electric/60"
+                            className="h-11 rounded-xl border-white/10 bg-white/[0.05] pl-10 text-white placeholder:text-white/25 focus-visible:border-orbit-electric/60"
                             required
                             autoComplete="email"
                             autoCapitalize="none"
@@ -386,7 +382,7 @@ export default function Entrar() {
 
                       <div>
                         <div className="mb-1 flex items-center justify-between gap-3">
-                          <label htmlFor="password" className="block text-xs font-medium text-white/72">
+                          <label htmlFor="password" className="block text-sm font-medium text-white/60">
                             Senha
                           </label>
                           {isLogin && (
@@ -403,7 +399,7 @@ export default function Entrar() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="Sua senha"
-                            className="h-10 rounded-xl border-white/10 bg-white/[0.05] px-10 text-white placeholder:text-white/25 focus-visible:border-orbit-electric/60"
+                            className="h-11 rounded-xl border-white/10 bg-white/[0.05] px-10 text-white placeholder:text-white/25 focus-visible:border-orbit-electric/60"
                             required
                             autoComplete={isLogin ? "current-password" : "new-password"}
                             autoCapitalize="none"
@@ -445,7 +441,7 @@ export default function Entrar() {
                         <Button
                           type="submit"
                           disabled={isBusy}
-                          className="mt-0.5 h-10 w-full rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple text-sm font-black text-black transition-all hover:from-orbit-purple hover:to-orbit-electric hover:shadow-[0_0_25px_rgba(0,212,255,0.25)] disabled:opacity-50"
+                          className="mt-1 h-12 w-full rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple text-sm font-black text-black transition-all hover:from-orbit-purple hover:to-orbit-electric hover:shadow-[0_0_25px_rgba(0,212,255,0.25)] disabled:opacity-50"
                         >
                           {isBusy ? "Processando..." : isLogin ? "Entrar no portal" : "Criar acesso"}
                           {!isBusy && <ArrowRight className="h-4 w-4" />}
@@ -453,11 +449,11 @@ export default function Entrar() {
                       </MagneticButton>
                     </form>
 
-                    <div className="mt-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] leading-4 text-white/46">
+                    <p className="mt-3 text-center text-xs text-white/35">
                       {isLogin
-                        ? "Depois do login, alunos vao direto para a area de estudos. Colaboradores acessam o painel de squad."
-                        : "Para estudar na OrbitAcademy, escolha Aluno. A opcao Colaborador e para quem participa da operacao e projetos."}
-                    </div>
+                        ? "Alunos vao para a area de estudos. Colaboradores acessam o painel de squad."
+                        : "Escolha Aluno para estudar na OrbitAcademy. Colaborador e para quem participa de projetos."}
+                    </p>
                   </div>
                 </div>
               </div>
