@@ -43,25 +43,25 @@ const showcaseSlides: ShowcaseSlide[] = [
     kind: "image",
     src: "/card-arquitetura.png",
     alt: "Card visual da fase de arquitetura da Orbitamos",
-    eyebrow: "Trilha guiada",
-    title: "O aluno sabe onde esta e qual e o proximo passo.",
-    caption: "Preparado para imagem agora. Depois pode virar video curto.",
+    eyebrow: "Arquitetura",
+    title: "Planejamento da jornada",
+    caption: "Foto 1 de 3",
   },
   {
     kind: "image",
     src: "/card-construcao.png",
     alt: "Card visual da fase de construcao da Orbitamos",
-    eyebrow: "Pratica real",
-    title: "Cada aula puxa uma acao concreta de estudo.",
-    caption: "Espaco pronto para mostrar bastidores, aulas e entregas.",
+    eyebrow: "Construcao",
+    title: "Pratica aplicada",
+    caption: "Foto 2 de 3",
   },
   {
     kind: "image",
     src: "/card-diagnostico.png",
     alt: "Card visual da fase de diagnostico da Orbitamos",
-    eyebrow: "Evolucao visivel",
-    title: "Progresso, XP e acompanhamento sem confusao.",
-    caption: "Tres midias no carrossel, com base pronta para video.",
+    eyebrow: "Diagnostico",
+    title: "Evolucao visivel",
+    caption: "Foto 3 de 3",
   },
 ];
 
@@ -219,14 +219,14 @@ export default function Entrar() {
 
             <div className="relative">
               <div className="pointer-events-none absolute -inset-5 rounded-[2rem] bg-orbit-electric/10 blur-3xl" />
-              <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/45 p-2.5 shadow-2xl shadow-black/40 backdrop-blur-xl">
-                <div className="mb-2 flex items-center justify-between gap-4">
+              <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/45 p-3 shadow-2xl shadow-black/40 backdrop-blur-xl">
+                <div className="mb-3 flex items-center justify-between gap-4">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/40">
                       Previa da area do aluno
                     </p>
-                    <h1 className="mt-1 text-xl font-black leading-tight text-white xl:text-2xl">
-                      Veja a experiencia antes de entrar.
+                    <h1 className="mt-1 text-2xl font-black leading-tight text-white">
+                      Uma vitrine do que o aluno vai encontrar.
                     </h1>
                   </div>
                   <div className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-right">
@@ -245,7 +245,7 @@ export default function Entrar() {
                     style={{ transform: `translateX(-${activeShowcase * 100}%)` }}
                   >
                     {showcaseSlides.map((slide) => (
-                      <article key={slide.src} className="relative h-[min(390px,calc(100dvh-15rem))] w-full shrink-0 overflow-hidden">
+                      <article key={slide.src} className="relative h-[min(405px,calc(100dvh-15rem))] w-full shrink-0 overflow-hidden bg-black">
                         {slide.kind === "image" ? (
                           <img src={slide.src} alt={slide.alt} className="h-full w-full object-cover" />
                         ) : (
@@ -259,7 +259,7 @@ export default function Entrar() {
                             aria-label={slide.alt}
                           />
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/20" />
                         <div className="absolute left-4 right-4 top-4 flex items-center justify-between gap-3">
                           <span className="rounded-full border border-white/15 bg-black/45 px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-orbit-electric backdrop-blur-md">
                             {slide.eyebrow}
@@ -270,13 +270,13 @@ export default function Entrar() {
                           </span>
                         </div>
                         <div className="absolute bottom-0 left-0 right-0 p-4">
-                          <h2 className="max-w-lg text-2xl font-black leading-tight text-white">
-                            {slide.title}
-                          </h2>
-                          <p className="mt-2 max-w-md text-sm leading-5 text-white/65">
-                            {slide.caption}
-                          </p>
-                          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/15">
+                          <div className="mb-3 flex items-end justify-between gap-4">
+                            <div className="rounded-xl border border-white/10 bg-black/45 px-3 py-2 backdrop-blur-md">
+                              <p className="text-xs font-bold uppercase tracking-widest text-white/40">{slide.caption}</p>
+                              <p className="mt-0.5 text-sm font-black text-white">{slide.title}</p>
+                            </div>
+                          </div>
+                          <div className="h-1.5 overflow-hidden rounded-full bg-white/15">
                             <div
                               key={activeShowcase}
                               className="h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple"
