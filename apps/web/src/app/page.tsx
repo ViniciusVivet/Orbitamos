@@ -34,7 +34,7 @@ const WHATSAPP_URL =
 
 const stats = [
   { value: "7+", label: "projetos entregues" },
-  { value: "em até 7 dias", label: "landing pages" },
+  { value: "24h", label: "primeiro contato" },
   { value: "100%", label: "mobile-first" },
   { value: "IA", label: "automações e integrações" },
 ];
@@ -217,11 +217,11 @@ export default function Home() {
         <div className="orbit-aurora pointer-events-none absolute inset-0 opacity-50" />
         <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#03050a] to-transparent" />
 
-        <div className="relative z-10 mx-auto grid min-h-[calc(100svh-4rem)] w-full max-w-7xl items-center gap-12 px-5 py-12 sm:px-8 lg:grid-cols-[1.02fr_0.98fr] lg:px-10 lg:py-16">
+        <div className="relative z-10 mx-auto grid min-h-[calc(100svh-4rem)] w-full max-w-7xl items-center gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[1.02fr_0.98fr] lg:gap-10 lg:px-10 lg:py-12">
           {/* Left content */}
           <div className="max-w-3xl">
             <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.6 }}>
-              <div className="orbit-glass-badge mb-6 inline-flex items-center gap-2 border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/55 backdrop-blur-xl">
+              <div className="orbit-glass-badge mb-4 inline-flex items-center gap-2 border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/55 backdrop-blur-xl">
                 <span className="h-1.5 w-1.5 rounded-full bg-orbit-electric shadow-[0_0_18px_rgba(0,212,255,0.9)]" />
                 Tecnologia sob medida para negócios digitais
               </div>
@@ -229,22 +229,22 @@ export default function Home() {
 
             <TextReveal
               as="h1"
-              className="max-w-4xl text-balance text-4xl font-black leading-[0.98] tracking-normal text-white sm:text-5xl lg:text-6xl xl:text-7xl"
+              className="max-w-4xl text-balance text-4xl font-black leading-[0.98] tracking-normal text-white sm:text-5xl lg:text-5xl xl:text-6xl"
               stagger={0.015}
               start="top 95%"
             >
-              Sites, sistemas e automações para negócios que querem vender, organizar e escalar.
+              Sites, sistemas e automações para vender, organizar e escalar.
             </TextReveal>
 
             <ScrollReveal from={{ opacity: 0, y: 30 }} to={{ duration: 0.8, delay: 0.3 }}>
-              <p className="mt-6 max-w-2xl text-base leading-8 text-white/58 sm:text-lg">
+              <p className="mt-4 max-w-2xl text-base leading-7 text-white/58 sm:text-lg">
                 Criamos soluções digitais com design premium, estratégia e tecnologia aplicada para
                 transformar presença online em resultado real.
               </p>
             </ScrollReveal>
 
             <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.7, delay: 0.5 }}>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <MagneticButton strength={0.25}>
                   <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
                     <Button
@@ -275,7 +275,7 @@ export default function Home() {
               from={{ opacity: 0, y: 20, scale: 0.95 }}
               to={{ duration: 0.6, delay: 0.6 }}
             >
-              <div className="mt-10 grid grid-cols-2 gap-px overflow-hidden border border-white/[0.08] bg-white/[0.08] sm:grid-cols-4">
+              <div className="mt-7 grid grid-cols-2 gap-px overflow-hidden border border-white/[0.08] bg-white/[0.08] sm:grid-cols-4">
                 {stats.map((item) => (
                   <div key={item.label} className="group relative overflow-hidden bg-[#050812]/88 px-4 py-4 backdrop-blur-xl">
                     <span className="orbit-sweep absolute inset-y-0 left-0 w-1/2 opacity-0 group-hover:opacity-100" />
