@@ -249,7 +249,7 @@ export default function Home() {
                   <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
                     <Button
                       size="lg"
-                      className="orbit-cta h-12 w-full rounded-md bg-gradient-to-r from-orbit-electric to-orbit-purple px-6 font-bold text-black shadow-[0_0_20px_rgba(0,212,255,0.25)] hover:opacity-90 sm:w-auto"
+                      className="orbit-cta gradient-orbit h-12 w-full rounded-md px-6 font-bold text-black shadow-[0_0_20px_rgba(0,212,255,0.25)] hover:opacity-90 sm:w-auto"
                     >
                       <MessageCircle className="size-4" />
                       Solicitar orçamento
