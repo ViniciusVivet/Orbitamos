@@ -229,7 +229,7 @@ export default function Home() {
 
             <TextReveal
               as="h1"
-              className="max-w-4xl text-balance text-4xl font-black leading-[0.98] tracking-normal text-white sm:text-5xl lg:text-5xl xl:text-6xl"
+              className="max-w-4xl text-balance text-4xl font-black leading-[0.98] tracking-normal sm:text-5xl lg:text-5xl xl:text-6xl gradient-text"
               stagger={0.015}
               start="top 95%"
             >
@@ -237,7 +237,7 @@ export default function Home() {
             </TextReveal>
 
             <ScrollReveal from={{ opacity: 0, y: 30 }} to={{ duration: 0.8, delay: 0.3 }}>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-white/58 sm:text-lg">
+              <p className="mt-4 max-w-2xl text-base leading-7 text-white/70 sm:text-lg">
                 Criamos soluções digitais com design premium, estratégia e tecnologia aplicada para
                 transformar presença online em resultado real.
               </p>
@@ -249,7 +249,7 @@ export default function Home() {
                   <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
                     <Button
                       size="lg"
-                      className="orbit-cta h-12 w-full rounded-md bg-white px-6 font-bold text-black hover:bg-orbit-electric sm:w-auto"
+                      className="orbit-cta h-12 w-full rounded-md bg-gradient-to-r from-orbit-electric to-orbit-purple px-6 font-bold text-black shadow-[0_0_20px_rgba(0,212,255,0.25)] hover:opacity-90 sm:w-auto"
                     >
                       <MessageCircle className="size-4" />
                       Solicitar orçamento
@@ -275,14 +275,14 @@ export default function Home() {
               from={{ opacity: 0, y: 20, scale: 0.95 }}
               to={{ duration: 0.6, delay: 0.6 }}
             >
-              <div className="mt-7 grid grid-cols-2 gap-px overflow-hidden border border-white/[0.08] bg-white/[0.08] sm:grid-cols-4">
+              <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {stats.map((item) => (
-                  <div key={item.label} className="group relative overflow-hidden bg-[#050812]/88 px-4 py-4 backdrop-blur-xl">
+                  <div key={item.label} className="group relative overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-4 backdrop-blur-xl transition-colors duration-300 hover:border-orbit-electric/25 hover:bg-white/[0.07]">
                     <span className="orbit-sweep absolute inset-y-0 left-0 w-1/2 opacity-0 group-hover:opacity-100" />
-                    <p className="relative text-xl font-black text-white transition-transform duration-300 group-hover:translate-y-[-2px]">
+                    <p className="relative text-xl font-black text-orbit-electric transition-transform duration-300 group-hover:translate-y-[-2px]">
                       <CountUp value={item.value} />
                     </p>
-                    <p className="mt-1 text-xs text-white/42">{item.label}</p>
+                    <p className="mt-1 text-xs text-white/55">{item.label}</p>
                   </div>
                 ))}
               </div>
