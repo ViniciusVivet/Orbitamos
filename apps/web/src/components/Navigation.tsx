@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import LogoOrbitamos from "@/components/LogoOrbitamos";
 import { useAuth } from "@/contexts/AuthContext";
 import { getDisplayAvatarUrl } from "@/lib/api";
 import { cursos } from "@/lib/cursos";
+import { whatsappProjetosUrl } from "@/lib/social";
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -64,14 +66,23 @@ export default function Navigation() {
                 <span className="hidden sm:inline text-sm font-medium">{user.role === "FREELANCER" ? "Área Colaborador" : "Área do Estudante"}</span>
               </Link>
             ) : (
-              <Button 
-                size="sm"
-                className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:opacity-90 text-black text-sm font-bold shadow-[0_0_16px_rgba(0,212,255,0.2)] hover:shadow-[0_0_24px_rgba(0,212,255,0.35)] transition-all duration-150"
-                asChild
+              <Link
+                href="/entrar"
+                className="text-white/60 hover:text-white text-sm font-medium transition-colors duration-150"
               >
-                <Link href="/entrar"><img src="/orbi-branco.png" alt="" className="inline-block h-5 w-5" /> Portal</Link>
-              </Button>
+                Portal
+              </Link>
             )}
+            <Button
+              size="sm"
+              className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:opacity-90 text-black text-sm font-bold shadow-[0_0_16px_rgba(0,212,255,0.2)] hover:shadow-[0_0_24px_rgba(0,212,255,0.35)] transition-all duration-150"
+              asChild
+            >
+              <a href={whatsappProjetosUrl} target="_blank" rel="noreferrer">
+                <MessageCircle className="size-4" />
+                Orçamento
+              </a>
+            </Button>
           </div>
 
           {(loading || isAuthenticated) && (
@@ -94,25 +105,34 @@ export default function Navigation() {
 
         {!loading && !isAuthenticated && (
           <div className="md:hidden pb-3">
-            <div className="mx-auto grid max-w-[21rem] grid-cols-3 overflow-hidden rounded-full border border-white/12 bg-black/45 p-1 text-center text-[12px] font-bold text-white shadow-[0_18px_40px_rgba(0,0,0,0.35)] backdrop-blur-2xl">
+            <div className="mx-auto grid max-w-[24rem] grid-cols-4 overflow-hidden rounded-full border border-white/12 bg-black/45 p-1 text-center text-[12px] font-bold text-white shadow-[0_18px_40px_rgba(0,0,0,0.35)] backdrop-blur-2xl">
               <Link
                 href="/projetos"
-                className="rounded-full px-2.5 py-2.5 transition-colors hover:bg-white/10"
+                className="rounded-full px-2 py-2.5 transition-colors hover:bg-white/10"
               >
                 Projetos
               </Link>
               <Link
                 href="/contato"
-                className="rounded-full px-2.5 py-2.5 transition-colors hover:bg-white/10"
+                className="rounded-full px-2 py-2.5 transition-colors hover:bg-white/10"
               >
                 Contato
               </Link>
               <Link
                 href="/entrar"
-                className="rounded-full bg-white text-black shadow-[0_0_18px_rgba(255,255,255,0.18)] transition-colors hover:bg-orbit-electric"
+                className="rounded-full px-2 py-2.5 transition-colors hover:bg-white/10"
               >
-                <img src="/orbi-branco.png" alt="" className="inline-block h-5 w-5" /> Portal
+                Portal
               </Link>
+              <a
+                href={whatsappProjetosUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-1 rounded-full bg-white text-black shadow-[0_0_18px_rgba(255,255,255,0.18)] transition-colors hover:bg-orbit-electric"
+              >
+                <MessageCircle className="size-3.5" />
+                Orçar
+              </a>
             </div>
           </div>
         )}
@@ -182,14 +202,24 @@ export default function Navigation() {
                   {user.role === "FREELANCER" ? "Área Colaborador" : "Área do Estudante"}
                 </Link>
               ) : (
-                <Button 
-                  size="sm"
-                  className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:opacity-90 text-black text-sm font-bold w-full shadow-[0_0_16px_rgba(0,212,255,0.2)] transition-all duration-150"
-                  asChild
+                <Link
+                  href="/entrar"
+                  className="text-white/90 hover:text-orbit-electric transition-colors py-3 px-4 rounded-lg hover:bg-white/5 min-h-[44px] flex items-center touch-manipulation"
+                  onClick={() => setIsMenuOpen(false)}
                 >
-                  <Link href="/entrar"><img src="/orbi-branco.png" alt="" className="inline-block h-5 w-5" /> Portal</Link>
-                </Button>
+                  Portal
+                </Link>
               )}
+              <a
+                href={whatsappProjetosUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 py-3 text-sm font-bold text-black shadow-[0_0_16px_rgba(0,212,255,0.2)] transition-all duration-150 hover:opacity-90"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <MessageCircle className="size-4" />
+                Solicitar orçamento
+              </a>
             </div>
             </div>
           </>
