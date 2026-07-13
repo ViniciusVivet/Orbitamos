@@ -188,7 +188,7 @@ export default function Home() {
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="relative h-[calc(100svh-3.5rem)] overflow-hidden"
+        className="relative -mt-16 h-[100svh] overflow-hidden"
       >
         {/* Video background */}
         <video
@@ -210,7 +210,7 @@ export default function Home() {
         <div className="orbit-aurora pointer-events-none absolute inset-0 opacity-40" />
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#03050a] to-transparent" />
 
-        <div className="relative z-10 mx-auto grid h-full w-full max-w-7xl items-center gap-6 px-5 py-6 sm:px-8 lg:grid-cols-[0.52fr_0.48fr] lg:px-10">
+        <div className="relative z-10 mx-auto grid h-full w-full max-w-7xl items-center gap-6 px-5 pb-6 pt-20 sm:px-8 lg:grid-cols-[0.52fr_0.48fr] lg:px-10">
           {/* ── Left: copy ── */}
           <div className="flex flex-col justify-center">
             <div className="orbit-glass-badge mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.3em] text-white/60 backdrop-blur-xl">

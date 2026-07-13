@@ -37,8 +37,8 @@ export default function Navigation() {
   }
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-[rgba(2,4,14,0.72)] backdrop-blur-3xl">
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orbit-electric/12 to-transparent" />
+    <nav className="fixed top-0 w-full z-50 bg-[rgba(2,4,14,0.18)] backdrop-blur-2xl">
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         <div className="relative flex items-center justify-between h-14 md:h-16">
           {/* ── Left: Logo ── */}
@@ -65,7 +65,7 @@ export default function Navigation() {
                     )}
                     <span>{link.label}</span>
                     {isActive(link.href) && (
-                      <span className="absolute -bottom-[1.19rem] left-0 right-0 h-[2px] rounded-full bg-orbit-electric" />
+                      <span className="absolute -bottom-[0.55rem] left-0 right-0 h-[2px] rounded-full bg-orbit-electric" />
                     )}
                   </Link>
                 );
@@ -78,7 +78,7 @@ export default function Navigation() {
                 >
                   {link.label}
                   {isActive(link.href) && (
-                    <span className="absolute -bottom-[1.19rem] left-0 right-0 h-[2px] rounded-full bg-orbit-electric" />
+                    <span className="absolute -bottom-[0.55rem] left-0 right-0 h-[2px] rounded-full bg-orbit-electric" />
                   )}
                 </Link>
               );
