@@ -33,10 +33,10 @@ const WHATSAPP_URL =
   "https://wa.me/5511949138973?text=Ol%C3%A1%2C+vim+pelo+site+da+Orbitamos+e+quero+fazer+um+or%C3%A7amento";
 
 const stats = [
-  { value: "7+", label: "projetos entregues" },
-  { value: "em até 7 dias", label: "landing pages" },
-  { value: "100%", label: "mobile-first" },
-  { value: "IA", label: "automações e integrações" },
+  { value: "7+", label: "projetos entregues", icon: Rocket },
+  { value: "24h", label: "primeiro contato", icon: Zap },
+  { value: "100%", label: "mobile-first", icon: ShieldCheck },
+  { value: "IA", label: "automações sob medida", icon: Bot },
 ];
 
 const heroCases = [
@@ -213,60 +213,63 @@ export default function Home() {
             willChange: "transform",
           }}
         />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_28%,rgba(0,212,255,0.15),transparent_34%),radial-gradient(circle_at_88%_76%,rgba(245,158,11,0.08),transparent_26%),linear-gradient(90deg,#03050a_0%,rgba(3,5,10,0.92)_42%,rgba(3,5,10,0.55)_100%)]" />
-        <div className="orbit-aurora pointer-events-none absolute inset-0 opacity-50" />
-        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#03050a] to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_34%,rgba(0,212,255,0.22),transparent_34%),radial-gradient(circle_at_88%_56%,rgba(139,92,246,0.18),transparent_28%),linear-gradient(90deg,#03050a_0%,rgba(3,5,10,0.94)_38%,rgba(3,5,10,0.5)_100%)]" />
+        <div className="orbit-aurora pointer-events-none absolute inset-0 opacity-40" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#03050a] to-transparent" />
 
-        <div className="relative z-10 mx-auto grid min-h-[calc(100svh-4rem)] w-full max-w-7xl items-center gap-12 px-5 py-12 sm:px-8 lg:grid-cols-[1.02fr_0.98fr] lg:px-10 lg:py-16">
+        <div className="relative z-10 mx-auto grid min-h-[calc(100svh-4rem)] w-full max-w-7xl items-center gap-8 px-5 pb-8 pt-24 sm:px-8 lg:grid-cols-[0.92fr_1.08fr] lg:px-10 lg:pb-10 lg:pt-24">
           {/* Left content */}
           <div className="max-w-3xl">
             <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.6 }}>
-              <div className="orbit-glass-badge mb-6 inline-flex items-center gap-2 border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/55 backdrop-blur-xl">
+              <div className="orbit-glass-badge mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.32em] text-white/62 shadow-[0_0_28px_rgba(0,212,255,0.08)] backdrop-blur-xl">
                 <span className="h-1.5 w-1.5 rounded-full bg-orbit-electric shadow-[0_0_18px_rgba(0,212,255,0.9)]" />
-                Tecnologia sob medida para negócios digitais
+                Tecnologia sob medida para resultados reais
               </div>
             </ScrollReveal>
 
-            <TextReveal
-              as="h1"
-              className="max-w-4xl text-balance text-4xl font-black leading-[0.98] tracking-normal text-white sm:text-5xl lg:text-6xl xl:text-7xl"
-              stagger={0.015}
-              start="top 95%"
-            >
-              Sites, sistemas e automações para negócios que querem vender, organizar e escalar.
-            </TextReveal>
+            <ScrollReveal from={{ opacity: 0, y: 24 }} to={{ duration: 0.75, delay: 0.08 }}>
+              <h1 className="max-w-4xl text-balance text-[2.8rem] font-black leading-[0.94] tracking-normal text-white sm:text-6xl lg:text-[4.55rem] xl:text-[5.15rem]">
+                Sites, sistemas e automações para negócios que querem{" "}
+                <span className="bg-gradient-to-r from-orbit-electric via-sky-400 to-orbit-purple bg-clip-text text-transparent">
+                  vender, organizar e escalar.
+                </span>
+              </h1>
+            </ScrollReveal>
 
             <ScrollReveal from={{ opacity: 0, y: 30 }} to={{ duration: 0.8, delay: 0.3 }}>
-              <p className="mt-6 max-w-2xl text-base leading-8 text-white/58 sm:text-lg">
-                Criamos soluções digitais com design premium, estratégia e tecnologia aplicada para
-                transformar presença online em resultado real.
+              <p className="mt-5 max-w-xl text-base leading-7 text-white/64 sm:text-lg">
+                Criamos soluções digitais sob medida com design premium, estratégia e tecnologia
+                aplicada para transformar presença online em crescimento previsível.
               </p>
             </ScrollReveal>
 
             <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.7, delay: 0.5 }}>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <MagneticButton strength={0.25}>
-                  <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
-                    <Button
-                      size="lg"
-                      className="orbit-cta h-12 w-full rounded-md bg-white px-6 font-bold text-black hover:bg-orbit-electric sm:w-auto"
-                    >
+                  <Button
+                    asChild
+                    size="lg"
+                    className="orbit-cta h-12 w-full rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-6 font-bold text-white shadow-[0_18px_42px_rgba(0,212,255,0.24)] hover:opacity-95 sm:w-auto"
+                  >
+                    <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
                       <MessageCircle className="size-4" />
                       Solicitar orçamento
-                    </Button>
-                  </a>
+                      <ArrowRight className="size-4" />
+                    </a>
+                  </Button>
                 </MagneticButton>
                 <MagneticButton strength={0.25}>
-                  <Link href="/projetos">
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      className="h-12 w-full rounded-md border-white/15 bg-white/[0.03] px-6 font-bold text-white hover:bg-white/10 hover:text-white sm:w-auto"
-                    >
+                  <Button
+                    asChild
+                    size="lg"
+                    variant="outline"
+                    className="h-12 w-full rounded-xl border-white/15 bg-black/20 px-6 font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.03)_inset] backdrop-blur-xl hover:bg-white/10 hover:text-white sm:w-auto"
+                  >
+                    <Link href="/projetos">
                       Ver projetos
                       <ArrowRight className="size-4" />
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </MagneticButton>
               </div>
             </ScrollReveal>
@@ -275,10 +278,11 @@ export default function Home() {
               from={{ opacity: 0, y: 20, scale: 0.95 }}
               to={{ duration: 0.6, delay: 0.6 }}
             >
-              <div className="mt-10 grid grid-cols-2 gap-px overflow-hidden border border-white/[0.08] bg-white/[0.08] sm:grid-cols-4">
+              <div className="mt-9 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.08] sm:grid-cols-4">
                 {stats.map((item) => (
                   <div key={item.label} className="group relative overflow-hidden bg-[#050812]/88 px-4 py-4 backdrop-blur-xl">
                     <span className="orbit-sweep absolute inset-y-0 left-0 w-1/2 opacity-0 group-hover:opacity-100" />
+                    <item.icon className="relative mb-3 size-5 text-orbit-electric drop-shadow-[0_0_14px_rgba(0,212,255,0.45)]" />
                     <p className="relative text-xl font-black text-white transition-transform duration-300 group-hover:translate-y-[-2px]">
                       <CountUp value={item.value} />
                     </p>
@@ -291,14 +295,32 @@ export default function Home() {
 
           {/* Right: case cards */}
           <div
-            className="relative mx-auto w-full max-w-xl lg:max-w-none"
+            className="relative mx-auto h-[28rem] w-full max-w-xl lg:h-[34rem] lg:max-w-none xl:h-[37rem]"
             style={{
               transform: isMobile ? "none" : `perspective(1200px) rotateX(${mouse.y * -3}deg) rotateY(${mouse.x * 4}deg)`,
               transition: active ? "transform 0.1s ease-out" : "transform 0.8s ease-out",
               willChange: isMobile ? "auto" : "transform",
             }}
           >
-            <div className="flex flex-col gap-4">
+            <div className="hero-orb-scene absolute inset-0">
+              <div className="hero-orb-ring hero-orb-ring-1" />
+              <div className="hero-orb-ring hero-orb-ring-2" />
+              <div className="hero-orb-ring hero-orb-ring-3" />
+              <div className="hero-orb-sphere">
+                <video
+                  src="/terra-real.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  disablePictureInPicture
+                  className="h-full w-full object-cover opacity-80 mix-blend-screen"
+                />
+              </div>
+              <div className="hero-orb-platform" />
+            </div>
+
+            <div className="relative z-10 h-full">
               {heroCases.map((project, index) => (
                 <ScrollReveal
                   key={project.name}
@@ -307,12 +329,13 @@ export default function Home() {
                 >
                   <Link
                     href={project.href}
-                    className="orbit-tilt-card group relative block overflow-hidden rounded-xl border border-white/10 bg-[#080b14]/90 backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:border-orbit-electric/30"
+                    className={`hero-case-card hero-case-card-${index + 1} orbit-tilt-card group block overflow-hidden rounded-xl border border-white/12 bg-[#07101f]/72 shadow-[0_24px_90px_rgba(0,0,0,0.44)] backdrop-blur-2xl transition duration-300 hover:-translate-y-1 hover:border-orbit-electric/35`}
                   >
                     <span className="orbit-sweep absolute inset-y-0 -left-1/2 z-10 w-1/2 opacity-0 group-hover:opacity-100" />
                     <div className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${project.accent}`} />
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 p-4">
-                      <div className="relative aspect-video w-full overflow-hidden rounded-lg sm:aspect-[4/3] sm:w-36 sm:shrink-0">
+                    <ExternalLink className="absolute right-4 top-4 size-4 text-white/45 transition-colors group-hover:text-orbit-electric" />
+                    <div className="flex items-center gap-4 p-4 pr-10">
+                      <div className="relative aspect-[4/3] w-28 shrink-0 overflow-hidden rounded-lg border border-white/8 sm:w-32">
                         <img
                           src={project.image}
                           alt={`Projeto ${project.name}`}
@@ -320,7 +343,7 @@ export default function Home() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                       </div>
-                      <div className="mt-3 flex min-w-0 flex-col sm:mt-0">
+                      <div className="flex min-w-0 flex-col">
                         <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/34">
                           Case 0{index + 1}
                         </p>
