@@ -243,33 +243,31 @@ export default function Home() {
               </p>
             </ScrollReveal>
 
-            <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.7, delay: 0.5 }}>
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <MagneticButton strength={0.25}>
-                  <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
-                    <Button
-                      size="lg"
-                      className="orbit-cta gradient-orbit h-12 w-full rounded-md px-6 font-bold text-black shadow-[0_0_20px_rgba(0,212,255,0.25)] hover:opacity-90 sm:w-auto"
-                    >
-                      <MessageCircle className="size-4" />
-                      Solicitar orçamento
-                    </Button>
-                  </a>
-                </MagneticButton>
-                <MagneticButton strength={0.25}>
-                  <Link href="/projetos">
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      className="h-12 w-full rounded-md border-white/15 bg-white/[0.03] px-6 font-bold text-white hover:bg-white/10 hover:text-white sm:w-auto"
-                    >
-                      Ver projetos
-                      <ArrowRight className="size-4" />
-                    </Button>
-                  </Link>
-                </MagneticButton>
-              </div>
-            </ScrollReveal>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <MagneticButton strength={0.25}>
+                <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
+                  <Button
+                    size="lg"
+                    className="gradient-orbit h-12 w-full rounded-md px-6 font-bold text-black shadow-[0_0_20px_rgba(0,212,255,0.25)] hover:opacity-90 sm:w-auto"
+                  >
+                    <MessageCircle className="size-4" />
+                    Solicitar orçamento
+                  </Button>
+                </a>
+              </MagneticButton>
+              <MagneticButton strength={0.25}>
+                <Link href="/projetos">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="h-12 w-full rounded-md border-white/15 bg-white/[0.03] px-6 font-bold text-white hover:bg-white/10 hover:text-white sm:w-auto"
+                  >
+                    Ver projetos
+                    <ArrowRight className="size-4" />
+                  </Button>
+                </Link>
+              </MagneticButton>
+            </div>
 
             <ScrollReveal
               from={{ opacity: 0, y: 20, scale: 0.95 }}
