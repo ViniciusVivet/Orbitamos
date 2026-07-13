@@ -246,13 +246,17 @@ export default function Home() {
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <MagneticButton strength={0.25}>
                 <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
-                  <Button
-                    size="lg"
-                    className="gradient-orbit h-12 w-full rounded-md px-6 font-bold text-black shadow-[0_0_20px_rgba(0,212,255,0.25)] hover:opacity-90 sm:w-auto"
+                  <button
+                    className="inline-flex items-center justify-center gap-2 h-12 w-full rounded-md px-6 text-sm font-bold sm:w-auto"
+                    style={{
+                      background: "linear-gradient(135deg, #00D4FF 0%, #8B5CF6 100%)",
+                      color: "#000",
+                      boxShadow: "0 0 20px rgba(0,212,255,0.25)",
+                    }}
                   >
                     <MessageCircle className="size-4" />
                     Solicitar orçamento
-                  </Button>
+                  </button>
                 </a>
               </MagneticButton>
               <MagneticButton strength={0.25}>
