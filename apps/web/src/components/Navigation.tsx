@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import LogoOrbitamos from "@/components/LogoOrbitamos";
 import { useAuth } from "@/contexts/AuthContext";
@@ -73,16 +72,16 @@ export default function Navigation() {
                 Portal
               </Link>
             )}
-            <Button
-              size="sm"
-              className="bg-gradient-to-r from-orbit-electric to-orbit-purple hover:opacity-90 text-black text-sm font-bold shadow-[0_0_16px_rgba(0,212,255,0.2)] hover:shadow-[0_0_24px_rgba(0,212,255,0.35)] transition-all duration-150"
-              asChild
+            <a
+              href={whatsappProjetosUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex h-9 items-center gap-2 rounded-lg px-5 text-sm font-bold text-black transition-opacity hover:opacity-90"
+              style={{ background: "linear-gradient(135deg, #00D4FF 0%, #8B5CF6 100%)", boxShadow: "0 0 16px rgba(0,212,255,0.2)" }}
             >
-              <a href={whatsappProjetosUrl} target="_blank" rel="noreferrer">
-                <MessageCircle className="size-4" />
-                Orçamento
-              </a>
-            </Button>
+              <MessageCircle className="size-4" />
+              Solicitar orçamento
+            </a>
           </div>
 
           {(loading || isAuthenticated) && (
