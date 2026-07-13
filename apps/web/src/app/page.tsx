@@ -26,7 +26,6 @@ import ScrollReveal from "@/components/ScrollReveal";
 import TextReveal from "@/components/TextReveal";
 import CountUp from "@/components/CountUp";
 import MagneticButton from "@/components/MagneticButton";
-import ScrollFrames from "@/components/ScrollFrames";
 import useHeroScene from "@/components/three/HeroScene";
 import useTechOrbitScene from "@/components/three/TechOrbitScene";
 import useWarpCTAScene from "@/components/three/WarpCTAScene";
@@ -188,35 +187,33 @@ export default function Home() {
   return (
     <main className="-mt-16 min-h-screen overflow-hidden bg-[#03050a] text-white">
       {/* ═══ HERO ═══ */}
-      <section className="relative" style={{ height: "350svh" }}>
-        <div
-          ref={containerRef}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          className="sticky top-0 h-[100svh] overflow-hidden"
-        >
-          {/* Scroll-driven frame sequence background */}
-          <div
-            className="absolute inset-0"
-            style={{
-              opacity: isMobile ? 0.6 : 0.45,
-              transform: `scale(1.08) translate(${mouse.x * -4}%, ${mouse.y * -3}%)`,
-              transition: active ? "transform 0.12s ease-out" : "transform 0.9s ease-out",
-              willChange: "transform",
-            }}
-          >
-            <ScrollFrames
-              folder="/hero-frames"
-              totalFrames={151}
-              scrollSpan={3}
-              className="h-full w-full"
-            />
-          </div>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_34%,rgba(0,212,255,0.22),transparent_34%),radial-gradient(circle_at_88%_56%,rgba(139,92,246,0.18),transparent_28%),linear-gradient(90deg,#03050a_0%,rgba(3,5,10,0.94)_38%,rgba(3,5,10,0.5)_100%)]" />
-          <div className="orbit-aurora pointer-events-none absolute inset-0 opacity-40" />
-          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#03050a] to-transparent" />
+      <section
+        ref={containerRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className="relative h-[100svh] overflow-hidden"
+      >
+        {/* Video background */}
+        <video
+          src="/hero-globe.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          disablePictureInPicture
+          className="absolute inset-0 h-full w-full object-cover object-[70%_center] sm:object-center [&::-webkit-media-controls-start-playback-button]:hidden [&::-webkit-media-controls]:hidden"
+          style={{
+            opacity: isMobile ? 0.6 : 0.45,
+            transform: `scale(1.08) translate(${mouse.x * -4}%, ${mouse.y * -3}%)`,
+            transition: active ? "transform 0.12s ease-out" : "transform 0.9s ease-out",
+            willChange: "transform",
+          }}
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_34%,rgba(0,212,255,0.22),transparent_34%),radial-gradient(circle_at_88%_56%,rgba(139,92,246,0.18),transparent_28%),linear-gradient(90deg,#03050a_0%,rgba(3,5,10,0.94)_38%,rgba(3,5,10,0.5)_100%)]" />
+        <div className="orbit-aurora pointer-events-none absolute inset-0 opacity-40" />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#03050a] to-transparent" />
 
-          <div className="relative z-10 mx-auto grid h-full w-full max-w-7xl items-center gap-6 px-5 pb-6 pt-20 sm:px-8 lg:grid-cols-[0.52fr_0.48fr] lg:px-10">
+        <div className="relative z-10 mx-auto grid h-full w-full max-w-7xl items-center gap-6 px-5 pb-6 pt-20 sm:px-8 lg:grid-cols-[0.52fr_0.48fr] lg:px-10">
           {/* ── Left: copy ── */}
           <div className="flex flex-col justify-center">
             <div className="orbit-glass-badge mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.3em] text-white/60 backdrop-blur-xl">
@@ -342,7 +339,6 @@ export default function Home() {
               </Link>
             ))}
           </div>
-        </div>
         </div>
       </section>
 
