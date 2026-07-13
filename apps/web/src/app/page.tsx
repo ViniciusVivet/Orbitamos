@@ -33,10 +33,10 @@ const WHATSAPP_URL =
   "https://wa.me/5511949138973?text=Ol%C3%A1%2C+vim+pelo+site+da+Orbitamos+e+quero+fazer+um+or%C3%A7amento";
 
 const stats = [
-  { value: "7+", label: "projetos entregues", icon: Rocket },
-  { value: "24h", label: "primeiro contato", icon: Zap },
-  { value: "100%", label: "mobile-first", icon: ShieldCheck },
-  { value: "IA", label: "automações sob medida", icon: Bot },
+  { value: "7+", label: "projetos entregues" },
+  { value: "24h", label: "primeiro contato" },
+  { value: "100%", label: "mobile-first" },
+  { value: "IA", label: "automações sob medida" },
 ];
 
 const heroCases = [
@@ -188,16 +188,9 @@ export default function Home() {
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="relative min-h-[calc(100svh-4rem)] overflow-hidden"
+        className="relative h-[calc(100svh-3.5rem)] overflow-hidden"
       >
-        {/* 3D background on desktop, video on mobile */}
-        {!isMobile && (
-          <div className="absolute inset-0 z-0">
-            <SpaceCanvas setup={heroSetup} />
-          </div>
-        )}
-
-        {/* Video fallback - visible on mobile, overlay on desktop */}
+        {/* Video background */}
         <video
           src="/hero.mp4"
           autoPlay
@@ -215,93 +208,76 @@ export default function Home() {
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_34%,rgba(0,212,255,0.22),transparent_34%),radial-gradient(circle_at_88%_56%,rgba(139,92,246,0.18),transparent_28%),linear-gradient(90deg,#03050a_0%,rgba(3,5,10,0.94)_38%,rgba(3,5,10,0.5)_100%)]" />
         <div className="orbit-aurora pointer-events-none absolute inset-0 opacity-40" />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#03050a] to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#03050a] to-transparent" />
 
-        <div className="relative z-10 mx-auto grid min-h-[calc(100svh-4rem)] w-full max-w-7xl items-center gap-8 px-5 pb-8 pt-24 sm:px-8 lg:grid-cols-[0.92fr_1.08fr] lg:px-10 lg:pb-10 lg:pt-24">
-          {/* Left content */}
-          <div className="max-w-3xl">
-            <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.6 }}>
-              <div className="orbit-glass-badge mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.32em] text-white/62 shadow-[0_0_28px_rgba(0,212,255,0.08)] backdrop-blur-xl">
-                <span className="h-1.5 w-1.5 rounded-full bg-orbit-electric shadow-[0_0_18px_rgba(0,212,255,0.9)]" />
-                Tecnologia sob medida para resultados reais
-              </div>
-            </ScrollReveal>
+        <div className="relative z-10 mx-auto grid h-full w-full max-w-7xl items-center gap-6 px-5 py-6 sm:px-8 lg:grid-cols-[0.52fr_0.48fr] lg:px-10">
+          {/* ── Left: copy ── */}
+          <div className="flex flex-col justify-center">
+            <div className="orbit-glass-badge mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.3em] text-white/60 backdrop-blur-xl">
+              <span className="h-1.5 w-1.5 rounded-full bg-orbit-electric shadow-[0_0_18px_rgba(0,212,255,0.9)]" />
+              Tecnologia sob medida para resultados reais
+            </div>
 
-            <ScrollReveal from={{ opacity: 0, y: 24 }} to={{ duration: 0.75, delay: 0.08 }}>
-              <h1 className="max-w-4xl text-balance text-[2.8rem] font-black leading-[0.94] tracking-normal text-white sm:text-6xl lg:text-[4.55rem] xl:text-[5.15rem]">
-                Sites, sistemas e automações para negócios que querem{" "}
-                <span className="bg-gradient-to-r from-orbit-electric via-sky-400 to-orbit-purple bg-clip-text text-transparent">
-                  vender, organizar e escalar.
-                </span>
-              </h1>
-            </ScrollReveal>
+            <h1 className="max-w-xl text-[1.75rem] font-black leading-[1.08] tracking-tight text-white sm:text-4xl lg:text-[2.65rem] xl:text-[3rem]">
+              Sites, sistemas e automações para negócios que querem{" "}
+              <span className="bg-gradient-to-r from-orbit-electric via-sky-400 to-orbit-purple bg-clip-text text-transparent">
+                vender, organizar e escalar.
+              </span>
+            </h1>
 
-            <ScrollReveal from={{ opacity: 0, y: 30 }} to={{ duration: 0.8, delay: 0.3 }}>
-              <p className="mt-5 max-w-xl text-base leading-7 text-white/64 sm:text-lg">
-                Criamos soluções digitais sob medida com design premium, estratégia e tecnologia
-                aplicada para transformar presença online em crescimento previsível.
-              </p>
-            </ScrollReveal>
+            <p className="mt-4 max-w-lg text-sm leading-relaxed text-white/65 sm:text-base">
+              Criamos soluções digitais sob medida com design premium, estratégia e tecnologia
+              aplicada para transformar presença online em crescimento previsível.
+            </p>
 
-            <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.7, delay: 0.5 }}>
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <MagneticButton strength={0.25}>
-                  <Button
-                    asChild
-                    size="lg"
-                    className="orbit-cta h-12 w-full rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-6 font-bold text-white shadow-[0_18px_42px_rgba(0,212,255,0.24)] hover:opacity-95 sm:w-auto"
-                  >
-                    <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
-                      <MessageCircle className="size-4" />
-                      Solicitar orçamento
-                      <ArrowRight className="size-4" />
-                    </a>
-                  </Button>
-                </MagneticButton>
-                <MagneticButton strength={0.25}>
-                  <Button
-                    asChild
-                    size="lg"
-                    variant="outline"
-                    className="h-12 w-full rounded-xl border-white/15 bg-black/20 px-6 font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.03)_inset] backdrop-blur-xl hover:bg-white/10 hover:text-white sm:w-auto"
-                  >
-                    <Link href="/projetos">
-                      Ver projetos
-                      <ArrowRight className="size-4" />
-                    </Link>
-                  </Button>
-                </MagneticButton>
-              </div>
-            </ScrollReveal>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <MagneticButton strength={0.25}>
+                <a
+                  href={WHATSAPP_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl px-6 text-sm font-bold text-black transition-opacity hover:opacity-90 sm:w-auto"
+                  style={{ background: "linear-gradient(135deg, #00D4FF 0%, #8B5CF6 100%)", boxShadow: "0 16px 40px rgba(0,212,255,0.22)" }}
+                >
+                  <MessageCircle className="size-4" />
+                  Solicitar orçamento
+                  <ArrowRight className="size-4" />
+                </a>
+              </MagneticButton>
+              <MagneticButton strength={0.25}>
+                <Link
+                  href="/projetos"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-6 text-sm font-bold text-white backdrop-blur-xl transition-colors hover:bg-white/10 sm:w-auto"
+                >
+                  Ver projetos
+                  <ArrowRight className="size-4" />
+                </Link>
+              </MagneticButton>
+            </div>
 
-            <ScrollReveal
-              from={{ opacity: 0, y: 20, scale: 0.95 }}
-              to={{ duration: 0.6, delay: 0.6 }}
-            >
-              <div className="mt-9 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.08] sm:grid-cols-4">
-                {stats.map((item) => (
-                  <div key={item.label} className="group relative overflow-hidden bg-[#050812]/88 px-4 py-4 backdrop-blur-xl">
-                    <span className="orbit-sweep absolute inset-y-0 left-0 w-1/2 opacity-0 group-hover:opacity-100" />
-                    <item.icon className="relative mb-3 size-5 text-orbit-electric drop-shadow-[0_0_14px_rgba(0,212,255,0.45)]" />
-                    <p className="relative text-xl font-black text-white transition-transform duration-300 group-hover:translate-y-[-2px]">
-                      <CountUp value={item.value} />
-                    </p>
-                    <p className="mt-1 text-xs text-white/42">{item.label}</p>
-                  </div>
-                ))}
-              </div>
-            </ScrollReveal>
+            <div className="mt-6 grid grid-cols-4 gap-px overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.08]">
+              {stats.map((item) => (
+                <div key={item.label} className="group relative overflow-hidden bg-[#050812]/90 px-3 py-3 backdrop-blur-xl">
+                  <span className="orbit-sweep absolute inset-y-0 left-0 w-1/2 opacity-0 group-hover:opacity-100" />
+                  <p className="relative text-lg font-black text-orbit-electric">
+                    <CountUp value={item.value} />
+                  </p>
+                  <p className="mt-0.5 text-[10px] leading-tight text-white/45">{item.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Right: case cards */}
+          {/* ── Right: globe + case cards ── */}
           <div
-            className="relative mx-auto h-[28rem] w-full max-w-xl lg:h-[34rem] lg:max-w-none xl:h-[37rem]"
+            className="relative hidden h-full w-full lg:block"
             style={{
-              transform: isMobile ? "none" : `perspective(1200px) rotateX(${mouse.y * -3}deg) rotateY(${mouse.x * 4}deg)`,
+              transform: `perspective(1200px) rotateX(${mouse.y * -3}deg) rotateY(${mouse.x * 4}deg)`,
               transition: active ? "transform 0.1s ease-out" : "transform 0.8s ease-out",
-              willChange: isMobile ? "auto" : "transform",
+              willChange: "transform",
             }}
           >
+            {/* Globe */}
             <div className="hero-orb-scene absolute inset-0">
               <div className="hero-orb-ring hero-orb-ring-1" />
               <div className="hero-orb-ring hero-orb-ring-2" />
@@ -320,47 +296,63 @@ export default function Home() {
               <div className="hero-orb-platform" />
             </div>
 
+            {/* Case cards */}
             <div className="relative z-10 h-full">
               {heroCases.map((project, index) => (
-                <ScrollReveal
+                <Link
                   key={project.name}
-                  from={{ opacity: 0, y: 30 }}
-                  to={{ duration: 0.6, delay: 0.2 + index * 0.12 }}
+                  href={project.href}
+                  className={`hero-case-card hero-case-card-${index + 1} orbit-tilt-card group block overflow-hidden rounded-xl border border-white/12 bg-[#07101f]/72 shadow-[0_24px_80px_rgba(0,0,0,0.5)] backdrop-blur-2xl transition duration-300 hover:-translate-y-1 hover:border-orbit-electric/35`}
                 >
-                  <Link
-                    href={project.href}
-                    className={`hero-case-card hero-case-card-${index + 1} orbit-tilt-card group block overflow-hidden rounded-xl border border-white/12 bg-[#07101f]/72 shadow-[0_24px_90px_rgba(0,0,0,0.44)] backdrop-blur-2xl transition duration-300 hover:-translate-y-1 hover:border-orbit-electric/35`}
-                  >
-                    <span className="orbit-sweep absolute inset-y-0 -left-1/2 z-10 w-1/2 opacity-0 group-hover:opacity-100" />
-                    <div className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${project.accent}`} />
-                    <ExternalLink className="absolute right-4 top-4 size-4 text-white/45 transition-colors group-hover:text-orbit-electric" />
-                    <div className="flex items-center gap-4 p-4 pr-10">
-                      <div className="relative aspect-[4/3] w-28 shrink-0 overflow-hidden rounded-lg border border-white/8 sm:w-32">
-                        <img
-                          src={project.image}
-                          alt={`Projeto ${project.name}`}
-                          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-                      </div>
-                      <div className="flex min-w-0 flex-col">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/34">
-                          Case 0{index + 1}
-                        </p>
-                        <h2 className="mt-1 truncate text-lg font-black text-white sm:text-xl">
-                          {project.name}
-                        </h2>
-                        <p className="mt-0.5 text-sm text-white/48">{project.type}</p>
-                        <div className="mt-3 flex items-center gap-2 text-sm font-semibold text-white/70">
-                          <CheckCircle2 className="size-4 shrink-0 text-orbit-electric" />
-                          {project.result}
-                        </div>
+                  <span className="orbit-sweep absolute inset-y-0 -left-1/2 z-10 w-1/2 opacity-0 group-hover:opacity-100" />
+                  <div className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${project.accent}`} />
+                  <div className="flex items-center gap-3 p-3">
+                    <div className="relative aspect-[4/3] w-20 shrink-0 overflow-hidden rounded-lg">
+                      <img
+                        src={project.image}
+                        alt={`Projeto ${project.name}`}
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="flex min-w-0 flex-col">
+                      <h2 className="truncate text-sm font-black text-white">
+                        {project.name}
+                      </h2>
+                      <p className="text-xs text-white/48">{project.type}</p>
+                      <div className="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-white/70">
+                        <CheckCircle2 className="size-3 shrink-0 text-orbit-electric" />
+                        {project.result}
                       </div>
                     </div>
-                  </Link>
-                </ScrollReveal>
+                  </div>
+                </Link>
               ))}
             </div>
+          </div>
+
+          {/* Mobile: case cards stacked */}
+          <div className="flex flex-col gap-3 lg:hidden">
+            {heroCases.map((project) => (
+              <Link
+                key={project.name}
+                href={project.href}
+                className="group block overflow-hidden rounded-xl border border-white/12 bg-[#07101f]/72 backdrop-blur-2xl transition duration-300 hover:border-orbit-electric/35"
+              >
+                <div className="flex items-center gap-3 p-3">
+                  <div className="relative aspect-[4/3] w-20 shrink-0 overflow-hidden rounded-lg">
+                    <img src={project.image} alt={`Projeto ${project.name}`} className="h-full w-full object-cover" />
+                  </div>
+                  <div className="flex min-w-0 flex-col">
+                    <h2 className="truncate text-sm font-black text-white">{project.name}</h2>
+                    <p className="text-xs text-white/48">{project.type}</p>
+                    <div className="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-white/70">
+                      <CheckCircle2 className="size-3 shrink-0 text-orbit-electric" />
+                      {project.result}
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
