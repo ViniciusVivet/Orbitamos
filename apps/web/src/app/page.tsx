@@ -34,7 +34,7 @@ const WHATSAPP_URL =
 
 const stats = [
   { value: "7+", label: "projetos entregues" },
-  { value: "24h", label: "primeiro contato" },
+  { value: "em até 7 dias", label: "landing pages" },
   { value: "100%", label: "mobile-first" },
   { value: "IA", label: "automações e integrações" },
 ];
@@ -217,11 +217,11 @@ export default function Home() {
         <div className="orbit-aurora pointer-events-none absolute inset-0 opacity-50" />
         <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#03050a] to-transparent" />
 
-        <div className="relative z-10 mx-auto grid min-h-[calc(100svh-4rem)] w-full max-w-7xl items-center gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[1.02fr_0.98fr] lg:gap-10 lg:px-10 lg:py-12">
+        <div className="relative z-10 mx-auto grid min-h-[calc(100svh-4rem)] w-full max-w-7xl items-center gap-12 px-5 py-12 sm:px-8 lg:grid-cols-[1.02fr_0.98fr] lg:px-10 lg:py-16">
           {/* Left content */}
           <div className="max-w-3xl">
             <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.6 }}>
-              <div className="orbit-glass-badge mb-4 inline-flex items-center gap-2 border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/55 backdrop-blur-xl">
+              <div className="orbit-glass-badge mb-6 inline-flex items-center gap-2 border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/55 backdrop-blur-xl">
                 <span className="h-1.5 w-1.5 rounded-full bg-orbit-electric shadow-[0_0_18px_rgba(0,212,255,0.9)]" />
                 Tecnologia sob medida para negócios digitais
               </div>
@@ -229,62 +229,60 @@ export default function Home() {
 
             <TextReveal
               as="h1"
-              className="max-w-4xl text-balance text-4xl font-black leading-[0.98] tracking-normal sm:text-5xl lg:text-5xl xl:text-6xl gradient-text"
+              className="max-w-4xl text-balance text-4xl font-black leading-[0.98] tracking-normal text-white sm:text-5xl lg:text-6xl xl:text-7xl"
               stagger={0.015}
               start="top 95%"
             >
-              Sites, sistemas e automações para vender, organizar e escalar.
+              Sites, sistemas e automações para negócios que querem vender, organizar e escalar.
             </TextReveal>
 
             <ScrollReveal from={{ opacity: 0, y: 30 }} to={{ duration: 0.8, delay: 0.3 }}>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-white/70 sm:text-lg">
+              <p className="mt-6 max-w-2xl text-base leading-8 text-white/58 sm:text-lg">
                 Criamos soluções digitais com design premium, estratégia e tecnologia aplicada para
                 transformar presença online em resultado real.
               </p>
             </ScrollReveal>
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <MagneticButton strength={0.25}>
-                <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
-                  <button
-                    className="inline-flex items-center justify-center gap-2 h-12 w-full rounded-md px-6 text-sm font-bold sm:w-auto"
-                    style={{
-                      background: "linear-gradient(135deg, #00D4FF 0%, #8B5CF6 100%)",
-                      color: "#000",
-                      boxShadow: "0 0 20px rgba(0,212,255,0.25)",
-                    }}
-                  >
-                    <MessageCircle className="size-4" />
-                    Solicitar orçamento
-                  </button>
-                </a>
-              </MagneticButton>
-              <MagneticButton strength={0.25}>
-                <Link href="/projetos">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="h-12 w-full rounded-md border-white/15 bg-white/[0.03] px-6 font-bold text-white hover:bg-white/10 hover:text-white sm:w-auto"
-                  >
-                    Ver projetos
-                    <ArrowRight className="size-4" />
-                  </Button>
-                </Link>
-              </MagneticButton>
-            </div>
+            <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.7, delay: 0.5 }}>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <MagneticButton strength={0.25}>
+                  <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
+                    <Button
+                      size="lg"
+                      className="orbit-cta h-12 w-full rounded-md bg-white px-6 font-bold text-black hover:bg-orbit-electric sm:w-auto"
+                    >
+                      <MessageCircle className="size-4" />
+                      Solicitar orçamento
+                    </Button>
+                  </a>
+                </MagneticButton>
+                <MagneticButton strength={0.25}>
+                  <Link href="/projetos">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="h-12 w-full rounded-md border-white/15 bg-white/[0.03] px-6 font-bold text-white hover:bg-white/10 hover:text-white sm:w-auto"
+                    >
+                      Ver projetos
+                      <ArrowRight className="size-4" />
+                    </Button>
+                  </Link>
+                </MagneticButton>
+              </div>
+            </ScrollReveal>
 
             <ScrollReveal
               from={{ opacity: 0, y: 20, scale: 0.95 }}
               to={{ duration: 0.6, delay: 0.6 }}
             >
-              <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div className="mt-10 grid grid-cols-2 gap-px overflow-hidden border border-white/[0.08] bg-white/[0.08] sm:grid-cols-4">
                 {stats.map((item) => (
-                  <div key={item.label} className="group relative overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-4 backdrop-blur-xl transition-colors duration-300 hover:border-orbit-electric/25 hover:bg-white/[0.07]">
+                  <div key={item.label} className="group relative overflow-hidden bg-[#050812]/88 px-4 py-4 backdrop-blur-xl">
                     <span className="orbit-sweep absolute inset-y-0 left-0 w-1/2 opacity-0 group-hover:opacity-100" />
-                    <p className="relative text-xl font-black text-orbit-electric transition-transform duration-300 group-hover:translate-y-[-2px]">
+                    <p className="relative text-xl font-black text-white transition-transform duration-300 group-hover:translate-y-[-2px]">
                       <CountUp value={item.value} />
                     </p>
-                    <p className="mt-1 text-xs text-white/55">{item.label}</p>
+                    <p className="mt-1 text-xs text-white/42">{item.label}</p>
                   </div>
                 ))}
               </div>
