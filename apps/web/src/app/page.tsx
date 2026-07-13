@@ -215,7 +215,7 @@ export default function Home() {
           <div className="flex flex-col justify-center">
             <div className="orbit-glass-badge mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.3em] text-white/60 backdrop-blur-xl">
               <span className="h-1.5 w-1.5 rounded-full bg-orbit-electric shadow-[0_0_18px_rgba(0,212,255,0.9)]" />
-              Tecnologia sob medida para resultados reais
+              Tecnologia sob medida para o seu negócio
             </div>
 
             <h1 className="max-w-xl font-display text-[1.75rem] font-bold leading-[1.08] tracking-tight text-white sm:text-4xl lg:text-[2.65rem] xl:text-[3rem]">
