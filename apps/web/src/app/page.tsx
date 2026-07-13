@@ -11,9 +11,12 @@ import {
   ExternalLink,
   Layers3,
   MessageCircle,
+  Plus,
   Rocket,
   ShieldCheck,
+  Smartphone,
   Sparkles,
+  TrendingUp,
   Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -33,10 +36,10 @@ const WHATSAPP_URL =
   "https://wa.me/5511949138973?text=Ol%C3%A1%2C+vim+pelo+site+da+Orbitamos+e+quero+fazer+um+or%C3%A7amento";
 
 const stats = [
-  { value: "7+", label: "projetos entregues" },
-  { value: "24h", label: "primeiro contato" },
-  { value: "100%", label: "mobile-first" },
-  { value: "IA", label: "automações sob medida" },
+  { value: "7+", label: "projetos entregues", icon: Layers3 },
+  { value: "24h", label: "primeiro contato", icon: Zap },
+  { value: "100%", label: "mobile-first", icon: Smartphone },
+  { value: "IA", label: "automações sob medida", icon: Bot },
 ];
 
 const heroCases = [
@@ -230,24 +233,25 @@ export default function Home() {
               aplicada para transformar presença online em crescimento previsível.
             </p>
 
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
               <MagneticButton strength={0.25}>
                 <a
                   href={WHATSAPP_URL}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl px-6 text-sm font-bold text-black transition-opacity hover:opacity-90 sm:w-auto"
+                  className="chat-bubble relative inline-flex h-12 items-center gap-2.5 rounded-2xl rounded-bl-sm px-6 font-display text-sm font-semibold text-black transition-opacity hover:opacity-90"
                   style={{ background: "linear-gradient(135deg, #00D4FF 0%, #8B5CF6 100%)", boxShadow: "0 16px 40px rgba(0,212,255,0.22)" }}
                 >
-                  <MessageCircle className="size-4" />
                   Solicitar orçamento
-                  <ArrowRight className="size-4" />
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#0066FF]">
+                    <Plus className="size-3 text-white" strokeWidth={3} />
+                  </span>
                 </a>
               </MagneticButton>
               <MagneticButton strength={0.25}>
                 <Link
                   href="/projetos"
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-6 text-sm font-bold text-white backdrop-blur-xl transition-colors hover:bg-white/10 sm:w-auto"
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/[0.04] px-6 font-display text-sm font-semibold text-white backdrop-blur-xl transition-colors hover:bg-white/10 sm:w-auto"
                 >
                   Ver projetos
                   <ArrowRight className="size-4" />
@@ -255,14 +259,14 @@ export default function Home() {
               </MagneticButton>
             </div>
 
-            <div className="mt-6 grid grid-cols-4 gap-px overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.08]">
-              {stats.map((item) => (
-                <div key={item.label} className="group relative overflow-hidden bg-[#050812]/90 px-3 py-3 backdrop-blur-xl">
-                  <span className="orbit-sweep absolute inset-y-0 left-0 w-1/2 opacity-0 group-hover:opacity-100" />
-                  <p className="relative text-lg font-black text-orbit-electric">
+            <div className="mt-8 flex items-stretch">
+              {stats.map((item, i) => (
+                <div key={item.label} className={`flex-1 px-4 py-2 ${i > 0 ? "border-l border-white/[0.1]" : ""}`}>
+                  <item.icon className="mb-2 size-4 text-orbit-electric/70" strokeWidth={1.5} />
+                  <p className="font-display text-lg font-bold text-white">
                     <CountUp value={item.value} />
                   </p>
-                  <p className="mt-0.5 text-[10px] leading-tight text-white/45">{item.label}</p>
+                  <p className="mt-0.5 text-[11px] leading-tight text-white/40">{item.label}</p>
                 </div>
               ))}
             </div>
