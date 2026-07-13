@@ -218,7 +218,7 @@ export default function Home() {
               Tecnologia sob medida para resultados reais
             </div>
 
-            <h1 className="max-w-xl text-[1.75rem] font-black leading-[1.08] tracking-tight text-white sm:text-4xl lg:text-[2.65rem] xl:text-[3rem]">
+            <h1 className="max-w-xl font-display text-[1.75rem] font-bold leading-[1.08] tracking-tight text-white sm:text-4xl lg:text-[2.65rem] xl:text-[3rem]">
               Sites, sistemas e automações para negócios que querem{" "}
               <span className="bg-gradient-to-r from-orbit-electric via-sky-400 to-orbit-purple bg-clip-text text-transparent">
                 vender, organizar e escalar.
@@ -277,25 +277,6 @@ export default function Home() {
               willChange: "transform",
             }}
           >
-            {/* Globe */}
-            <div className="hero-orb-scene absolute inset-0">
-              <div className="hero-orb-ring hero-orb-ring-1" />
-              <div className="hero-orb-ring hero-orb-ring-2" />
-              <div className="hero-orb-ring hero-orb-ring-3" />
-              <div className="hero-orb-sphere">
-                <video
-                  src="/terra-real.mp4"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  disablePictureInPicture
-                  className="h-full w-full object-cover opacity-80 mix-blend-screen"
-                />
-              </div>
-              <div className="hero-orb-platform" />
-            </div>
-
             {/* Case cards */}
             <div className="relative z-10 h-full">
               {heroCases.map((project, index) => (
@@ -306,8 +287,8 @@ export default function Home() {
                 >
                   <span className="orbit-sweep absolute inset-y-0 -left-1/2 z-10 w-1/2 opacity-0 group-hover:opacity-100" />
                   <div className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${project.accent}`} />
-                  <div className="flex items-center gap-3 p-3">
-                    <div className="relative aspect-[4/3] w-20 shrink-0 overflow-hidden rounded-lg">
+                  <div className="flex items-center gap-4 p-4">
+                    <div className="relative aspect-[4/3] w-28 shrink-0 overflow-hidden rounded-lg">
                       <img
                         src={project.image}
                         alt={`Projeto ${project.name}`}
@@ -315,12 +296,12 @@ export default function Home() {
                       />
                     </div>
                     <div className="flex min-w-0 flex-col">
-                      <h2 className="truncate text-sm font-black text-white">
+                      <h2 className="truncate font-display text-base font-bold text-white">
                         {project.name}
                       </h2>
                       <p className="text-xs text-white/48">{project.type}</p>
-                      <div className="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-white/70">
-                        <CheckCircle2 className="size-3 shrink-0 text-orbit-electric" />
+                      <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-white/70">
+                        <CheckCircle2 className="size-3.5 shrink-0 text-orbit-electric" />
                         {project.result}
                       </div>
                     </div>
@@ -338,15 +319,15 @@ export default function Home() {
                 href={project.href}
                 className="group block overflow-hidden rounded-xl border border-white/12 bg-[#07101f]/72 backdrop-blur-2xl transition duration-300 hover:border-orbit-electric/35"
               >
-                <div className="flex items-center gap-3 p-3">
-                  <div className="relative aspect-[4/3] w-20 shrink-0 overflow-hidden rounded-lg">
+                <div className="flex items-center gap-4 p-4">
+                  <div className="relative aspect-[4/3] w-28 shrink-0 overflow-hidden rounded-lg">
                     <img src={project.image} alt={`Projeto ${project.name}`} className="h-full w-full object-cover" />
                   </div>
                   <div className="flex min-w-0 flex-col">
-                    <h2 className="truncate text-sm font-black text-white">{project.name}</h2>
+                    <h2 className="truncate font-display text-base font-bold text-white">{project.name}</h2>
                     <p className="text-xs text-white/48">{project.type}</p>
-                    <div className="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-white/70">
-                      <CheckCircle2 className="size-3 shrink-0 text-orbit-electric" />
+                    <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-white/70">
+                      <CheckCircle2 className="size-3.5 shrink-0 text-orbit-electric" />
                       {project.result}
                     </div>
                   </div>

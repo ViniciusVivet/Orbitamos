@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
 import CursorOrbit from "@/components/CursorOrbit";
@@ -14,6 +14,12 @@ import ErrorBoundaryWrapper from "@/components/ErrorBoundaryWrapper";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-display",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -61,7 +67,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
         <ErrorBoundaryWrapper>
           <ClientAuthProvider>
             <ProgressProviderWithAuth>

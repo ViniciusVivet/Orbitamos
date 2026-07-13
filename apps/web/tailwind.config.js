@@ -8,6 +8,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        display: ['var(--font-display)', 'system-ui', 'sans-serif'],
+      },
       colors: {
         // Paleta da Orbitamos
         'orbit-black': '#000000',
