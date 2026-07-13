@@ -182,13 +182,13 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#03050a] text-white">
+    <main className="-mt-16 min-h-screen overflow-hidden bg-[#03050a] text-white">
       {/* ═══ HERO ═══ */}
       <section
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="relative -mt-16 h-[100svh] overflow-hidden"
+        className="relative h-[100svh] overflow-hidden"
       >
         {/* Video background */}
         <video
