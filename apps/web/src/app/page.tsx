@@ -441,7 +441,7 @@ export default function Home() {
                 <MagneticButton key={service.title} strength={0.12}>
                   <Link
                     href={service.href}
-                    className="orbit-tilt-card group relative block overflow-hidden border border-white/[0.08] bg-white/[0.035] p-5 transition duration-300 hover:-translate-y-1.5 hover:border-orbit-electric/30 hover:bg-white/[0.065]"
+                    className="orbit-tilt-card group relative flex h-full flex-col overflow-hidden border border-white/[0.08] bg-white/[0.035] p-5 transition duration-300 hover:-translate-y-1.5 hover:border-orbit-electric/30 hover:bg-white/[0.065]"
                   >
                     <span className="orbit-sweep absolute inset-y-0 -left-1/2 w-1/2 opacity-0 group-hover:opacity-100" />
                     <service.icon className="relative size-6 text-orbit-electric transition-transform duration-300 group-hover:scale-110" />
@@ -455,7 +455,7 @@ export default function Home() {
                         </div>
                       ))}
                     </div>
-                    <div className="relative mt-5 text-sm font-bold text-orbit-electric opacity-80 transition-opacity group-hover:opacity-100">
+                    <div className="relative mt-auto pt-5 text-sm font-bold text-orbit-electric opacity-80 transition-opacity group-hover:opacity-100">
                       Ver solução
                     </div>
                   </Link>
