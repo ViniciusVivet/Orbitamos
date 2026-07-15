@@ -406,7 +406,7 @@ export default function Home() {
           muted
           playsInline
           disablePictureInPicture
-          className="absolute inset-0 h-full w-full object-cover opacity-[0.45] [&::-webkit-media-controls]:hidden"
+          className="absolute inset-0 h-full w-full object-cover opacity-[0.28] [&::-webkit-media-controls]:hidden"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#03050a] via-transparent to-[#03050a]" />
       <div className="relative z-10 mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:px-10">
