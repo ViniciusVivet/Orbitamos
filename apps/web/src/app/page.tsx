@@ -206,7 +206,7 @@ export default function Home() {
           className="absolute inset-0 h-full w-full object-cover [&::-webkit-media-controls-start-playback-button]:hidden [&::-webkit-media-controls]:hidden"
           style={{
             opacity: isMobile ? 0.6 : 0.45,
-            transform: `scale(1.15) translate(${mouse.x * -4}%, ${mouse.y * -3}%)`,
+            transform: `scale(1.25) translate(${mouse.x * -8}%, ${mouse.y * -6}%)`,
             transition: active ? "transform 0.12s ease-out" : "transform 0.9s ease-out",
             willChange: "transform",
           }}
