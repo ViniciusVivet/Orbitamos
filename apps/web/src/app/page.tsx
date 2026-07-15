@@ -367,7 +367,7 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:px-10">
         <div className="grid gap-10 lg:grid-cols-[0.86fr_1.14fr]">
           <div>
-            <ScrollReveal from={{ opacity: 0, x: -30 }} to={{ duration: 0.7 }}>
+            <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.7 }}>
               <p className="text-xs font-bold uppercase tracking-[0.24em] text-orbit-electric/80">
                 O que fazemos
               </p>
@@ -430,7 +430,7 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:px-10">
           <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
             <div>
-              <ScrollReveal from={{ opacity: 0, x: -20 }} to={{ duration: 0.6 }}>
+              <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.6 }}>
                 <p className="text-xs font-bold uppercase tracking-[0.24em] text-orbit-electric/80">
                   Projetos em destaque
                 </p>
@@ -505,7 +505,7 @@ export default function Home() {
       {/* ═══ PROCESS ═══ */}
       <section className="mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[0.78fr_1.22fr] lg:px-10">
         <div>
-          <ScrollReveal from={{ opacity: 0, x: -30 }} to={{ duration: 0.7 }}>
+          <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.7 }}>
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-orbit-electric/80">
               Como funciona
             </p>
@@ -545,7 +545,7 @@ export default function Home() {
         <div className="orbit-aurora pointer-events-none absolute inset-0 opacity-40" />
         <div className="relative mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[0.78fr_1.22fr] lg:px-10">
           <div className="max-w-xl">
-            <ScrollReveal from={{ opacity: 0, x: -30 }} to={{ duration: 0.7 }}>
+            <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.7 }}>
               <p className="text-xs font-bold uppercase tracking-[0.24em] text-orbit-electric/80">
                 Engenharia por trás
               </p>
