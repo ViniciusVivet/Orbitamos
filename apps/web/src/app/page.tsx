@@ -196,12 +196,14 @@ export default function Home() {
         {/* Video background */}
         <video
           src="/hero-globe.mp4"
+          poster="/hero-poster.jpg"
+          preload="auto"
           autoPlay
           loop
           muted
           playsInline
           disablePictureInPicture
-          className="absolute inset-0 h-full w-full object-cover object-[70%_center] sm:object-center [&::-webkit-media-controls-start-playback-button]:hidden [&::-webkit-media-controls]:hidden"
+          className="absolute inset-0 h-full w-full object-cover sm:object-center [&::-webkit-media-controls-start-playback-button]:hidden [&::-webkit-media-controls]:hidden"
           style={{
             opacity: isMobile ? 0.6 : 0.45,
             transform: `scale(1.08) translate(${mouse.x * -4}%, ${mouse.y * -3}%)`,
