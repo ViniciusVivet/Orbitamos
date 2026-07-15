@@ -429,6 +429,30 @@
   }
 }
 
+/* Orbi mascote flutuante */
+@keyframes orbi-float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.15));
+  }
+  25% {
+    transform: translateY(-12px) rotate(1.5deg);
+    filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.3));
+  }
+  50% {
+    transform: translateY(-6px) rotate(0deg);
+    filter: drop-shadow(0 0 25px rgba(139, 92, 246, 0.25));
+  }
+  75% {
+    transform: translateY(-14px) rotate(-1.5deg);
+    filter: drop-shadow(0 0 32px rgba(0, 212, 255, 0.28));
+  }
+}
+
+.animate-orbi-float {
+  animation: orbi-float 6s ease-in-out infinite;
+}
+
 /* Estilos básicos e mobile */
 html {
   background: #000;

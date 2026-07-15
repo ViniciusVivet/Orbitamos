@@ -389,7 +389,7 @@ export default function Home() {
               <img
                 src="/orbi-tech.png"
                 alt="Orbi apresentando servicos"
-                className="mx-auto mt-8 hidden w-56 drop-shadow-[0_0_30px_rgba(0,212,255,0.2)] lg:block xl:w-64"
+                className="animate-orbi-float mx-auto mt-8 hidden w-56 lg:block xl:w-64"
               />
             </ScrollReveal>
           </div>
