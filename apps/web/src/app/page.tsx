@@ -153,6 +153,40 @@ const processSteps = [
 
 const stackTags = ["Next.js", "TypeScript", "APIs", "PostgreSQL", "Supabase", "Cloudinary", "IA", "Automações"];
 
+function OrbiMascot() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+
+  const handleMove = useCallback((e: React.MouseEvent) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    setPos({ x, y });
+  }, []);
+
+  const handleLeave = useCallback(() => setPos({ x: 0, y: 0 }), []);
+
+  return (
+    <div
+      ref={ref}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
+      className="mx-auto mt-8 hidden w-56 cursor-none lg:block xl:w-64"
+    >
+      <img
+        src="/orbi-tech.png"
+        alt="Orbi apresentando servicos"
+        className="animate-orbi-float w-full"
+        style={{
+          transform: `translate(${pos.x * 18}px, ${pos.y * 14}px) rotateY(${pos.x * 12}deg) rotateX(${pos.y * -8}deg)`,
+          transition: "transform 0.3s ease-out",
+        }}
+      />
+    </div>
+  );
+}
+
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
@@ -386,11 +420,7 @@ export default function Home() {
             </ScrollReveal>
 
             <ScrollReveal from={{ opacity: 0, y: 30, scale: 0.9 }} to={{ duration: 0.8, delay: 0.5 }}>
-              <img
-                src="/orbi-tech.png"
-                alt="Orbi apresentando servicos"
-                className="animate-orbi-float mx-auto mt-8 hidden w-56 lg:block xl:w-64"
-              />
+              <OrbiMascot />
             </ScrollReveal>
           </div>
 
