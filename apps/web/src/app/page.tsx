@@ -225,7 +225,7 @@ export default function Home() {
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="relative h-[100svh] overflow-hidden"
+        className="relative min-h-[100svh] overflow-hidden lg:h-[100svh]"
       >
         {/* Video background */}
         <video
