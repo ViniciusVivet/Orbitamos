@@ -398,7 +398,18 @@ export default function Home() {
       </ScrollReveal>
 
       {/* ═══ SERVICES ═══ */}
-      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:px-10">
+      <section className="relative overflow-hidden">
+        <video
+          src="/services-bg.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          disablePictureInPicture
+          className="absolute inset-0 h-full w-full object-cover opacity-[0.18] [&::-webkit-media-controls]:hidden"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#03050a] via-transparent to-[#03050a]" />
+      <div className="relative z-10 mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:px-10">
         <div className="grid gap-10 lg:grid-cols-[0.86fr_1.14fr]">
           <div>
             <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.7 }}>
@@ -453,6 +464,7 @@ export default function Home() {
             </div>
           </ScrollReveal>
         </div>
+      </div>
       </section>
 
       {/* ═══ FEATURED PROJECTS ═══ */}
