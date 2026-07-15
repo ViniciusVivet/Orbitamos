@@ -347,14 +347,14 @@ export default function Home() {
       {/* ═══ FEATURES STRIP ═══ */}
       <ScrollReveal from={{ opacity: 0, y: 15 }} to={{ duration: 0.5 }}>
         <section className="border-y border-white/[0.08] bg-[#070a12]">
-          <div className="mx-auto grid max-w-7xl gap-4 px-5 py-5 sm:grid-cols-2 sm:px-8 lg:grid-cols-4 lg:px-10">
+          <div className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-5 py-5 sm:px-8 lg:grid-cols-4 lg:gap-4 lg:px-10">
             {[
-              { icon: Rocket, text: "Projeto no ar com velocidade de startup" },
-              { icon: Zap, text: "Layout pensado para conversão e clareza" },
-              { icon: Bot, text: "Automações e IA sob medida" },
-              { icon: Code2, text: "Estrutura pronta para escalar" },
+              { icon: Rocket, text: "Velocidade de startup" },
+              { icon: Zap, text: "Layout para conversão" },
+              { icon: Bot, text: "Automações e IA" },
+              { icon: Code2, text: "Pronto para escalar" },
             ].map((item) => (
-              <div key={item.text} className="flex items-center gap-3 text-sm text-white/58">
+              <div key={item.text} className="flex items-center gap-2.5 text-xs text-white/58 sm:text-sm sm:gap-3">
                 <item.icon className="size-4 shrink-0 text-orbit-electric" />
                 <span>{item.text}</span>
               </div>
