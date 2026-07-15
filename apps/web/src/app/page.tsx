@@ -179,7 +179,7 @@ function OrbiMascot() {
         alt="Orbi apresentando servicos"
         className="animate-orbi-float w-full"
         style={{
-          transform: `translate(${pos.x * 18}px, ${pos.y * 14}px) rotateY(${pos.x * 12}deg) rotateX(${pos.y * -8}deg)`,
+          transform: `translate(${pos.x * 35}px, ${pos.y * 28}px) rotateY(${pos.x * 20}deg) rotateX(${pos.y * -15}deg)`,
           transition: "transform 0.3s ease-out",
         }}
       />
