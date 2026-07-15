@@ -366,7 +366,7 @@
 
 .hero-case-card {
   position: absolute;
-  width: min(85vw, 22rem);
+  width: min(90vw, 26rem);
   pointer-events: auto;
   animation: hero-card-float 6s ease-in-out infinite;
 }

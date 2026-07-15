@@ -289,12 +289,12 @@ export default function Home() {
                 <Link
                   key={project.name}
                   href={project.href}
-                  className={`hero-case-card hero-case-card-${index + 1} orbit-tilt-card group block overflow-hidden rounded-xl border border-white/12 bg-[#07101f]/72 shadow-[0_24px_80px_rgba(0,0,0,0.5)] backdrop-blur-2xl transition duration-300 hover:-translate-y-1 hover:border-orbit-electric/35`}
+                  className={`hero-case-card hero-case-card-${index + 1} orbit-tilt-card group block overflow-hidden rounded-2xl border border-white/12 bg-[#07101f]/72 shadow-[0_24px_80px_rgba(0,0,0,0.5)] backdrop-blur-2xl transition duration-300 hover:-translate-y-1.5 hover:border-orbit-electric/35 hover:shadow-[0_28px_90px_rgba(0,0,0,0.5),0_0_30px_rgba(0,212,255,0.12)]`}
                 >
                   <span className="orbit-sweep absolute inset-y-0 -left-1/2 z-10 w-1/2 opacity-0 group-hover:opacity-100" />
-                  <div className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${project.accent}`} />
-                  <div className="flex items-center gap-4 p-4">
-                    <div className="relative aspect-[4/3] w-28 shrink-0 overflow-hidden rounded-lg">
+                  <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${project.accent}`} />
+                  <div className="flex items-center gap-5 p-5">
+                    <div className="relative aspect-[4/3] w-36 shrink-0 overflow-hidden rounded-xl">
                       <img
                         src={project.image}
                         alt={`Projeto ${project.name}`}
@@ -302,12 +302,12 @@ export default function Home() {
                       />
                     </div>
                     <div className="flex min-w-0 flex-col">
-                      <h2 className="truncate font-display text-base font-bold text-white">
+                      <h2 className="truncate font-display text-lg font-bold text-white">
                         {project.name}
                       </h2>
-                      <p className="text-xs text-white/48">{project.type}</p>
-                      <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-white/70">
-                        <CheckCircle2 className="size-3.5 shrink-0 text-orbit-electric" />
+                      <p className="mt-0.5 text-sm text-white/48">{project.type}</p>
+                      <div className="mt-2.5 flex items-center gap-2 text-sm font-semibold text-white/70">
+                        <CheckCircle2 className="size-4 shrink-0 text-orbit-electric" />
                         {project.result}
                       </div>
                     </div>
@@ -326,14 +326,14 @@ export default function Home() {
                 className="group block overflow-hidden rounded-xl border border-white/12 bg-[#07101f]/72 backdrop-blur-2xl transition duration-300 hover:border-orbit-electric/35"
               >
                 <div className="flex items-center gap-4 p-4">
-                  <div className="relative aspect-[4/3] w-28 shrink-0 overflow-hidden rounded-lg">
+                  <div className="relative aspect-[4/3] w-32 shrink-0 overflow-hidden rounded-xl">
                     <img src={project.image} alt={`Projeto ${project.name}`} className="h-full w-full object-cover" />
                   </div>
                   <div className="flex min-w-0 flex-col">
                     <h2 className="truncate font-display text-base font-bold text-white">{project.name}</h2>
-                    <p className="text-xs text-white/48">{project.type}</p>
-                    <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-white/70">
-                      <CheckCircle2 className="size-3.5 shrink-0 text-orbit-electric" />
+                    <p className="mt-0.5 text-sm text-white/48">{project.type}</p>
+                    <div className="mt-2 flex items-center gap-2 text-sm font-semibold text-white/70">
+                      <CheckCircle2 className="size-4 shrink-0 text-orbit-electric" />
                       {project.result}
                     </div>
                   </div>
