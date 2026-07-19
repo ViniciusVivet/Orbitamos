@@ -159,14 +159,10 @@ export default function Navigation() {
           <div className="relative z-10 hidden md:flex items-center gap-3 ml-auto">
             <Link
               href={portalHref}
-              className="group relative inline-flex h-9 items-center gap-2 overflow-hidden rounded-lg px-4 text-sm font-bold text-white transition-all duration-300 hover:shadow-[0_0_24px_rgba(0,212,255,0.25),0_0_48px_rgba(139,92,246,0.15)]"
-              style={{
-                background: "linear-gradient(135deg, rgba(0,212,255,0.12) 0%, rgba(139,92,246,0.12) 100%)",
-                border: "1px solid rgba(0,212,255,0.35)",
-              }}
+              className="group relative inline-flex h-9 items-center gap-2 overflow-hidden rounded-lg border border-white/[0.06] bg-white/[0.04] px-4 text-sm font-bold text-white transition-all duration-300 hover:bg-white/[0.07] hover:shadow-[0_0_24px_rgba(0,212,255,0.2),0_0_48px_rgba(139,92,246,0.1)]"
             >
-              <span className="absolute inset-0 bg-gradient-to-r from-orbit-electric/20 to-orbit-purple/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              <span className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-orbit-electric/60 to-transparent" />
+              <span className="absolute inset-0 bg-gradient-to-r from-orbit-electric/10 to-orbit-purple/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <span className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-orbit-electric via-orbit-purple to-transparent" />
               <span className="relative flex items-center gap-2">
                 {!loading && isAuthenticated && user ? (
                   <>
