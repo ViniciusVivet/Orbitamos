@@ -12,7 +12,7 @@ import ProjetosCTA from "@/components/projetos/ProjetosCTA";
 import HologramModal from "@/components/projetos/HologramModal";
 import ScrollReveal from "@/components/ScrollReveal";
 import { projetos } from "@/data/projetos";
-import type { CategoriaSlug, Projeto } from "@/types/projeto";
+import { CATEGORIAS, type CategoriaSlug, type Projeto } from "@/types/projeto";
 
 type FilterSlug = "todos" | CategoriaSlug;
 
@@ -26,6 +26,10 @@ function ProjetosContent() {
     if (caseSlug) {
       const projeto = projetos.find((p) => p.slug === caseSlug);
       if (projeto) setSelectedProjeto(projeto);
+    }
+    const cat = searchParams.get("categoria");
+    if (cat && (cat === "todos" || CATEGORIAS.some((c) => c.slug === cat))) {
+      setActiveFilter(cat as FilterSlug);
     }
   }, [searchParams]);
 
