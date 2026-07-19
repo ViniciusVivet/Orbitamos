@@ -69,7 +69,7 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
           </button>
         )}
       </div>
-      <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3 lg:overflow-visible lg:py-2">
+      <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3 lg:space-y-0.5 lg:overflow-visible lg:px-2 lg:py-2 [@media(max-height:700px)]:py-1">
         {navItems.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -86,7 +86,7 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
                     href={item.href}
                     onClick={() => onCloseMobile?.()}
                     className={cn(
-                      "flex min-h-[44px] flex-1 touch-manipulation items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors lg:min-h-10 lg:py-2",
+                      "flex min-h-[44px] flex-1 touch-manipulation items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors lg:min-h-10 lg:py-2 [@media(max-height:700px)]:min-h-9 [@media(max-height:700px)]:py-1",
                       isActive
                         ? "border border-orbit-electric/30 bg-orbit-electric/20 text-orbit-electric"
                         : "text-white/70 hover:bg-white/5 hover:text-white"
@@ -99,7 +99,7 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
                     type="button"
                     onClick={() => setAulasOpen((open) => !open)}
                     className={cn(
-                      "flex h-11 w-10 items-center justify-center rounded-lg border border-white/10 text-white/50 transition-colors hover:bg-white/5 hover:text-white lg:h-10",
+                      "flex h-11 w-10 items-center justify-center rounded-lg border border-white/10 text-white/50 transition-colors hover:bg-white/5 hover:text-white lg:h-10 [@media(max-height:700px)]:h-9",
                       aulasOpen && "border-orbit-electric/30 text-orbit-electric"
                     )}
                     aria-label={aulasOpen ? "Fechar subcategorias de aulas" : "Abrir subcategorias de aulas"}
@@ -146,7 +146,7 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
               href={item.href}
               onClick={() => onCloseMobile?.()}
               className={cn(
-                "flex min-h-[44px] touch-manipulation items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors lg:min-h-10 lg:py-2",
+                "flex min-h-[44px] touch-manipulation items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors lg:min-h-10 lg:py-2 [@media(max-height:700px)]:min-h-9 [@media(max-height:700px)]:py-1",
                 isActive
                   ? "bg-orbit-electric/20 text-orbit-electric border border-orbit-electric/30"
                   : "text-white/70 hover:bg-white/5 hover:text-white"
@@ -158,8 +158,8 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
           );
         })}
       </nav>
-      <div className="shrink-0 border-t border-white/10 p-3 lg:py-2">
-        <div className="mb-2 flex items-center gap-3 rounded-lg px-3 py-2 lg:py-1.5">
+      <div className="relative z-10 shrink-0 border-t border-white/10 bg-black/95 p-3 lg:py-2 [@media(max-height:700px)]:py-1.5">
+        <div className="mb-2 flex items-center gap-3 rounded-lg px-3 py-2 lg:py-1.5 [@media(max-height:700px)]:hidden">
           {getDisplayAvatarUrl(user?.avatarUrl) ? (
             <img src={getDisplayAvatarUrl(user?.avatarUrl)!} alt={user?.name ?? ""} className="h-9 w-9 rounded-full object-cover" />
           ) : (
@@ -173,7 +173,7 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
           asChild
           variant="ghost"
           size="sm"
-          className="mb-2 w-full border border-orbit-purple/40 text-orbit-purple hover:bg-orbit-purple/10 text-xs min-h-[40px] touch-manipulation"
+          className="mb-2 w-full border border-orbit-purple/40 text-orbit-purple hover:bg-orbit-purple/10 text-xs min-h-[40px] touch-manipulation [@media(max-height:700px)]:mb-1 [@media(max-height:700px)]:min-h-9"
         >
           <Link href="/colaborador" onClick={() => onCloseMobile?.()}>
             🚀 Ver vagas
@@ -182,7 +182,7 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
         <Button
           variant="outline"
           size="sm"
-          className="w-full border-red-500/50 text-red-400 hover:bg-red-500/20 min-h-[40px] touch-manipulation"
+          className="w-full border-red-500/50 text-red-400 hover:bg-red-500/20 min-h-[40px] touch-manipulation [@media(max-height:700px)]:min-h-9"
           onClick={logout}
         >
           Sair
@@ -215,4 +215,3 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
     </>
   );
 }
-
