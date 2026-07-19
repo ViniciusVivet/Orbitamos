@@ -10,6 +10,7 @@ import PreWakeProvider from "@/components/PreWakeProvider";
 import ForumWidget from "@/components/ForumWidget";
 import FloatingChat from "@/components/chat/FloatingChat";
 import ErrorBoundaryWrapper from "@/components/ErrorBoundaryWrapper";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -66,25 +67,34 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("orbitamos-theme");if(t!=="light"&&t!=="dark"){t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"}document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t}catch(e){document.documentElement.dataset.theme="dark"}})();`,
+          }}
+        />
+      </head>
       <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
-        <ErrorBoundaryWrapper>
-          <ClientAuthProvider>
-            <ProgressProviderWithAuth>
-              <ChatProvider>
-                <PreWakeProvider>
-                  <CursorOrbit />
-                  <Navigation />
-                  <ForumWidget />
-                  <FloatingChat />
-                  <main className="pt-16 min-w-0 overflow-x-hidden">
-                    {children}
-                  </main>
-                </PreWakeProvider>
-              </ChatProvider>
-            </ProgressProviderWithAuth>
-          </ClientAuthProvider>
-        </ErrorBoundaryWrapper>
+        <ThemeProvider>
+          <ErrorBoundaryWrapper>
+            <ClientAuthProvider>
+              <ProgressProviderWithAuth>
+                <ChatProvider>
+                  <PreWakeProvider>
+                    <CursorOrbit />
+                    <Navigation />
+                    <ForumWidget />
+                    <FloatingChat />
+                    <main className="pt-16 min-w-0 overflow-x-hidden">
+                      {children}
+                    </main>
+                  </PreWakeProvider>
+                </ChatProvider>
+              </ProgressProviderWithAuth>
+            </ClientAuthProvider>
+          </ErrorBoundaryWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );

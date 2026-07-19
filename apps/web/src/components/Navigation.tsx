@@ -9,11 +9,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getDisplayAvatarUrl } from "@/lib/api";
 import { cursos } from "@/lib/cursos";
 import { whatsappProjetosUrl } from "@/lib/social";
+import { useTheme } from "@/components/ThemeProvider";
 import { CATEGORIAS } from "@/types/projeto";
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [lightMode, setLightMode] = useState(false);
+  const { theme, toggleTheme } = useTheme();
   const { user, isAuthenticated, loading } = useAuth();
   const pathname = usePathname();
   const dropdownTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -49,7 +50,7 @@ export default function Navigation() {
   }
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-[rgba(2,4,14,0.18)] backdrop-blur-2xl">
+    <nav className="site-navigation fixed top-0 w-full z-50 bg-[rgba(2,4,14,0.18)] backdrop-blur-2xl">
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         <div className="relative flex items-center h-14 md:h-16">
@@ -160,11 +161,12 @@ export default function Navigation() {
             </a>
             <button
               type="button"
-              onClick={() => setLightMode(!lightMode)}
+              onClick={toggleTheme}
               className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-              aria-label={lightMode ? "Tema escuro" : "Tema claro"}
+              aria-label={theme === "light" ? "Ativar tema escuro" : "Ativar tema claro"}
+              title={theme === "light" ? "Ativar tema escuro" : "Ativar tema claro"}
             >
-              {lightMode ? <Moon className="size-4" /> : <Sun className="size-4" />}
+              {theme === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}
             </button>
           </div>
 
@@ -196,30 +198,28 @@ export default function Navigation() {
             <div className="md:hidden relative z-50 py-4 border-t border-white/10 bg-black/90 backdrop-blur-xl rounded-b-xl">
               <div className="flex flex-col space-y-1">
                 {navLinks.map((link) => (
-                  <div key={link.href}>
-                    <Link
-                      href={link.href}
-                      className={`py-3 px-4 rounded-lg min-h-[44px] flex items-center touch-manipulation transition-colors ${isActive(link.href) ? "text-orbit-electric bg-white/5" : "text-white/90 hover:text-orbit-electric hover:bg-white/5"}`}
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {link.label}
-                    </Link>
-                    {/* Categorias inline abaixo de Projetos */}
-                    {(link as { hasDropdown?: boolean }).hasDropdown && (
-                      <div className="ml-4 border-l border-white/10 pl-3 mt-1 mb-1 space-y-0.5">
-                        {CATEGORIAS.map((cat) => (
-                          <Link
-                            key={cat.slug}
-                            href={`/projetos?categoria=${cat.slug}`}
-                            className="py-2 px-3 rounded-lg min-h-[38px] flex items-center touch-manipulation transition-colors text-white/55 hover:text-orbit-electric hover:bg-white/5 text-sm"
-                            onClick={() => setIsMenuOpen(false)}
-                          >
-                            {cat.label}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`py-3 px-4 rounded-lg min-h-[44px] flex items-center touch-manipulation transition-colors ${isActive(link.href) ? "text-orbit-electric bg-white/5" : "text-white/90 hover:text-orbit-electric hover:bg-white/5"}`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                {/* Categorias no mobile */}
+                <div className="px-4 pt-2 pb-1">
+                  <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Categorias</span>
+                </div>
+                {CATEGORIAS.map((cat) => (
+                  <Link
+                    key={cat.slug}
+                    href={`/projetos?categoria=${cat.slug}`}
+                    className="py-2.5 px-6 rounded-lg min-h-[40px] flex items-center touch-manipulation transition-colors text-white/70 hover:text-orbit-electric hover:bg-white/5 text-sm"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {cat.label}
+                  </Link>
                 ))}
                 <a
                   href={whatsappProjetosUrl}
@@ -232,6 +232,15 @@ export default function Navigation() {
                   <MessageCircle className="size-4" />
                   Solicitar orçamento
                 </a>
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className="flex min-h-[44px] items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                  aria-label={theme === "light" ? "Ativar tema escuro" : "Ativar tema claro"}
+                >
+                  {theme === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}
+                  {theme === "light" ? "Tema escuro" : "Tema claro"}
+                </button>
               </div>
             </div>
           </>
