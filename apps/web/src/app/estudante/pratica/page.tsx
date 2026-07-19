@@ -79,7 +79,7 @@ export default function PraticaIndex() {
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-orbit-electric">
             <TerminalSquare className="size-4" /> Laboratório Orbitamos
           </div>
-          <h1 className="mt-3 max-w-4xl text-4xl font-black tracking-tight text-white sm:text-5xl">
+          <h1 className="mt-3 max-w-4xl text-2xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
             Aprender código exige <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">escrever código.</span>
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-white/55">
@@ -123,7 +123,7 @@ export default function PraticaIndex() {
                   key={value}
                   type="button"
                   onClick={() => setFilter(value)}
-                  className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition ${
+                  className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition touch-manipulation min-h-[36px] ${
                     filter === value
                       ? "bg-white text-black"
                       : "border border-white/10 bg-white/[.035] text-white/55 hover:bg-white/[.07] hover:text-white"

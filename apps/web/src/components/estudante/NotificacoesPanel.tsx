@@ -117,7 +117,7 @@ export default function NotificacoesPanel({ open, onClose }: NotificacoesPanelPr
                     type="button"
                     onClick={() => marcarLida(n.id)}
                     className={cn(
-                      "flex w-full items-start gap-3 px-4 py-3 text-left transition",
+                      "flex w-full items-start gap-3 px-4 py-3.5 text-left transition touch-manipulation min-h-[56px]",
                       n.lida ? "opacity-60" : "bg-white/[0.02] hover:bg-white/[0.04]"
                     )}
                   >
@@ -149,7 +149,7 @@ export function NotificacaoBadge({ count, onClick }: { count: number; onClick: (
   return (
     <button
       onClick={onClick}
-      className="relative grid size-9 place-items-center rounded-lg text-white/50 transition hover:bg-white/10 hover:text-white"
+      className="relative grid size-10 place-items-center rounded-lg text-white/50 transition hover:bg-white/10 hover:text-white touch-manipulation"
       aria-label="Notificações"
     >
       <Bell className="size-4" />

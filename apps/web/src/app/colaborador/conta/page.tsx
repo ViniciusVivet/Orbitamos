@@ -9,8 +9,8 @@ export default function ColaboradorConta() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-white">Configurações da conta</h1>
-        <p className="mt-1 text-white/60">Nome, foto, endereço, telefone e outros dados do perfil</p>
+        <h1 className="text-2xl font-bold text-white sm:text-3xl">Configurações da conta</h1>
+        <p className="mt-1 text-sm text-white/60 sm:text-base">Nome, foto, endereço, telefone e outros dados do perfil</p>
       </div>
 
       <PerfilForm

@@ -112,14 +112,14 @@ export default function EstudanteProgresso() {
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-orbit-electric">
             <Orbit className="size-4" /> Telemetria da jornada
           </div>
-          <h1 className="mt-3 text-4xl font-black tracking-tight text-white sm:text-5xl">
+          <h1 className="mt-3 text-2xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
             Sua evolução, <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">sem atalhos.</span>
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-white/55">
             Acompanhe o que você concluiu, o que está praticando e qual é o próximo marco da sua órbita.
           </p>
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-8 grid grid-cols-2 gap-3 xl:grid-cols-4">
             <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/[.07] p-4">
               <BookOpen className="size-5 text-cyan-300" />
               <div className="mt-4 text-3xl font-black text-white">{completedLessons}</div>
@@ -287,7 +287,7 @@ export default function EstudanteProgresso() {
                   </h2>
                   <p className="mt-1 text-sm text-white/45">Práticas concluídas ficam salvas neste dispositivo e entram neste mapa.</p>
                 </div>
-                <Link href="/estudante/pratica" className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-emerald-400 px-5 text-sm font-black text-black hover:bg-emerald-300">
+                <Link href="/estudante/pratica" className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-emerald-400 px-5 text-sm font-black text-black hover:bg-emerald-300 touch-manipulation">
                   Abrir desafios <ArrowRight className="size-4" />
                 </Link>
               </div>

@@ -118,9 +118,9 @@ export default function ColaboradorSquad() {
         <div className="grid gap-2 sm:grid-cols-3">
           <Link
             href="/mensagens"
-            className="flex items-center gap-3 rounded-lg border border-white/8 bg-white/[0.03] p-3 transition hover:border-orbit-purple/30 hover:bg-white/[0.05]"
+            className="flex items-center gap-3 rounded-lg border border-white/8 bg-white/[0.03] p-3.5 transition hover:border-orbit-purple/30 hover:bg-white/[0.05] touch-manipulation min-h-[52px]"
           >
-            <div className="grid size-8 place-items-center rounded-lg bg-orbit-purple/15">
+            <div className="grid size-9 place-items-center rounded-lg bg-orbit-purple/15">
               <MessageCircle className="size-4 text-orbit-purple" />
             </div>
             <div>
@@ -130,9 +130,9 @@ export default function ColaboradorSquad() {
           </Link>
           <Link
             href="/contato"
-            className="flex items-center gap-3 rounded-lg border border-white/8 bg-white/[0.03] p-3 transition hover:border-orbit-electric/30 hover:bg-white/[0.05]"
+            className="flex items-center gap-3 rounded-lg border border-white/8 bg-white/[0.03] p-3.5 transition hover:border-orbit-electric/30 hover:bg-white/[0.05] touch-manipulation min-h-[52px]"
           >
-            <div className="grid size-8 place-items-center rounded-lg bg-orbit-electric/15">
+            <div className="grid size-9 place-items-center rounded-lg bg-orbit-electric/15">
               <Mail className="size-4 text-orbit-electric" />
             </div>
             <div>
@@ -142,9 +142,9 @@ export default function ColaboradorSquad() {
           </Link>
           <Link
             href="/forum"
-            className="flex items-center gap-3 rounded-lg border border-white/8 bg-white/[0.03] p-3 transition hover:border-white/20 hover:bg-white/[0.05]"
+            className="flex items-center gap-3 rounded-lg border border-white/8 bg-white/[0.03] p-3.5 transition hover:border-white/20 hover:bg-white/[0.05] touch-manipulation min-h-[52px]"
           >
-            <div className="grid size-8 place-items-center rounded-lg bg-white/10">
+            <div className="grid size-9 place-items-center rounded-lg bg-white/10">
               <Globe className="size-4 text-white/60" />
             </div>
             <div>

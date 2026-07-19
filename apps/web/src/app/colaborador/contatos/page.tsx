@@ -121,7 +121,7 @@ export default function ColaboradorContatos() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nome, email ou mensagem..."
-            className="h-10 w-full rounded-lg border border-white/10 bg-white/[0.04] pl-9 pr-4 text-sm text-white placeholder:text-white/30 outline-none transition focus:border-orbit-electric/50"
+            className="h-11 w-full rounded-lg border border-white/10 bg-white/[0.04] pl-9 pr-4 text-sm text-white placeholder:text-white/30 outline-none transition focus:border-orbit-electric/50"
           />
         </div>
         <div className="flex gap-1">
@@ -129,7 +129,7 @@ export default function ColaboradorContatos() {
             <button
               key={val}
               onClick={() => setFilter(val)}
-              className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
+              className={`rounded-full px-3 py-2 text-xs font-medium transition touch-manipulation min-h-[36px] ${
                 filter === val
                   ? "bg-white/10 text-white border border-white/20"
                   : "text-white/40 hover:text-white hover:bg-white/5"
@@ -201,7 +201,7 @@ export default function ColaboradorContatos() {
                     <button
                       onClick={() => handleMarkAsRead(c)}
                       disabled={markingId === c.id}
-                      className="flex items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[10px] font-medium text-emerald-400 transition hover:bg-emerald-500/20 disabled:opacity-50"
+                      className="flex items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1.5 text-[10px] font-medium text-emerald-400 transition hover:bg-emerald-500/20 disabled:opacity-50 touch-manipulation min-h-[32px]"
                     >
                       <Check className="size-3" />
                       {markingId === c.id ? "..." : "Lido"}

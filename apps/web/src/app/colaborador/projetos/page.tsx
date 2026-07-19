@@ -59,7 +59,7 @@ export default function ColaboradorProjetos() {
         <div className="flex gap-1 rounded-lg border border-white/10 bg-white/[0.03] p-0.5">
           <button
             onClick={() => setView("kanban")}
-            className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+            className={`rounded-md px-3 py-2 text-xs font-medium transition touch-manipulation min-h-[36px] ${
               view === "kanban" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"
             }`}
           >
@@ -67,7 +67,7 @@ export default function ColaboradorProjetos() {
           </button>
           <button
             onClick={() => setView("lista")}
-            className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+            className={`rounded-md px-3 py-2 text-xs font-medium transition touch-manipulation min-h-[36px] ${
               view === "lista" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"
             }`}
           >
@@ -102,7 +102,7 @@ export default function ColaboradorProjetos() {
         </div>
       ) : view === "kanban" ? (
         /* Kanban view */
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {COLUMNS.map((col) => (
             <div key={col.key} className={`rounded-xl border ${col.color} bg-white/[0.015] p-3`}>
               <div className="mb-3 flex items-center gap-2">

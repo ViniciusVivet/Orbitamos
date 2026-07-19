@@ -42,7 +42,7 @@ export default function EstudanteMentorias() {
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-violet-300">
             <Users className="size-4" /> Orientação humana
           </div>
-          <h1 className="mt-3 max-w-4xl text-4xl font-black tracking-tight text-white sm:text-5xl">
+          <h1 className="mt-3 max-w-4xl text-2xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
             Você não precisa descobrir <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">tudo sozinho.</span>
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-white/55">
@@ -53,13 +53,13 @@ export default function EstudanteMentorias() {
               href={whatsappMentoriaUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-black text-black transition hover:bg-white/90"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-black text-black transition hover:bg-white/90 touch-manipulation"
             >
               <MessageCircle className="size-4" /> Solicitar orientação
             </Link>
             <Link
               href="/mentorias"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/20 bg-black/20 px-6 text-sm font-bold text-white transition hover:bg-white/10"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/20 bg-black/20 px-6 text-sm font-bold text-white transition hover:bg-white/10 touch-manipulation"
             >
               Conhecer os programas <ArrowRight className="size-4" />
             </Link>
