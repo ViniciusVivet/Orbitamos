@@ -126,30 +126,30 @@ export default function Contato() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_60%,rgba(139,92,246,0.06),transparent_50%)]" />
 
       {/* Content */}
-      <div className="relative z-10 flex h-full items-center justify-center px-4 py-6">
-        <div className="flex w-full max-w-5xl flex-col items-center gap-8 md:flex-row md:items-center md:gap-12">
+      <div className="relative z-10 flex h-full items-center justify-center px-4 py-3 md:py-6">
+        <div className="flex w-full max-w-5xl flex-col items-center gap-4 md:flex-row md:items-center md:gap-12">
 
           {/* Left: Mascot + text */}
           <div className="flex flex-col items-center text-center md:w-[340px] md:shrink-0 md:items-start md:text-left">
             <img
               src="/orbi-contact.png"
               alt="Orbi, mascote da Orbitamos"
-              className="mb-4 w-20 drop-shadow-[0_0_24px_rgba(0,212,255,0.25)] md:w-32"
+              className="hidden md:block mb-4 w-32 drop-shadow-[0_0_24px_rgba(0,212,255,0.25)]"
             />
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-orbit-electric/25 bg-orbit-electric/[0.08] px-4 py-1.5 backdrop-blur-xl">
+            <div className="mb-2 md:mb-3 inline-flex items-center gap-2 rounded-full border border-orbit-electric/25 bg-orbit-electric/[0.08] px-3 py-1 md:px-4 md:py-1.5 backdrop-blur-xl">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orbit-electric shadow-[0_0_12px_rgba(0,212,255,0.8)]" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-orbit-electric">Transmissao aberta</span>
+              <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-orbit-electric">Transmissao aberta</span>
             </div>
-            <h1 className="text-2xl font-black leading-tight md:text-4xl">
+            <h1 className="text-xl font-black leading-tight md:text-4xl">
               Vamos construir{" "}
               <span className="bg-gradient-to-r from-orbit-electric via-sky-300 to-orbit-purple bg-clip-text text-transparent">
                 algo incrivel?
               </span>
             </h1>
-            <p className="mt-3 max-w-sm text-sm text-white/50">
+            <p className="mt-1 md:mt-3 max-w-sm text-xs md:text-sm text-white/50">
               Orcamento sem compromisso. Resposta em ate 24h.
             </p>
-            <p className="mt-4 text-xs text-white/35">
+            <p className="hidden md:block mt-4 text-xs text-white/35">
               Prefere redes sociais?{" "}
               <a href="https://www.instagram.com/orbitamosbr/" target="_blank" rel="noreferrer"
                 className="text-orbit-electric/70 underline transition-colors hover:text-orbit-electric">
@@ -190,30 +190,30 @@ export default function Contato() {
                 </div>
               )}
 
-              <div className="relative p-5 sm:p-6">
-                <form onSubmit={handleSubmit} className="space-y-3.5">
+              <div className="relative p-4 sm:p-6">
+                <form onSubmit={handleSubmit} className="space-y-2.5 md:space-y-3.5">
 
                   {/* Name + Email */}
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-2 sm:grid-cols-2 sm:gap-3">
                     <div>
                       <label htmlFor="name" className="mb-1 block text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">Nome</label>
                       <Input id="name" name="name" value={formData.name} onChange={handleChange} placeholder="Seu nome" required
-                        className="h-9 border-white/[0.1] bg-white/[0.06] text-white placeholder:text-white/25 focus:border-orbit-electric/60 text-sm" />
+                        className="h-8 md:h-9 border-white/[0.1] bg-white/[0.06] text-white placeholder:text-white/25 focus:border-orbit-electric/60 text-sm" />
                     </div>
                     <div>
                       <label htmlFor="email" className="mb-1 block text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">E-mail</label>
                       <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="voce@email.com" required
-                        className="h-9 border-white/[0.1] bg-white/[0.06] text-white placeholder:text-white/25 focus:border-orbit-electric/60 text-sm" />
+                        className="h-8 md:h-9 border-white/[0.1] bg-white/[0.06] text-white placeholder:text-white/25 focus:border-orbit-electric/60 text-sm" />
                     </div>
                   </div>
 
                   {/* Service type */}
                   <div>
-                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">Tipo de projeto</label>
-                    <div className="flex flex-wrap gap-1.5">
+                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">Tipo de projeto</label>
+                    <div className="flex flex-wrap gap-1">
                       {SERVICES.map((s) => (
                         <button key={s.label} type="button" onClick={() => setFormData({ ...formData, service: s.label })}
-                          className={`rounded-full px-2.5 py-1 text-xs font-medium transition-all duration-200 ${
+                          className={`rounded-full px-2 py-0.5 md:px-2.5 md:py-1 text-[11px] md:text-xs font-medium transition-all duration-200 ${
                             formData.service === s.label
                               ? "border border-orbit-electric/50 bg-orbit-electric/15 text-orbit-electric shadow-[0_0_12px_rgba(0,212,255,0.15)]"
                               : "border border-white/10 bg-white/[0.04] text-white/55 hover:border-white/20 hover:bg-white/[0.08]"
@@ -229,7 +229,7 @@ export default function Contato() {
                     <label htmlFor="message" className="mb-1 block text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">Descreva o projeto</label>
                     <Textarea id="message" name="message" value={formData.message} onChange={handleChange}
                       placeholder="O que você precisa, qual o objetivo, tem prazo?"
-                      rows={3} required
+                      rows={isMobile ? 2 : 3} required
                       className="border-white/[0.1] bg-white/[0.06] text-white placeholder:text-white/25 focus:border-orbit-electric/60 resize-none text-sm" />
                   </div>
 
@@ -253,14 +253,14 @@ export default function Contato() {
                   {/* Submit */}
                   <MagneticButton strength={0.15}>
                     <Button type="submit" disabled={isLoading || sendAnimation}
-                      className="h-10 w-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-sm font-bold text-black transition-all hover:brightness-110 hover:shadow-[0_0_30px_rgba(0,212,255,0.3)] disabled:opacity-50">
+                      className="h-9 md:h-10 w-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-sm font-bold text-black transition-all hover:brightness-110 hover:shadow-[0_0_30px_rgba(0,212,255,0.3)] disabled:opacity-50">
                       {isLoading ? "Enviando..." : sendAnimation ? "Transmitindo..." : "Enviar mensagem"}
                     </Button>
                   </MagneticButton>
                 </form>
 
                 {/* Bottom detail */}
-                <div className="mt-4 flex items-center justify-center gap-4 text-[10px] text-white/30">
+                <div className="mt-3 md:mt-4 flex items-center justify-center gap-3 md:gap-4 text-[9px] md:text-[10px] text-white/30">
                   <span className="flex items-center gap-1.5">
                     <span className="h-1 w-1 rounded-full bg-orbit-electric/50" />
                     Conexão segura
