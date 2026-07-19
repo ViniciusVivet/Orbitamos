@@ -21,16 +21,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem(STORAGE_KEY);
-    const initialTheme: Theme =
-      savedTheme === "light" || savedTheme === "dark"
-        ? savedTheme
-        : window.matchMedia("(prefers-color-scheme: light)").matches
-          ? "light"
-          : "dark";
-
-    applyTheme(initialTheme);
-    queueMicrotask(() => setTheme(initialTheme));
+    // Force dark mode — light theme is disabled for now
+    window.localStorage.removeItem(STORAGE_KEY);
+    applyTheme("dark");
+    queueMicrotask(() => setTheme("dark"));
   }, []);
 
   const toggleTheme = useCallback(() => {

@@ -71,7 +71,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("orbitamos-theme");if(t!=="light"&&t!=="dark"){t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"}document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t}catch(e){document.documentElement.dataset.theme="dark"}})();`,
+            __html: `(function(){try{localStorage.removeItem("orbitamos-theme")}catch(e){}document.documentElement.dataset.theme="dark";document.documentElement.style.colorScheme="dark"})();`,
           }}
         />
       </head>
