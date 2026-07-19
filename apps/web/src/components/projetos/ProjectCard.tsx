@@ -5,17 +5,18 @@ import Link from "next/link";
 import type { Projeto } from "@/types/projeto";
 import { CATEGORIAS, STATUS_LABELS } from "@/types/projeto";
 import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 
 interface ProjectCardProps {
   projeto: Projeto;
-  onOpenCase: (projeto: Projeto) => void;
+  onOpenCase?: (projeto: Projeto) => void;
 }
 
 function getCategoriaLabel(slug: string) {
   return CATEGORIAS.find((c) => c.slug === slug)?.label ?? slug;
 }
 
-export default function ProjectCard({ projeto, onOpenCase }: ProjectCardProps) {
+export default function ProjectCard({ projeto }: ProjectCardProps) {
   const caseHref = `/projetos/${projeto.slug}`;
 
   return (
@@ -66,16 +67,7 @@ export default function ProjectCard({ projeto, onOpenCase }: ProjectCardProps) {
       </Link>
 
       <div className="p-5 pt-4">
-        <div className="flex flex-wrap gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            className="border-orbit-electric/30 text-orbit-electric hover:bg-orbit-electric/10 hover:border-orbit-electric/60 transition-all duration-150"
-            onClick={() => onOpenCase(projeto)}
-          >
-            Previa rapida
-          </Button>
-
+        <div className="flex flex-wrap items-center gap-2">
           <Button asChild size="sm" className="bg-orbit-electric/20 text-orbit-electric hover:bg-orbit-electric/30 border border-orbit-electric/40">
             <Link href={caseHref}>
               Ver case completo
@@ -83,9 +75,14 @@ export default function ProjectCard({ projeto, onOpenCase }: ProjectCardProps) {
           </Button>
 
           {projeto.link && (
-            <Button asChild size="sm" variant="ghost" className="text-white/70 hover:text-white hover:bg-white/10">
+            <Button asChild size="sm" variant="ghost" className="group/live relative text-white/70 hover:text-orbit-electric hover:bg-orbit-electric/10 gap-2">
               <a href={projeto.link} target="_blank" rel="noreferrer">
-                Abrir projeto
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                </span>
+                Ir para o site
+                <ExternalLink className="size-3.5 opacity-60" />
               </a>
             </Button>
           )}
