@@ -40,14 +40,14 @@ export default function Navigation() {
     <nav className="fixed top-0 w-full z-50 bg-[rgba(2,4,14,0.18)] backdrop-blur-2xl">
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
-        <div className="relative flex items-center justify-between h-14 md:h-16">
-          {/* ── Left: Logo ── */}
-          <Link href="/" className="relative z-10 flex items-center space-x-2">
-            <LogoOrbitamos size={30} />
-          </Link>
+        <div className="relative flex items-center h-14 md:h-16">
+          {/* ── Left: Logo + Nav links ── */}
+          <div className="flex items-center">
+            <Link href="/" className="relative z-10 flex items-center space-x-2">
+              <LogoOrbitamos size={30} />
+            </Link>
 
-          {/* ── Nav links (left, next to logo) ── */}
-          <div className="hidden md:flex items-center gap-7 ml-10">
+            <div className="hidden md:flex items-center gap-7 ml-10">
             {navLinks.map((link) => {
               if ((link as { isProfile?: boolean }).isProfile) {
                 return (
@@ -84,9 +84,10 @@ export default function Navigation() {
               );
             })}
           </div>
+          </div>
 
           {/* ── Right: CTA + theme toggle ── */}
-          <div className="relative z-10 hidden md:flex items-center gap-3">
+          <div className="relative z-10 hidden md:flex items-center gap-3 ml-auto">
             <a
               href={whatsappProjetosUrl}
               target="_blank"
