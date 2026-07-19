@@ -382,59 +382,54 @@ export default function ForumPage() {
         </div>
       )}
 
-      <section className="relative mx-auto max-w-[1480px] px-4 pb-16 pt-8 sm:px-6 sm:pt-12 lg:px-8">
-        <header className="relative overflow-hidden rounded-[2rem] border border-white/[0.08] bg-white/[0.035] px-5 py-8 shadow-[0_30px_120px_rgba(0,0,0,.35)] backdrop-blur-xl sm:px-8 lg:px-10 lg:py-10">
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(0,212,255,.08),transparent_38%,rgba(139,92,246,.08))]" />
-          <div className="relative flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-3xl">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orbit-electric/20 bg-orbit-electric/[0.07] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-orbit-electric">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orbit-electric" />
-                Comunidade Orbitamos
-              </div>
-              <h1 className="font-display text-3xl font-bold tracking-[-0.04em] sm:text-5xl lg:text-6xl">
+      <section className="relative mx-auto max-w-[1480px] px-4 pb-16 pt-6 sm:px-6 sm:pt-8 lg:px-8">
+        <header className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.035] px-5 py-5 shadow-[0_20px_80px_rgba(0,0,0,.3)] backdrop-blur-xl sm:px-7 sm:py-6">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(0,212,255,.06),transparent_38%,rgba(139,92,246,.06))]" />
+          <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h1 className="font-display text-xl font-bold tracking-[-0.03em] sm:text-2xl lg:text-3xl">
                 Ideias ganham força
-                <span className="block bg-gradient-to-r from-orbit-electric via-sky-300 to-orbit-purple bg-clip-text text-transparent">
-                  quando entram em órbita.
+                <span className="bg-gradient-to-r from-orbit-electric via-sky-300 to-orbit-purple bg-clip-text text-transparent">
+                  {" "}quando entram em órbita.
                 </span>
               </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-6 text-white/60 sm:text-base">
-                Tire dúvidas, compartilhe projetos e cresça junto de pessoas que também estão construindo o futuro com tecnologia.
+              <p className="mt-1.5 max-w-xl text-xs leading-5 text-white/50 sm:text-sm">
+                Tire dúvidas, compartilhe projetos e cresça junto da comunidade.
               </p>
             </div>
 
-            {isAuthenticated ? (
-              <button
-                type="button"
-                onClick={openComposer}
-                className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-6 font-bold text-[#02050b] shadow-[0_14px_45px_rgba(0,212,255,.18)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(139,92,246,.25)]"
-              >
-                <PenLine className="h-4 w-4" />
-                Criar publicação
-                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </button>
-            ) : (
-              <Link
-                href="/entrar"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-6 font-bold text-[#02050b]"
-              >
-                Entrar na comunidade
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
-            )}
-          </div>
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-4 mr-4 text-xs text-white/40">
+                <span><strong className="text-white font-semibold">{rootMessages.length}</strong> posts</span>
+                <span><strong className="text-white font-semibold">{replyCount}</strong> respostas</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                  </span>
+                  <strong className="text-white font-semibold">{contributors.length}</strong> ativos
+                </span>
+              </div>
 
-          <div className="relative mt-8 grid grid-cols-3 gap-2 border-t border-white/[0.07] pt-5 sm:flex sm:gap-8">
-            <div>
-              <strong className="block text-xl font-bold text-white">{rootMessages.length}</strong>
-              <span className="text-xs text-white/40">publicações</span>
-            </div>
-            <div>
-              <strong className="block text-xl font-bold text-white">{replyCount}</strong>
-              <span className="text-xs text-white/40">respostas</span>
-            </div>
-            <div>
-              <strong className="block text-xl font-bold text-white">{contributors.length}</strong>
-              <span className="text-xs text-white/40">vozes recentes</span>
+              {isAuthenticated ? (
+                <button
+                  type="button"
+                  onClick={openComposer}
+                  className="group inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-5 text-sm font-bold text-[#02050b] shadow-[0_8px_30px_rgba(0,212,255,.15)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(139,92,246,.2)]"
+                >
+                  <PenLine className="h-3.5 w-3.5" />
+                  Publicar
+                  <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </button>
+              ) : (
+                <Link
+                  href="/entrar"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-5 text-sm font-bold text-[#02050b]"
+                >
+                  Entrar
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>
+              )}
             </div>
           </div>
         </header>
@@ -1018,7 +1013,12 @@ export default function ForumPage() {
                         onClick={() => setProfileUserId(contributor.id)}
                         className="flex w-full items-center gap-3 rounded-xl p-1.5 text-left transition hover:bg-white/[0.05]"
                       >
-                        <AuthorAvatar name={contributor.name} avatarUrl={contributor.avatar} size="sm" />
+                        <span className="relative">
+                          <AuthorAvatar name={contributor.name} avatarUrl={contributor.avatar} size="sm" />
+                          <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-[#080d17] ring-1 ring-[#080d17]">
+                            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                          </span>
+                        </span>
                         <span className="min-w-0 flex-1">
                           <strong className="block truncate text-xs font-semibold text-white/75">{contributor.name}</strong>
                           <span className="text-[10px] text-white/30">
