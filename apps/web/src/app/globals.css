@@ -568,6 +568,27 @@ html[data-theme="light"] .animate-page-enter {
   color: #102033;
 }
 
+/* Forum & dropdown cards in light mode */
+html[data-theme="light"] [class*="bg-gray-900"] {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+html[data-theme="light"] [class*="bg-[rgba(8,8,20"] {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+}
+
+html[data-theme="light"] [class*="text-orbit-electric"] {
+  color: #0097b8 !important;
+}
+
+html[data-theme="light"] [class*="border-orbit-electric"] {
+  border-color: rgba(0, 151, 184, 0.35) !important;
+}
+
+html[data-theme="light"] [class*="bg-orbit-electric/"] {
+  background-color: rgba(0, 180, 220, 0.1) !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html,
   body {

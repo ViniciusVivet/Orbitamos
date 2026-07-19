@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MessageCircle, Sun, Moon, ChevronDown } from "lucide-react";
+import { MessageCircle, Sun, Moon, ChevronDown, LogIn } from "lucide-react";
 import { useState, useRef } from "react";
 import LogoOrbitamos from "@/components/LogoOrbitamos";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,6 +22,7 @@ export default function Navigation() {
 
   const initials = user?.name?.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase() ?? "?";
 
+  // Nav links — Portal removed from here (moved to right side)
   const navLinks = [
     { href: "/", label: "Início" },
     { href: "/projetos", label: "Projetos", hasDropdown: true },
@@ -32,8 +33,16 @@ export default function Navigation() {
       : []),
     ...(!loading && isAuthenticated && user
       ? [{ href: user.role === "FREELANCER" ? "/colaborador" : "/estudante", label: user.role === "FREELANCER" ? "Área Colaborador" : "Área do Estudante", isProfile: true }]
-      : [{ href: "/entrar", label: "Portal" }]),
+      : []),
   ];
+
+  // Portal link for the right side
+  const portalHref = !loading && isAuthenticated && user
+    ? (user.role === "FREELANCER" ? "/colaborador" : "/estudante")
+    : "/entrar";
+  const portalLabel = !loading && isAuthenticated && user
+    ? (user.role === "FREELANCER" ? "Área Colaborador" : "Área do Estudante")
+    : "Portal";
 
   function isActive(href: string) {
     if (href === "/") return pathname === "/";
@@ -144,11 +153,44 @@ export default function Navigation() {
                   </Link>
                 );
               })}
+
+              {/* Theme toggle — in nav links area */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="relative text-white/60 hover:text-orbit-electric transition-colors duration-150"
+                aria-label={theme === "light" ? "Ativar tema escuro" : "Ativar tema claro"}
+                title={theme === "light" ? "Tema escuro" : "Tema claro"}
+              >
+                {theme === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}
+              </button>
             </div>
           </div>
 
-          {/* ── Right: CTA + theme toggle ── */}
+          {/* ── Right: Portal + CTA ── */}
           <div className="relative z-10 hidden md:flex items-center gap-3 ml-auto">
+            <Link
+              href={portalHref}
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-orbit-electric/40 bg-orbit-electric/[0.08] px-4 text-sm font-semibold text-orbit-electric transition-all duration-200 hover:bg-orbit-electric/[0.15] hover:border-orbit-electric/60 hover:shadow-[0_0_16px_rgba(0,212,255,0.15)]"
+            >
+              {!loading && isAuthenticated && user ? (
+                <>
+                  {getDisplayAvatarUrl(user.avatarUrl) ? (
+                    <img src={getDisplayAvatarUrl(user.avatarUrl)!} alt="" className="h-5 w-5 rounded-full object-cover" />
+                  ) : (
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-[9px] font-bold text-black">
+                      {initials}
+                    </span>
+                  )}
+                  {portalLabel}
+                </>
+              ) : (
+                <>
+                  <LogIn className="size-4" />
+                  Portal
+                </>
+              )}
+            </Link>
             <a
               href={whatsappProjetosUrl}
               target="_blank"
@@ -159,21 +201,12 @@ export default function Navigation() {
               <MessageCircle className="size-4" />
               Solicitar orçamento
             </a>
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-              aria-label={theme === "light" ? "Ativar tema escuro" : "Ativar tema claro"}
-              title={theme === "light" ? "Ativar tema escuro" : "Ativar tema claro"}
-            >
-              {theme === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}
-            </button>
           </div>
 
           {/* ── Mobile: hamburger ── */}
           <button
             type="button"
-            className="md:hidden relative z-10 flex h-12 min-w-[44px] items-center justify-center text-white touch-manipulation -mr-2"
+            className="md:hidden relative z-10 flex h-12 min-w-[44px] items-center justify-center text-white touch-manipulation -mr-2 ml-auto"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label={isMenuOpen ? "Fechar menu" : "Abrir menu"}
           >
@@ -198,29 +231,42 @@ export default function Navigation() {
             <div className="md:hidden relative z-50 py-4 border-t border-white/10 bg-black/90 backdrop-blur-xl rounded-b-xl">
               <div className="flex flex-col space-y-1">
                 {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`py-3 px-4 rounded-lg min-h-[44px] flex items-center touch-manipulation transition-colors ${isActive(link.href) ? "text-orbit-electric bg-white/5" : "text-white/90 hover:text-orbit-electric hover:bg-white/5"}`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {link.label}
-                  </Link>
+                  <div key={link.href}>
+                    <Link
+                      href={link.href}
+                      className={`py-3 px-4 rounded-lg min-h-[44px] flex items-center touch-manipulation transition-colors ${isActive(link.href) ? "text-orbit-electric bg-white/5" : "text-white/90 hover:text-orbit-electric hover:bg-white/5"}`}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                    {/* Categorias inline abaixo de Projetos */}
+                    {(link as { hasDropdown?: boolean }).hasDropdown && (
+                      <div className="ml-4 border-l border-white/10 pl-3 mt-1 mb-1 space-y-0.5">
+                        {CATEGORIAS.map((cat) => (
+                          <Link
+                            key={cat.slug}
+                            href={`/projetos?categoria=${cat.slug}`}
+                            className="py-2 px-3 rounded-lg min-h-[38px] flex items-center touch-manipulation transition-colors text-white/55 hover:text-orbit-electric hover:bg-white/5 text-sm"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            {cat.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 ))}
-                {/* Categorias no mobile */}
-                <div className="px-4 pt-2 pb-1">
-                  <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Categorias</span>
-                </div>
-                {CATEGORIAS.map((cat) => (
-                  <Link
-                    key={cat.slug}
-                    href={`/projetos?categoria=${cat.slug}`}
-                    className="py-2.5 px-6 rounded-lg min-h-[40px] flex items-center touch-manipulation transition-colors text-white/70 hover:text-orbit-electric hover:bg-white/5 text-sm"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {cat.label}
-                  </Link>
-                ))}
+
+                {/* Portal button mobile */}
+                <Link
+                  href={portalHref}
+                  className="flex items-center justify-center gap-2 rounded-lg border border-orbit-electric/40 bg-orbit-electric/[0.08] px-4 py-3 text-sm font-semibold text-orbit-electric transition-all hover:bg-orbit-electric/[0.15]"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <LogIn className="size-4" />
+                  {portalLabel}
+                </Link>
+
                 <a
                   href={whatsappProjetosUrl}
                   target="_blank"
@@ -232,11 +278,12 @@ export default function Navigation() {
                   <MessageCircle className="size-4" />
                   Solicitar orçamento
                 </a>
+
+                {/* Theme toggle mobile */}
                 <button
                   type="button"
                   onClick={toggleTheme}
                   className="flex min-h-[44px] items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-                  aria-label={theme === "light" ? "Ativar tema escuro" : "Ativar tema claro"}
                 >
                   {theme === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}
                   {theme === "light" ? "Tema escuro" : "Tema claro"}
