@@ -48,13 +48,13 @@ interface EstudanteSidebarProps {
 export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: EstudanteSidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const [aulasOpen, setAulasOpen] = useState(() => pathname.startsWith("/estudante/aulas") || pathname.startsWith("/estudante/cursos"));
+  const [aulasOpen, setAulasOpen] = useState(false);
 
   const initials = user?.name?.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase() ?? "?";
 
   const asideContent = (
     <>
-      <div className="flex h-14 lg:h-16 items-center justify-between gap-2 border-b border-white/10 px-4">
+      <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-white/10 px-4">
         <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-lg font-bold text-transparent">
           Aprender
         </span>
@@ -69,7 +69,7 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
           </button>
         )}
       </div>
-      <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+      <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3 lg:overflow-visible lg:py-2">
         {navItems.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -80,13 +80,13 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
 
           if (hasChildren) {
             return (
-              <div key={item.href}>
+              <div key={item.href} className="relative">
                 <div className="flex gap-1">
                   <Link
                     href={item.href}
                     onClick={() => onCloseMobile?.()}
                     className={cn(
-                      "flex min-h-[44px] flex-1 touch-manipulation items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                      "flex min-h-[44px] flex-1 touch-manipulation items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors lg:min-h-10 lg:py-2",
                       isActive
                         ? "border border-orbit-electric/30 bg-orbit-electric/20 text-orbit-electric"
                         : "text-white/70 hover:bg-white/5 hover:text-white"
@@ -99,7 +99,7 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
                     type="button"
                     onClick={() => setAulasOpen((open) => !open)}
                     className={cn(
-                      "flex h-11 w-10 items-center justify-center rounded-lg border border-white/10 text-white/50 transition-colors hover:bg-white/5 hover:text-white",
+                      "flex h-11 w-10 items-center justify-center rounded-lg border border-white/10 text-white/50 transition-colors hover:bg-white/5 hover:text-white lg:h-10",
                       aulasOpen && "border-orbit-electric/30 text-orbit-electric"
                     )}
                     aria-label={aulasOpen ? "Fechar subcategorias de aulas" : "Abrir subcategorias de aulas"}
@@ -110,7 +110,11 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
                 </div>
 
                 {aulasOpen && (
-                  <div className="ml-4 mt-1 space-y-1 border-l border-white/10 pl-3">
+                  <div className="ml-4 mt-1 space-y-1 border-l border-white/10 pl-3 lg:absolute lg:left-full lg:top-0 lg:z-50 lg:ml-3 lg:mt-0 lg:w-56 lg:rounded-2xl lg:border lg:border-white/15 lg:bg-[#080a10]/95 lg:p-2 lg:shadow-[0_24px_70px_rgba(0,0,0,.55)] lg:backdrop-blur-xl">
+                    <div className="hidden px-2 pb-2 pt-1 lg:block">
+                      <div className="text-[10px] font-bold uppercase tracking-[.18em] text-orbit-electric">Trilhas de estudo</div>
+                      <div className="mt-1 text-xs text-white/40">Acesse uma área direto</div>
+                    </div>
                     {children.map((child) => {
                       const childActive = pathname === child.href;
                       return (
@@ -119,7 +123,7 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
                           href={child.href}
                           onClick={() => onCloseMobile?.()}
                           className={cn(
-                            "flex min-h-[38px] items-center gap-2 rounded-md px-2 py-2 text-xs font-medium transition-colors",
+                            "flex min-h-[38px] items-center gap-2 rounded-md px-2 py-2 text-xs font-medium transition-colors lg:rounded-lg",
                             childActive
                               ? "bg-white/10 text-orbit-electric"
                               : "text-white/55 hover:bg-white/5 hover:text-white"
@@ -142,7 +146,7 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
               href={item.href}
               onClick={() => onCloseMobile?.()}
               className={cn(
-                "flex min-h-[44px] touch-manipulation items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                "flex min-h-[44px] touch-manipulation items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors lg:min-h-10 lg:py-2",
                 isActive
                   ? "bg-orbit-electric/20 text-orbit-electric border border-orbit-electric/30"
                   : "text-white/70 hover:bg-white/5 hover:text-white"
@@ -154,8 +158,8 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
           );
         })}
       </nav>
-      <div className="border-t border-white/10 p-3">
-        <div className="mb-2 flex items-center gap-3 rounded-lg px-3 py-2">
+      <div className="shrink-0 border-t border-white/10 p-3 lg:py-2">
+        <div className="mb-2 flex items-center gap-3 rounded-lg px-3 py-2 lg:py-1.5">
           {getDisplayAvatarUrl(user?.avatarUrl) ? (
             <img src={getDisplayAvatarUrl(user?.avatarUrl)!} alt={user?.name ?? ""} className="h-9 w-9 rounded-full object-cover" />
           ) : (
@@ -202,7 +206,7 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
       )}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-50 flex h-screen w-72 max-w-[90vw] flex-col border-r border-white/10 bg-black/95 backdrop-blur-xl transition-transform duration-200 ease-out lg:top-16 lg:z-40 lg:h-[calc(100vh-4rem)] lg:w-56 lg:max-w-none lg:translate-x-0",
+          "fixed left-0 top-0 z-50 flex h-screen w-72 max-w-[90vw] flex-col overflow-visible border-r border-white/10 bg-black/95 backdrop-blur-xl transition-transform duration-200 ease-out lg:top-16 lg:z-40 lg:h-[calc(100vh-4rem)] lg:w-56 lg:max-w-none lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
@@ -211,5 +215,4 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
     </>
   );
 }
-
 
