@@ -6,6 +6,8 @@ import { Play, RotateCcw, ChevronRight, Lightbulb, CheckCircle2, XCircle, ArrowL
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { getDesafio } from "@/lib/desafios";
+import { runJavaScriptInWorker } from "@/lib/browserCodeRunner";
+import { useAuth } from "@/contexts/AuthContext";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -24,6 +26,7 @@ export default function PraticaPage() {
   const router = useRouter();
   const slug = params.slug as string;
   const desafio = getDesafio(slug);
+  const { user } = useAuth();
 
   const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
@@ -32,56 +35,72 @@ export default function PraticaPage() {
   const [chatMessages, setChatMessages] = useState<{ tipo: "sistema" | "sucesso" | "erro" | "dica"; texto: string }[]>([]);
   const [showDica, setShowDica] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [draftRestored, setDraftRestored] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const storageKey = user?.id ? `orbitamos-pratica-${user.id}-${slug}` : null;
 
   useEffect(() => {
     if (!desafio) return;
-    setCode(desafio.codigoInicial);
-    setStepStatus(desafio.steps.map(() => "pending"));
+    let restoredCode = "";
+    let restoredStep = 0;
+    let restoredStatus: ("pending" | "success" | "error")[] = desafio.steps.map(() => "pending");
+    if (storageKey) {
+      try {
+        const stored = localStorage.getItem(storageKey);
+        if (stored) {
+          const parsed = JSON.parse(stored) as {
+            code?: string;
+            currentStep?: number;
+            stepStatus?: ("pending" | "success" | "error")[];
+          };
+          restoredCode = parsed.code ?? "";
+          restoredStep = Math.min(Math.max(parsed.currentStep ?? 0, 0), desafio.steps.length - 1);
+          if (parsed.stepStatus?.length === desafio.steps.length) restoredStatus = parsed.stepStatus;
+        }
+      } catch {
+        // Um rascunho inválido não deve impedir o início do desafio.
+      }
+    }
+    // Restaura uma sessão externa (localStorage) quando aluno ou desafio mudam.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCode(restoredCode || desafio.codigoInicial);
+    setCurrentStep(restoredStep);
+    setStepStatus(restoredStatus);
+    setCompleted(restoredStatus.every((status) => status === "success"));
+    setDraftRestored(Boolean(restoredCode));
     setChatMessages([
       { tipo: "sistema", texto: `Desafio: ${desafio.titulo}` },
-      { tipo: "sistema", texto: desafio.steps[0].instrucao },
+      { tipo: "sistema", texto: desafio.steps[restoredStep].instrucao },
     ]);
-  }, [desafio]);
+  }, [desafio, storageKey]);
+
+  useEffect(() => {
+    if (!storageKey || !desafio || !code) return;
+    const timer = window.setTimeout(() => {
+      localStorage.setItem(storageKey, JSON.stringify({ code, currentStep, stepStatus }));
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [code, currentStep, desafio, stepStatus, storageKey]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
 
-  const executeCode = useCallback(() => {
-    if (!desafio) return;
+  const executeCode = useCallback(async () => {
+    if (!desafio || running) return;
 
     setOutput("");
     setShowDica(false);
-
-    // Execute in a sandboxed way using Function constructor
-    const logs: string[] = [];
-    const fakeConsole = {
-      log: (...args: unknown[]) => {
-        logs.push(args.map((a) => (typeof a === "object" ? JSON.stringify(a) : String(a))).join(" "));
-      },
-      error: (...args: unknown[]) => {
-        logs.push(args.map((a) => (typeof a === "object" ? JSON.stringify(a) : String(a))).join(" "));
-      },
-      warn: (...args: unknown[]) => {
-        logs.push(args.map((a) => (typeof a === "object" ? JSON.stringify(a) : String(a))).join(" "));
-      },
-    };
-
-    try {
-      const fn = new Function("console", code);
-      fn(fakeConsole);
-    } catch (e: unknown) {
-      logs.push(`Erro: ${e instanceof Error ? e.message : String(e)}`);
-    }
-
-    const resultOutput = logs.join("\n");
+    setRunning(true);
+    const result = await runJavaScriptInWorker(code);
+    const resultOutput = [result.output, result.error ? `Erro: ${result.error}` : ""].filter(Boolean).join("\n");
     setOutput(resultOutput);
 
     // Validate current step
     const step = desafio.steps[currentStep];
     if (step) {
-      const passed = step.validacao(code, resultOutput);
+      const passed = !result.error && step.validacao(code, resultOutput);
       const newStatus = [...stepStatus];
 
       if (passed) {
@@ -113,16 +132,20 @@ export default function PraticaPage() {
         setChatMessages((prev) => [...prev, { tipo: "erro", texto: step.erro }]);
       }
     }
-  }, [code, currentStep, desafio, stepStatus]);
+    setRunning(false);
+  }, [code, currentStep, desafio, running, stepStatus]);
 
   const handleReset = () => {
     if (!desafio) return;
+    if (!window.confirm("Reiniciar apaga o código e o progresso salvos neste desafio. Deseja continuar?")) return;
+    if (storageKey) localStorage.removeItem(storageKey);
     setCode(desafio.codigoInicial);
     setOutput("");
     setCurrentStep(0);
     setStepStatus(desafio.steps.map(() => "pending"));
     setShowDica(false);
     setCompleted(false);
+    setDraftRestored(false);
     setChatMessages([
       { tipo: "sistema", texto: `Desafio reiniciado: ${desafio.titulo}` },
       { tipo: "sistema", texto: desafio.steps[0].instrucao },
@@ -170,10 +193,11 @@ export default function PraticaPage() {
           </button>
           <button
             onClick={executeCode}
-            className="flex items-center gap-1.5 rounded-lg bg-emerald-500/90 px-4 py-1.5 text-xs font-bold text-black transition hover:bg-emerald-400"
+            disabled={running}
+            className="flex items-center gap-1.5 rounded-lg bg-emerald-500/90 px-4 py-1.5 text-xs font-bold text-black transition hover:bg-emerald-400 disabled:cursor-wait disabled:opacity-60"
           >
             <Play className="size-3" />
-            Executar
+            {running ? "Executando..." : "Executar"}
           </button>
         </div>
       </div>
@@ -213,7 +237,7 @@ export default function PraticaPage() {
               )}
             </div>
             <pre className="h-28 overflow-auto px-4 py-2 font-mono text-xs text-emerald-300/90 whitespace-pre-wrap">
-              {output || <span className="text-white/25">Clique em "Executar" para ver o resultado...</span>}
+              {output || <span className="text-white/25">Clique em &quot;Executar&quot; para ver o resultado...</span>}
             </pre>
           </div>
         </div>
@@ -222,7 +246,10 @@ export default function PraticaPage() {
         <div className="flex w-72 min-w-[260px] max-w-[320px] flex-col bg-[#0d1117]">
           {/* Checklist */}
           <div className="border-b border-white/10 p-3">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-white/40">Progresso</p>
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-white/40">Progresso</p>
+              <span className="text-[10px] text-white/30">{draftRestored ? "Rascunho restaurado" : "Salvamento automático"}</span>
+            </div>
             <div className="space-y-1.5">
               {desafio.steps.map((step, i) => (
                 <div
