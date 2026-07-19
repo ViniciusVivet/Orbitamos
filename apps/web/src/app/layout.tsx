@@ -86,7 +86,7 @@ export default function RootLayout({
                     <Navigation />
                     <ForumWidget />
                     <FloatingChat />
-                    <main className="pt-16 min-w-0 overflow-x-hidden">
+                    <main className="pt-16 min-w-0 overflow-x-clip">
                       {children}
                     </main>
                   </PreWakeProvider>

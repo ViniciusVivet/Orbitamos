@@ -201,7 +201,7 @@ export default function EstudanteSidebar({ mobileOpen = false, onCloseMobile }: 
       )}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-50 flex h-screen w-72 max-w-[90vw] flex-col border-r border-white/10 bg-black/95 backdrop-blur-xl transition-transform duration-200 ease-out lg:z-40 lg:w-56 lg:max-w-none lg:translate-x-0",
+          "fixed left-0 top-0 z-50 flex h-screen w-72 max-w-[90vw] flex-col border-r border-white/10 bg-black/95 backdrop-blur-xl transition-transform duration-200 ease-out lg:top-16 lg:z-40 lg:h-[calc(100vh-4rem)] lg:w-56 lg:max-w-none lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
