@@ -7,7 +7,17 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { getDesafio } from "@/lib/desafios";
 
-const MonacoEditor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
+const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full items-center justify-center bg-[#1e1e1e]">
+      <div className="flex items-center gap-2 text-xs text-white/40">
+        <span className="size-4 animate-spin rounded-full border-2 border-orbit-electric border-t-transparent" />
+        Carregando editor...
+      </div>
+    </div>
+  ),
+});
 
 export default function PraticaPage() {
   const params = useParams();
@@ -23,7 +33,6 @@ export default function PraticaPage() {
   const [showDica, setShowDica] = useState(false);
   const [completed, setCompleted] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     if (!desafio) return;
@@ -42,88 +51,67 @@ export default function PraticaPage() {
   const executeCode = useCallback(() => {
     if (!desafio) return;
 
-    const iframe = iframeRef.current;
-    if (!iframe) return;
-
-    // Reset output
     setOutput("");
     setShowDica(false);
 
-    // Create sandbox execution
+    // Execute in a sandboxed way using Function constructor
     const logs: string[] = [];
-    const html = `
-      <html><body><script>
-        const __logs = [];
-        const originalLog = console.log;
-        console.log = (...args) => {
-          __logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
-          originalLog(...args);
-        };
-        console.error = console.log;
-        console.warn = console.log;
-        try {
-          ${code}
-        } catch(e) {
-          __logs.push('Erro: ' + e.message);
-        }
-        parent.postMessage({ type: 'output', logs: __logs }, '*');
-      </script></body></html>
-    `;
-
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === "output") {
-        const resultOutput = (event.data.logs as string[]).join("\n");
-        setOutput(resultOutput);
-
-        // Validate current step
-        const step = desafio.steps[currentStep];
-        if (step) {
-          const passed = step.validacao(code, resultOutput);
-          const newStatus = [...stepStatus];
-
-          if (passed) {
-            newStatus[currentStep] = "success";
-            setStepStatus(newStatus);
-            setChatMessages((prev) => [...prev, { tipo: "sucesso", texto: step.acerto }]);
-
-            // Next step or complete
-            if (currentStep + 1 < desafio.steps.length) {
-              const nextStep = currentStep + 1;
-              setCurrentStep(nextStep);
-              setTimeout(() => {
-                setChatMessages((prev) => [
-                  ...prev,
-                  { tipo: "sistema", texto: desafio.steps[nextStep].instrucao },
-                ]);
-              }, 1000);
-            } else {
-              setCompleted(true);
-              setTimeout(() => {
-                setChatMessages((prev) => [
-                  ...prev,
-                  { tipo: "sucesso", texto: "Parabens! Voce completou o desafio inteiro!" },
-                ]);
-              }, 800);
-            }
-          } else {
-            newStatus[currentStep] = "error";
-            setStepStatus(newStatus);
-            setChatMessages((prev) => [...prev, { tipo: "erro", texto: step.erro }]);
-          }
-        }
-
-        window.removeEventListener("message", handleMessage);
-      }
+    const fakeConsole = {
+      log: (...args: unknown[]) => {
+        logs.push(args.map((a) => (typeof a === "object" ? JSON.stringify(a) : String(a))).join(" "));
+      },
+      error: (...args: unknown[]) => {
+        logs.push(args.map((a) => (typeof a === "object" ? JSON.stringify(a) : String(a))).join(" "));
+      },
+      warn: (...args: unknown[]) => {
+        logs.push(args.map((a) => (typeof a === "object" ? JSON.stringify(a) : String(a))).join(" "));
+      },
     };
 
-    window.addEventListener("message", handleMessage);
+    try {
+      const fn = new Function("console", code);
+      fn(fakeConsole);
+    } catch (e: unknown) {
+      logs.push(`Erro: ${e instanceof Error ? e.message : String(e)}`);
+    }
 
-    // Write to iframe
-    const doc = iframe.contentDocument;
-    if (doc) {
-      doc.open();
-      doc.write(html);
-      doc.close();
+    const resultOutput = logs.join("\n");
+    setOutput(resultOutput);
+
+    // Validate current step
+    const step = desafio.steps[currentStep];
+    if (step) {
+      const passed = step.validacao(code, resultOutput);
+      const newStatus = [...stepStatus];
+
+      if (passed) {
+        newStatus[currentStep] = "success";
+        setStepStatus(newStatus);
+        setChatMessages((prev) => [...prev, { tipo: "sucesso", texto: step.acerto }]);
+
+        if (currentStep + 1 < desafio.steps.length) {
+          const nextStep = currentStep + 1;
+          setCurrentStep(nextStep);
+          setTimeout(() => {
+            setChatMessages((prev) => [
+              ...prev,
+              { tipo: "sistema", texto: desafio.steps[nextStep].instrucao },
+            ]);
+          }, 1000);
+        } else {
+          setCompleted(true);
+          setTimeout(() => {
+            setChatMessages((prev) => [
+              ...prev,
+              { tipo: "sucesso", texto: "Parabens! Voce completou o desafio inteiro!" },
+            ]);
+          }, 800);
+        }
+      } else {
+        newStatus[currentStep] = "error";
+        setStepStatus(newStatus);
+        setChatMessages((prev) => [...prev, { tipo: "erro", texto: step.erro }]);
+      }
     }
   }, [code, currentStep, desafio, stepStatus]);
 
@@ -324,8 +312,6 @@ export default function PraticaPage() {
         </div>
       </div>
 
-      {/* Hidden iframe for code execution */}
-      <iframe ref={iframeRef} sandbox="allow-scripts" className="hidden" title="executor" />
     </div>
   );
 }
