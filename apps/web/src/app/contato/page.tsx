@@ -130,26 +130,26 @@ export default function Contato() {
         <div className="flex w-full max-w-5xl flex-col items-center gap-4 md:flex-row md:items-center md:gap-12">
 
           {/* Left: Mascot + text */}
-          <div className="flex flex-col items-center text-center md:w-[340px] md:shrink-0 md:items-start md:text-left">
+          <div className="flex flex-col items-center text-center md:w-[400px] md:shrink-0 md:items-start md:text-left">
             <img
               src="/orbi-contact.png"
               alt="Orbi, mascote da Orbitamos"
-              className="hidden md:block mb-4 w-32 drop-shadow-[0_0_24px_rgba(0,212,255,0.25)]"
+              className="hidden md:block mb-6 w-64 drop-shadow-[0_0_32px_rgba(0,212,255,0.3)] animate-float-mascot"
             />
-            <div className="mb-2 md:mb-3 inline-flex items-center gap-2 rounded-full border border-orbit-electric/25 bg-orbit-electric/[0.08] px-3 py-1 md:px-4 md:py-1.5 backdrop-blur-xl">
+            <div className="mb-2 md:mb-4 inline-flex items-center gap-2 rounded-full border border-orbit-electric/25 bg-orbit-electric/[0.08] px-3 py-1 md:px-4 md:py-1.5 backdrop-blur-xl">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orbit-electric shadow-[0_0_12px_rgba(0,212,255,0.8)]" />
-              <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-orbit-electric">Transmissao aberta</span>
+              <span className="text-[9px] md:text-xs font-bold uppercase tracking-[0.3em] text-orbit-electric">Transmissao aberta</span>
             </div>
-            <h1 className="text-xl font-black leading-tight md:text-4xl">
+            <h1 className="text-xl font-black leading-tight md:text-5xl">
               Vamos construir{" "}
               <span className="bg-gradient-to-r from-orbit-electric via-sky-300 to-orbit-purple bg-clip-text text-transparent">
                 algo incrivel?
               </span>
             </h1>
-            <p className="mt-1 md:mt-3 max-w-sm text-xs md:text-sm text-white/50">
+            <p className="mt-1 md:mt-4 max-w-sm text-xs md:text-base text-white/50">
               Orcamento sem compromisso. Resposta em ate 24h.
             </p>
-            <p className="hidden md:block mt-4 text-xs text-white/35">
+            <p className="hidden md:block mt-5 text-sm text-white/35">
               Prefere redes sociais?{" "}
               <a href="https://www.instagram.com/orbitamosbr/" target="_blank" rel="noreferrer"
                 className="text-orbit-electric/70 underline transition-colors hover:text-orbit-electric">
