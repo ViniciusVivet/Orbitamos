@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { getPublicProfile, getDisplayAvatarUrl, type PublicProfile, type UserId } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Badge, BookOpen, MessageCircle, X } from "lucide-react";
@@ -40,18 +41,25 @@ export default function UserProfileModal({ userId, token, authorName, onClose }:
   }, [onClose]);
 
   useEffect(() => {
-    if (!token) {
-      setLoading(false);
-      setLoadError(true);
-      return;
-    }
+    let active = true;
+    if (!token) return;
+
     getPublicProfile(token, userId)
       .then((p) => {
+        if (!active) return;
         if (!p) setLoadError(true);
         else setProfile(p);
       })
-      .catch(() => setLoadError(true))
-      .finally(() => setLoading(false));
+      .catch(() => {
+        if (active) setLoadError(true);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [token, userId]);
 
   const displayName = profile?.name ?? authorName;
@@ -94,13 +102,15 @@ export default function UserProfileModal({ userId, token, authorName, onClose }:
           ) : (
             <>
               <div className="flex flex-col items-center text-center">
-                <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full ring-4 ring-orbit-electric/30">
+                <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full ring-4 ring-orbit-electric/30">
                   {profile?.avatarUrl && getDisplayAvatarUrl(profile.avatarUrl) ? (
-                    <img
+                    <Image
                       src={getDisplayAvatarUrl(profile.avatarUrl)!}
-                      alt=""
-                      className="h-full w-full object-cover"
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                      alt={`Foto de ${displayName}`}
+                      fill
+                      sizes="96px"
+                      unoptimized
+                      className="object-cover"
                     />
                   ) : (
                     <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-orbit-electric to-orbit-purple text-3xl font-bold text-black">

@@ -1,42 +1,91 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import {
+  ArrowUpRight,
+  BookOpen,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Clock3,
+  Code2,
+  Compass,
+  Edit3,
+  Lightbulb,
+  LoaderCircle,
+  MessageCircle,
+  PenLine,
+  RefreshCw,
+  Rocket,
+  Search,
+  Send,
+  ShieldCheck,
+  Sparkles,
+  Trash2,
+  Users,
+  X,
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  ForumMessage,
-  getForumMessages,
-  searchForumMessages,
-  postForumMessage,
-  updateForumMessage,
   deleteForumMessage,
+  ForumMessage,
   getDisplayAvatarUrl,
+  getForumMessages,
+  postForumMessage,
+  searchForumMessages,
+  updateForumMessage,
   type UserId,
 } from "@/lib/api";
-import { getFriendlyApiErrorMessage, formatRelativeDate } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { formatRelativeDate, getFriendlyApiErrorMessage } from "@/lib/utils";
 import UserProfileModal from "@/components/forum/UserProfileModal";
 
+const CONTENT_LIMIT = 2000;
+const TITLE_LIMIT = 100;
 
-function AuthorAvatar({ name, avatarUrl }: { name: string; avatarUrl?: string | null }) {
+const TOPICS = [
+  { label: "Dúvidas", emoji: "❓", color: "#00D4FF", icon: Lightbulb },
+  { label: "Projetos", emoji: "🚀", color: "#8B5CF6", icon: Rocket },
+  { label: "Código", emoji: "💻", color: "#38BDF8", icon: Code2 },
+  { label: "Carreira", emoji: "🧭", color: "#F59E0B", icon: Compass },
+  { label: "Conquistas", emoji: "✨", color: "#10B981", icon: Sparkles },
+] as const;
+
+type FeedSort = "recent" | "active";
+
+function AuthorAvatar({
+  name,
+  avatarUrl,
+  size = "md",
+}: {
+  name: string;
+  avatarUrl?: string | null;
+  size?: "sm" | "md";
+}) {
   const [imgFailed, setImgFailed] = useState(false);
   const initials = name
     .split(" ")
-    .map((n) => n[0])
+    .map((part) => part[0])
     .slice(0, 2)
     .join("")
     .toUpperCase();
   const displayUrl = getDisplayAvatarUrl(avatarUrl ?? undefined);
-  const showImg = displayUrl && !imgFailed;
+
   return (
-    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-orbit-electric to-orbit-purple text-sm font-bold text-black ring-2 ring-white/10">
-      {showImg ? (
-        <img
+    <div
+      className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-orbit-electric to-orbit-purple font-bold text-[#02050b] ring-2 ring-white/10 ${
+        size === "sm" ? "h-8 w-8 text-[11px]" : "h-11 w-11 text-sm"
+      }`}
+    >
+      {displayUrl && !imgFailed ? (
+        <Image
           src={displayUrl}
-          alt=""
-          className="h-full w-full object-cover"
+          alt={`Foto de ${name}`}
+          fill
+          sizes={size === "sm" ? "32px" : "44px"}
+          unoptimized
+          className="object-cover"
           onError={() => setImgFailed(true)}
         />
       ) : (
@@ -46,567 +95,955 @@ function AuthorAvatar({ name, avatarUrl }: { name: string; avatarUrl?: string | 
   );
 }
 
+function locationLabel(message: ForumMessage) {
+  return [message.neighborhood, message.city, message.authorState].filter(Boolean).join(" • ");
+}
+
+function categoryFor(message: ForumMessage) {
+  return TOPICS.find(
+    (topic) =>
+      topic.emoji === message.topicEmoji ||
+      topic.label.toLowerCase() === message.topicTitle?.trim().toLowerCase()
+  );
+}
+
 export default function ForumPage() {
   const { token, isAuthenticated, user } = useAuth();
   const [messages, setMessages] = useState<ForumMessage[]>([]);
+  const [repliesByParent, setRepliesByParent] = useState<Record<number, ForumMessage[]>>({});
+  const [expandedThreads, setExpandedThreads] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [query, setQuery] = useState("");
-  const [activeQuery, setActiveQuery] = useState(""); // query that produced current results
+  const [activeQuery, setActiveQuery] = useState("");
+  const [sort, setSort] = useState<FeedSort>("recent");
+  const [activeTopic, setActiveTopic] = useState<string>("Todos");
+  const [composerOpen, setComposerOpen] = useState(false);
   const [content, setContent] = useState("");
-  const [editingId, setEditingId] = useState<number | null>(null);
   const [topicTitle, setTopicTitle] = useState("");
-  const [topicColor, setTopicColor] = useState("#00D4FF");
-  const [topicEmoji, setTopicEmoji] = useState("💬");
-  const [profileUserId, setProfileUserId] = useState<UserId | null>(null);
+  const [topicColor, setTopicColor] = useState<string>(TOPICS[0].color);
+  const [topicEmoji, setTopicEmoji] = useState<string>(TOPICS[0].emoji);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [replyingToId, setReplyingToId] = useState<number | null>(null);
-  const [repliesByParent, setRepliesByParent] = useState<Record<number, ForumMessage[]>>({});
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [profileUserId, setProfileUserId] = useState<UserId | null>(null);
   const loadedRepliesRef = useRef<Set<number>>(new Set());
-
-  const loadMessages = useCallback(async (searchTerm?: string) => {
-    setLoading(true);
-    setError("");
-    loadedRepliesRef.current = new Set();
-    try {
-      const data = searchTerm?.trim()
-        ? await searchForumMessages(searchTerm.trim())
-        : await getForumMessages();
-      setMessages(data);
-      setActiveQuery(searchTerm?.trim() ?? "");
-    } catch (err) {
-      setError(getFriendlyApiErrorMessage(err));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const composerRef = useRef<HTMLDivElement>(null);
 
   const loadReplies = useCallback(async (parentId: number) => {
     try {
       const replies = await getForumMessages(parentId);
-      setRepliesByParent((prev) => ({
-        ...prev,
-        [parentId]: replies.filter((r) => r.parentId === parentId),
+      setRepliesByParent((current) => ({
+        ...current,
+        [parentId]: replies.filter((reply) => reply.parentId === parentId),
       }));
     } catch {
-      setRepliesByParent((prev) => ({ ...prev, [parentId]: [] }));
+      setRepliesByParent((current) => ({ ...current, [parentId]: [] }));
     }
   }, []);
 
-  useEffect(() => { loadMessages(); }, [loadMessages]);
+  const loadMessages = useCallback(
+    async (searchTerm = "", isRefresh = false) => {
+      if (isRefresh) setRefreshing(true);
+      else setLoading(true);
+      setError("");
+      loadedRepliesRef.current = new Set();
+
+      try {
+        const trimmedSearch = searchTerm.trim();
+        const data = trimmedSearch
+          ? await searchForumMessages(trimmedSearch)
+          : await getForumMessages();
+        setMessages(data);
+        setActiveQuery(trimmedSearch);
+      } catch (loadError) {
+        setError(getFriendlyApiErrorMessage(loadError));
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    void loadMessages();
+  }, [loadMessages]);
 
   useEffect(() => {
     messages
-      .filter((m) => m.parentId == null && !loadedRepliesRef.current.has(m.id))
-      .forEach((m) => {
-        loadedRepliesRef.current.add(m.id);
-        loadReplies(m.id);
+      .filter((message) => message.parentId == null && !loadedRepliesRef.current.has(message.id))
+      .forEach((message) => {
+        loadedRepliesRef.current.add(message.id);
+        void loadReplies(message.id);
       });
-  }, [messages, loadReplies]);
+  }, [loadReplies, messages]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    loadMessages(query);
+  useEffect(() => {
+    if (!notice) return;
+    const timeout = window.setTimeout(() => setNotice(""), 3200);
+    return () => window.clearTimeout(timeout);
+  }, [notice]);
+
+  const rootMessages = useMemo(() => messages.filter((message) => message.parentId == null), [messages]);
+
+  const visibleMessages = useMemo(() => {
+    const byTopic =
+      activeTopic === "Todos"
+        ? rootMessages
+        : rootMessages.filter((message) => categoryFor(message)?.label === activeTopic);
+
+    return [...byTopic].sort((left, right) => {
+      if (sort === "active") {
+        const replyDifference =
+          (repliesByParent[right.id]?.length ?? 0) - (repliesByParent[left.id]?.length ?? 0);
+        if (replyDifference !== 0) return replyDifference;
+      }
+      return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+    });
+  }, [activeTopic, repliesByParent, rootMessages, sort]);
+
+  const contributors = useMemo(() => {
+    const people = new Map<UserId, { id: UserId; name: string; avatar?: string | null; posts: number }>();
+
+    [...rootMessages, ...Object.values(repliesByParent).flat()].forEach((message) => {
+      const current = people.get(message.userId);
+      people.set(message.userId, {
+        id: message.userId,
+        name: message.author,
+        avatar: message.authorAvatarUrl,
+        posts: (current?.posts ?? 0) + 1,
+      });
+    });
+
+    return [...people.values()].sort((left, right) => right.posts - left.posts).slice(0, 5);
+  }, [repliesByParent, rootMessages]);
+
+  const replyCount = useMemo(
+    () => Object.values(repliesByParent).reduce((total, replies) => total + replies.length, 0),
+    [repliesByParent]
+  );
+
+  const resetComposer = useCallback(() => {
+    setContent("");
+    setTopicTitle("");
+    setTopicColor(TOPICS[0].color);
+    setTopicEmoji(TOPICS[0].emoji);
+    setEditingId(null);
+    setReplyingToId(null);
+    setError("");
+  }, []);
+
+  const openComposer = () => {
+    resetComposer();
+    setComposerOpen(true);
+    window.setTimeout(() => composerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
+  };
+
+  const chooseTopic = (topic: (typeof TOPICS)[number]) => {
+    setTopicColor(topic.color);
+    setTopicEmoji(topic.emoji);
+  };
+
+  const handleSearch = (event: React.FormEvent) => {
+    event.preventDefault();
+    void loadMessages(query);
   };
 
   const handleClearSearch = () => {
     setQuery("");
-    loadMessages("");
+    void loadMessages("");
   };
 
-  // Unified send handler: new post, reply, or edit
   const handleSend = async () => {
-    if (!token || !content.trim()) return;
+    const trimmedContent = content.trim();
+    if (!token || !trimmedContent || sending) return;
+
     setSending(true);
     setError("");
+
     try {
       if (editingId) {
         const updated = await updateForumMessage(
           token,
           editingId,
-          content.trim(),
+          trimmedContent,
           undefined,
           undefined,
-          { topicTitle, topicColor, topicEmoji }
+          { topicTitle: topicTitle.trim(), topicColor, topicEmoji }
         );
-        setMessages((prev) => prev.map((m) => (m.id === editingId ? updated : m)));
-        setEditingId(null);
+        setMessages((current) =>
+          current.map((message) => (message.id === editingId ? updated : message))
+        );
+        setNotice("Publicação atualizada com sucesso.");
       } else if (replyingToId) {
-        const created = await postForumMessage(token, content.trim(), undefined, undefined, {
-          parentId: replyingToId,
-        });
-        setRepliesByParent((prev) => ({
-          ...prev,
-          [replyingToId]: [...(prev[replyingToId] ?? []), created],
+        const parentId = replyingToId;
+        const created = await postForumMessage(token, trimmedContent, undefined, undefined, { parentId });
+        setRepliesByParent((current) => ({
+          ...current,
+          [parentId]: [...(current[parentId] ?? []), created],
         }));
-        setReplyingToId(null);
+        setExpandedThreads((current) => new Set(current).add(parentId));
+        setNotice("Resposta publicada na conversa.");
       } else {
-        const created = await postForumMessage(token, content.trim(), undefined, undefined, {
-          topicTitle: topicTitle || undefined,
-          topicColor: topicColor || undefined,
-          topicEmoji: topicEmoji || undefined,
+        const created = await postForumMessage(token, trimmedContent, undefined, undefined, {
+          topicTitle: topicTitle.trim() || undefined,
+          topicColor,
+          topicEmoji,
         });
-        setMessages((prev) => [created, ...prev]);
-        setTopicTitle("");
-        setTopicColor("#00D4FF");
-        setTopicEmoji("💬");
+        setMessages((current) => [created, ...current]);
+        setNotice("Publicação enviada para a comunidade.");
       }
-      setContent("");
-    } catch (err) {
-      setError(getFriendlyApiErrorMessage(err));
+
+      resetComposer();
+      setComposerOpen(false);
+    } catch (sendError) {
+      setError(getFriendlyApiErrorMessage(sendError));
     } finally {
       setSending(false);
     }
   };
 
   const handleEdit = (message: ForumMessage) => {
-    setEditingId(message.id);
     setReplyingToId(null);
+    setEditingId(message.id);
     setContent(message.content);
-    setTopicTitle(message.topicTitle || "");
-    setTopicColor(message.topicColor || "#00D4FF");
-    setTopicEmoji(message.topicEmoji || "💬");
+    setTopicTitle(message.topicTitle ?? "");
+    setTopicColor(message.topicColor ?? TOPICS[0].color);
+    setTopicEmoji(message.topicEmoji ?? TOPICS[0].emoji);
+    setComposerOpen(true);
     setError("");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.setTimeout(() => composerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
   };
 
   const handleReply = (message: ForumMessage) => {
+    setEditingId(null);
     setReplyingToId(message.id);
-    setEditingId(null);
+    setComposerOpen(false);
     setContent("");
     setError("");
+    setExpandedThreads((current) => new Set(current).add(message.id));
   };
 
-  const handleCancelCompose = () => {
-    setEditingId(null);
-    setReplyingToId(null);
-    setContent("");
-    setError("");
-    setTopicTitle("");
-    setTopicColor("#00D4FF");
-    setTopicEmoji("💬");
-  };
-
-  const handleDeleteReply = async (replyId: number, parentId: number) => {
-    if (!token) return;
+  const handleDelete = async (id: number, parentId?: number) => {
+    if (!token || sending) return;
     setSending(true);
     setError("");
-    try {
-      await deleteForumMessage(token, replyId);
-      setRepliesByParent((prev) => ({
-        ...prev,
-        [parentId]: (prev[parentId] ?? []).filter((r) => r.id !== replyId),
-      }));
-    } catch (err) {
-      setError(getFriendlyApiErrorMessage(err));
-    } finally {
-      setSending(false);
-    }
-  };
 
-  const handleDelete = async (id: number) => {
-    if (!token) return;
-    setConfirmDeleteId(null);
-    setSending(true);
-    setError("");
     try {
       await deleteForumMessage(token, id);
-      setMessages((prev) => prev.filter((m) => m.id !== id));
-    } catch (err) {
-      setError(getFriendlyApiErrorMessage(err));
+      if (parentId != null) {
+        setRepliesByParent((current) => ({
+          ...current,
+          [parentId]: (current[parentId] ?? []).filter((reply) => reply.id !== id),
+        }));
+        setNotice("Resposta excluída.");
+      } else {
+        setMessages((current) => current.filter((message) => message.id !== id));
+        setNotice("Publicação excluída.");
+      }
+      setConfirmDeleteId(null);
+    } catch (deleteError) {
+      setError(getFriendlyApiErrorMessage(deleteError));
     } finally {
       setSending(false);
     }
   };
 
-  // Show top compose card when: logged in AND not in reply mode (reply is inline)
-  const showComposeCard = isAuthenticated && !replyingToId;
+  const toggleThread = (id: number) => {
+    setExpandedThreads((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900/50 to-black text-white">
-      <section className="container mx-auto max-w-full px-4 py-8 sm:py-10 md:py-14">
-        <header className="mb-8 sm:mb-10 text-center md:text-left">
-          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl">
-            Fórum da <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">Comunidade</span>
-          </h1>
-          <p className="mt-3 max-w-2xl text-white/70">
-            Dúvidas, dicas e troca de experiências. Conecte-se com quem está na mesma jornada.
-          </p>
-        </header>
+    <div className="relative min-h-screen overflow-hidden bg-[#03050a] text-white">
+      <div className="pointer-events-none fixed inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_12%,rgba(0,212,255,.10),transparent_28%),radial-gradient(circle_at_86%_18%,rgba(139,92,246,.13),transparent_30%),linear-gradient(180deg,#03050a_0%,#050816_48%,#03050a_100%)]" />
+        <div className="absolute left-[8%] top-40 h-52 w-52 rounded-full bg-orbit-electric/5 blur-3xl" />
+        <div className="absolute right-[4%] top-[38rem] h-64 w-64 rounded-full bg-orbit-purple/7 blur-3xl" />
+      </div>
 
-        <div className="mx-auto max-w-3xl space-y-8">
+      {notice && (
+        <div
+          role="status"
+          className="fixed right-4 top-20 z-[70] flex max-w-sm items-center gap-3 rounded-2xl border border-emerald-400/25 bg-[#07130f]/95 px-4 py-3 text-sm text-emerald-100 shadow-2xl shadow-emerald-950/40 backdrop-blur-xl"
+        >
+          <span className="grid h-7 w-7 place-items-center rounded-full bg-emerald-400/15 text-emerald-300">
+            <Check className="h-4 w-4" />
+          </span>
+          {notice}
+        </div>
+      )}
 
-          {/* Search */}
-          <form onSubmit={handleSearch} className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="relative flex-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40">🔍</span>
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar por autor, cidade ou bairro..."
-                className="w-full rounded-xl border border-white/10 bg-white/5 py-3 pl-10 pr-4 text-white placeholder:text-white/40 focus:border-orbit-electric/50 focus:outline-none focus:ring-1 focus:ring-orbit-electric/30"
-              />
+      <section className="relative mx-auto max-w-[1480px] px-4 pb-16 pt-8 sm:px-6 sm:pt-12 lg:px-8">
+        <header className="relative overflow-hidden rounded-[2rem] border border-white/[0.08] bg-white/[0.035] px-5 py-8 shadow-[0_30px_120px_rgba(0,0,0,.35)] backdrop-blur-xl sm:px-8 lg:px-10 lg:py-10">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(0,212,255,.08),transparent_38%,rgba(139,92,246,.08))]" />
+          <div className="relative flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-3xl">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orbit-electric/20 bg-orbit-electric/[0.07] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-orbit-electric">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orbit-electric" />
+                Comunidade Orbitamos
+              </div>
+              <h1 className="font-display text-3xl font-bold tracking-[-0.04em] sm:text-5xl lg:text-6xl">
+                Ideias ganham força
+                <span className="block bg-gradient-to-r from-orbit-electric via-sky-300 to-orbit-purple bg-clip-text text-transparent">
+                  quando entram em órbita.
+                </span>
+              </h1>
+              <p className="mt-4 max-w-2xl text-sm leading-6 text-white/60 sm:text-base">
+                Tire dúvidas, compartilhe projetos e cresça junto de pessoas que também estão construindo o futuro com tecnologia.
+              </p>
             </div>
-            <Button type="submit" variant="outline" className="border-white/20 text-white hover:bg-white/10 sm:shrink-0">
-              Buscar
-            </Button>
-          </form>
 
-          {/* Active search indicator */}
-          {activeQuery && (
-            <div className="flex items-center gap-2 text-sm text-white/60">
-              <span>Resultados para: <strong className="text-white/90">"{activeQuery}"</strong></span>
+            {isAuthenticated ? (
               <button
                 type="button"
-                onClick={handleClearSearch}
-                className="rounded-full border border-white/15 px-2 py-0.5 text-xs text-white/50 hover:bg-white/10 hover:text-white transition-colors"
+                onClick={openComposer}
+                className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-6 font-bold text-[#02050b] shadow-[0_14px_45px_rgba(0,212,255,.18)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(139,92,246,.25)]"
               >
-                ✕ Limpar
+                <PenLine className="h-4 w-4" />
+                Criar publicação
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </button>
-            </div>
-          )}
+            ) : (
+              <Link
+                href="/entrar"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-6 font-bold text-[#02050b]"
+              >
+                Entrar na comunidade
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+            )}
+          </div>
 
-          {/* Compose card — new post or edit (hidden during inline reply) */}
-          {showComposeCard ? (
-            <Card className="border-orbit-electric/20 bg-gray-900/50">
-              <CardHeader>
-                <CardTitle className="text-orbit-electric">
-                  {editingId ? "Editando mensagem" : "Nova publicação"}
-                </CardTitle>
-                <CardDescription>
-                  {editingId ? "Altere o conteúdo abaixo e salve" : "Compartilhe uma dúvida ou dica com a comunidade"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {error && (
-                  <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-200">
-                    {error}
-                  </div>
-                )}
-                {!editingId && (
-                  <>
-                    <div>
-                      <label className="text-xs text-white/60">Título do tópico (opcional)</label>
-                      <Input
-                        value={topicTitle}
-                        onChange={(e) => setTopicTitle(e.target.value)}
-                        placeholder="Ex: Dúvida sobre HTML"
-                        className="mt-1 border-white/10 bg-white/5 text-white placeholder:text-white/40"
-                        disabled={sending}
-                      />
-                    </div>
-                    <div className="flex flex-wrap items-center gap-4">
-                      <div>
-                        <label className="text-xs text-white/60 mr-2">Cor</label>
-                        <input
-                          type="color"
-                          value={topicColor}
-                          onChange={(e) => setTopicColor(e.target.value)}
-                          className="h-10 w-14 cursor-pointer rounded border border-white/20 bg-white/5"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs text-white/60 mr-2">Emoji</label>
-                        <Input
-                          value={topicEmoji}
-                          onChange={(e) => setTopicEmoji(e.target.value.slice(0, 4))}
-                          placeholder="💬"
-                          className="w-16 text-center text-2xl border-white/10 bg-white/5 text-white"
-                          disabled={sending}
-                        />
-                      </div>
-                    </div>
-                  </>
-                )}
-                <textarea
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) handleSend(); }}
-                  placeholder="O que você quer compartilhar?"
-                  rows={3}
-                  className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/40 focus:border-orbit-electric/50 focus:outline-none focus:ring-1 focus:ring-orbit-electric/30 disabled:opacity-50"
-                  disabled={sending}
-                />
-                <div className="flex items-center gap-2">
-                  <Button
+          <div className="relative mt-8 grid grid-cols-3 gap-2 border-t border-white/[0.07] pt-5 sm:flex sm:gap-8">
+            <div>
+              <strong className="block text-xl font-bold text-white">{rootMessages.length}</strong>
+              <span className="text-xs text-white/40">publicações</span>
+            </div>
+            <div>
+              <strong className="block text-xl font-bold text-white">{replyCount}</strong>
+              <span className="text-xs text-white/40">respostas</span>
+            </div>
+            <div>
+              <strong className="block text-xl font-bold text-white">{contributors.length}</strong>
+              <span className="text-xs text-white/40">vozes recentes</span>
+            </div>
+          </div>
+        </header>
+
+        <div className="mt-6 grid gap-6 xl:grid-cols-[230px_minmax(0,1fr)_290px]">
+          <aside className="hidden xl:block">
+            <div className="sticky top-24 rounded-3xl border border-white/[0.08] bg-white/[0.035] p-3 backdrop-blur-xl">
+              <p className="px-3 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/35">
+                Explorar
+              </p>
+              {["Todos", ...TOPICS.map((topic) => topic.label)].map((label) => {
+                const topic = TOPICS.find((item) => item.label === label);
+                const TopicIcon = topic?.icon ?? MessageCircle;
+                return (
+                  <button
+                    key={label}
                     type="button"
-                    onClick={handleSend}
-                    disabled={sending || !content.trim()}
-                    className="bg-gradient-to-r from-orbit-electric to-orbit-purple text-black font-semibold hover:opacity-90 disabled:opacity-50"
+                    onClick={() => setActiveTopic(label)}
+                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition ${
+                      activeTopic === label
+                        ? "bg-white/10 font-semibold text-white shadow-inner"
+                        : "text-white/55 hover:bg-white/[0.05] hover:text-white"
+                    }`}
                   >
-                    {sending ? "Enviando..." : editingId ? "Salvar" : "Publicar"}
-                  </Button>
-                  {editingId && (
-                    <Button
+                    <span
+                      className="grid h-8 w-8 place-items-center rounded-lg border border-white/[0.07] bg-black/20"
+                      style={{ color: topic?.color ?? "#00D4FF" }}
+                    >
+                      <TopicIcon className="h-4 w-4" />
+                    </span>
+                    {label}
+                  </button>
+                );
+              })}
+
+              <div className="mx-3 my-4 h-px bg-white/[0.07]" />
+              <div className="rounded-2xl border border-orbit-purple/15 bg-orbit-purple/[0.06] p-3">
+                <ShieldCheck className="h-5 w-5 text-orbit-purple" />
+                <p className="mt-2 text-sm font-semibold">Espaço de respeito</p>
+                <p className="mt-1 text-xs leading-5 text-white/45">
+                  Compartilhe conhecimento, acolha dúvidas e preserve a boa conversa.
+                </p>
+              </div>
+            </div>
+          </aside>
+
+          <main className="min-w-0">
+            <div className="rounded-3xl border border-white/[0.08] bg-white/[0.035] p-3 backdrop-blur-xl sm:p-4">
+              <form onSubmit={handleSearch} className="flex flex-col gap-3 sm:flex-row">
+                <div className="relative min-w-0 flex-1">
+                  <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+                  <input
+                    type="search"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Buscar assunto, pessoa ou lugar..."
+                    aria-label="Buscar no fórum"
+                    className="h-12 w-full rounded-2xl border border-white/[0.08] bg-black/25 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-orbit-electric/35 focus:ring-4 focus:ring-orbit-electric/[0.06]"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="h-12 rounded-2xl border border-white/10 bg-white/[0.06] px-5 text-sm font-semibold text-white transition hover:bg-white/10"
+                >
+                  Buscar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void loadMessages(activeQuery, true)}
+                  disabled={refreshing}
+                  className="grid h-12 w-12 place-items-center self-end rounded-2xl border border-white/10 bg-white/[0.04] text-white/55 transition hover:bg-white/10 hover:text-white disabled:opacity-50"
+                  aria-label="Atualizar publicações"
+                  title="Atualizar publicações"
+                >
+                  <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+                </button>
+              </form>
+
+              <div className="mt-3 flex gap-2 overflow-x-auto pb-1 xl:hidden">
+                {["Todos", ...TOPICS.map((topic) => topic.label)].map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => setActiveTopic(label)}
+                    className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                      activeTopic === label
+                        ? "border-orbit-electric/35 bg-orbit-electric/10 text-orbit-electric"
+                        : "border-white/10 text-white/50 hover:text-white"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {activeQuery && (
+              <div className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-white/[0.07] bg-white/[0.025] px-4 py-3 text-sm text-white/55">
+                Resultados para <strong className="text-white">&ldquo;{activeQuery}&rdquo;</strong>
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="ml-auto inline-flex items-center gap-1 text-xs text-orbit-electric hover:underline"
+                >
+                  <X className="h-3.5 w-3.5" />
+                  Limpar busca
+                </button>
+              </div>
+            )}
+
+            {isAuthenticated && composerOpen && (
+              <div
+                ref={composerRef}
+                className="mt-5 overflow-hidden rounded-3xl border border-orbit-electric/20 bg-[#07101a]/95 shadow-[0_24px_90px_rgba(0,0,0,.4)]"
+              >
+                <div className="flex items-center justify-between border-b border-white/[0.07] px-5 py-4">
+                  <div>
+                    <p className="font-display font-semibold text-white">
+                      {editingId ? "Editar publicação" : "Nova publicação"}
+                    </p>
+                    <p className="mt-0.5 text-xs text-white/40">Conte o contexto para receber respostas melhores.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      resetComposer();
+                      setComposerOpen(false);
+                    }}
+                    className="grid h-9 w-9 place-items-center rounded-full text-white/45 transition hover:bg-white/10 hover:text-white"
+                    aria-label="Fechar editor"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <div className="space-y-5 p-5">
+                  {error && (
+                    <div role="alert" className="rounded-xl border border-red-400/25 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                      {error}
+                    </div>
+                  )}
+
+                  <div>
+                    <label htmlFor="forum-title" className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-white/45">
+                      Título
+                    </label>
+                    <input
+                      id="forum-title"
+                      value={topicTitle}
+                      maxLength={TITLE_LIMIT}
+                      onChange={(event) => setTopicTitle(event.target.value)}
+                      placeholder="Ex.: Como organizar meu primeiro projeto React?"
+                      className="h-12 w-full rounded-2xl border border-white/10 bg-black/25 px-4 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-orbit-electric/40 focus:ring-4 focus:ring-orbit-electric/[0.06]"
+                      disabled={sending}
+                    />
+                  </div>
+
+                  <div>
+                    <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-white/45">
+                      Categoria
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {TOPICS.map((topic) => (
+                        <button
+                          key={topic.label}
+                          type="button"
+                          onClick={() => chooseTopic(topic)}
+                          className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium transition ${
+                            topicEmoji === topic.emoji
+                              ? "border-white/20 bg-white/10 text-white"
+                              : "border-white/[0.07] text-white/45 hover:border-white/15 hover:text-white"
+                          }`}
+                        >
+                          <span>{topic.emoji}</span>
+                          {topic.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="forum-content" className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-white/45">
+                      Mensagem
+                    </label>
+                    <textarea
+                      id="forum-content"
+                      value={content}
+                      maxLength={CONTENT_LIMIT}
+                      rows={6}
+                      onChange={(event) => setContent(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) void handleSend();
+                      }}
+                      placeholder="Explique sua ideia, dúvida ou descoberta. Quanto mais contexto, melhor a conversa."
+                      className="w-full resize-y rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm leading-6 text-white outline-none transition placeholder:text-white/25 focus:border-orbit-electric/40 focus:ring-4 focus:ring-orbit-electric/[0.06]"
+                      disabled={sending}
+                    />
+                    <div className="mt-2 flex items-center justify-between text-[11px] text-white/30">
+                      <span>Ctrl + Enter para publicar</span>
+                      <span>{content.length}/{CONTENT_LIMIT}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                    <button
                       type="button"
-                      variant="outline"
-                      onClick={handleCancelCompose}
-                      className="border-white/20 text-white hover:bg-white/10"
+                      onClick={() => {
+                        resetComposer();
+                        setComposerOpen(false);
+                      }}
+                      className="min-h-11 rounded-xl border border-white/10 px-4 text-sm font-medium text-white/60 transition hover:bg-white/[0.06] hover:text-white"
                     >
                       Cancelar
-                    </Button>
-                  )}
-                  <span className="ml-auto text-[11px] text-white/25 hidden sm:block">Ctrl+Enter para enviar</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleSend()}
+                      disabled={sending || !content.trim()}
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-5 text-sm font-bold text-[#02050b] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {sending ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                      {sending ? "Enviando..." : editingId ? "Salvar alterações" : "Publicar"}
+                    </button>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          ) : !isAuthenticated ? (
-            <Card className="border-white/10 bg-white/5">
-              <CardContent className="flex flex-wrap items-center justify-between gap-4 py-4">
-                <p className="text-sm text-white/70">Faça login para publicar. Você pode ler todas as mensagens.</p>
-                <Link href="/entrar">
-                  <Button className="bg-gradient-to-r from-orbit-electric to-orbit-purple text-black font-semibold hover:opacity-90">
-                    Entrar
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ) : null}
+              </div>
+            )}
 
-          {/* Message list */}
-          <div>
-            <h2 className="mb-4 text-lg font-semibold text-white/90">Publicações</h2>
+            {!isAuthenticated && (
+              <div className="mt-5 flex flex-col gap-4 rounded-3xl border border-orbit-purple/20 bg-orbit-purple/[0.06] p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-semibold text-white">A conversa está aberta para leitura.</p>
+                  <p className="mt-1 text-sm text-white/50">Entre na sua conta para publicar e responder.</p>
+                </div>
+                <Link
+                  href="/entrar"
+                  className="inline-flex min-h-11 items-center justify-center rounded-xl border border-orbit-purple/25 bg-orbit-purple/10 px-4 text-sm font-semibold text-purple-200 transition hover:bg-orbit-purple/20"
+                >
+                  Acessar o Portal
+                </Link>
+              </div>
+            )}
+
+            <div className="mt-7 flex items-center justify-between gap-4">
+              <div>
+                <h2 className="font-display text-xl font-semibold">Conversas da comunidade</h2>
+                <p className="mt-1 text-xs text-white/35">
+                  {visibleMessages.length} {visibleMessages.length === 1 ? "publicação encontrada" : "publicações encontradas"}
+                </p>
+              </div>
+              <div className="flex rounded-xl border border-white/[0.08] bg-white/[0.035] p-1">
+                <button
+                  type="button"
+                  onClick={() => setSort("recent")}
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition ${
+                    sort === "recent" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"
+                  }`}
+                >
+                  <Clock3 className="h-3.5 w-3.5" />
+                  Recentes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSort("active")}
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition ${
+                    sort === "active" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"
+                  }`}
+                >
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  Ativas
+                </button>
+              </div>
+            </div>
+
+            {error && !composerOpen && (
+              <div role="alert" className="mt-4 flex items-center justify-between gap-4 rounded-2xl border border-red-400/25 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                <span>{error}</span>
+                <button type="button" onClick={() => void loadMessages(activeQuery)} className="font-semibold hover:underline">
+                  Tentar novamente
+                </button>
+              </div>
+            )}
+
             {loading ? (
-              <div className="flex flex-col gap-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="animate-pulse rounded-2xl border border-white/10 bg-white/5 p-5">
+              <div className="mt-4 space-y-3" aria-label="Carregando publicações">
+                {[1, 2, 3].map((item) => (
+                  <div key={item} className="animate-pulse rounded-3xl border border-white/[0.07] bg-white/[0.03] p-5">
                     <div className="flex gap-3">
-                      <div className="h-10 w-10 rounded-full bg-white/10" />
-                      <div className="flex-1 space-y-2">
-                        <div className="h-4 w-1/3 rounded bg-white/10" />
-                        <div className="h-3 w-full rounded bg-white/10" />
-                        <div className="h-3 w-2/3 rounded bg-white/10" />
+                      <div className="h-11 w-11 rounded-full bg-white/10" />
+                      <div className="flex-1 space-y-3">
+                        <div className="h-3 w-1/4 rounded bg-white/10" />
+                        <div className="h-5 w-2/3 rounded bg-white/10" />
+                        <div className="h-3 w-full rounded bg-white/[0.07]" />
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-            ) : messages.filter((m) => m.parentId == null).length === 0 ? (
-              <Card className="border-white/10 bg-white/5">
-                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                  <span className="text-4xl opacity-50">💬</span>
-                  <p className="mt-3 font-medium text-white/80">
-                    {activeQuery ? "Nenhum resultado encontrado" : "Nenhuma publicação ainda"}
-                  </p>
-                  <p className="mt-1 text-sm text-white/50">
-                    {activeQuery ? "Tente outro termo de busca." : "Seja o primeiro a compartilhar uma dúvida ou dica."}
-                  </p>
-                </CardContent>
-              </Card>
+            ) : visibleMessages.length === 0 ? (
+              <div className="mt-4 rounded-3xl border border-dashed border-white/10 bg-white/[0.025] px-5 py-14 text-center">
+                <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] text-orbit-electric">
+                  <MessageCircle className="h-6 w-6" />
+                </div>
+                <h3 className="mt-4 font-display text-lg font-semibold">
+                  {activeQuery ? "Nenhuma conversa encontrada" : "Essa órbita ainda está livre"}
+                </h3>
+                <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-white/45">
+                  {activeQuery
+                    ? "Tente buscar outro termo ou limpe os filtros para ver todas as conversas."
+                    : "Comece uma conversa e ajude a comunidade a ganhar movimento."}
+                </p>
+                {isAuthenticated && !activeQuery && (
+                  <button type="button" onClick={openComposer} className="mt-5 text-sm font-semibold text-orbit-electric hover:underline">
+                    Criar a primeira publicação
+                  </button>
+                )}
+              </div>
             ) : (
-              <ul className="space-y-4">
-                {messages
-                  .filter((m) => m.parentId == null)
-                  .map((message) => {
-                    const replies = repliesByParent[message.id] ?? [];
-                    const isReplying = replyingToId === message.id;
+              <ul className="mt-4 space-y-3">
+                {visibleMessages.map((message) => {
+                  const replies = repliesByParent[message.id] ?? [];
+                  const threadOpen = expandedThreads.has(message.id);
+                  const isReplying = replyingToId === message.id;
+                  const category = categoryFor(message);
 
-                    return (
-                      <li key={message.id}>
-                        <Card
-                          className="border-l-4 transition-colors hover:opacity-95"
-                          style={{
-                            backgroundColor: message.topicColor
-                              ? `${message.topicColor}50`
-                              : "rgba(17, 24, 39, 0.4)",
-                            borderLeftColor: message.topicColor || "#00D4FF",
-                            borderTopColor: "rgba(255,255,255,0.1)",
-                            borderRightColor: "rgba(255,255,255,0.1)",
-                            borderBottomColor: "rgba(255,255,255,0.1)",
-                          }}
-                        >
-                          {(message.topicTitle || message.topicEmoji) && (
-                            <div
-                              className="flex items-center gap-3 rounded-t-xl border-b border-white/10 px-5 py-3"
-                              style={{
-                                backgroundColor: message.topicColor
-                                  ? `${message.topicColor}70`
-                                  : "rgba(0,212,255,0.15)",
-                              }}
-                            >
-                              {message.topicEmoji && (
-                                <span className="text-3xl" role="img" aria-hidden>
-                                  {message.topicEmoji}
-                                </span>
-                              )}
-                              {message.topicTitle && (
-                                <span className="font-semibold text-white/95">{message.topicTitle}</span>
-                              )}
-                            </div>
-                          )}
+                  return (
+                    <li
+                      key={message.id}
+                      className="group overflow-hidden rounded-3xl border border-white/[0.075] bg-[#080d17]/80 shadow-[0_18px_55px_rgba(0,0,0,.18)] transition duration-300 hover:-translate-y-0.5 hover:border-white/[0.14] hover:shadow-[0_22px_70px_rgba(0,0,0,.28)]"
+                    >
+                      <div className="h-px w-full opacity-70" style={{ background: `linear-gradient(90deg, ${message.topicColor || "#00D4FF"}, transparent 72%)` }} />
+                      <article className="p-4 sm:p-5">
+                        <div className="flex gap-3 sm:gap-4">
+                          <button
+                            type="button"
+                            onClick={() => setProfileUserId(message.userId)}
+                            className="h-fit rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-orbit-electric"
+                            aria-label={`Ver perfil de ${message.author}`}
+                          >
+                            <AuthorAvatar name={message.author} avatarUrl={message.authorAvatarUrl} />
+                          </button>
 
-                          <CardContent className="p-5">
-                            <div className="flex gap-4">
-                              <AuthorAvatar name={message.author} avatarUrl={message.authorAvatarUrl} />
-                              <div className="min-w-0 flex-1">
-                                <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                                   <button
                                     type="button"
                                     onClick={() => setProfileUserId(message.userId)}
-                                    className="font-semibold text-white/95 hover:text-orbit-electric hover:underline text-left"
+                                    className="truncate text-sm font-semibold text-white transition hover:text-orbit-electric"
                                   >
                                     {message.author}
                                   </button>
-                                  <span className="text-xs text-white/50">{formatRelativeDate(message.createdAt)}</span>
+                                  <span className="text-white/15">•</span>
+                                  <time className="text-xs text-white/35" dateTime={message.createdAt}>
+                                    {formatRelativeDate(message.createdAt)}
+                                  </time>
                                 </div>
-                                <p className="mt-0.5 text-xs text-white/50">
-                                  {[
-                                    message.neighborhood,
-                                    message.city,
-                                    message.authorState,
-                                    message.authorAge != null ? `${message.authorAge} anos` : "",
-                                  ]
-                                    .filter(Boolean)
-                                    .join(" • ") || "—"}
-                                </p>
-                                <p className="mt-3 whitespace-pre-wrap text-white/90">{message.content}</p>
+                                {locationLabel(message) && (
+                                  <p className="mt-1 truncate text-[11px] text-white/30">{locationLabel(message)}</p>
+                                )}
+                              </div>
 
-                                {/* Action buttons */}
-                                <div className="mt-4 flex flex-wrap gap-3 text-sm">
-                                  {isAuthenticated && !isReplying && (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleReply(message)}
-                                      className="text-orbit-electric hover:underline"
-                                    >
-                                      ↩ Responder
-                                    </button>
-                                  )}
-                                  {user?.id === message.userId && (
+                              {user?.id === message.userId && (
+                                <div className="relative flex shrink-0 items-center">
+                                  {confirmDeleteId === message.id ? (
+                                    <div className="flex items-center gap-1 rounded-xl border border-red-400/20 bg-red-500/10 p-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => void handleDelete(message.id)}
+                                        className="rounded-lg px-2 py-1 text-[11px] font-semibold text-red-300 hover:bg-red-500/15"
+                                      >
+                                        Excluir
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => setConfirmDeleteId(null)}
+                                        className="rounded-lg px-2 py-1 text-[11px] text-white/50 hover:bg-white/10"
+                                      >
+                                        Cancelar
+                                      </button>
+                                    </div>
+                                  ) : (
                                     <>
                                       <button
                                         type="button"
                                         onClick={() => handleEdit(message)}
-                                        className="text-orbit-electric hover:underline"
+                                        className="grid h-8 w-8 place-items-center rounded-lg text-white/30 transition hover:bg-white/[0.07] hover:text-white"
+                                        aria-label="Editar publicação"
+                                        title="Editar"
                                       >
-                                        Editar
+                                        <Edit3 className="h-3.5 w-3.5" />
                                       </button>
-                                      {confirmDeleteId === message.id ? (
-                                        <span className="flex items-center gap-2">
-                                          <span className="text-xs text-white/60">Confirmar?</span>
-                                          <button type="button" onClick={() => handleDelete(message.id)} className="text-red-400 hover:underline">Sim</button>
-                                          <button type="button" onClick={() => setConfirmDeleteId(null)} className="text-white/50 hover:underline">Não</button>
-                                        </span>
-                                      ) : (
-                                        <button
-                                          type="button"
-                                          onClick={() => setConfirmDeleteId(message.id)}
-                                          className="text-red-400 hover:underline"
-                                        >
-                                          Excluir
-                                        </button>
-                                      )}
+                                      <button
+                                        type="button"
+                                        onClick={() => setConfirmDeleteId(message.id)}
+                                        className="grid h-8 w-8 place-items-center rounded-lg text-white/30 transition hover:bg-red-500/10 hover:text-red-300"
+                                        aria-label="Excluir publicação"
+                                        title="Excluir"
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </button>
                                     </>
                                   )}
                                 </div>
-
-                                {/* Inline reply form */}
-                                {isReplying && (
-                                  <div className="mt-3 rounded-xl border border-orbit-electric/30 bg-orbit-electric/5 p-3">
-                                    <div className="mb-2 flex items-center gap-1.5 text-xs text-orbit-electric/80">
-                                      <span>↩</span>
-                                      <span>Respondendo a <strong>{message.author}</strong></span>
-                                    </div>
-                                    {error && (
-                                      <div className="mb-2 rounded-lg border border-red-500/40 bg-red-500/10 px-2 py-1.5 text-xs text-red-200">
-                                        {error}
-                                      </div>
-                                    )}
-                                    <textarea
-                                      autoFocus
-                                      value={content}
-                                      onChange={(e) => setContent(e.target.value)}
-                                      onKeyDown={(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) handleSend(); }}
-                                      placeholder="Sua resposta..."
-                                      rows={2}
-                                      className="w-full resize-none rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-orbit-electric/40 focus:outline-none focus:ring-1 focus:ring-orbit-electric/20 disabled:opacity-50"
-                                      disabled={sending}
-                                    />
-                                    <div className="mt-2 flex items-center gap-2">
-                                      <button
-                                        type="button"
-                                        onClick={handleSend}
-                                        disabled={sending || !content.trim()}
-                                        className="rounded-lg bg-gradient-to-r from-orbit-electric to-orbit-purple px-3 py-1.5 text-xs font-bold text-black disabled:opacity-50 hover:opacity-90 transition-opacity"
-                                      >
-                                        {sending ? "Enviando..." : "Responder"}
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={handleCancelCompose}
-                                        className="rounded-lg border border-white/15 px-3 py-1.5 text-xs text-white/60 hover:bg-white/10 transition-colors"
-                                      >
-                                        Cancelar
-                                      </button>
-                                      <span className="ml-auto text-[10px] text-white/25 hidden sm:block">Ctrl+Enter para enviar</span>
-                                    </div>
-                                  </div>
-                                )}
-
-                                {/* Replies thread */}
-                                {replies.length > 0 && (
-                                  <div className="mt-4 space-y-3 border-l-2 border-white/10 pl-4">
-                                    {replies.map((reply) => (
-                                      <div key={reply.id} className="flex gap-3">
-                                        <AuthorAvatar name={reply.author} avatarUrl={reply.authorAvatarUrl} />
-                                        <div className="min-w-0 flex-1">
-                                          <div className="flex flex-wrap items-center gap-2">
-                                            <button
-                                              type="button"
-                                              onClick={() => setProfileUserId(reply.userId)}
-                                              className="text-sm font-medium text-white/90 hover:text-orbit-electric hover:underline"
-                                            >
-                                              {reply.author}
-                                            </button>
-                                            <span className="text-xs text-white/50">{formatRelativeDate(reply.createdAt)}</span>
-                                          </div>
-                                          <p className="mt-0.5 text-xs text-white/50">
-                                            {[
-                                              reply.neighborhood,
-                                              reply.city,
-                                              reply.authorState,
-                                              reply.authorAge != null ? `${reply.authorAge} anos` : "",
-                                            ]
-                                              .filter(Boolean)
-                                              .join(" • ") || "—"}
-                                          </p>
-                                          <p className="mt-1 whitespace-pre-wrap text-sm text-white/80">{reply.content}</p>
-                                          {user?.id === reply.userId && (
-                                            <div className="mt-1.5 text-xs">
-                                              {confirmDeleteId === reply.id ? (
-                                                <span className="flex items-center gap-2">
-                                                  <span className="text-white/50">Confirmar?</span>
-                                                  <button type="button" onClick={() => handleDeleteReply(reply.id, message.id)} className="text-red-400 hover:underline">Sim</button>
-                                                  <button type="button" onClick={() => setConfirmDeleteId(null)} className="text-white/40 hover:underline">Não</button>
-                                                </span>
-                                              ) : (
-                                                <button
-                                                  type="button"
-                                                  onClick={() => setConfirmDeleteId(reply.id)}
-                                                  className="text-red-400/70 hover:underline hover:text-red-400"
-                                                >
-                                                  Excluir
-                                                </button>
-                                              )}
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
+                              )}
                             </div>
-                          </CardContent>
-                        </Card>
-                      </li>
-                    );
-                  })}
+
+                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                              {category && (
+                                <span
+                                  className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em]"
+                                  style={{
+                                    color: category.color,
+                                    borderColor: `${category.color}35`,
+                                    backgroundColor: `${category.color}12`,
+                                  }}
+                                >
+                                  {category.emoji} {category.label}
+                                </span>
+                              )}
+                            </div>
+
+                            {message.topicTitle && (
+                              <h3 className="mt-3 break-words font-display text-lg font-semibold leading-snug text-white sm:text-xl">
+                                {message.topicTitle}
+                              </h3>
+                            )}
+                            <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-white/67">
+                              {message.content}
+                            </p>
+
+                            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/[0.055] pt-3">
+                              {isAuthenticated && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleReply(message)}
+                                  disabled={isReplying}
+                                  className="inline-flex min-h-9 items-center gap-2 rounded-xl px-3 text-xs font-semibold text-white/50 transition hover:bg-orbit-electric/[0.07] hover:text-orbit-electric disabled:opacity-50"
+                                >
+                                  <MessageCircle className="h-3.5 w-3.5" />
+                                  Responder
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => toggleThread(message.id)}
+                                className="inline-flex min-h-9 items-center gap-2 rounded-xl px-3 text-xs font-medium text-white/40 transition hover:bg-white/[0.05] hover:text-white"
+                                aria-expanded={threadOpen}
+                              >
+                                {replies.length} {replies.length === 1 ? "resposta" : "respostas"}
+                                {threadOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                              </button>
+                            </div>
+
+                            {isReplying && (
+                              <div className="mt-3 rounded-2xl border border-orbit-electric/20 bg-orbit-electric/[0.045] p-3">
+                                <div className="mb-2 flex items-center justify-between gap-2">
+                                  <span className="text-xs text-orbit-electric">Respondendo a {message.author}</span>
+                                  <span className="text-[10px] text-white/25">{content.length}/{CONTENT_LIMIT}</span>
+                                </div>
+                                {error && (
+                                  <div role="alert" className="mb-2 rounded-xl border border-red-400/25 bg-red-500/10 px-3 py-2 text-xs text-red-200">
+                                    {error}
+                                  </div>
+                                )}
+                                <textarea
+                                  autoFocus
+                                  value={content}
+                                  maxLength={CONTENT_LIMIT}
+                                  rows={3}
+                                  onChange={(event) => setContent(event.target.value)}
+                                  onKeyDown={(event) => {
+                                    if (event.key === "Escape") resetComposer();
+                                    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) void handleSend();
+                                  }}
+                                  placeholder="Escreva uma resposta útil..."
+                                  className="w-full resize-y rounded-xl border border-white/[0.08] bg-black/25 px-3 py-2.5 text-sm leading-6 text-white outline-none placeholder:text-white/25 focus:border-orbit-electric/35"
+                                  disabled={sending}
+                                />
+                                <div className="mt-2 flex justify-end gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={resetComposer}
+                                    className="min-h-9 rounded-lg px-3 text-xs font-medium text-white/45 hover:bg-white/[0.06] hover:text-white"
+                                  >
+                                    Cancelar
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => void handleSend()}
+                                    disabled={sending || !content.trim()}
+                                    className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-gradient-to-r from-orbit-electric to-orbit-purple px-3 text-xs font-bold text-[#02050b] disabled:opacity-40"
+                                  >
+                                    {sending ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                                    Responder
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+
+                            {threadOpen && replies.length > 0 && (
+                              <div className="relative mt-4 space-y-4 border-l border-white/[0.08] pl-4 sm:pl-5">
+                                {replies.map((reply) => (
+                                  <div key={reply.id} className="flex gap-3">
+                                    <button
+                                      type="button"
+                                      onClick={() => setProfileUserId(reply.userId)}
+                                      className="h-fit rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-orbit-electric"
+                                      aria-label={`Ver perfil de ${reply.author}`}
+                                    >
+                                      <AuthorAvatar name={reply.author} avatarUrl={reply.authorAvatarUrl} size="sm" />
+                                    </button>
+                                    <div className="min-w-0 flex-1 rounded-2xl bg-white/[0.025] px-3 py-2.5">
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <button
+                                          type="button"
+                                          onClick={() => setProfileUserId(reply.userId)}
+                                          className="text-xs font-semibold text-white/80 transition hover:text-orbit-electric"
+                                        >
+                                          {reply.author}
+                                        </button>
+                                        <time className="text-[10px] text-white/30" dateTime={reply.createdAt}>
+                                          {formatRelativeDate(reply.createdAt)}
+                                        </time>
+                                        {user?.id === reply.userId && (
+                                          <div className="ml-auto">
+                                            {confirmDeleteId === reply.id ? (
+                                              <span className="flex items-center gap-2 text-[10px]">
+                                                <button type="button" onClick={() => void handleDelete(reply.id, message.id)} className="text-red-300 hover:underline">
+                                                  Confirmar
+                                                </button>
+                                                <button type="button" onClick={() => setConfirmDeleteId(null)} className="text-white/35 hover:underline">
+                                                  Cancelar
+                                                </button>
+                                              </span>
+                                            ) : (
+                                              <button
+                                                type="button"
+                                                onClick={() => setConfirmDeleteId(reply.id)}
+                                                className="text-white/20 transition hover:text-red-300"
+                                                aria-label="Excluir resposta"
+                                              >
+                                                <Trash2 className="h-3 w-3" />
+                                              </button>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                      <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-white/60">
+                                        {reply.content}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </article>
+                    </li>
+                  );
+                })}
               </ul>
             )}
-          </div>
+          </main>
+
+          <aside className="hidden xl:block">
+            <div className="sticky top-24 space-y-4">
+              <div className="rounded-3xl border border-white/[0.08] bg-white/[0.035] p-5 backdrop-blur-xl">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-orbit-electric" />
+                  <h2 className="font-display text-sm font-semibold">Vozes da comunidade</h2>
+                </div>
+                {contributors.length > 0 ? (
+                  <div className="mt-4 space-y-3">
+                    {contributors.map((contributor) => (
+                      <button
+                        key={String(contributor.id)}
+                        type="button"
+                        onClick={() => setProfileUserId(contributor.id)}
+                        className="flex w-full items-center gap-3 rounded-xl p-1.5 text-left transition hover:bg-white/[0.05]"
+                      >
+                        <AuthorAvatar name={contributor.name} avatarUrl={contributor.avatar} size="sm" />
+                        <span className="min-w-0 flex-1">
+                          <strong className="block truncate text-xs font-semibold text-white/75">{contributor.name}</strong>
+                          <span className="text-[10px] text-white/30">
+                            {contributor.posts} {contributor.posts === 1 ? "contribuição" : "contribuições"}
+                          </span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-3 text-xs leading-5 text-white/35">As pessoas que participarem recentemente aparecerão aqui.</p>
+                )}
+              </div>
+
+              <div className="overflow-hidden rounded-3xl border border-orbit-electric/15 bg-gradient-to-br from-orbit-electric/[0.07] to-orbit-purple/[0.07] p-5">
+                <BookOpen className="h-5 w-5 text-orbit-electric" />
+                <h2 className="mt-3 font-display text-sm font-semibold">Uma boa publicação</h2>
+                <ul className="mt-3 space-y-2 text-xs leading-5 text-white/45">
+                  <li className="flex gap-2"><span className="text-orbit-electric">01</span> Use um título específico.</li>
+                  <li className="flex gap-2"><span className="text-orbit-electric">02</span> Explique o que você já tentou.</li>
+                  <li className="flex gap-2"><span className="text-orbit-electric">03</span> Responda com respeito e contexto.</li>
+                </ul>
+              </div>
+            </div>
+          </aside>
         </div>
       </section>
 
@@ -615,8 +1052,8 @@ export default function ForumPage() {
           userId={profileUserId}
           token={token}
           authorName={
-            messages.find((m) => m.userId === profileUserId)?.author ??
-            Object.values(repliesByParent).flat().find((r) => r.userId === profileUserId)?.author ??
+            messages.find((message) => message.userId === profileUserId)?.author ??
+            Object.values(repliesByParent).flat().find((reply) => reply.userId === profileUserId)?.author ??
             ""
           }
           onClose={() => setProfileUserId(null)}
