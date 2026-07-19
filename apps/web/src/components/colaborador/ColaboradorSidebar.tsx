@@ -16,6 +16,7 @@ const navItems = [
   { href: "/colaborador/candidaturas", label: "Candidaturas", icon: "📋" },
   { href: "/colaborador/projetos", label: "Projetos", icon: "📂" },
   { href: "/colaborador/squad", label: "Squad", icon: "👥" },
+  { href: "/colaborador/perfil", label: "Meu Perfil", icon: "🪪" },
   { href: "/colaborador/conta", label: "Configurações", icon: "⚙️" },
 ];
 
