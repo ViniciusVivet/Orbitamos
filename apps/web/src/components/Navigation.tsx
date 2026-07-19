@@ -196,28 +196,30 @@ export default function Navigation() {
             <div className="md:hidden relative z-50 py-4 border-t border-white/10 bg-black/90 backdrop-blur-xl rounded-b-xl">
               <div className="flex flex-col space-y-1">
                 {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`py-3 px-4 rounded-lg min-h-[44px] flex items-center touch-manipulation transition-colors ${isActive(link.href) ? "text-orbit-electric bg-white/5" : "text-white/90 hover:text-orbit-electric hover:bg-white/5"}`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-                {/* Categorias no mobile */}
-                <div className="px-4 pt-2 pb-1">
-                  <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Categorias</span>
-                </div>
-                {CATEGORIAS.map((cat) => (
-                  <Link
-                    key={cat.slug}
-                    href={`/projetos?categoria=${cat.slug}`}
-                    className="py-2.5 px-6 rounded-lg min-h-[40px] flex items-center touch-manipulation transition-colors text-white/70 hover:text-orbit-electric hover:bg-white/5 text-sm"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {cat.label}
-                  </Link>
+                  <div key={link.href}>
+                    <Link
+                      href={link.href}
+                      className={`py-3 px-4 rounded-lg min-h-[44px] flex items-center touch-manipulation transition-colors ${isActive(link.href) ? "text-orbit-electric bg-white/5" : "text-white/90 hover:text-orbit-electric hover:bg-white/5"}`}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                    {/* Categorias inline abaixo de Projetos */}
+                    {(link as { hasDropdown?: boolean }).hasDropdown && (
+                      <div className="ml-4 border-l border-white/10 pl-3 mt-1 mb-1 space-y-0.5">
+                        {CATEGORIAS.map((cat) => (
+                          <Link
+                            key={cat.slug}
+                            href={`/projetos?categoria=${cat.slug}`}
+                            className="py-2 px-3 rounded-lg min-h-[38px] flex items-center touch-manipulation transition-colors text-white/55 hover:text-orbit-electric hover:bg-white/5 text-sm"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            {cat.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 ))}
                 <a
                   href={whatsappProjetosUrl}
