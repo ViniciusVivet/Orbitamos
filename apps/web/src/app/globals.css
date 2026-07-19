@@ -27,7 +27,12 @@
 }
 
 .animate-page-enter {
-  animation: page-enter 0.5s cubic-bezier(0.0, 0.0, 0.2, 1) both;
+  /*
+   * `forwards`/`both` preservava transform: translateY(0) depois da animação.
+   * Um ancestral transformado vira o bloco de referência de elementos fixed,
+   * fazendo as sidebars rolarem junto com a página.
+   */
+  animation: page-enter 0.5s cubic-bezier(0.0, 0.0, 0.2, 1) backwards;
 }
 
 /* ── Hologram modal ── */
