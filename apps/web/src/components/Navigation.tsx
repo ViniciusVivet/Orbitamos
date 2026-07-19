@@ -2,19 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MessageCircle, Sun, Moon, ChevronDown, LogIn } from "lucide-react";
+import { MessageCircle, ChevronDown, User } from "lucide-react";
 import { useState, useRef } from "react";
 import LogoOrbitamos from "@/components/LogoOrbitamos";
 import { useAuth } from "@/contexts/AuthContext";
 import { getDisplayAvatarUrl } from "@/lib/api";
 import { cursos } from "@/lib/cursos";
 import { whatsappProjetosUrl } from "@/lib/social";
-import { useTheme } from "@/components/ThemeProvider";
 import { CATEGORIAS } from "@/types/projeto";
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { theme, toggleTheme } = useTheme();
   const { user, isAuthenticated, loading } = useAuth();
   const pathname = usePathname();
   const dropdownTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -154,16 +152,6 @@ export default function Navigation() {
                 );
               })}
 
-              {/* Theme toggle — in nav links area */}
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="relative text-white/60 hover:text-orbit-electric transition-colors duration-150"
-                aria-label={theme === "light" ? "Ativar tema escuro" : "Ativar tema claro"}
-                title={theme === "light" ? "Tema escuro" : "Tema claro"}
-              >
-                {theme === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}
-              </button>
             </div>
           </div>
 
@@ -186,7 +174,7 @@ export default function Navigation() {
                 </>
               ) : (
                 <>
-                  <LogIn className="size-4" />
+                  <User className="size-4" />
                   Portal
                 </>
               )}
@@ -263,7 +251,7 @@ export default function Navigation() {
                   className="flex items-center justify-center gap-2 rounded-lg border border-orbit-electric/40 bg-orbit-electric/[0.08] px-4 py-3 text-sm font-semibold text-orbit-electric transition-all hover:bg-orbit-electric/[0.15]"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <LogIn className="size-4" />
+                  <User className="size-4" />
                   {portalLabel}
                 </Link>
 
@@ -279,15 +267,6 @@ export default function Navigation() {
                   Solicitar orçamento
                 </a>
 
-                {/* Theme toggle mobile */}
-                <button
-                  type="button"
-                  onClick={toggleTheme}
-                  className="flex min-h-[44px] items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-                >
-                  {theme === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}
-                  {theme === "light" ? "Tema escuro" : "Tema claro"}
-                </button>
               </div>
             </div>
           </>
