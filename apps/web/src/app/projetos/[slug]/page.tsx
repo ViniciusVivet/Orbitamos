@@ -6,6 +6,7 @@ import CaseHeader from "@/components/projetos/CaseHeader";
 import CaseSection from "@/components/projetos/CaseSection";
 import ProjetosCTA from "@/components/projetos/ProjetosCTA";
 import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -130,9 +131,14 @@ export default async function ProjetoCasePage({ params }: PageProps) {
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               {projeto.link && (
-                <Button asChild className="rounded-md bg-white px-5 font-bold text-black hover:bg-orbit-electric">
+                <Button asChild className="rounded-md bg-white px-5 font-bold text-black hover:bg-orbit-electric gap-2">
                   <a href={projeto.link} target="_blank" rel="noreferrer">
-                    Visitar projeto
+                    <span className="relative flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                    </span>
+                    Ir para o site
+                    <ExternalLink className="size-3.5 opacity-60" />
                   </a>
                 </Button>
               )}

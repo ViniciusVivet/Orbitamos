@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ExternalLink } from "lucide-react";
 import type { Projeto } from "@/types/projeto";
 import { CATEGORIAS, STATUS_LABELS } from "@/types/projeto";
 import { Button } from "@/components/ui/button";
@@ -38,9 +39,14 @@ export default function CaseHeader({ projeto }: CaseHeaderProps) {
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             {projeto.link && (
-              <Button asChild className="h-12 rounded-md bg-white px-6 font-bold text-black hover:bg-orbit-electric">
+              <Button asChild className="h-12 rounded-md bg-white px-6 font-bold text-black hover:bg-orbit-electric gap-2">
                 <a href={projeto.link} target="_blank" rel="noreferrer">
-                  Visitar projeto
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                  </span>
+                  Ir para o site
+                  <ExternalLink className="size-3.5 opacity-60" />
                 </a>
               </Button>
             )}
