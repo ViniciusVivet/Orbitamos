@@ -33,6 +33,7 @@ const navItems: NavItem[] = [
       icon: track.icon,
     })),
   },
+  { href: "/estudante/pratica", label: "Prática", icon: "💻" },
   { href: "/estudante/mentorias", label: "Mentorias", icon: "👨‍🏫" },
   { href: "/estudante/progresso", label: "Progresso", icon: "📊" },
   { href: "/estudante/comunidade", label: "Comunidade", icon: "🌐" },
