@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import EstudanteSidebar from "@/components/estudante/EstudanteSidebar";
+import NotificacoesPanel, { NotificacaoBadge } from "@/components/estudante/NotificacoesPanel";
 
 export default function EstudanteLayout({
   children,
@@ -13,6 +14,7 @@ export default function EstudanteLayout({
   const { user, isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -62,11 +64,16 @@ export default function EstudanteLayout({
           {user?.name && (
             <span className="hidden sm:inline truncate text-white/50 text-sm">· {user.name}</span>
           )}
+          <div className="ml-auto">
+            <NotificacaoBadge count={2} onClick={() => setNotifOpen(true)} />
+          </div>
         </header>
         <div className="container mx-auto px-4 py-4 sm:py-6 lg:px-6 lg:py-8 max-w-full">
           {children}
         </div>
       </main>
+
+      <NotificacoesPanel open={notifOpen} onClose={() => setNotifOpen(false)} />
     </div>
   );
 }

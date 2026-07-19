@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ColaboradorSidebar from "@/components/colaborador/ColaboradorSidebar";
+import NotificacoesPanel, { NotificacaoBadge } from "@/components/colaborador/NotificacoesPanel";
 
 export default function ColaboradorLayout({
   children,
@@ -13,6 +14,7 @@ export default function ColaboradorLayout({
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -57,13 +59,18 @@ export default function ColaboradorLayout({
             <span className="text-xl">&#9776;</span>
           </button>
           <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-sm font-semibold uppercase tracking-wider text-transparent">
-            Ver vagas
+            Colaborador
           </span>
+          <div className="ml-auto">
+            <NotificacaoBadge count={2} onClick={() => setNotifOpen(true)} />
+          </div>
         </header>
         <div className="container mx-auto px-4 py-4 sm:py-6 lg:px-6 lg:py-8 max-w-full">
           {children}
         </div>
       </main>
+
+      <NotificacoesPanel open={notifOpen} onClose={() => setNotifOpen(false)} />
     </div>
   );
 }
