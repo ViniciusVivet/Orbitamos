@@ -219,42 +219,42 @@ export default function EstudanteAulas() {
 
   return (
     <div className="-mx-4 -mt-4 overflow-hidden pb-12 sm:-mt-6 lg:-mx-6 lg:-mt-8">
-      <section className="relative isolate min-h-[430px] overflow-hidden border-b border-white/10 px-4 pb-12 pt-12 sm:px-8 lg:px-12">
+      <section className="relative isolate overflow-hidden border-b border-white/10 px-4 pb-6 pt-6 sm:px-8 sm:pb-8 sm:pt-8 lg:px-12">
         <div className="absolute inset-0 -z-20 bg-[#03050a]" />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_75%_70%_at_80%_15%,rgba(139,92,246,.34),transparent_60%),radial-gradient(ellipse_60%_70%_at_15%_40%,rgba(0,212,255,.22),transparent_65%)]" />
-        <div className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-black to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 -z-10 h-20 bg-gradient-to-t from-black to-transparent" />
 
         <div className="mx-auto max-w-7xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-orbit-electric/25 bg-orbit-electric/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[.2em] text-orbit-electric">
-            <Sparkles className="size-3.5" /> Seu universo de aprendizado
+          <div className="inline-flex items-center gap-2 rounded-full border border-orbit-electric/25 bg-orbit-electric/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[.2em] text-orbit-electric">
+            <Sparkles className="size-3" /> Seu universo de aprendizado
           </div>
-          <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[1.02] text-white sm:text-5xl lg:text-6xl">
+          <h1 className="mt-3 max-w-3xl text-2xl font-black leading-[1.1] text-white sm:text-3xl lg:text-4xl">
             Aprenda no seu ritmo.
-            <span className="block bg-gradient-to-r from-orbit-electric via-white to-orbit-purple bg-clip-text text-transparent">
-              Evolua em cada missão.
+            <span className="inline sm:block bg-gradient-to-r from-orbit-electric via-white to-orbit-purple bg-clip-text text-transparent">
+              {" "}Evolua em cada missão.
             </span>
           </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-white/60 sm:text-base">
+          <p className="mt-2 max-w-2xl text-xs leading-5 text-white/60 sm:text-sm">
             Aulas, práticas e trilhas organizadas para você sair da teoria e construir projetos reais.
           </p>
 
-          <div className="relative mt-8 max-w-3xl">
-            <Search className="pointer-events-none absolute left-5 top-1/2 size-5 -translate-y-1/2 text-orbit-electric" />
+          <div className="relative mt-5 max-w-3xl">
+            <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-orbit-electric" />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="O que você quer estudar hoje?"
               aria-label="Pesquisar aulas e cursos"
-              className="h-16 w-full rounded-2xl border border-white/15 bg-black/45 pl-14 pr-14 text-base text-white shadow-[0_18px_60px_rgba(0,0,0,.35)] outline-none backdrop-blur-xl transition placeholder:text-white/40 focus:border-orbit-electric/60 focus:ring-4 focus:ring-orbit-electric/10"
+              className="h-12 w-full rounded-xl border border-white/15 bg-black/45 pl-11 pr-11 text-sm text-white shadow-[0_12px_40px_rgba(0,0,0,.3)] outline-none backdrop-blur-xl transition placeholder:text-white/40 focus:border-orbit-electric/60 focus:ring-4 focus:ring-orbit-electric/10"
             />
             {query && (
               <button
                 type="button"
                 onClick={() => setQuery("")}
                 aria-label="Limpar pesquisa"
-                className="absolute right-3 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-full text-white/50 transition hover:bg-white/10 hover:text-white"
+                className="absolute right-2 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-full text-white/50 transition hover:bg-white/10 hover:text-white"
               >
-                <X className="size-5" />
+                <X className="size-4" />
               </button>
             )}
           </div>
