@@ -25,7 +25,7 @@ export default function Navigation() {
     { href: "/", label: "Início" },
     { href: "/projetos", label: "Projetos", hasDropdown: true },
     { href: "/contato", label: "Contato" },
-    ...(!loading && isAuthenticated ? [{ href: "/forum", label: "Fórum" }] : []),
+    { href: "/forum", label: "Fórum" },
     ...(!loading && isAuthenticated && user?.role === "STUDENT"
       ? [{ href: cursos.length > 0 ? `/estudante/cursos/${cursos[0].slug}` : "/estudante/aulas", label: "Sala de Aula" }]
       : []),
