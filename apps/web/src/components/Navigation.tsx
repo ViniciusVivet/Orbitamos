@@ -159,25 +159,35 @@ export default function Navigation() {
           <div className="relative z-10 hidden md:flex items-center gap-3 ml-auto">
             <Link
               href={portalHref}
-              className="inline-flex h-9 items-center gap-2 rounded-lg border border-orbit-electric/40 bg-orbit-electric/[0.08] px-4 text-sm font-semibold text-orbit-electric transition-all duration-200 hover:bg-orbit-electric/[0.15] hover:border-orbit-electric/60 hover:shadow-[0_0_16px_rgba(0,212,255,0.15)]"
+              className="group relative inline-flex h-9 items-center gap-2 overflow-hidden rounded-lg px-4 text-sm font-bold text-white transition-all duration-300 hover:shadow-[0_0_24px_rgba(0,212,255,0.25),0_0_48px_rgba(139,92,246,0.15)]"
+              style={{
+                background: "linear-gradient(135deg, rgba(0,212,255,0.12) 0%, rgba(139,92,246,0.12) 100%)",
+                border: "1px solid rgba(0,212,255,0.35)",
+              }}
             >
-              {!loading && isAuthenticated && user ? (
-                <>
-                  {getDisplayAvatarUrl(user.avatarUrl) ? (
-                    <img src={getDisplayAvatarUrl(user.avatarUrl)!} alt="" className="h-5 w-5 rounded-full object-cover" />
-                  ) : (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-[9px] font-bold text-black">
-                      {initials}
+              <span className="absolute inset-0 bg-gradient-to-r from-orbit-electric/20 to-orbit-purple/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <span className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-orbit-electric/60 to-transparent" />
+              <span className="relative flex items-center gap-2">
+                {!loading && isAuthenticated && user ? (
+                  <>
+                    {getDisplayAvatarUrl(user.avatarUrl) ? (
+                      <img src={getDisplayAvatarUrl(user.avatarUrl)!} alt="" className="h-5 w-5 rounded-full object-cover ring-1 ring-orbit-electric/40" />
+                    ) : (
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-[9px] font-bold text-black">
+                        {initials}
+                      </span>
+                    )}
+                    {portalLabel}
+                  </>
+                ) : (
+                  <>
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full border border-orbit-electric/50 bg-orbit-electric/10">
+                      <User className="size-3" />
                     </span>
-                  )}
-                  {portalLabel}
-                </>
-              ) : (
-                <>
-                  <User className="size-4" />
-                  Portal
-                </>
-              )}
+                    Portal
+                  </>
+                )}
+              </span>
             </Link>
             <a
               href={whatsappProjetosUrl}
