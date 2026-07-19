@@ -46,8 +46,8 @@ export default function Navigation() {
             <LogoOrbitamos size={30} />
           </Link>
 
-          {/* ── Center: Nav links (absolute center) ── */}
-          <div className="hidden md:flex items-center gap-7 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          {/* ── Nav links (left, next to logo) ── */}
+          <div className="hidden md:flex items-center gap-7 ml-10">
             {navLinks.map((link) => {
               if ((link as { isProfile?: boolean }).isProfile) {
                 return (
