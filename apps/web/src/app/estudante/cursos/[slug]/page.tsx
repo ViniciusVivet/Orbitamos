@@ -39,7 +39,7 @@ import {
   type Curso,
   type MaterialAula,
 } from "@/lib/cursos";
-import { flattenCourseLessons, getLessonGuide } from "@/lib/learningExperience";
+import { flattenCourseLessons, getLessonGuide, getLessonKind, lessonKindLabels } from "@/lib/learningExperience";
 
 const PROGRESS_STORAGE_KEY = "orbitacademy-progress";
 const NOTES_STORAGE_KEY = "orbitacademy-notes";
@@ -167,6 +167,7 @@ function Curriculum({
                 {module.aulas.map((lesson, lessonIndex) => {
                   const active = lesson.id === lessonId;
                   const done = completed.includes(lesson.id);
+                  const kind = getLessonKind(lesson);
                   return (
                     <button
                       key={lesson.id}
@@ -186,6 +187,9 @@ function Curriculum({
                       <span className="text-xs leading-5">
                         <span className="mr-1 text-white/25">{lessonIndex + 1}.</span>
                         {lesson.titulo}
+                        <span className="mt-0.5 block text-[9px] font-semibold uppercase tracking-wide text-white/25">
+                          {lessonKindLabels[kind]}
+                        </span>
                       </span>
                     </button>
                   );
@@ -441,7 +445,7 @@ export default function CourseLearningRoom() {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="max-w-3xl">
                   <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.18em] text-white/35">
-                    Aula {lessonIndex + 1} de {flatLessons.length}
+                    {guide ? lessonKindLabels[guide.kind] : "Aula"} · {lessonIndex + 1} de {flatLessons.length}
                     {lessonDone && <span className="text-emerald-300">• Concluída</span>}
                   </div>
                   <h1 className="mt-2 text-xl font-black leading-tight text-white sm:text-2xl lg:text-3xl">{lesson.titulo}</h1>

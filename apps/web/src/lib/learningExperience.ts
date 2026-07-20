@@ -1,6 +1,7 @@
 import type { Aula, Curso } from "@/lib/cursos";
 
 export type LessonGuide = {
+  kind: LessonKind;
   estimatedMinutes: number;
   objectives: string[];
   checklist: string[];
@@ -16,6 +17,28 @@ export type LessonGuide = {
     answer: string;
   }>;
 };
+
+export type LessonKind = NonNullable<Aula["tipo"]>;
+
+export const lessonKindLabels: Record<LessonKind, string> = {
+  video: "Videoaula",
+  leitura: "Leitura",
+  exercicio_guiado: "Exercício guiado",
+  desafio: "Desafio prático",
+  projeto: "Projeto de módulo",
+  quiz_revisao: "Quiz de revisão",
+};
+
+export function getLessonKind(aula: Aula): LessonKind {
+  if (aula.tipo) return aula.tipo;
+  const text = `${aula.titulo} ${aula.conteudo ?? ""}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  if (/\bprojeto\b/.test(text)) return "projeto";
+  if (/\bquiz\b|\brevisao\b/.test(text)) return "quiz_revisao";
+  if (/\bdesafio\b/.test(text)) return "desafio";
+  if (/\bexercicio|\batividade pratica|\bpratica guiada/.test(text)) return "exercicio_guiado";
+  if (!aula.youtubeVideoId && (aula.materiais?.length ?? 0) > 0) return "leitura";
+  return "video";
+}
 
 export type FlatLesson = {
   curso: Curso;
@@ -66,7 +89,7 @@ export function getLessonGuide(curso: Curso, aula: Aula, lessonIndex = 0): Lesso
       : "Acompanhar o conteúdo principal e anotar os pontos de dúvida.",
   ];
 
-  const byArea: Record<ReturnType<typeof inferArea>, Omit<LessonGuide, "estimatedMinutes" | "objectives">> = {
+  const byArea: Record<ReturnType<typeof inferArea>, Omit<LessonGuide, "kind" | "estimatedMinutes" | "objectives">> = {
     web: {
       checklist: ["Criar ou editar um arquivo HTML", "Testar no navegador", "Ajustar pelo menos um detalhe visual"],
       practice: {
@@ -198,6 +221,7 @@ export function getLessonGuide(curso: Curso, aula: Aula, lessonIndex = 0): Lesso
       ...baseObjectives,
     ],
     ...byArea[area],
+    kind: getLessonKind(aula),
   };
 }
 

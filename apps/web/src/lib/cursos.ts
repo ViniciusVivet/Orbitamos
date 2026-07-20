@@ -8,6 +8,7 @@ import { isSupabaseConfigured, requireSupabase } from "@/lib/supabase";
 export interface Aula {
   id: string;
   titulo: string;
+  tipo?: "video" | "leitura" | "exercicio_guiado" | "desafio" | "projeto" | "quiz_revisao";
   /** ID do video no YouTube (ex.: dQw4w9WgXcQ) para embed */
   youtubeVideoId: string;
   /** Texto opcional ao lado do video */
