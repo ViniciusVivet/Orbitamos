@@ -132,12 +132,12 @@ export default function ColaboradorPerfil() {
         {editing && (
           <div className="mt-4">
             <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[.15em] text-white/35">Disponibilidade</label>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {DISPONIBILIDADE_OPTIONS.map((opt) => (
                 <button
                   key={opt}
                   onClick={() => setDisponibilidade(opt)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                  className={`rounded-full px-3 py-2 text-xs font-medium transition touch-manipulation min-h-[36px] ${
                     disponibilidade === opt
                       ? "bg-orbit-purple/20 text-orbit-purple border border-orbit-purple/30"
                       : "text-white/40 hover:text-white border border-white/10 hover:bg-white/5"

@@ -83,14 +83,14 @@ export default function ColaboradorInicio() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-[.2em] text-orbit-electric/70">Dashboard</p>
-          <h1 className="mt-1 text-2xl font-black text-white sm:text-3xl">
+          <h1 className="mt-1 text-xl font-black text-white sm:text-3xl">
             Olá, {user?.name?.split(" ")[0]}
           </h1>
-          <p className="mt-0.5 text-sm text-white/40">Aqui está o resumo da sua área.</p>
+          <p className="mt-0.5 text-xs sm:text-sm text-white/40">Aqui está o resumo da sua área.</p>
         </div>
         <Link
           href="/colaborador/vagas"
-          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 py-2 text-xs font-bold text-black transition hover:opacity-90"
+          className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 py-2.5 text-xs font-bold text-black transition hover:opacity-90 touch-manipulation min-h-[44px]"
         >
           <Zap className="size-3.5" />
           Ver vagas disponíveis

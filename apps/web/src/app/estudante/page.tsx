@@ -149,31 +149,31 @@ export default function EstudanteInicio() {
                 <span className="size-2 animate-pulse rounded-full bg-orbit-electric" />
                 Central do estudante
               </div>
-              <h1 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">
+              <h1 className="mt-2 sm:mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white lg:text-4xl">
                 {getGreeting()}, <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">{firstName}</span>.
               </h1>
-              <p className="mt-2 max-w-xl text-sm leading-6 text-white/55">
+              <p className="mt-1.5 sm:mt-2 max-w-xl text-xs sm:text-sm leading-5 sm:leading-6 text-white/55">
                 Seu mapa para estudar, praticar e transformar aprendizado em oportunidade.
               </p>
             </div>
 
             <Link
               href="/estudante/progresso"
-              className="flex w-fit items-center gap-3 rounded-2xl border border-white/10 bg-black/30 px-4 py-3 backdrop-blur-xl transition hover:border-orbit-electric/30"
+              className="flex w-full sm:w-fit items-center gap-3 rounded-xl sm:rounded-2xl border border-white/10 bg-black/30 px-3 sm:px-4 py-2.5 sm:py-3 backdrop-blur-xl transition hover:border-orbit-electric/30 touch-manipulation"
             >
-              <div className="grid size-11 place-items-center rounded-xl bg-gradient-to-br from-orbit-electric to-orbit-purple font-black text-black">
+              <div className="grid size-9 sm:size-11 shrink-0 place-items-center rounded-lg sm:rounded-xl bg-gradient-to-br from-orbit-electric to-orbit-purple text-sm sm:text-base font-black text-black">
                 {progress.level}
               </div>
-              <div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">Seu nível</div>
-                <div className="text-sm font-bold text-white">{progress.xp} XP acumulados</div>
+              <div className="min-w-0">
+                <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-white/35">Seu nível</div>
+                <div className="text-xs sm:text-sm font-bold text-white truncate">{progress.xp} XP acumulados</div>
               </div>
-              <ChevronRight className="size-4 text-white/35" />
+              <ChevronRight className="size-4 shrink-0 text-white/35" />
             </Link>
           </header>
 
-          <div className="mt-8 grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,.65fr)]">
-            <article className="group relative min-h-[330px] overflow-hidden rounded-[28px] border border-orbit-electric/20 bg-gradient-to-br from-[#10273a] via-[#11152c] to-[#291746] p-6 shadow-[0_24px_100px_rgba(0,0,0,.35)] sm:p-8">
+          <div className="mt-6 sm:mt-8 grid gap-4 sm:gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,.65fr)]">
+            <article className="group relative min-h-[240px] sm:min-h-[330px] overflow-hidden rounded-2xl sm:rounded-[28px] border border-orbit-electric/20 bg-gradient-to-br from-[#10273a] via-[#11152c] to-[#291746] p-4 sm:p-6 shadow-[0_24px_100px_rgba(0,0,0,.35)] lg:p-8">
               <div className="absolute -right-20 -top-28 size-80 rounded-full border border-white/10" />
               <div className="absolute -right-5 -top-8 size-56 rounded-full border border-white/10" />
               <div className="absolute bottom-0 right-0 h-44 w-72 bg-[radial-gradient(circle_at_bottom_right,rgba(0,212,255,.25),transparent_65%)]" />
@@ -183,26 +183,26 @@ export default function EstudanteInicio() {
                   <Rocket className="size-4" />
                   {academyLoading ? "Calculando sua rota" : "Continue sua missão"}
                 </div>
-                <h2 className="mt-5 max-w-2xl text-3xl font-black leading-tight text-white sm:text-4xl">
+                <h2 className="mt-3 sm:mt-5 max-w-2xl text-xl sm:text-3xl font-black leading-tight text-white lg:text-4xl">
                   {nextLesson?.aula.titulo || progress.lastLesson || "Escolha sua primeira trilha"}
                 </h2>
-                <p className="mt-3 max-w-xl text-sm leading-6 text-white/60">
+                <p className="mt-2 sm:mt-3 max-w-xl text-xs sm:text-sm leading-5 sm:leading-6 text-white/60">
                   {nextLesson
                     ? `${nextLesson.curso.titulo} · ${nextLesson.moduloTitulo} · aula ${nextLesson.index + 1} de ${nextLesson.total}`
                     : "Seu próximo passo começa com uma aula curta. Escolha um tema e coloque a mão na massa."}
                 </p>
 
-                <div className="mt-auto flex flex-col gap-4 pt-8 sm:flex-row sm:items-end sm:justify-between">
-                  <div className="flex flex-wrap gap-3">
-                    <Button asChild className="h-12 rounded-full bg-white px-6 font-black text-black hover:bg-white/90">
-                      <Link href={continueHref}>▶ {nextLesson ? "Continuar aula" : "Começar agora"}</Link>
+                <div className="mt-auto flex flex-col gap-3 pt-5 sm:pt-8 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
+                    <Button asChild className="h-10 sm:h-12 rounded-full bg-white px-5 sm:px-6 text-xs sm:text-sm font-black text-black hover:bg-white/90 touch-manipulation">
+                      <Link href={continueHref}>▶ {nextLesson ? "Continuar" : "Começar"}</Link>
                     </Button>
-                    <Button asChild variant="outline" className="h-12 rounded-full border-white/20 bg-black/15 px-5 text-white hover:bg-white/10">
-                      <Link href="/estudante/aulas">Ver catálogo</Link>
+                    <Button asChild variant="outline" className="h-10 sm:h-12 rounded-full border-white/20 bg-black/15 px-4 sm:px-5 text-xs sm:text-sm text-white hover:bg-white/10 touch-manipulation">
+                      <Link href="/estudante/aulas">Catálogo</Link>
                     </Button>
                   </div>
-                  <div className="min-w-48">
-                    <div className="mb-2 flex justify-between text-xs text-white/50">
+                  <div className="min-w-0 sm:min-w-48">
+                    <div className="mb-1.5 sm:mb-2 flex justify-between text-[11px] sm:text-xs text-white/50">
                       <span>OrbitAcademy</span>
                       <span>{academyPercent}%</span>
                     </div>
@@ -212,7 +212,7 @@ export default function EstudanteInicio() {
                         style={{ width: `${academyPercent}%` }}
                       />
                     </div>
-                    <p className="mt-2 text-[11px] text-white/35">{completedLessons} de {totalLessons || "—"} aulas concluídas</p>
+                    <p className="mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] text-white/35">{completedLessons} de {totalLessons || "—"} aulas</p>
                   </div>
                 </div>
               </div>

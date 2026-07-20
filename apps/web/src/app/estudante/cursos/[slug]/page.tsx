@@ -18,6 +18,7 @@ import { useProgress } from "@/contexts/ProgressContext";
 import { addProgressLesson } from "@/lib/api";
 import type { UserId } from "@/lib/api";
 import { flattenCourseLessons, getLessonGuide } from "@/lib/learningExperience";
+import LessonQuickQuiz from "@/components/estudante/LessonQuickQuiz";
 
 const STORAGE_KEY = "orbitacademy-progress";
 const YOUTUBE_VIDEO_ID_PATTERN = /^[a-zA-Z0-9_-]{6,20}$/;
@@ -435,28 +436,11 @@ export default function CursoPage() {
                         </div>
                       </div>
 
-                      <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
-                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/38">
-                          Quiz rápido
-                        </p>
-                        {lessonGuide.quiz.map((question) => (
-                          <div key={question.question} className="mt-3">
-                            <p className="text-sm font-semibold text-white/80">{question.question}</p>
-                            <div className="mt-3 space-y-2">
-                              {question.options.map((option) => (
-                                <details key={option} className="group rounded-lg border border-white/10 bg-black/25 px-3 py-2">
-                                  <summary className="cursor-pointer list-none text-sm text-white/65 group-open:text-orbit-electric">
-                                    {option}
-                                  </summary>
-                                  <p className="mt-2 text-xs text-white/45">
-                                    {option === question.answer ? "Resposta certa. Boa." : `Resposta correta: ${question.answer}`}
-                                  </p>
-                                </details>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                      <LessonQuickQuiz
+                        key={aula.id}
+                        questions={lessonGuide.quiz}
+                        storageKey={userId ? `orbitamos-quiz-${userId}-${aula.id}` : null}
+                      />
                     </>
                   )}
                   {aula.conteudo && (

@@ -62,18 +62,18 @@ export default function ColaboradorVagas() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por título ou descrição..."
-            className="h-10 w-full rounded-lg border border-white/10 bg-white/[0.04] pl-9 pr-4 text-sm text-white placeholder:text-white/30 outline-none transition focus:border-orbit-electric/50 focus:ring-2 focus:ring-orbit-electric/10"
+            placeholder="Buscar vagas..."
+            className="h-11 w-full rounded-lg border border-white/10 bg-white/[0.04] pl-9 pr-4 text-sm text-white placeholder:text-white/30 outline-none transition focus:border-orbit-electric/50 focus:ring-2 focus:ring-orbit-electric/10"
           />
         </div>
-        <div className="flex items-center gap-2">
-          <Filter className="size-3.5 text-white/40" />
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+          <Filter className="size-3.5 shrink-0 text-white/40" />
           <div className="flex gap-1">
             {TYPE_OPTIONS.map((opt) => (
               <button
                 key={opt.value || "all"}
                 onClick={() => setTypeFilter(opt.value)}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                className={`shrink-0 rounded-full px-3 py-2 text-xs font-medium transition touch-manipulation min-h-[36px] ${
                   typeFilter === opt.value
                     ? "bg-orbit-purple/20 text-orbit-purple border border-orbit-purple/30"
                     : "text-white/50 hover:text-white hover:bg-white/5"

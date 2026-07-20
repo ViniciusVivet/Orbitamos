@@ -93,32 +93,32 @@ export default function ColaboradorCandidaturas() {
       </div>
 
       {/* Stats mini */}
-      <div className="flex flex-wrap gap-2">
-        <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs">
-          <span className="text-white/40">Total:</span>{" "}
-          <span className="font-bold text-white">{counts.total}</span>
+      <div className="grid grid-cols-4 gap-1.5 sm:flex sm:flex-wrap sm:gap-2">
+        <div className="rounded-lg border border-white/10 bg-white/[0.03] px-2 sm:px-3 py-1.5 text-center sm:text-left text-[11px] sm:text-xs">
+          <span className="block sm:inline text-white/40">Total</span>{" "}
+          <span className="block sm:inline font-bold text-white">{counts.total}</span>
         </div>
-        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-1.5 text-xs">
-          <span className="text-amber-400/60">Pendentes:</span>{" "}
-          <span className="font-bold text-amber-400">{counts.pendente}</span>
+        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-2 sm:px-3 py-1.5 text-center sm:text-left text-[11px] sm:text-xs">
+          <span className="block sm:inline text-amber-400/60">Pend.</span>{" "}
+          <span className="block sm:inline font-bold text-amber-400">{counts.pendente}</span>
         </div>
-        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5 text-xs">
-          <span className="text-emerald-400/60">Aceitas:</span>{" "}
-          <span className="font-bold text-emerald-400">{counts.aceita}</span>
+        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-2 sm:px-3 py-1.5 text-center sm:text-left text-[11px] sm:text-xs">
+          <span className="block sm:inline text-emerald-400/60">Aceitas</span>{" "}
+          <span className="block sm:inline font-bold text-emerald-400">{counts.aceita}</span>
         </div>
-        <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-1.5 text-xs">
-          <span className="text-red-400/60">Recusadas:</span>{" "}
-          <span className="font-bold text-red-400">{counts.recusada}</span>
+        <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-2 sm:px-3 py-1.5 text-center sm:text-left text-[11px] sm:text-xs">
+          <span className="block sm:inline text-red-400/60">Recus.</span>{" "}
+          <span className="block sm:inline font-bold text-red-400">{counts.recusada}</span>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex gap-1">
+      <div className="flex gap-1 overflow-x-auto pb-1 -mx-1 px-1">
         {FILTER_OPTIONS.map((opt) => (
           <button
             key={opt.value || "all"}
             onClick={() => setFilter(opt.value)}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
+            className={`shrink-0 rounded-full px-3 py-2 text-xs font-medium transition touch-manipulation min-h-[36px] ${
               filter === opt.value
                 ? "bg-white/10 text-white border border-white/20"
                 : "text-white/40 hover:text-white hover:bg-white/5"
