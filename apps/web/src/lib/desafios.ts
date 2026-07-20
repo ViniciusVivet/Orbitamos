@@ -10,7 +10,7 @@ export type Desafio = {
   slug: string;
   titulo: string;
   descricao: string;
-  linguagem: "javascript" | "typescript";
+  linguagem: "javascript" | "typescript" | "python";
   codigoInicial: string;
   steps: DesafioStep[];
 };

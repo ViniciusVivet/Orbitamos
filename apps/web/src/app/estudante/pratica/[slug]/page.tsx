@@ -3,23 +3,11 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Play, RotateCcw, ChevronRight, Lightbulb, CheckCircle2, XCircle, ArrowLeft, Code2, MessageSquare } from "lucide-react";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { getDesafio } from "@/lib/desafios";
-import { runJavaScriptInWorker } from "@/lib/browserCodeRunner";
+import { runJavaScriptInWorker, runPythonInWorker } from "@/lib/browserCodeRunner";
 import { useAuth } from "@/contexts/AuthContext";
-
-const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
-  ssr: false,
-  loading: () => (
-    <div className="flex h-full items-center justify-center bg-[#1e1e1e]">
-      <div className="flex items-center gap-2 text-xs text-white/40">
-        <span className="size-4 animate-spin rounded-full border-2 border-orbit-electric border-t-transparent" />
-        Carregando editor...
-      </div>
-    </div>
-  ),
-});
+import ReliableCodeEditor from "@/components/estudante/ReliableCodeEditor";
 
 type MobileTab = "editor" | "guia";
 
@@ -45,35 +33,42 @@ export default function PraticaPage() {
 
   useEffect(() => {
     if (!desafio) return;
-    let restoredCode = "";
-    let restoredStep = 0;
-    let restoredStatus: ("pending" | "success" | "error")[] = desafio.steps.map(() => "pending");
-    if (storageKey) {
-      try {
-        const stored = localStorage.getItem(storageKey);
-        if (stored) {
-          const parsed = JSON.parse(stored) as {
-            code?: string;
-            currentStep?: number;
-            stepStatus?: ("pending" | "success" | "error")[];
-          };
-          restoredCode = parsed.code ?? "";
-          restoredStep = Math.min(Math.max(parsed.currentStep ?? 0, 0), desafio.steps.length - 1);
-          if (parsed.stepStatus?.length === desafio.steps.length) restoredStatus = parsed.stepStatus;
+    let active = true;
+    queueMicrotask(() => {
+      if (!active) return;
+      let restoredCode = "";
+      let restoredStep = 0;
+      let restoredStatus: ("pending" | "success" | "error")[] = desafio.steps.map(() => "pending");
+      if (storageKey) {
+        try {
+          const stored = localStorage.getItem(storageKey);
+          if (stored) {
+            const parsed = JSON.parse(stored) as {
+              code?: string;
+              currentStep?: number;
+              stepStatus?: ("pending" | "success" | "error")[];
+            };
+            restoredCode = parsed.code ?? "";
+            restoredStep = Math.min(Math.max(parsed.currentStep ?? 0, 0), desafio.steps.length - 1);
+            if (parsed.stepStatus?.length === desafio.steps.length) restoredStatus = parsed.stepStatus;
+          }
+        } catch {
+          // ignore
         }
-      } catch {
-        // ignore
       }
-    }
-    setCode(restoredCode || desafio.codigoInicial);
-    setCurrentStep(restoredStep);
-    setStepStatus(restoredStatus);
-    setCompleted(restoredStatus.every((status) => status === "success"));
-    setDraftRestored(Boolean(restoredCode));
-    setChatMessages([
-      { tipo: "sistema", texto: `Desafio: ${desafio.titulo}` },
-      { tipo: "sistema", texto: desafio.steps[restoredStep].instrucao },
-    ]);
+      setCode(restoredCode || desafio.codigoInicial);
+      setCurrentStep(restoredStep);
+      setStepStatus(restoredStatus);
+      setCompleted(restoredStatus.every((status) => status === "success"));
+      setDraftRestored(Boolean(restoredCode));
+      setChatMessages([
+        { tipo: "sistema", texto: `Desafio: ${desafio.titulo}` },
+        { tipo: "sistema", texto: desafio.steps[restoredStep].instrucao },
+      ]);
+    });
+    return () => {
+      active = false;
+    };
   }, [desafio, storageKey]);
 
   useEffect(() => {
@@ -93,9 +88,11 @@ export default function PraticaPage() {
     setOutput("");
     setShowDica(false);
     setRunning(true);
-    const result = await runJavaScriptInWorker(code);
+    const result = desafio.linguagem === "python"
+      ? await runPythonInWorker(code)
+      : await runJavaScriptInWorker(code);
     const resultOutput = [result.output, result.error ? `Erro: ${result.error}` : ""].filter(Boolean).join("\n");
-    setOutput(resultOutput);
+    setOutput(`${resultOutput || "Execução concluída sem saída."}\n\nTempo: ${result.durationMs ?? 0} ms`);
 
     const step = desafio.steps[currentStep];
     if (step) {
@@ -311,25 +308,10 @@ export default function PraticaPage() {
         {/* Editor + Console — full width mobile, 80% desktop */}
         <div className={`flex flex-col border-r border-white/10 ${mobileTab === "editor" ? "flex-1" : "hidden md:flex md:flex-1"}`}>
           <div className="flex-1 min-h-0">
-            <MonacoEditor
-              height="100%"
+            <ReliableCodeEditor
               language={desafio.linguagem}
-              theme="vs-dark"
               value={code}
-              onChange={(value) => setCode(value ?? "")}
-              options={{
-                fontSize: 13,
-                minimap: { enabled: false },
-                scrollBeyondLastLine: false,
-                padding: { top: 8, bottom: 8 },
-                lineNumbers: "on",
-                roundedSelection: true,
-                automaticLayout: true,
-                tabSize: 2,
-                wordWrap: "on",
-                lineDecorationsWidth: 0,
-                lineNumbersMinChars: 3,
-              }}
+              onChange={setCode}
             />
           </div>
 
