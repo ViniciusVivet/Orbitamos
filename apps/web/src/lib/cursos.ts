@@ -299,17 +299,49 @@ export const cursos: Curso[] = [
     id: "fallback-logica-python",
     slug: "logica-programacao-python",
     titulo: "Lógica de Programação com Python",
-    descricao: "Primeiros passos de algoritmo, raciocínio logico e prática com Python.",
+    descricao: "Do raciocínio lógico ao código: variáveis, condições, laços, funções e estruturas de dados com Python.",
     modulos: [
       {
         id: "logica-python-m1",
-        titulo: "Fundamentos",
+        titulo: "Primeiros Passos e Lógica",
         aulas: [
-          { id: "logica-python-a0", titulo: "Aula 0 - introdução à lógica", youtubeVideoId: "", materiais: [material("logica-python-mat-0", "Lógica de programação - aula 0", "DOCX", "/course-materials/logica-programacao-python/04-logica-de-programacao-aula-0.docx")] },
-          { id: "logica-python-a1", titulo: "Apostila de lógica com Python", youtubeVideoId: "", materiais: [material("logica-python-mat-1", "Apostila - lógica de programação com Python", "DOCX", "/course-materials/logica-programacao-python/01-apostila-logica-de-programacao-com-python.docx")] },
-          { id: "logica-python-a2", titulo: "Lógica de programação com Python", youtubeVideoId: "", materiais: [material("logica-python-mat-2", "Lógica de programação com Python", "DOCX", "/course-materials/logica-programacao-python/02-logica-de-programacao-com-python.docx")] },
-          { id: "logica-python-a3", titulo: "Lógica de programação - parte 2", youtubeVideoId: "", materiais: [material("logica-python-mat-3", "Lógica de programação - parte 2", "DOCX", "/course-materials/logica-programacao-python/03-logica-de-programacao-2.docx")] },
-          { id: "logica-python-a4", titulo: "Aula 3 - prática com Python", youtubeVideoId: "", materiais: [material("logica-python-mat-4", "Lógica de programação - aula 3 com Python", "DOCX", "/course-materials/logica-programacao-python/05-logica-de-programacao-aula-3-com-python.docx")] },
+          { id: "logica-python-a0", titulo: "Introdução à lógica de programação", youtubeVideoId: "Ptbk2af68e8", conteudo: "O que é programar, como pensar em algoritmos e por que Python é uma boa linguagem para começar.", materiais: [material("logica-python-mat-0", "Lógica de programação - aula 0", "DOCX", "/course-materials/logica-programacao-python/04-logica-de-programacao-aula-0.docx")] },
+          { id: "logica-python-a1", titulo: "Instalação do Python e primeiro script", youtubeVideoId: "VdLen3MV-GM", conteudo: "Instalando Python, usando o terminal, criando seu primeiro arquivo .py e rodando o hello world.", materiais: [material("logica-python-mat-1", "Apostila - lógica de programação com Python", "DOCX", "/course-materials/logica-programacao-python/01-apostila-logica-de-programacao-com-python.docx")] },
+          { id: "logica-python-a5", titulo: "Variáveis, tipos de dados e operadores", youtubeVideoId: "EV7Idm_mkxo", conteudo: "int, float, str, bool, input(), print(), operadores aritméticos e de comparação." },
+        ],
+      },
+      {
+        id: "logica-python-m2",
+        titulo: "Condições e Repetições",
+        aulas: [
+          { id: "logica-python-a2", titulo: "Estruturas condicionais (if/elif/else)", youtubeVideoId: "cOdG4eACN2A", conteudo: "Tomando decisões no código: if, elif, else, operadores lógicos (and, or, not).", materiais: [material("logica-python-mat-2", "Lógica de programação com Python", "DOCX", "/course-materials/logica-programacao-python/02-logica-de-programacao-com-python.docx")] },
+          { id: "logica-python-a3", titulo: "Laços de repetição (for e while)", youtubeVideoId: "cL4YDtFnCt4", conteudo: "Repetindo ações: for com range(), while, break, continue e laços aninhados.", materiais: [material("logica-python-mat-3", "Lógica de programação - parte 2", "DOCX", "/course-materials/logica-programacao-python/03-logica-de-programacao-2.docx")] },
+          { id: "logica-python-a4", titulo: "Exercícios práticos de lógica", youtubeVideoId: "2uBrqwj70TQ", conteudo: "Prática guiada: calculadora, par/ímpar, tabuada, soma de números e desafios lógicos.", materiais: [material("logica-python-mat-4", "Lógica de programação - aula 3 com Python", "DOCX", "/course-materials/logica-programacao-python/05-logica-de-programacao-aula-3-com-python.docx")] },
+        ],
+      },
+      {
+        id: "logica-python-m3",
+        titulo: "Funções e Modularização",
+        aulas: [
+          { id: "logica-python-a6", titulo: "Funções: parâmetros, retorno e escopo", youtubeVideoId: "mc3TKp2XzhI", conteudo: "Criando funções reutilizáveis: def, parâmetros, return, escopo local e global." },
+          { id: "logica-python-a7", titulo: "Módulos e imports", youtubeVideoId: "BxMtSb2w9Sk", conteudo: "Organizando código em módulos: import, from...import, módulos da biblioteca padrão (math, random, os)." },
+        ],
+      },
+      {
+        id: "logica-python-m4",
+        titulo: "Estruturas de Dados",
+        aulas: [
+          { id: "logica-python-a8", titulo: "Listas e tuplas", youtubeVideoId: "0LB3FSfjvao", conteudo: "Coleções ordenadas: criar, acessar, fatiar, métodos (append, remove, sort) e diferença entre lista e tupla." },
+          { id: "logica-python-a9", titulo: "Dicionários e conjuntos", youtubeVideoId: "ZWj8o692qGY", conteudo: "Pares chave-valor com dict, operações com sets, iteração e quando usar cada estrutura." },
+          { id: "logica-python-a10", titulo: "Comprehensions e manipulação de dados", youtubeVideoId: "pTN5s-DirNE", conteudo: "List comprehension, dict comprehension, filtragem e transformação de dados de forma concisa." },
+        ],
+      },
+      {
+        id: "logica-python-m5",
+        titulo: "Orientação a Objetos",
+        aulas: [
+          { id: "logica-python-a11", titulo: "Classes e objetos", youtubeVideoId: "RLVbB91A5-8", conteudo: "Criando suas primeiras classes: __init__, self, atributos, métodos e instanciação." },
+          { id: "logica-python-a12", titulo: "Herança e polimorfismo", youtubeVideoId: "Mim6nnkdOto", conteudo: "Reutilizando código com herança, sobrescrita de métodos e polimorfismo na prática." },
         ],
       },
     ],
