@@ -471,8 +471,45 @@ const desafiosBaseComMetadata = desafiosBase.map((desafio, index): Desafio => ({
   solucao: desafio.steps.at(-1)?.dica.replace(/^Tente:\s*/i, "") ?? "",
 }));
 
-export const desafios: Desafio[] = [...desafiosBaseComMetadata, ...desafiosExtras];
+const challengeSequence = [
+  "variaveis-js",
+  "operadores-js",
+  "condicionais-js",
+  "lacos-js",
+  "arrays-js",
+  "objetos-js",
+  "funcoes-js",
+  "strings-js",
+  "metodos-array-js",
+  "assincrono-js",
+  "variaveis-python",
+  "condicionais-python",
+  "lacos-python",
+  "listas-python",
+  "dicionarios-python",
+  "funcoes-python",
+  "strings-python",
+  "comprehensions-python",
+  "erros-python",
+  "classes-python",
+] as const;
+
+const challengeBySlug = new Map(
+  [...desafiosBaseComMetadata, ...desafiosExtras].map((challenge) => [challenge.slug, challenge])
+);
+
+export const desafios: Desafio[] = challengeSequence.flatMap((slug) => {
+  const challenge = challengeBySlug.get(slug);
+  return challenge ? [challenge] : [];
+});
 
 export function getDesafio(slug: string): Desafio | undefined {
   return desafios.find((d) => d.slug === slug);
+}
+
+export function getNextDesafio(slug: string): Desafio | undefined {
+  const currentIndex = desafios.findIndex((challenge) => challenge.slug === slug);
+  if (currentIndex < 0) return undefined;
+  const current = desafios[currentIndex];
+  return desafios.slice(currentIndex + 1).find((challenge) => challenge.linguagem === current.linguagem);
 }

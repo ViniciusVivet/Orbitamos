@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Play, RotateCcw, ChevronRight, Lightbulb, CheckCircle2, XCircle, ArrowLeft, Code2, MessageSquare } from "lucide-react";
 import Link from "next/link";
-import { getDesafio } from "@/lib/desafios";
+import { getDesafio, getNextDesafio } from "@/lib/desafios";
 import { runJavaScriptInWorker, runPythonInWorker } from "@/lib/browserCodeRunner";
 import { useAuth } from "@/contexts/AuthContext";
 import ReliableCodeEditor from "@/components/estudante/ReliableCodeEditor";
@@ -16,6 +16,7 @@ export default function PraticaPage() {
   const router = useRouter();
   const slug = params.slug as string;
   const desafio = getDesafio(slug);
+  const nextChallenge = getNextDesafio(slug);
   const { user } = useAuth();
 
   const [code, setCode] = useState("");
@@ -273,8 +274,8 @@ export default function PraticaPage() {
           <div className="rounded-lg bg-gradient-to-r from-orbit-electric/20 to-orbit-purple/20 border border-orbit-electric/30 p-3 text-center">
             <p className="text-sm font-bold text-white">Desafio Completo!</p>
             <p className="mt-1 text-[11px] text-white/60">Todos os passos concluídos.</p>
-            <Link href="/estudante/pratica" className="mt-2 inline-flex items-center gap-1 text-xs text-orbit-electric hover:underline">
-              Ver mais desafios <ChevronRight className="size-3" />
+            <Link href={nextChallenge ? `/estudante/pratica/${nextChallenge.slug}` : "/estudante/pratica"} className="mt-2 inline-flex items-center gap-1 text-xs text-orbit-electric hover:underline">
+              {nextChallenge ? `Próximo: ${nextChallenge.titulo}` : "Ver mais desafios"} <ChevronRight className="size-3" />
             </Link>
           </div>
         </div>
@@ -301,6 +302,7 @@ export default function PraticaPage() {
 
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
           <button
+            type="button"
             onClick={handleReset}
             className="flex shrink-0 items-center justify-center gap-1 rounded-lg border border-white/10 bg-white/5 p-2 sm:px-3 sm:py-1.5 text-xs text-white/70 transition hover:bg-white/10 touch-manipulation min-h-[36px]"
             aria-label="Reiniciar"
@@ -309,8 +311,10 @@ export default function PraticaPage() {
             <span className="hidden sm:inline">Reiniciar</span>
           </button>
           <button
+            type="button"
             onClick={executeCode}
             disabled={running}
+            aria-busy={running}
             className="flex shrink-0 items-center gap-1.5 rounded-lg bg-emerald-500/90 px-3 sm:px-4 py-2 sm:py-1.5 text-xs font-bold text-black transition hover:bg-emerald-400 disabled:cursor-wait disabled:opacity-60 touch-manipulation min-h-[36px]"
           >
             <Play className="size-3.5 sm:size-3" />
@@ -320,9 +324,13 @@ export default function PraticaPage() {
       </div>
 
       {/* Mobile tabs */}
-      <div className="flex border-b border-white/10 md:hidden">
+      <div className="flex border-b border-white/10 md:hidden" role="tablist" aria-label="Painéis do laboratório">
         <button
+          type="button"
           onClick={() => setMobileTab("editor")}
+          role="tab"
+          aria-selected={mobileTab === "editor"}
+          aria-controls="practice-editor-panel"
           className={`flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-bold transition touch-manipulation ${
             mobileTab === "editor" ? "text-orbit-electric border-b-2 border-orbit-electric bg-orbit-electric/5" : "text-white/40"
           }`}
@@ -331,7 +339,11 @@ export default function PraticaPage() {
           Código
         </button>
         <button
+          type="button"
           onClick={() => setMobileTab("guia")}
+          role="tab"
+          aria-selected={mobileTab === "guia"}
+          aria-controls="practice-guide-panel"
           className={`flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-bold transition touch-manipulation relative ${
             mobileTab === "guia" ? "text-orbit-purple border-b-2 border-orbit-purple bg-orbit-purple/5" : "text-white/40"
           }`}
@@ -347,7 +359,7 @@ export default function PraticaPage() {
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Editor + Console — full width mobile, 80% desktop */}
-        <div className={`flex flex-col border-r border-white/10 ${mobileTab === "editor" ? "flex-1" : "hidden md:flex md:flex-1"}`}>
+        <div id="practice-editor-panel" role="tabpanel" className={`flex flex-col border-r border-white/10 ${mobileTab === "editor" ? "flex-1" : "hidden md:flex md:flex-1"}`}>
           <div className="flex-1 min-h-0">
             <ReliableCodeEditor
               language={desafio.linguagem}
@@ -362,14 +374,14 @@ export default function PraticaPage() {
               <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">Console</span>
               {output && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />}
             </div>
-            <pre className="h-20 sm:h-28 overflow-auto px-3 py-2 font-mono text-xs text-emerald-300/90 whitespace-pre-wrap">
+            <pre role="status" aria-live="polite" className="h-20 sm:h-28 overflow-auto px-3 py-2 font-mono text-xs text-emerald-300/90 whitespace-pre-wrap">
               {output || <span className="text-white/25">Clique em &quot;Executar&quot; para ver o resultado...</span>}
             </pre>
           </div>
         </div>
 
         {/* Guide panel — full width mobile, sidebar desktop */}
-        <div className={`flex flex-col bg-[#0d1117] ${mobileTab === "guia" ? "flex-1" : "hidden md:flex md:w-72 md:min-w-[260px] md:max-w-[320px]"}`}>
+        <div id="practice-guide-panel" role="tabpanel" className={`flex flex-col bg-[#0d1117] ${mobileTab === "guia" ? "flex-1" : "hidden md:flex md:w-72 md:min-w-[260px] md:max-w-[320px]"}`}>
           {guiaContent}
         </div>
       </div>

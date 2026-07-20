@@ -75,6 +75,9 @@ export default function PraticaIndex() {
 
   const completed = Object.values(states).filter((state) => state === "concluido").length;
   const inProgress = Object.values(states).filter((state) => state === "andamento").length;
+  const recommended =
+    desafios.find((challenge) => states[challenge.slug] === "andamento") ??
+    desafios.find((challenge) => states[challenge.slug] !== "concluido");
 
   return (
     <div className="-mx-4 -mt-4 min-h-screen overflow-hidden pb-14 sm:-mt-6 lg:-mx-6 lg:-mt-8">
@@ -106,6 +109,32 @@ export default function PraticaIndex() {
       </section>
 
       <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-8 lg:px-10">
+        {recommended && (
+          <Link
+            href={`/estudante/pratica/${recommended.slug}`}
+            className="mb-6 flex flex-col gap-4 rounded-2xl bg-gradient-to-r from-orbit-electric/[.13] via-white/[.035] to-orbit-purple/[.13] p-4 transition hover:from-orbit-electric/[.18] hover:to-orbit-purple/[.18] sm:flex-row sm:items-center sm:justify-between sm:p-5"
+          >
+            <div className="flex min-w-0 items-center gap-4">
+              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-orbit-electric/15 text-orbit-electric">
+                <Play className="size-5" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[.18em] text-orbit-electric">
+                  {states[recommended.slug] === "andamento" ? "Continue de onde parou" : "Próximo passo recomendado"}
+                </p>
+                <h2 className="mt-1 truncate text-base font-black text-white">{recommended.titulo}</h2>
+                <p className="mt-1 text-xs text-white/45">
+                  {recommended.linguagem} · {recommended.dificuldade} · cerca de {recommended.minutos} minutos
+                </p>
+              </div>
+            </div>
+            <span className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-4 text-xs font-black text-black">
+              {states[recommended.slug] === "andamento" ? "Continuar missão" : "Começar missão"}
+              <ArrowRight className="size-3.5" />
+            </span>
+          </Link>
+        )}
+
         <section className="rounded-3xl border border-white/10 bg-[#080a0f] p-4 sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="relative w-full max-w-xl">
@@ -129,6 +158,7 @@ export default function PraticaIndex() {
                   key={value}
                   type="button"
                   onClick={() => setFilter(value)}
+                  aria-pressed={filter === value}
                   className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition touch-manipulation min-h-[36px] ${
                     filter === value
                       ? "bg-white text-black"
@@ -147,6 +177,7 @@ export default function PraticaIndex() {
                   key={value}
                   type="button"
                   onClick={() => setLanguage(value)}
+                  aria-pressed={language === value}
                   className={`rounded-lg px-3 py-2 text-[11px] font-bold uppercase transition ${
                     language === value ? "bg-orbit-electric/15 text-orbit-electric" : "text-white/35 hover:text-white"
                   }`}

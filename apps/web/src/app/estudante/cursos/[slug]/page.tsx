@@ -56,13 +56,21 @@ function materialDownloadUrl(material: MaterialAula) {
   return `${material.url}${material.url.includes("?") ? "&" : "?"}download=1`;
 }
 
-function getStoredProgress(courseSlug: string, userId: UserId | undefined): string[] {
-  if (typeof window === "undefined" || !userId) return [];
+type StoredCourseProgress = {
+  completed: string[];
+  lastLessonId: string | null;
+};
+
+function getStoredProgress(courseSlug: string, userId: UserId | undefined): StoredCourseProgress {
+  if (typeof window === "undefined" || !userId) return { completed: [], lastLessonId: null };
   try {
     const parsed = JSON.parse(localStorage.getItem(`${PROGRESS_STORAGE_KEY}-${userId}-${courseSlug}`) ?? "{}");
-    return Array.isArray(parsed.concluidas) ? parsed.concluidas : [];
+    return {
+      completed: Array.isArray(parsed.concluidas) ? parsed.concluidas : [],
+      lastLessonId: typeof parsed.ultimaAulaId === "string" ? parsed.ultimaAulaId : null,
+    };
   } catch {
-    return [];
+    return { completed: [], lastLessonId: null };
   }
 }
 
@@ -213,9 +221,12 @@ export default function CourseLearningRoom() {
       .then((result) => {
         if (!active) return;
         setCourse(result ?? null);
-        setLessonId((current) =>
-          current && result && aulaNoCurso(result, current) ? current : result?.modulos[0]?.aulas[0]?.id ?? null
-        );
+        setLessonId((current) => {
+          const storedLessonId = getStoredProgress(slug, userId).lastLessonId;
+          if (storedLessonId && result && aulaNoCurso(result, storedLessonId)) return storedLessonId;
+          if (current && result && aulaNoCurso(result, current)) return current;
+          return result?.modulos[0]?.aulas[0]?.id ?? null;
+        });
       })
       .catch(() => {
         if (active) setCourse(null);
@@ -223,7 +234,7 @@ export default function CourseLearningRoom() {
     return () => {
       active = false;
     };
-  }, [slug]);
+  }, [slug, userId]);
 
   useEffect(() => {
     if (!course) return;
@@ -232,10 +243,15 @@ export default function CourseLearningRoom() {
     const stored = getStoredProgress(slug, userId);
     listarAulasConcluidas(lessonIds)
       .then((result) => {
-        if (active) setCompleted(result.length > 0 ? result : stored);
+        if (active) {
+          const validCompleted = new Set(
+            [...stored.completed, ...result].filter((lessonId) => lessonIds.includes(lessonId))
+          );
+          setCompleted([...validCompleted]);
+        }
       })
       .catch(() => {
-        if (active) setCompleted(stored);
+        if (active) setCompleted(stored.completed.filter((lessonId) => lessonIds.includes(lessonId)));
       });
     return () => {
       active = false;
@@ -273,11 +289,26 @@ export default function CourseLearningRoom() {
     };
   }, [notesKey]);
 
-  const selectLesson = (id: string) => {
+  useEffect(() => {
+    if (!curriculumOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setCurriculumOpen(false);
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [curriculumOpen]);
+
+  const selectLesson = useCallback((id: string) => {
     setLessonId(id);
     setCurriculumOpen(false);
+    if (userId) storeProgress(slug, userId, completed, id);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  }, [completed, slug, userId]);
 
   const saveNotes = () => {
     if (!notesKey) return;
@@ -305,7 +336,11 @@ export default function CourseLearningRoom() {
     }
 
     setCompleting(false);
-    if (nextId) selectLesson(nextId);
+    if (nextId) {
+      setLessonId(nextId);
+      setCurriculumOpen(false);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   }, [completed, completing, course, lesson, lessonDone, lessonId, refetchProgress, slug, token, userId]);
 
   if (course === undefined) {
@@ -368,6 +403,8 @@ export default function CourseLearningRoom() {
             type="button"
             onClick={() => setCurriculumOpen(true)}
             className="flex min-h-10 items-center gap-2 rounded-xl border border-white/10 px-3 text-xs font-bold text-white/65 lg:hidden"
+            aria-expanded={curriculumOpen}
+            aria-controls="course-curriculum-drawer"
           >
             <Menu className="size-4" /> <span className="hidden sm:inline">Conteúdo</span>
           </button>
@@ -441,7 +478,7 @@ export default function CourseLearningRoom() {
             </section>
 
             <div className="-mx-4 overflow-x-auto border-b border-white/[0.07] px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-              <div className="flex min-w-max">
+              <div className="flex min-w-max" role="tablist" aria-label="Recursos da aula">
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
                   const active = tab.id === activeTab;
@@ -450,6 +487,9 @@ export default function CourseLearningRoom() {
                       key={tab.id}
                       type="button"
                       onClick={() => setActiveTab(tab.id)}
+                      role="tab"
+                      aria-selected={active}
+                      aria-controls={`lesson-panel-${tab.id}`}
                       className={`relative flex min-h-14 items-center gap-2 px-4 text-xs font-bold transition ${
                         active ? "text-orbit-electric" : "text-white/40 hover:text-white/70"
                       }`}
@@ -466,7 +506,11 @@ export default function CourseLearningRoom() {
               </div>
             </div>
 
-            <section className="min-h-[320px] py-6 sm:py-8">
+            <section
+              id={`lesson-panel-${activeTab}`}
+              role="tabpanel"
+              className="min-h-[320px] py-6 sm:py-8"
+            >
               {activeTab === "overview" && guide && (
                 <div className="max-w-4xl">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-orbit-electric">
@@ -580,7 +624,12 @@ export default function CourseLearningRoom() {
       {curriculumOpen && (
         <div className="fixed inset-0 z-[70] lg:hidden">
           <button type="button" className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={() => setCurriculumOpen(false)} aria-label="Fechar conteúdo" />
-          <aside className="absolute inset-y-0 right-0 w-[min(90vw,360px)] overflow-y-auto border-l border-white/10 bg-[#08090c] p-4 shadow-2xl">
+          <aside
+            id="course-curriculum-drawer"
+            role="dialog"
+            aria-modal="true"
+            className="absolute inset-y-0 right-0 w-[min(90vw,360px)] overflow-y-auto border-l border-white/10 bg-[#08090c] p-4 shadow-2xl"
+          >
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-orbit-electric">Curso</p>
