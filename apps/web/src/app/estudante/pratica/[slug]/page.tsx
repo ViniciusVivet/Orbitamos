@@ -24,6 +24,7 @@ export default function PraticaPage() {
   const [stepStatus, setStepStatus] = useState<("pending" | "success" | "error")[]>([]);
   const [chatMessages, setChatMessages] = useState<{ tipo: "sistema" | "sucesso" | "erro" | "dica"; texto: string }[]>([]);
   const [showDica, setShowDica] = useState(false);
+  const [showSolution, setShowSolution] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [running, setRunning] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
@@ -87,6 +88,7 @@ export default function PraticaPage() {
     if (!desafio || running) return;
     setOutput("");
     setShowDica(false);
+    setShowSolution(false);
     setRunning(true);
     const result = desafio.linguagem === "python"
       ? await runPythonInWorker(code)
@@ -188,6 +190,11 @@ export default function PraticaPage() {
             </div>
           ))}
         </div>
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {desafio.dificuldade && <span className="rounded-full bg-white/[.05] px-2 py-1 text-[9px] font-bold uppercase text-white/40">{desafio.dificuldade}</span>}
+          {desafio.categoria && <span className="rounded-full bg-orbit-purple/10 px-2 py-1 text-[9px] font-bold uppercase text-orbit-purple">{desafio.categoria}</span>}
+          {desafio.minutos && <span className="rounded-full bg-white/[.05] px-2 py-1 text-[9px] text-white/35">~{desafio.minutos} min</span>}
+        </div>
       </div>
 
       {/* Chat messages */}
@@ -213,9 +220,19 @@ export default function PraticaPage() {
       {!completed ? (
         <div className="border-t border-white/10 p-3">
           {showDica ? (
-            <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2.5 text-xs text-amber-300">
-              <Lightbulb className="inline size-3 mr-1" />
-              {desafio.steps[currentStep]?.dica}
+            <div className="space-y-2">
+              <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2.5 text-xs text-amber-300">
+                <Lightbulb className="inline size-3 mr-1" />
+                {desafio.steps[currentStep]?.dica}
+              </div>
+              {desafio.solucao && (
+                <button type="button" onClick={() => setShowSolution((value) => !value)} className="w-full text-center text-[10px] font-bold text-white/35 hover:text-white/60">
+                  {showSolution ? "Ocultar solução de referência" : "Ainda estou travado — ver solução"}
+                </button>
+              )}
+              {showSolution && desafio.solucao && (
+                <pre className="max-h-40 overflow-auto rounded-lg bg-black/40 p-3 text-[10px] leading-5 text-white/55 whitespace-pre-wrap">{desafio.solucao}</pre>
+              )}
             </div>
           ) : (
             <button

@@ -18,6 +18,8 @@ import { useAuth } from "@/contexts/AuthContext";
 
 type ChallengeState = "novo" | "andamento" | "concluido";
 type Filter = "todos" | ChallengeState;
+type LanguageFilter = "todas" | "javascript" | "python";
+type DifficultyFilter = "todas" | "iniciante" | "basico" | "intermediario";
 
 function normalize(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -27,6 +29,8 @@ export default function PraticaIndex() {
   const { user } = useAuth();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("todos");
+  const [language, setLanguage] = useState<LanguageFilter>("todas");
+  const [difficulty, setDifficulty] = useState<DifficultyFilter>("todas");
   const [states, setStates] = useState<Record<string, ChallengeState>>({});
 
   useEffect(() => {
@@ -62,10 +66,12 @@ export default function PraticaIndex() {
     return desafios.filter((challenge) => {
       const state = states[challenge.slug] ?? "novo";
       const matchesFilter = filter === "todos" || state === filter;
-      const haystack = normalize(`${challenge.titulo} ${challenge.descricao} ${challenge.linguagem}`);
-      return matchesFilter && (!normalizedQuery || haystack.includes(normalizedQuery));
+      const matchesLanguage = language === "todas" || challenge.linguagem === language;
+      const matchesDifficulty = difficulty === "todas" || challenge.dificuldade === difficulty;
+      const haystack = normalize(`${challenge.titulo} ${challenge.descricao} ${challenge.linguagem} ${challenge.categoria ?? ""} ${challenge.habilidade ?? ""}`);
+      return matchesFilter && matchesLanguage && matchesDifficulty && (!normalizedQuery || haystack.includes(normalizedQuery));
     });
-  }, [filter, query, states]);
+  }, [difficulty, filter, language, query, states]);
 
   const completed = Object.values(states).filter((state) => state === "concluido").length;
   const inProgress = Object.values(states).filter((state) => state === "andamento").length;
@@ -134,6 +140,33 @@ export default function PraticaIndex() {
               ))}
             </div>
           </div>
+          <div className="mt-4 flex flex-col gap-3 border-t border-white/[.06] pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-2">
+              {(["todas", "javascript", "python"] as const).map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setLanguage(value)}
+                  className={`rounded-lg px-3 py-2 text-[11px] font-bold uppercase transition ${
+                    language === value ? "bg-orbit-electric/15 text-orbit-electric" : "text-white/35 hover:text-white"
+                  }`}
+                >
+                  {value === "todas" ? "Todas linguagens" : value}
+                </button>
+              ))}
+            </div>
+            <select
+              value={difficulty}
+              onChange={(event) => setDifficulty(event.target.value as DifficultyFilter)}
+              className="h-10 rounded-xl border border-white/10 bg-black/35 px-3 text-xs font-bold text-white/60 outline-none focus:border-orbit-electric/40"
+              aria-label="Filtrar por dificuldade"
+            >
+              <option value="todas">Todas as dificuldades</option>
+              <option value="iniciante">Iniciante</option>
+              <option value="basico">Básico</option>
+              <option value="intermediario">Intermediário</option>
+            </select>
+          </div>
         </section>
 
         <section className="mt-7">
@@ -172,10 +205,14 @@ export default function PraticaIndex() {
                           {state === "concluido" ? <CheckCircle2 className="size-3.5" /> : state === "andamento" ? <Play className="size-3.5" /> : <Sparkles className="size-3.5" />}
                           {state === "concluido" ? "Concluído" : state === "andamento" ? "Continuar" : "Nova missão"}
                         </span>
-                        <span className="flex items-center gap-1 text-[10px] text-white/30"><Timer className="size-3" /> ~5 min</span>
+                        <span className="flex items-center gap-1 text-[10px] text-white/30"><Timer className="size-3" /> ~{challenge.minutos ?? 5} min</span>
                       </div>
                       <h3 className="mt-3 text-lg font-black text-white group-hover:text-orbit-electric">{challenge.titulo}</h3>
                       <p className="mt-2 min-h-10 text-sm leading-5 text-white/45">{challenge.descricao}</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {challenge.dificuldade && <span className="rounded-full bg-white/[.05] px-2 py-1 text-[9px] font-bold uppercase text-white/40">{challenge.dificuldade}</span>}
+                        {challenge.categoria && <span className="rounded-full bg-orbit-purple/10 px-2 py-1 text-[9px] font-bold uppercase text-orbit-purple">{challenge.categoria}</span>}
+                      </div>
                       <div className="mt-5 flex items-center justify-between border-t border-white/8 pt-4">
                         <span className="flex items-center gap-1.5 text-xs text-white/40"><Target className="size-3.5" /> {challenge.steps.length} etapas</span>
                         <ArrowRight className="size-4 text-white/25 transition group-hover:translate-x-1 group-hover:text-orbit-electric" />
@@ -190,7 +227,7 @@ export default function PraticaIndex() {
               <Search className="mx-auto size-8 text-white/20" />
               <h3 className="mt-4 font-black text-white">Nenhuma missão encontrada</h3>
               <p className="mt-2 text-sm text-white/40">Limpe a busca ou escolha outro status para ver os desafios.</p>
-              <button type="button" onClick={() => { setQuery(""); setFilter("todos"); }} className="mt-4 text-xs font-bold text-orbit-electric">
+              <button type="button" onClick={() => { setQuery(""); setFilter("todos"); setLanguage("todas"); setDifficulty("todas"); }} className="mt-4 text-xs font-bold text-orbit-electric">
                 Mostrar todas
               </button>
             </div>
