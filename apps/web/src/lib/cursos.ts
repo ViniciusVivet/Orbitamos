@@ -435,62 +435,132 @@ export const cursos: Curso[] = [
     id: "fallback-github",
     slug: "github-colaborativo",
     titulo: "GitHub Colaborativo",
-    descricao: "Fluxo básico e intermediário com fork, pull request e colaboração.",
+    descricao: "Do git init ao pull request: versionamento, branches e colaboração em equipe.",
     modulos: [
-      { id: "github-m1", titulo: "Fluxo de colaboração", aulas: [
-        { id: "github-a1", titulo: "GitHub básico ao intermediário", youtubeVideoId: "", materiais: [material("github-mat-1", "GitHub básico ao intermediário", "DOCX", "/course-materials/github-colaborativo/03-github-basico-intermediario.docx")] },
-        { id: "github-a2", titulo: "Fork e pull request", youtubeVideoId: "", materiais: [material("github-mat-2", "GitHub - fork e pull request", "DOCX", "/course-materials/github-colaborativo/01-github-fork-pull-request.docx")] },
-        { id: "github-a3", titulo: "Pull request na prática", youtubeVideoId: "", materiais: [material("github-mat-3", "GitHub - fork e pull request PR", "DOCX", "/course-materials/github-colaborativo/02-github-fork-pull-request-pr.docx")] },
-      ] },
+      {
+        id: "github-m1",
+        titulo: "Git: Fundamentos",
+        aulas: [
+          { id: "github-a4", titulo: "Git do zero: init, add, commit e log", youtubeVideoId: "_hZf1teRFNg", conteudo: "Instalação do Git, repositório local, staging area, commits e histórico." },
+          { id: "github-a5", titulo: "Branches, merge e resolução de conflitos", youtubeVideoId: "xAOBQtSVI_k", conteudo: "Criando branches, alternando com checkout/switch, merge e como resolver conflitos." },
+          { id: "github-a1", titulo: "Git e GitHub: básico ao intermediário", youtubeVideoId: "ts-H3W1uLMM", conteudo: "Conectando repositório local ao remoto, push, pull, clone e .gitignore.", materiais: [material("github-mat-1", "GitHub básico ao intermediário", "DOCX", "/course-materials/github-colaborativo/03-github-basico-intermediario.docx")] },
+        ],
+      },
+      {
+        id: "github-m2",
+        titulo: "GitHub: Colaboração",
+        aulas: [
+          { id: "github-a2", titulo: "Fork e pull request", youtubeVideoId: "192HgwRgOYE", conteudo: "Contribuindo em projetos open source: fork, clone, branch, commit e pull request.", materiais: [material("github-mat-2", "GitHub - fork e pull request", "DOCX", "/course-materials/github-colaborativo/01-github-fork-pull-request.docx")] },
+          { id: "github-a3", titulo: "Code review e boas práticas", youtubeVideoId: "gcOhd8rvBOc", conteudo: "Revisando PRs, comentários, aprovação, merge strategies e convenções de commit.", materiais: [material("github-mat-3", "GitHub - fork e pull request PR", "DOCX", "/course-materials/github-colaborativo/02-github-fork-pull-request-pr.docx")] },
+          { id: "github-a6", titulo: "GitHub Actions e CI/CD básico", youtubeVideoId: "zTNbS3xGVGg", conteudo: "Automatizando testes e deploy com GitHub Actions: workflows, triggers e secrets." },
+        ],
+      },
     ],
   },
   {
     id: "fallback-excel",
     slug: "excel-procv",
-    titulo: "Excel - PROCV",
-    descricao: "Consulta de dados e automação inicial de planilhas com PROCV.",
+    titulo: "Excel Avançado",
+    descricao: "PROCV, tabelas dinâmicas, gráficos e fórmulas para análise de dados.",
     modulos: [
-      { id: "excel-m1", titulo: "Funções de busca", aulas: [
-        { id: "excel-a1", titulo: "Excel PROCV", youtubeVideoId: "", materiais: [material("excel-mat-1", "Excel PROCV", "DOCX", "/course-materials/excel-procv/01-excel-procv.docx")] },
-      ] },
+      {
+        id: "excel-m1",
+        titulo: "Fórmulas e Funções",
+        aulas: [
+          { id: "excel-a1", titulo: "PROCV e funções de busca", youtubeVideoId: "nx4pPfd6oqs", conteudo: "PROCV (VLOOKUP), PROCH, ÍNDICE+CORRESP e quando usar cada função de busca.", materiais: [material("excel-mat-1", "Excel PROCV", "DOCX", "/course-materials/excel-procv/01-excel-procv.docx")] },
+          { id: "excel-a2", titulo: "Fórmulas condicionais e lógicas", youtubeVideoId: "DT1buKJc_-0", conteudo: "SE, SOMASE, CONT.SE, E, OU, fórmulas aninhadas e formatação condicional." },
+        ],
+      },
+      {
+        id: "excel-m2",
+        titulo: "Análise Visual",
+        aulas: [
+          { id: "excel-a3", titulo: "Tabelas dinâmicas (Pivot Tables)", youtubeVideoId: "YyrK_1RDxv0", conteudo: "Criando tabelas dinâmicas, campos, filtros, agrupamento e segmentação de dados." },
+          { id: "excel-a4", titulo: "Gráficos e dashboards no Excel", youtubeVideoId: "G7bMwefn8RQ", conteudo: "Tipos de gráfico, formatação, dashboards visuais e boas práticas de visualização." },
+        ],
+      },
     ],
   },
   {
     id: "fallback-vba",
     slug: "vba-excel",
     titulo: "VBA para Excel",
-    descricao: "Macros, formulários e gravação em planilhas como banco de dados.",
+    descricao: "Macros, formulários e automação avançada de planilhas.",
     modulos: [
-      { id: "vba-m1", titulo: "Automação no Excel", aulas: [
-        { id: "vba-a1", titulo: "VBA para Excel avançado - atividade prática", youtubeVideoId: "", materiais: [material("vba-mat-1", "VBA para Excel avançado - atividade prática", "DOCX", "/course-materials/vba-excel/01-vba-para-excel-avancado-atv-pratica-1.docx")] },
-        { id: "vba-a2", titulo: "Banco de dados em planilha", youtubeVideoId: "", materiais: [material("vba-mat-2", "Banco de dados XLSM", "XLSM", "/course-materials/vba-excel/02-banco-de-dados-xlsm2005.xlsm")] },
-        { id: "vba-a3", titulo: "Formulário que grava no banco de dados", youtubeVideoId: "", materiais: [material("vba-mat-3", "Apostila VBA - formulário com banco de dados", "DOCX", "/course-materials/vba-excel/03-apostila-vba-no-excel-formulario-que-grava-no-banco-de-dados.docx")] },
-      ] },
+      {
+        id: "vba-m1",
+        titulo: "Macros e Automação",
+        aulas: [
+          { id: "vba-a1", titulo: "Introdução ao VBA e macros", youtubeVideoId: "BxMtSb2w9Sk", conteudo: "O que é VBA, gravador de macros, editor VBA, variáveis e primeiros scripts.", materiais: [material("vba-mat-1", "VBA para Excel avançado - atividade prática", "DOCX", "/course-materials/vba-excel/01-vba-para-excel-avancado-atv-pratica-1.docx")] },
+          { id: "vba-a4", titulo: "Estruturas de controle no VBA", youtubeVideoId: "PKMm-cHe56g", conteudo: "If/Then/Else, For/Next, Do/While, Select Case e loops em VBA." },
+        ],
+      },
+      {
+        id: "vba-m2",
+        titulo: "Projetos Práticos",
+        aulas: [
+          { id: "vba-a2", titulo: "Banco de dados em planilha", youtubeVideoId: "VdLen3MV-GM", conteudo: "Usando planilha como banco de dados: inserir, consultar e atualizar registros com VBA.", materiais: [material("vba-mat-2", "Banco de dados XLSM", "XLSM", "/course-materials/vba-excel/02-banco-de-dados-xlsm2005.xlsm")] },
+          { id: "vba-a3", titulo: "Formulário que grava no banco de dados", youtubeVideoId: "EV7Idm_mkxo", conteudo: "Criando UserForms, campos de entrada, validação e gravação automática na planilha.", materiais: [material("vba-mat-3", "Apostila VBA - formulário com banco de dados", "DOCX", "/course-materials/vba-excel/03-apostila-vba-no-excel-formulario-que-grava-no-banco-de-dados.docx")] },
+        ],
+      },
     ],
   },
   {
     id: "fallback-power-bi",
     slug: "power-bi",
     titulo: "Power BI",
-    descricao: "Primeiros passos em análise visual de dados com Power BI.",
+    descricao: "Dashboards interativos, DAX e análise visual de dados do zero.",
     modulos: [
-      { id: "power-bi-m1", titulo: "Aula inicial", aulas: [
-        { id: "power-bi-a1", titulo: "Power BI - aula 1", youtubeVideoId: "", materiais: [material("power-bi-mat-1", "Power BI - aula 1", "DOCX", "/course-materials/power-bi/01-aula-1-power-bi.docx")] },
-        { id: "power-bi-a2", titulo: "Gabarito Power BI - aula 1", youtubeVideoId: "", materiais: [material("power-bi-mat-2", "Gabarito Power BI - aula 1", "DOCX", "/course-materials/power-bi/02-gabarito-powerbi-aula-1.docx")] },
-      ] },
+      {
+        id: "power-bi-m1",
+        titulo: "Primeiros Passos",
+        aulas: [
+          { id: "power-bi-a1", titulo: "Introdução ao Power BI e importação de dados", youtubeVideoId: "YyrK_1RDxv0", conteudo: "Interface do Power BI Desktop, importar dados de Excel/CSV, transformar dados no Power Query.", materiais: [material("power-bi-mat-1", "Power BI - aula 1", "DOCX", "/course-materials/power-bi/01-aula-1-power-bi.docx")] },
+          { id: "power-bi-a3", titulo: "Criando visuais e relatórios", youtubeVideoId: "9cAKQWodpvM", conteudo: "Gráficos de barras, linhas, pizza, cartões, tabelas, formatação e filtros interativos." },
+        ],
+      },
+      {
+        id: "power-bi-m2",
+        titulo: "DAX e Dashboards",
+        aulas: [
+          { id: "power-bi-a4", titulo: "Introdução ao DAX", youtubeVideoId: "yhM7t7oyYes", conteudo: "Fórmulas DAX: SUM, COUNT, CALCULATE, FILTER, medidas vs colunas calculadas." },
+          { id: "power-bi-a5", titulo: "Modelagem de dados e relacionamentos", youtubeVideoId: "KOhd3R5kLks", conteudo: "Modelo estrela, relacionamentos entre tabelas, cardinalidade e boas práticas." },
+          { id: "power-bi-a2", titulo: "Dashboard completo: do dado ao insight", youtubeVideoId: "rX2I7OjLqWE", conteudo: "Projeto prático: importar, modelar, criar medidas DAX e montar dashboard profissional.", materiais: [material("power-bi-mat-2", "Gabarito Power BI - aula 1", "DOCX", "/course-materials/power-bi/02-gabarito-powerbi-aula-1.docx")] },
+        ],
+      },
     ],
   },
   {
     id: "fallback-manutencao",
     slug: "montagem-manutencao",
     titulo: "Montagem e Manutenção",
-    descricao: "Hardware, manutenção e sistema operacional Linux.",
+    descricao: "Hardware, redes, sistemas operacionais e troubleshooting para suporte de TI.",
     modulos: [
-      { id: "manutencao-m1", titulo: "Hardware e sistema operacional", aulas: [
-        { id: "manutencao-a1", titulo: "Peças de hardware do computador", youtubeVideoId: "", materiais: [material("manutencao-mat-1", "Peças de hardware do computador", "DOCX", "/course-materials/montagem-manutencao/01-pecas-de-hardware-do-computador.docx")] },
-        { id: "manutencao-a2", titulo: "Desafio prático - técnico de hardware", youtubeVideoId: "", materiais: [material("manutencao-mat-2", "Desafio prático - técnico de hardware", "DOCX", "/course-materials/montagem-manutencao/02-desafio-pratico-tecnico-de-hardware.docx")] },
-        { id: "manutencao-a3", titulo: "Sistema operacional Linux", youtubeVideoId: "", materiais: [material("manutencao-mat-3", "Montagem e manutenção - Linux", "DOCX", "/course-materials/montagem-manutencao/03-montagem-manutencao-sistema-operacional-linux.docx")] },
-      ] },
+      {
+        id: "manutencao-m1",
+        titulo: "Hardware e Montagem",
+        aulas: [
+          { id: "manutencao-a1", titulo: "Componentes do computador", youtubeVideoId: "MHncnRZFRNw", conteudo: "CPU, RAM, placa-mãe, fonte, armazenamento (SSD/HDD), GPU e compatibilidade de peças.", materiais: [material("manutencao-mat-1", "Peças de hardware do computador", "DOCX", "/course-materials/montagem-manutencao/01-pecas-de-hardware-do-computador.docx")] },
+          { id: "manutencao-a4", titulo: "Montagem passo a passo", youtubeVideoId: "BBWiEfuhz1c", conteudo: "Montando um PC do zero: instalação de CPU, cooler, RAM, SSD, fonte e cabeamento." },
+          { id: "manutencao-a2", titulo: "Diagnóstico e troubleshooting", youtubeVideoId: "L0k2PeUZzY8", conteudo: "Ferramentas, testes de POST, identificação de falhas, limpeza e manutenção preventiva.", materiais: [material("manutencao-mat-2", "Desafio prático - técnico de hardware", "DOCX", "/course-materials/montagem-manutencao/02-desafio-pratico-tecnico-de-hardware.docx")] },
+        ],
+      },
+      {
+        id: "manutencao-m2",
+        titulo: "Sistemas Operacionais",
+        aulas: [
+          { id: "manutencao-a5", titulo: "Windows: instalação e configuração", youtubeVideoId: "MR-Bg03aNJg", conteudo: "Instalação do Windows, partições, drivers, atualizações e configurações essenciais." },
+          { id: "manutencao-a3", titulo: "Linux: terminal e comandos essenciais", youtubeVideoId: "CnYraL0J_hM", conteudo: "Distribuições, terminal, comandos básicos (ls, cd, mkdir, cp, mv, rm), permissões e sudo.", materiais: [material("manutencao-mat-3", "Montagem e manutenção - Linux", "DOCX", "/course-materials/montagem-manutencao/03-montagem-manutencao-sistema-operacional-linux.docx")] },
+        ],
+      },
+      {
+        id: "manutencao-m3",
+        titulo: "Redes e Conectividade",
+        aulas: [
+          { id: "manutencao-a6", titulo: "Fundamentos de redes: TCP/IP, DNS e DHCP", youtubeVideoId: "kP1kktlbUTs", conteudo: "Como a internet funciona, modelo TCP/IP, endereçamento IP, DNS e DHCP na prática." },
+          { id: "manutencao-a7", titulo: "Wi-Fi, roteadores e segurança de rede", youtubeVideoId: "T6DfFgFOKm4", conteudo: "Configuração de roteador, protocolos de segurança (WPA2/WPA3), firewall básico e troubleshooting de rede." },
+        ],
+      },
     ],
   },
 ];
