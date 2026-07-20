@@ -401,12 +401,34 @@ export const cursos: Curso[] = [
     id: "fallback-sql",
     slug: "sql-na-pratica",
     titulo: "SQL na Prática",
-    descricao: "Banco de dados relacional, consultas e exercícios com SQL.",
+    descricao: "Do SELECT básico às window functions: domine banco de dados relacional na prática.",
     modulos: [
-      { id: "sql-m1", titulo: "Banco de dados", aulas: [
-        { id: "sql-a1", titulo: "Introdução ao SQL", youtubeVideoId: "", materiais: [material("sql-mat-1", "Introdução ao SQL - banco de dados na prática", "DOCX", "/course-materials/sql-na-pratica/02-introducao-ao-sql-banco-de-dados-na-pratica.docx")] },
-        { id: "sql-a2", titulo: "SQL na prática 2 - Oracle Live", youtubeVideoId: "", materiais: [material("sql-mat-2", "SQL na prática 2 - Oracle Live", "DOCX", "/course-materials/sql-na-pratica/01-sql-na-pratica-2-oracle-live.docx")] },
-      ] },
+      {
+        id: "sql-m1",
+        titulo: "Fundamentos SQL",
+        aulas: [
+          { id: "sql-a1", titulo: "Introdução ao SQL e bancos de dados", youtubeVideoId: "6M-jFECiHog", conteudo: "O que é SQL, bancos relacionais, tabelas, colunas, tipos de dados e como configurar o ambiente.", materiais: [material("sql-mat-1", "Introdução ao SQL - banco de dados na prática", "DOCX", "/course-materials/sql-na-pratica/02-introducao-ao-sql-banco-de-dados-na-pratica.docx")] },
+          { id: "sql-a3", titulo: "SELECT, WHERE e ORDER BY", youtubeVideoId: "KOhd3R5kLks", conteudo: "Consultando dados: SELECT, filtros com WHERE, ordenação, LIKE, BETWEEN, IN e operadores." },
+          { id: "sql-a4", titulo: "INSERT, UPDATE e DELETE", youtubeVideoId: "G7bMwefn8RQ", conteudo: "Manipulação de dados: inserir registros, atualizar campos e deletar linhas com segurança." },
+        ],
+      },
+      {
+        id: "sql-m2",
+        titulo: "Consultas Intermediárias",
+        aulas: [
+          { id: "sql-a5", titulo: "GROUP BY, HAVING e funções de agregação", youtubeVideoId: "9cAKQWodpvM", conteudo: "COUNT, SUM, AVG, MAX, MIN, agrupamento de resultados e filtros em agregações." },
+          { id: "sql-a6", titulo: "JOINs: combinando tabelas", youtubeVideoId: "DT1buKJc_-0", conteudo: "INNER JOIN, LEFT JOIN, RIGHT JOIN, FULL JOIN e como relacionar dados de múltiplas tabelas." },
+          { id: "sql-a2", titulo: "Prática com SQL em ambiente real", youtubeVideoId: "rX2I7OjLqWE", conteudo: "Exercícios práticos em ambiente real: Oracle Live, PostgreSQL ou MySQL.", materiais: [material("sql-mat-2", "SQL na prática 2 - Oracle Live", "DOCX", "/course-materials/sql-na-pratica/01-sql-na-pratica-2-oracle-live.docx")] },
+        ],
+      },
+      {
+        id: "sql-m3",
+        titulo: "SQL Avançado",
+        aulas: [
+          { id: "sql-a7", titulo: "Subqueries e CTEs", youtubeVideoId: "Ww71knvhQ-s", conteudo: "Subconsultas, Common Table Expressions (WITH), queries aninhadas e reutilização de resultados." },
+          { id: "sql-a8", titulo: "Índices e otimização de consultas", youtubeVideoId: "SSKVgrwhzus", conteudo: "CREATE INDEX, EXPLAIN, chaves primárias e estrangeiras, normalização e performance." },
+        ],
+      },
     ],
   },
   {
