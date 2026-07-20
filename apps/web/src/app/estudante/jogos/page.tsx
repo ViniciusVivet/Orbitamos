@@ -46,12 +46,12 @@ export default function JogosIndex() {
             <span className="bg-gradient-to-r from-orbit-purple to-orbit-electric bg-clip-text text-transparent">jogando.</span>
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-white/55">
-            No Monte o Código você recebe as linhas embaralhadas e organiza o programa na ordem certa.
-            Sem digitar nada — perfeito para treinar a lógica em qualquer lugar, até pelo celular.
+            Dois jogos, zero digitação: guie o mascote Orbi pelo espaço programando comandos, ou monte
+            programas organizando blocos embaralhados. Perfeito para treinar em qualquer lugar, até pelo celular.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <div className="rounded-full border border-white/10 bg-black/30 px-4 py-2 text-xs text-white/55">
-              <strong className="text-white">{fasesMonteCodigo.length}</strong> fases disponíveis
+              <strong className="text-white">2</strong> jogos · <strong className="text-white">{fasesMonteCodigo.length + 8}</strong> fases
             </div>
             <div className="rounded-full border border-emerald-400/20 bg-emerald-400/[.07] px-4 py-2 text-xs text-emerald-200">
               <strong>{concluidas}</strong> concluídas
@@ -64,7 +64,44 @@ export default function JogosIndex() {
       </section>
 
       <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-8 lg:px-10">
-        {/* Continue jogando */}
+        {/* Destaque: Guia o Orbi */}
+        <Link
+          href="/estudante/jogos/orbi"
+          className="group relative mb-7 block overflow-hidden rounded-3xl border border-orbit-electric/25 bg-gradient-to-br from-orbit-electric/[.12] via-[#080a12] to-orbit-purple/[.14] p-5 transition hover:border-orbit-electric/50 hover:shadow-[0_25px_70px_rgba(0,212,255,.12)] sm:p-7"
+        >
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-60"
+            style={{
+              background:
+                "radial-gradient(ellipse 50% 60% at 85% 20%, rgba(0,212,255,.14), transparent 60%), radial-gradient(ellipse 45% 60% at 10% 90%, rgba(139,92,246,.16), transparent 60%)",
+            }}
+          />
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
+            <img
+              src="/orbi-tech.png"
+              alt="Orbi, o mascote"
+              className="w-24 shrink-0 sm:w-32"
+              style={{ animation: "orbi-game-hover 3.5s ease-in-out infinite" }}
+            />
+            <div className="min-w-0 flex-1">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-orbit-electric/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-orbit-electric">
+                <Sparkles className="size-3" /> Novo jogo
+              </span>
+              <h2 className="mt-2 text-xl font-black text-white sm:text-2xl">Guia o Orbi</h2>
+              <p className="mt-1 max-w-xl text-sm leading-6 text-white/55">
+                Programe o voo do mascote comando por comando e veja ele atravessar o campo de asteroides ao vivo.
+                8 níveis: da primeira sequência até funções e recursão.
+              </p>
+            </div>
+            <span className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 self-start rounded-xl bg-white px-5 text-sm font-black text-black transition group-hover:bg-orbit-electric sm:self-center">
+              <Play className="size-4" /> Jogar agora
+            </span>
+          </div>
+        </Link>
+
+        {/* Monte o Código */}
+        <h2 className="mb-4 text-xl font-black text-white">Monte o Código</h2>
         <Link
           href={`/estudante/jogos/${proximaFase.slug}`}
           className="mb-6 flex flex-col gap-4 rounded-2xl bg-gradient-to-r from-orbit-purple/[.14] via-white/[.035] to-orbit-electric/[.12] p-4 transition hover:from-orbit-purple/[.2] hover:to-orbit-electric/[.18] sm:flex-row sm:items-center sm:justify-between sm:p-5"

@@ -612,3 +612,33 @@ input[type="date"] {
     min-height: 3rem;
   }
 }
+
+/* ── Jogo: Guia o Orbi ── */
+@keyframes orbi-game-shake {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  20% { transform: translateX(-5px) rotate(-6deg); }
+  40% { transform: translateX(5px) rotate(6deg); }
+  60% { transform: translateX(-4px) rotate(-4deg); }
+  80% { transform: translateX(4px) rotate(4deg); }
+}
+
+@keyframes orbi-game-portal {
+  0% { transform: scale(0.65); opacity: 0.85; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+
+@keyframes orbi-game-pop {
+  0% { transform: scale(0.3); opacity: 0; }
+  70% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes orbi-game-twinkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.9; }
+}
+
+@keyframes orbi-game-hover {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
