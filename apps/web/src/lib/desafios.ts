@@ -4,6 +4,8 @@ export type DesafioStep = {
   acerto: string;
   erro: string;
   dica: string;
+  /** Código de referência do passo — o aluno pode revelar para copiar ou ocultar para tentar de cabeça */
+  codigoExemplo?: string;
 };
 
 export type Desafio = {
@@ -40,6 +42,7 @@ const desafiosBase: Desafio[] = [
         acerto: "Perfeito! Você criou sua primeira variável e exibiu no console.",
         erro: "Crie a variável 'nome' com let/const e use console.log() para exibir.",
         dica: 'Tente: let nome = "Seu Nome"; console.log(nome);',
+        codigoExemplo: 'let nome = "Seu Nome";\nconsole.log(nome);',
       },
       {
         instrucao: "Agora crie uma variável 'idade' com um número e exiba no console.",
@@ -49,6 +52,7 @@ const desafiosBase: Desafio[] = [
         acerto: "Ótimo! Números não precisam de aspas, diferente de strings.",
         erro: "Declare a variável 'idade' com um valor numérico e use console.log().",
         dica: "Tente: let idade = 20; console.log(idade);",
+        codigoExemplo: "let idade = 20;\nconsole.log(idade);",
       },
       {
         instrucao: "Crie uma variável 'ativo' com valor true ou false e exiba no console.",
@@ -58,6 +62,7 @@ const desafiosBase: Desafio[] = [
         acerto: "Excelente! Booleans são fundamentais para lógica condicional. Desafio completo!",
         erro: "Declare 'ativo' com true ou false e exiba com console.log().",
         dica: "Tente: let ativo = true; console.log(ativo);",
+        codigoExemplo: "let ativo = true;\nconsole.log(ativo);",
       },
     ],
   },
@@ -76,6 +81,7 @@ const desafiosBase: Desafio[] = [
         acerto: "Muito bem! Funções encapsulam lógica reutilizável.",
         erro: "Crie a função 'saudacao' que retorna a string e chame com console.log(saudacao()).",
         dica: 'Tente: function saudacao() { return "Olá, mundo!"; } console.log(saudacao());',
+        codigoExemplo: 'function saudacao() {\n  return "Olá, mundo!";\n}\n\nconsole.log(saudacao());',
       },
       {
         instrucao: "Crie uma função 'soma' que recebe dois parâmetros e retorna a soma deles. Teste com soma(3, 5).",
@@ -85,6 +91,7 @@ const desafiosBase: Desafio[] = [
         acerto: "Perfeito! Parâmetros permitem que funções sejam flexíveis.",
         erro: "A função 'soma' deve receber 2 números e retornar a soma. Teste com console.log(soma(3, 5)).",
         dica: "Tente: function soma(a, b) { return a + b; } console.log(soma(3, 5));",
+        codigoExemplo: "function soma(a, b) {\n  return a + b;\n}\n\nconsole.log(soma(3, 5));",
       },
       {
         instrucao: "Crie uma arrow function 'dobro' que recebe um número e retorna o dobro. Teste com dobro(7).",
@@ -94,6 +101,7 @@ const desafiosBase: Desafio[] = [
         acerto: "Show! Arrow functions são a sintaxe moderna do JS. Desafio completo!",
         erro: "Use a sintaxe: const dobro = (n) => ... e teste com console.log(dobro(7)).",
         dica: "Tente: const dobro = (n) => n * 2; console.log(dobro(7));",
+        codigoExemplo: "const dobro = (n) => n * 2;\n\nconsole.log(dobro(7));",
       },
     ],
   },
@@ -112,6 +120,7 @@ const desafiosBase: Desafio[] = [
         acerto: "Boa! Arrays armazenam coleções de dados.",
         erro: "Crie o array com colchetes e pelo menos 3 itens.",
         dica: 'Tente: const frutas = ["maçã", "banana", "uva"]; console.log(frutas);',
+        codigoExemplo: 'const frutas = ["maçã", "banana", "uva"];\nconsole.log(frutas);',
       },
       {
         instrucao: "Use um for...of para exibir cada fruta em uma linha separada.",
@@ -121,6 +130,7 @@ const desafiosBase: Desafio[] = [
         acerto: "Perfeito! for...of é a forma moderna de iterar arrays.",
         erro: "Use for (const fruta of frutas) { console.log(fruta); }",
         dica: "Tente: for (const fruta of frutas) { console.log(fruta); }",
+        codigoExemplo: "for (const fruta of frutas) {\n  console.log(fruta);\n}",
       },
       {
         instrucao: "Use .map() para criar um novo array com as frutas em MAIÚSCULAS e exiba.",
@@ -129,6 +139,7 @@ const desafiosBase: Desafio[] = [
         acerto: "Excelente! .map() transforma cada item sem alterar o original. Desafio completo!",
         erro: "Use frutas.map(f => f.toUpperCase()) e exiba o resultado.",
         dica: "Tente: const maiusculas = frutas.map(f => f.toUpperCase()); console.log(maiusculas);",
+        codigoExemplo: "const maiusculas = frutas.map(f => f.toUpperCase());\nconsole.log(maiusculas);",
       },
     ],
   },
@@ -162,6 +173,7 @@ function createExercise(spec: ExerciseSpec): Desafio {
         acerto: "Todos os casos principais passaram. Excelente trabalho!",
         erro: "A saída ainda não atende aos casos esperados. Compare com os exemplos e tente novamente.",
         dica: spec.dicas[0],
+        codigoExemplo: spec.solucao,
       },
     ],
   };

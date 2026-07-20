@@ -3,6 +3,8 @@ export type BrowserCodeResult = {
   error: string | null;
   timedOut: boolean;
   durationMs?: number;
+  /** Linha do código do aluno onde o erro ocorreu (1-indexada), quando identificável */
+  errorLine?: number | null;
 };
 
 const JAVASCRIPT_WORKER_START = `
@@ -37,14 +39,31 @@ const JAVASCRIPT_WORKER_END = `
     sendResult({ output: logs.join("\\n"), error: null, timedOut: false });
   } catch (error) {
     const message = error && error.message ? error.message : String(error);
+    let rawLine = null;
+    if (error && error.stack) {
+      const stackMatch = String(error.stack).match(/:(\\d+):\\d+/);
+      if (stackMatch) rawLine = parseInt(stackMatch[1], 10);
+    }
     sendResult({
       output: logs.join("\\n"),
       error: message,
-      timedOut: false
+      timedOut: false,
+      rawLine: rawLine
     });
   }
 })();
 `;
+
+/** Linhas do prelúdio do worker antes do código do aluno, para mapear linha de erro. */
+const JS_PRELUDE_LINES = JAVASCRIPT_WORKER_START.split("\n").length - 1;
+
+function mapJsErrorLine(rawLine: number | null | undefined, code: string): number | null {
+  if (!rawLine || !Number.isFinite(rawLine)) return null;
+  const userLine = rawLine - JS_PRELUDE_LINES;
+  const totalLines = code.split("\n").length;
+  if (userLine < 1 || userLine > totalLines) return null;
+  return userLine;
+}
 
 export function runJavaScriptInWorker(code: string, timeoutMs = 2500): Promise<BrowserCodeResult> {
   if (typeof window === "undefined" || typeof Worker === "undefined") {
@@ -93,13 +112,22 @@ export function runJavaScriptInWorker(code: string, timeoutMs = 2500): Promise<B
       });
     }, timeoutMs);
 
-    worker.onmessage = (event: MessageEvent<BrowserCodeResult>) => finish(event.data);
-    worker.onerror = () =>
+    worker.onmessage = (event: MessageEvent<BrowserCodeResult & { rawLine?: number | null }>) => {
+      const { rawLine, ...result } = event.data;
+      finish({ ...result, errorLine: mapJsErrorLine(rawLine, code) });
+    };
+    worker.onerror = (event: ErrorEvent) => {
+      event.preventDefault?.();
+      const message = event.message
+        ? event.message.replace(/^Uncaught\s+/i, "")
+        : "Não foi possível executar este código com segurança.";
       finish({
         output: "",
-        error: "Não foi possível executar este código com segurança.",
+        error: message,
         timedOut: false,
+        errorLine: mapJsErrorLine(event.lineno, code),
       });
+    };
   });
 }
 
@@ -131,6 +159,22 @@ self.onmessage = async function (event) {
   }
 };
 `;
+
+/**
+ * Tracebacks do Pyodide são longos; extrai a última linha (ex.: "NameError: ...")
+ * e a linha do código do aluno apontada em `File "<exec>", line N`.
+ */
+function extractPythonError(error: string | null, code: string): { message: string | null; line: number | null } {
+  if (!error) return { message: null, line: null };
+  const lineMatches = Array.from(error.matchAll(/File "<exec>", line (\d+)/g));
+  let line: number | null = lineMatches.length
+    ? parseInt(lineMatches[lineMatches.length - 1][1], 10)
+    : null;
+  if (line !== null && (line < 1 || line > code.split("\n").length)) line = null;
+  const lines = error.trim().split("\n");
+  const message = lines[lines.length - 1]?.trim() || error;
+  return { message, line };
+}
 
 export function runPythonInWorker(code: string, timeoutMs = 20000): Promise<BrowserCodeResult> {
   if (typeof window === "undefined" || typeof Worker === "undefined") {
@@ -177,7 +221,10 @@ export function runPythonInWorker(code: string, timeoutMs = 20000): Promise<Brow
       });
     }, timeoutMs);
 
-    worker.onmessage = (event: MessageEvent<BrowserCodeResult>) => finish(event.data);
+    worker.onmessage = (event: MessageEvent<BrowserCodeResult>) => {
+      const { message, line } = extractPythonError(event.data.error, code);
+      finish({ ...event.data, error: message, errorLine: line });
+    };
     worker.onerror = () =>
       finish({
         output: "",

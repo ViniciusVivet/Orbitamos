@@ -2,9 +2,9 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Play, RotateCcw, ChevronRight, Lightbulb, CheckCircle2, XCircle, ArrowLeft, Code2, MessageSquare } from "lucide-react";
+import { Play, RotateCcw, ChevronRight, Lightbulb, CheckCircle2, XCircle, ArrowLeft, Code2, MessageSquare, Eye, EyeOff, Copy, Check, BookOpen, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { getDesafio, getNextDesafio } from "@/lib/desafios";
+import { getDesafio, getNextDesafio, type DesafioStep } from "@/lib/desafios";
 import { runJavaScriptInWorker, runPythonInWorker } from "@/lib/browserCodeRunner";
 import { useAuth } from "@/contexts/AuthContext";
 import ReliableCodeEditor from "@/components/estudante/ReliableCodeEditor";
@@ -13,22 +13,70 @@ type MobileTab = "editor" | "guia";
 
 function explainRuntimeError(error: string, timedOut: boolean, language: "javascript" | "typescript" | "python") {
   if (timedOut) return "A execução excedeu o limite de tempo. Procure um laço sem condição de saída ou uma tarefa que nunca termina.";
+  if (/is not a function/i.test(error)) {
+    return "Você chamou algo que não é uma função. Confira se o nome está certo e se não faltou declarar a função antes de usá-la.";
+  }
+  if (/cannot read propert(y|ies) of (undefined|null)/i.test(error)) {
+    return "O código tentou acessar uma propriedade de um valor que está vazio (undefined ou null). Verifique se a variável foi preenchida antes dessa linha.";
+  }
   if (/is not defined|not defined/i.test(error)) {
     return language === "python"
-      ? "O código tentou usar um nome que ainda não foi definido. Confira a grafia e crie a variável ou função antes de utilizá-la."
-      : "O código tentou usar uma variável ou função que ainda não foi declarada. Confira a grafia e a ordem das declarações.";
+      ? "O código tentou usar um nome que ainda não foi definido. Confira a grafia (maiúsculas contam!) e crie a variável ou função antes de utilizá-la."
+      : "O código tentou usar uma variável ou função que ainda não foi declarada. Confira a grafia (maiúsculas contam!) e a ordem das declarações.";
   }
-  if (/syntaxerror|invalid syntax|unexpected token/i.test(error)) {
-    return "Há um erro de sintaxe. Confira parênteses, aspas, dois-pontos, chaves e a linha indicada no console.";
+  if (/unexpected end of (input|script)|was never closed|unexpected eof/i.test(error)) {
+    return "O código terminou antes da hora: provavelmente faltou fechar uma chave }, um parêntese ) ou aspas.";
+  }
+  if (/already been declared/i.test(error)) {
+    return "Essa variável já foi declarada antes. Com let/const você declara uma única vez; para mudar o valor, use apenas o nome (sem let/const).";
+  }
+  if (/assignment to constant/i.test(error)) {
+    return "Você tentou mudar o valor de uma const. Se o valor precisa mudar, declare a variável com let.";
   }
   if (/indentationerror|unexpected indent|expected an indented block/i.test(error)) {
     return "A indentação do Python está inconsistente. Use quatro espaços dentro de funções, condições e laços.";
   }
+  if (/syntaxerror|invalid syntax|unexpected token/i.test(error)) {
+    return language === "python"
+      ? "Há um erro de sintaxe. Confira os dois-pontos no fim de if/for/def, os parênteses e as aspas na linha indicada."
+      : "Há um erro de sintaxe. Confira parênteses, aspas, chaves e ponto e vírgula na linha indicada.";
+  }
+  if (/zerodivisionerror/i.test(error)) {
+    return "Aconteceu uma divisão por zero. Verifique o divisor antes de dividir (ele não pode ser 0).";
+  }
+  if (/indexerror/i.test(error)) {
+    return "Você tentou acessar uma posição que não existe na lista. Lembre que os índices começam em 0 e vão até o tamanho - 1.";
+  }
+  if (/keyerror/i.test(error)) {
+    return "Essa chave não existe no dicionário. Confira a grafia da chave ou use .get() para um acesso seguro.";
+  }
+  if (/attributeerror/i.test(error)) {
+    return "Esse valor não tem o método ou atributo que você chamou. Confira o tipo da variável e o nome do método.";
+  }
+  if (/valueerror/i.test(error)) {
+    return "Uma função recebeu um valor com formato inválido, como converter um texto que não é número com int().";
+  }
   if (/typeerror/i.test(error)) {
-    return "Uma operação recebeu um tipo de valor incompatível. Confira os argumentos e os valores usados nessa linha.";
+    return "Uma operação recebeu um tipo de valor incompatível — por exemplo, somar texto com número. Confira os valores usados nessa linha.";
   }
   return `O runtime encontrou um erro: ${error}`;
 }
+
+/** Código de referência do passo atual: campo explícito ou extraído da dica ("Tente: ..."). */
+function getStepReferenceCode(step: DesafioStep | undefined): string | null {
+  if (!step) return null;
+  if (step.codigoExemplo) return step.codigoExemplo;
+  const match = step.dica.match(/^Tente:\s*(.+)$/i);
+  return match ? match[1] : null;
+}
+
+const REFERENCE_PREF_KEY = "orbitamos-pratica-mostrar-referencia";
+
+type ConsoleRun = {
+  lines: string[];
+  error: { message: string; friendly: string; line: number | null } | null;
+  durationMs: number;
+};
 
 export default function PraticaPage() {
   const params = useParams();
@@ -39,7 +87,10 @@ export default function PraticaPage() {
   const { user } = useAuth();
 
   const [code, setCode] = useState("");
-  const [output, setOutput] = useState("");
+  const [consoleRun, setConsoleRun] = useState<ConsoleRun | null>(null);
+  const [errorMark, setErrorMark] = useState<{ line: number | null; message: string } | null>(null);
+  const [showReference, setShowReference] = useState(true);
+  const [referenceCopied, setReferenceCopied] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [stepStatus, setStepStatus] = useState<("pending" | "success" | "error")[]>([]);
   const [chatMessages, setChatMessages] = useState<{ tipo: "sistema" | "sucesso" | "erro" | "dica"; texto: string }[]>([]);
@@ -104,9 +155,42 @@ export default function PraticaPage() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
 
+  useEffect(() => {
+    let active = true;
+    queueMicrotask(() => {
+      if (!active) return;
+      try {
+        const stored = localStorage.getItem(REFERENCE_PREF_KEY);
+        if (stored === "0") setShowReference(false);
+      } catch {
+        // ignore
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const toggleReference = useCallback(() => {
+    setShowReference((value) => {
+      try {
+        localStorage.setItem(REFERENCE_PREF_KEY, value ? "0" : "1");
+      } catch {
+        // ignore
+      }
+      return !value;
+    });
+  }, []);
+
+  const handleCodeChange = useCallback((nextCode: string) => {
+    setCode(nextCode);
+    setErrorMark(null);
+  }, []);
+
   const executeCode = useCallback(async () => {
     if (!desafio || running) return;
-    setOutput("");
+    setConsoleRun(null);
+    setErrorMark(null);
     setShowDica(false);
     setShowSolution(false);
     setRunning(true);
@@ -116,22 +200,28 @@ export default function PraticaPage() {
     const friendlyError = result.error
       ? explainRuntimeError(result.error, result.timedOut, desafio.linguagem)
       : "";
-    const resultOutput = [result.output, friendlyError ? `Erro: ${friendlyError}` : ""].filter(Boolean).join("\n");
-    setOutput(`${resultOutput || "Execução concluída sem saída."}\n\nTempo: ${result.durationMs ?? 0} ms`);
+    const errorLine = result.errorLine ?? null;
+    setConsoleRun({
+      lines: result.output ? result.output.split("\n") : [],
+      error: result.error ? { message: result.error, friendly: friendlyError, line: errorLine } : null,
+      durationMs: result.durationMs ?? 0,
+    });
 
     const step = desafio.steps[currentStep];
     if (result.error && step) {
+      setErrorMark({ line: errorLine, message: result.error });
       const newStatus = [...stepStatus];
       newStatus[currentStep] = "error";
       setStepStatus(newStatus);
-      setChatMessages((previous) => [...previous, { tipo: "erro", texto: friendlyError }]);
+      const lineNote = errorLine ? ` O editor marcou a linha ${errorLine} em vermelho.` : "";
+      setChatMessages((previous) => [...previous, { tipo: "erro", texto: `${friendlyError}${lineNote}` }]);
       setMobileTab("guia");
       setRunning(false);
       return;
     }
 
     if (step) {
-      const passed = !result.error && step.validacao(code, resultOutput);
+      const passed = !result.error && step.validacao(code, result.output);
       const newStatus = [...stepStatus];
       if (passed) {
         newStatus[currentStep] = "success";
@@ -165,7 +255,8 @@ export default function PraticaPage() {
     if (!window.confirm("Reiniciar apaga o código e o progresso salvos neste desafio. Deseja continuar?")) return;
     if (storageKey) localStorage.removeItem(storageKey);
     setCode(desafio.codigoInicial);
-    setOutput("");
+    setConsoleRun(null);
+    setErrorMark(null);
     setCurrentStep(0);
     setStepStatus(desafio.steps.map(() => "pending"));
     setShowDica(false);
@@ -176,6 +267,18 @@ export default function PraticaPage() {
       { tipo: "sistema", texto: desafio.steps[0].instrucao },
     ]);
   };
+
+  const referenceCode = getStepReferenceCode(desafio?.steps[currentStep]);
+  const handleCopyReference = useCallback(async () => {
+    if (!referenceCode) return;
+    try {
+      await navigator.clipboard.writeText(referenceCode);
+      setReferenceCopied(true);
+      window.setTimeout(() => setReferenceCopied(false), 1600);
+    } catch {
+      // ignore
+    }
+  }, [referenceCode]);
 
   if (!desafio) {
     return (
@@ -253,6 +356,48 @@ export default function PraticaPage() {
           </details>
         )}
       </div>
+
+      {/* Código de referência do passo atual */}
+      {referenceCode && !completed && (
+        <div className="border-b border-white/10 p-3">
+          <div className="flex items-center justify-between gap-2">
+            <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">
+              <BookOpen className="size-3 text-orbit-electric/70" />
+              Código de referência
+            </p>
+            <button
+              type="button"
+              onClick={toggleReference}
+              className="flex items-center gap-1 text-[10px] font-bold text-orbit-electric hover:text-white transition-colors touch-manipulation"
+            >
+              {showReference ? <EyeOff className="size-3" /> : <Eye className="size-3" />}
+              {showReference ? "Ocultar" : "Mostrar"}
+            </button>
+          </div>
+          {showReference ? (
+            <div className="mt-2">
+              <div className="relative">
+                <pre className="overflow-x-auto rounded-lg bg-black/40 p-3 pr-9 font-mono text-[11px] leading-5 text-slate-200 whitespace-pre">{referenceCode}</pre>
+                <button
+                  type="button"
+                  onClick={handleCopyReference}
+                  aria-label="Copiar código de referência"
+                  className="absolute right-1.5 top-1.5 rounded-md border border-white/10 bg-white/5 p-1.5 text-white/50 transition hover:bg-white/10 hover:text-white touch-manipulation"
+                >
+                  {referenceCopied ? <Check className="size-3 text-emerald-400" /> : <Copy className="size-3" />}
+                </button>
+              </div>
+              <p className="mt-1.5 text-[10px] leading-4 text-white/30">
+                Digite o código observando cada parte. Quando pegar o jeito, oculte e tente de cabeça.
+              </p>
+            </div>
+          ) : (
+            <p className="mt-2 text-[10px] leading-4 text-white/35">
+              Modo desafio: escreva de memória. Se travar, é só mostrar de novo — faz parte do aprendizado.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Chat messages */}
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
@@ -396,7 +541,9 @@ export default function PraticaPage() {
             <ReliableCodeEditor
               language={desafio.linguagem}
               value={code}
-              onChange={setCode}
+              onChange={handleCodeChange}
+              errorLine={errorMark?.line}
+              errorMessage={errorMark?.message}
             />
           </div>
 
@@ -404,11 +551,48 @@ export default function PraticaPage() {
           <div className="border-t border-white/10 bg-[#0d1117]">
             <div className="flex items-center gap-2 border-b border-white/5 px-3 py-1.5">
               <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">Console</span>
-              {output && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />}
+              {consoleRun && !consoleRun.error && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
+              {consoleRun?.error && <span className="h-1.5 w-1.5 rounded-full bg-red-400" />}
+              {consoleRun && (
+                <span className="ml-auto flex items-center gap-2">
+                  <span className="text-[9px] text-white/25">{consoleRun.durationMs} ms</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConsoleRun(null);
+                      setErrorMark(null);
+                    }}
+                    aria-label="Limpar console"
+                    className="flex items-center gap-1 text-[9px] font-bold uppercase text-white/30 transition hover:text-white/70 touch-manipulation"
+                  >
+                    <Trash2 className="size-3" />
+                    Limpar
+                  </button>
+                </span>
+              )}
             </div>
-            <pre role="status" aria-live="polite" className="h-20 sm:h-28 overflow-auto px-3 py-2 font-mono text-xs text-emerald-300/90 whitespace-pre-wrap">
-              {output || <span className="text-white/25">Clique em &quot;Executar&quot; para ver o resultado...</span>}
-            </pre>
+            <div role="status" aria-live="polite" className="h-24 sm:h-32 overflow-auto px-3 py-2 font-mono text-xs">
+              {!consoleRun && (
+                <span className="text-white/25">Clique em &quot;Executar&quot; para ver o resultado...</span>
+              )}
+              {consoleRun?.lines.map((line, index) => (
+                <div key={index} className="whitespace-pre-wrap leading-5 text-slate-200">
+                  {line}
+                </div>
+              ))}
+              {consoleRun && !consoleRun.error && consoleRun.lines.length === 0 && (
+                <div className="leading-5 text-white/30">Execução concluída sem saída no console.</div>
+              )}
+              {consoleRun?.error && (
+                <div className="mt-1.5 rounded-md border-l-2 border-red-500 bg-red-500/[0.08] px-2.5 py-2">
+                  <p className="leading-5 text-red-300">
+                    ✖ {consoleRun.error.line ? `Linha ${consoleRun.error.line}: ` : ""}
+                    {consoleRun.error.message}
+                  </p>
+                  <p className="mt-1 font-sans leading-5 text-amber-200/90">{consoleRun.error.friendly}</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
