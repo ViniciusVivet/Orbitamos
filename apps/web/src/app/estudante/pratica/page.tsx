@@ -265,7 +265,26 @@ export default function PraticaIndex() {
           )}
         </section>
 
-        <section className="mt-9 rounded-3xl border border-amber-400/15 bg-amber-400/[.045] p-5 sm:p-6">
+        <section className="mt-9 rounded-3xl border border-orbit-purple/20 bg-orbit-purple/[.06] p-5 sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[.18em] text-orbit-purple">Prefere começar jogando?</p>
+              <h2 className="mt-2 text-xl font-black text-white">Monte o Código: organize blocos embaralhados.</h2>
+              <p className="mt-1 max-w-2xl text-sm leading-5 text-white/45">
+                Sem digitar nada: toque nos blocos e monte o programa na ordem certa. Ótimo no celular e para treinar a lógica antes de escrever código.
+              </p>
+            </div>
+            <Link
+              href="/estudante/jogos"
+              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-4 text-xs font-black text-black transition hover:bg-orbit-purple hover:text-white"
+            >
+              Jogar agora
+              <ArrowRight className="size-3.5" />
+            </Link>
+          </div>
+        </section>
+
+        <section className="mt-6 rounded-3xl border border-amber-400/15 bg-amber-400/[.045] p-5 sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-[.18em] text-amber-300">Como funciona</p>

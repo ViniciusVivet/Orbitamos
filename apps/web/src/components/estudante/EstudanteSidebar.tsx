@@ -34,6 +34,7 @@ const navItems: NavItem[] = [
     })),
   },
   { href: "/estudante/pratica", label: "Prática", icon: "💻" },
+  { href: "/estudante/jogos", label: "Jogos", icon: "🎮" },
   { href: "/estudante/mentorias", label: "Mentorias", icon: "👨‍🏫" },
   { href: "/estudante/progresso", label: "Progresso", icon: "📊" },
   { href: "/estudante/comunidade", label: "Comunidade", icon: "🌐" },
