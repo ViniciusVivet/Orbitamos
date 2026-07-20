@@ -585,7 +585,6 @@ export function aulaNoCurso(curso: Curso, aulaId: string): Aula | undefined {
 
 /** Retorna a proxima aula (id) apos a dada, ou null */
 export function proximaAulaId(curso: Curso, aulaId: string): string | null {
-  let found = false;
   for (const mod of curso.modulos) {
     for (let i = 0; i < mod.aulas.length; i++) {
       if (mod.aulas[i].id === aulaId) {
@@ -638,7 +637,29 @@ type SupabaseCourseRow = {
 };
 
 function mapSupabaseCourse(row: SupabaseCourseRow): Curso {
-  const modules = [...(row.course_modules ?? [])].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+  const allModules = row.course_modules ?? [];
+  const generatedModulePattern = new RegExp(`^${row.slug.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}-m\\d+$`);
+  const generatedModules = allModules.filter((module) => generatedModulePattern.test(module.slug));
+  const fallback = cursos.find((course) => course.slug === row.slug);
+  const generatedLessonCount = generatedModules.reduce(
+    (total, module) => total + (module.lessons?.length ?? 0),
+    0
+  );
+  const fallbackLessonCount = fallback
+    ? fallback.modulos.reduce((total, module) => total + module.aulas.length, 0)
+    : 0;
+
+  // O seed de julho/2026 criou uma estrutura canônica com slugs curso-mN,
+  // mas deixou as aulas como não publicadas e manteve módulos legados no banco.
+  // Enquanto a correção SQL não estiver aplicada, a RLS devolve esses módulos
+  // sem aulas. Nesse caso usamos o catálogo local completo, que contém os vídeos.
+  if (fallback && generatedLessonCount < fallbackLessonCount) {
+    return fallback;
+  }
+
+  // Quando a estrutura nova estiver publicada, ignore módulos legados duplicados.
+  const sourceModules = generatedModules.length > 0 ? generatedModules : allModules;
+  const modules = [...sourceModules].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
   return {
     id: row.id,
     slug: row.slug,
