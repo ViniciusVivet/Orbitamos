@@ -13,7 +13,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Circle,
-  ClipboardCheck,
   Download,
   FileText,
   ListVideo,
@@ -44,8 +43,6 @@ import { flattenCourseLessons, getLessonGuide, getLessonKind, lessonKindLabels }
 const PROGRESS_STORAGE_KEY = "orbitacademy-progress";
 const NOTES_STORAGE_KEY = "orbitacademy-notes";
 const YOUTUBE_VIDEO_ID_PATTERN = /^[a-zA-Z0-9_-]{6,20}$/;
-
-type LessonTab = "overview" | "materials" | "notes" | "practice";
 
 function youtubeEmbedUrl(videoId: string | undefined) {
   if (!videoId || !YOUTUBE_VIDEO_ID_PATTERN.test(videoId)) return null;
@@ -99,6 +96,34 @@ function MaterialCard({ material }: { material: MaterialAula }) {
         <Download className="size-4" />
       </a>
     </article>
+  );
+}
+
+function SectionHeading({
+  number,
+  title,
+  subtitle,
+  done,
+}: {
+  number: number;
+  title: string;
+  subtitle: string;
+  done?: boolean;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <span
+        className={`grid size-9 shrink-0 place-items-center rounded-xl text-sm font-black ${
+          done ? "bg-emerald-400/15 text-emerald-300" : "bg-orbit-electric/10 text-orbit-electric"
+        }`}
+      >
+        {done ? <Check className="size-4" /> : number}
+      </span>
+      <div>
+        <h2 className="text-lg font-black leading-tight text-white">{title}</h2>
+        <p className="mt-0.5 text-sm text-white/40">{subtitle}</p>
+      </div>
+    </div>
   );
 }
 
@@ -213,7 +238,7 @@ export default function CourseLearningRoom() {
   const [course, setCourse] = useState<Curso | null | undefined>();
   const [lessonId, setLessonId] = useState<string | null>(null);
   const [completed, setCompleted] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState<LessonTab>("overview");
+  const [quizScore, setQuizScore] = useState<{ correct: number; total: number } | null>(null);
   const [curriculumOpen, setCurriculumOpen] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [notes, setNotes] = useState("");
@@ -284,7 +309,6 @@ export default function CourseLearningRoom() {
     let active = true;
     queueMicrotask(() => {
       if (!active) return;
-      setActiveTab("overview");
       setNotes(notesKey ? localStorage.getItem(notesKey) ?? "" : "");
       setNotesSaved(false);
     });
@@ -292,6 +316,10 @@ export default function CourseLearningRoom() {
       active = false;
     };
   }, [notesKey]);
+
+  const scrollToSection = useCallback((sectionId: string) => {
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
 
   useEffect(() => {
     if (!curriculumOpen) return;
@@ -372,11 +400,12 @@ export default function CourseLearningRoom() {
     );
   }
 
-  const tabs: Array<{ id: LessonTab; label: string; icon: typeof BookOpen; count?: number }> = [
-    { id: "overview", label: "Visão geral", icon: BookOpen },
-    { id: "materials", label: "Materiais", icon: FileText, count: lesson.materiais?.length ?? 0 },
-    { id: "notes", label: "Anotações", icon: NotebookPen },
-    { id: "practice", label: "Fixação", icon: ClipboardCheck },
+  const quizPerfect = quizScore !== null && quizScore.total > 0 && quizScore.correct === quizScore.total;
+  const lessonSteps = [
+    { id: "secao-entenda", label: "Entenda", done: quizPerfect || lessonDone },
+    { id: "secao-revisao", label: "Revise", done: quizPerfect },
+    { id: "secao-pratica", label: "Pratique", done: lessonDone },
+    { id: "secao-concluir", label: "Conclua", done: lessonDone },
   ];
 
   return (
@@ -453,13 +482,39 @@ export default function CourseLearningRoom() {
                 </div>
                 <button
                   type="button"
-                  onClick={lessonDone && nextLesson ? () => selectLesson(nextLesson.id) : () => setActiveTab("practice")}
+                  onClick={lessonDone && nextLesson ? () => selectLesson(nextLesson.id) : () => scrollToSection("secao-concluir")}
                   className="flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-5 text-sm font-black text-black transition hover:opacity-90"
                 >
-                  {lessonDone ? (nextLesson ? "Próxima aula" : "Curso concluído") : "Finalizar aula"}
+                  {lessonDone ? (nextLesson ? "Próxima aula" : "Curso concluído") : "Concluir aula"}
                   {lessonDone ? <ArrowRight className="size-4" /> : <Target className="size-4" />}
                 </button>
               </div>
+
+              {/* Trilho da aula: o caminho que o aluno percorre nesta página */}
+              <ol className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {lessonSteps.map((step, index) => (
+                  <li key={step.id}>
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection(step.id)}
+                      className={`flex w-full items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition ${
+                        step.done
+                          ? "border-emerald-400/25 bg-emerald-400/[.06] text-emerald-200"
+                          : "border-white/10 bg-white/[0.03] text-white/55 hover:border-orbit-electric/30 hover:text-white"
+                      }`}
+                    >
+                      <span
+                        className={`grid size-6 shrink-0 place-items-center rounded-lg text-[11px] font-black ${
+                          step.done ? "bg-emerald-400/20 text-emerald-300" : "bg-white/[0.06] text-white/45"
+                        }`}
+                      >
+                        {step.done ? <Check className="size-3.5" /> : index + 1}
+                      </span>
+                      <span className="text-xs font-bold">{step.label}</span>
+                    </button>
+                  </li>
+                ))}
+              </ol>
 
               <div className="mt-5 flex items-center justify-between gap-3">
                 <button
@@ -481,135 +536,153 @@ export default function CourseLearningRoom() {
               </div>
             </section>
 
-            <div className="-mx-4 overflow-x-auto border-b border-white/[0.07] px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-              <div className="flex min-w-max" role="tablist" aria-label="Recursos da aula">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  const active = tab.id === activeTab;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => setActiveTab(tab.id)}
-                      role="tab"
-                      aria-selected={active}
-                      aria-controls={`lesson-panel-${tab.id}`}
-                      className={`relative flex min-h-14 items-center gap-2 px-4 text-xs font-bold transition ${
-                        active ? "text-orbit-electric" : "text-white/40 hover:text-white/70"
-                      }`}
-                    >
-                      <Icon className="size-4" />
-                      {tab.label}
-                      {typeof tab.count === "number" && tab.count > 0 && (
-                        <span className="rounded-full bg-white/[0.07] px-1.5 py-0.5 text-[9px] text-white/45">{tab.count}</span>
-                      )}
-                      {active && <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-orbit-electric" />}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <section
-              id={`lesson-panel-${activeTab}`}
-              role="tabpanel"
-              className="min-h-[320px] py-6 sm:py-8"
-            >
-              {activeTab === "overview" && guide && (
-                <div className="max-w-4xl">
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-orbit-electric">
-                    <Sparkles className="size-4" /> O que você vai aprender
-                  </div>
-                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                    {guide.objectives.map((objective, index) => (
-                      <div key={objective} className="flex gap-3 rounded-2xl bg-white/[0.035] p-4">
-                        <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-orbit-electric/10 text-xs font-black text-orbit-electric">{index + 1}</span>
-                        <p className="text-sm leading-6 text-white/65">{objective}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-6 rounded-2xl bg-gradient-to-r from-orbit-purple/[0.10] to-transparent p-5">
-                    <p className="text-[10px] font-bold uppercase tracking-[.18em] text-orbit-purple">Depois do conteúdo</p>
-                    <h2 className="mt-2 text-lg font-black text-white">{guide.practice.title}</h2>
-                    <p className="mt-2 text-sm leading-6 text-white/50">{guide.practice.description}</p>
-                    <button type="button" onClick={() => setActiveTab("practice")} className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-orbit-electric">
-                      Ir para a fixação <ArrowRight className="size-3.5" />
-                    </button>
-                  </div>
+            {/* ── 1. Entenda ── */}
+            {guide && (
+              <section id="secao-entenda" className="scroll-mt-24 border-b border-white/[0.07] py-6 sm:py-8">
+                <SectionHeading
+                  number={1}
+                  title="Entenda a aula"
+                  subtitle="Leia os objetivos antes do conteúdo: eles mostram o que observar."
+                  done={quizPerfect || lessonDone}
+                />
+                <div className="mt-5 grid max-w-4xl gap-3 sm:grid-cols-2">
+                  {guide.objectives.map((objective, index) => (
+                    <div key={objective} className="flex gap-3 rounded-2xl bg-white/[0.035] p-4">
+                      <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-orbit-electric/10 text-xs font-black text-orbit-electric">
+                        <Sparkles className="size-3.5" aria-hidden="true" />
+                      </span>
+                      <p className="text-sm leading-6 text-white/65">
+                        <span className="mr-1 text-white/30">{index + 1}.</span>
+                        {objective}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              )}
 
-              {activeTab === "materials" && (
-                <div className="max-w-3xl">
-                  <h2 className="text-lg font-black text-white">Materiais desta aula</h2>
-                  <p className="mt-1 text-sm text-white/40">Arquivos de apoio para consultar durante ou depois do vídeo.</p>
-                  {(lesson.materiais?.length ?? 0) > 0 ? (
-                    <div className="mt-5 space-y-2">{lesson.materiais!.map((material) => <MaterialCard key={material.id} material={material} />)}</div>
-                  ) : (
-                    <div className="mt-6 rounded-2xl bg-white/[0.025] p-8 text-center text-sm text-white/35">Esta aula não possui material complementar.</div>
+                <div className="mt-5 max-w-4xl space-y-3">
+                  {(lesson.materiais?.length ?? 0) > 0 && (
+                    <details className="group rounded-2xl bg-white/[0.03]">
+                      <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2.5 px-4 text-sm font-bold text-white/70 transition hover:text-white">
+                        <FileText className="size-4 text-orbit-electric" />
+                        Materiais da aula
+                        <span className="rounded-full bg-white/[0.07] px-1.5 py-0.5 text-[9px] text-white/45">{lesson.materiais!.length}</span>
+                        <ChevronDown className="ml-auto size-4 text-white/30 transition group-open:rotate-180" />
+                      </summary>
+                      <div className="space-y-2 px-4 pb-4">
+                        {lesson.materiais!.map((material) => <MaterialCard key={material.id} material={material} />)}
+                      </div>
+                    </details>
+                  )}
+
+                  <details className="group rounded-2xl bg-white/[0.03]">
+                    <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2.5 px-4 text-sm font-bold text-white/70 transition hover:text-white">
+                      <NotebookPen className="size-4 text-orbit-electric" />
+                      Minhas anotações
+                      {notes.trim().length > 0 && <span className="size-1.5 rounded-full bg-orbit-electric" aria-label="Há anotações salvas" />}
+                      <ChevronDown className="ml-auto size-4 text-white/30 transition group-open:rotate-180" />
+                    </summary>
+                    <div className="px-4 pb-4">
+                      <textarea
+                        value={notes}
+                        onChange={(event) => setNotes(event.target.value)}
+                        placeholder="O que você não quer esquecer desta aula?"
+                        className="min-h-36 w-full resize-y rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-sm leading-6 text-white outline-none placeholder:text-white/25 focus:border-orbit-electric/40"
+                      />
+                      <button type="button" onClick={saveNotes} className="mt-3 min-h-11 rounded-xl bg-white px-5 text-xs font-black text-black">
+                        {notesSaved ? "Anotações salvas" : "Salvar anotações"}
+                      </button>
+                    </div>
+                  </details>
+                </div>
+              </section>
+            )}
+
+            {/* ── 2. Revise ── */}
+            {guide && (
+              <section id="secao-revisao" className="scroll-mt-24 border-b border-white/[0.07] py-6 sm:py-8">
+                <SectionHeading
+                  number={2}
+                  title="Revise o que aprendeu"
+                  subtitle="Responda sem consultar. Errou? Volte ao vídeo e tente de novo."
+                  done={quizPerfect}
+                />
+                <div className="mt-5 max-w-3xl">
+                  <LessonQuickQuiz
+                    key={lesson.id}
+                    questions={guide.quiz}
+                    storageKey={userId ? `orbitamos-quiz-v2-${userId}-${lesson.id}` : null}
+                    onScoreChange={(correct, total) => setQuizScore({ correct, total })}
+                  />
+                </div>
+              </section>
+            )}
+
+            {/* ── 3. Pratique ── */}
+            {guide && (
+              <section id="secao-pratica" className="scroll-mt-24 border-b border-white/[0.07] py-6 sm:py-8">
+                <SectionHeading
+                  number={3}
+                  title="Pratique de verdade"
+                  subtitle="É aqui que o conteúdo vira habilidade. Reserve alguns minutos."
+                  done={lessonDone}
+                />
+                <div className="mt-5 max-w-3xl rounded-2xl bg-orbit-purple/[0.08] p-5">
+                  <p className="text-[10px] font-bold uppercase tracking-[.18em] text-orbit-purple">Aplicação rápida</p>
+                  <h3 className="mt-2 text-lg font-black text-white">{guide.practice.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-white/55">{guide.practice.description}</p>
+                  <ul className="mt-4 space-y-1.5">
+                    {guide.checklist.map((item) => (
+                      <li key={item} className="flex items-center gap-2 text-xs leading-5 text-white/50">
+                        <CheckCircle2 className="size-3.5 shrink-0 text-orbit-purple/70" aria-hidden="true" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-4 rounded-xl bg-black/25 p-3 text-xs leading-5 text-white/45">
+                    <strong className="text-white/70">Entrega esperada:</strong> {guide.practice.deliverable}
+                  </div>
+                  {guide.practice.href && (
+                    <Link
+                      href={guide.practice.href}
+                      className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 py-2 text-xs font-black text-black transition hover:bg-orbit-electric"
+                    >
+                      Abrir laboratório guiado
+                      <ArrowRight className="size-3.5" />
+                    </Link>
                   )}
                 </div>
-              )}
+              </section>
+            )}
 
-              {activeTab === "notes" && (
-                <div className="max-w-3xl">
-                  <h2 className="text-lg font-black text-white">Suas anotações</h2>
-                  <p className="mt-1 text-sm text-white/40">Registre ideias importantes. As notas ficam salvas neste dispositivo.</p>
-                  <textarea
-                    value={notes}
-                    onChange={(event) => setNotes(event.target.value)}
-                    placeholder="O que você não quer esquecer desta aula?"
-                    className="mt-5 min-h-56 w-full resize-y rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-sm leading-6 text-white outline-none placeholder:text-white/25 focus:border-orbit-electric/40"
-                  />
-                  <button type="button" onClick={saveNotes} className="mt-3 min-h-11 rounded-xl bg-white px-5 text-xs font-black text-black">
-                    {notesSaved ? "Anotações salvas" : "Salvar anotações"}
-                  </button>
+            {/* ── 4. Conclua ── */}
+            <section id="secao-concluir" className="scroll-mt-24 py-6 sm:py-8">
+              <SectionHeading
+                number={4}
+                title="Conclua a aula"
+                subtitle={lessonDone ? "Aula registrada no seu progresso." : "Marque como concluída para registrar o progresso e ganhar XP."}
+                done={lessonDone}
+              />
+              <div className="mt-5 flex max-w-3xl flex-col gap-3 rounded-2xl bg-white/[0.035] p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div className="text-sm font-black text-white">{lessonDone ? "Aula concluída" : "Pronto para seguir?"}</div>
+                  <p className="mt-1 text-xs text-white/40">
+                    {!lessonDone && !quizPerfect
+                      ? "Dica: complete a revisão da etapa 2 antes de concluir."
+                      : nextLesson
+                        ? `Próxima: ${nextLesson.titulo}`
+                        : "Esta é a última aula do curso."}
+                  </p>
                 </div>
-              )}
-
-              {activeTab === "practice" && guide && (
-                <div className="max-w-3xl">
-                  <div className="rounded-2xl bg-orbit-purple/[0.08] p-5">
-                    <p className="text-[10px] font-bold uppercase tracking-[.18em] text-orbit-purple">Aplicação rápida</p>
-                    <h2 className="mt-2 text-lg font-black text-white">{guide.practice.title}</h2>
-                    <p className="mt-2 text-sm leading-6 text-white/55">{guide.practice.description}</p>
-                    <div className="mt-4 rounded-xl bg-black/25 p-3 text-xs leading-5 text-white/45">
-                      <strong className="text-white/70">Entrega esperada:</strong> {guide.practice.deliverable}
-                    </div>
-                    {guide.practice.href && (
-                      <Link
-                        href={guide.practice.href}
-                        className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 py-2 text-xs font-black text-black transition hover:bg-orbit-electric"
-                      >
-                        Abrir laboratório guiado
-                        <ArrowRight className="size-3.5" />
-                      </Link>
-                    )}
-                  </div>
-                  <div className="mt-5">
-                    <LessonQuickQuiz
-                      key={lesson.id}
-                      questions={guide.quiz}
-                      storageKey={userId ? `orbitamos-quiz-${userId}-${lesson.id}` : null}
-                    />
-                  </div>
-                  <div className="mt-5 flex flex-col gap-3 rounded-2xl bg-white/[0.035] p-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <div className="text-sm font-black text-white">{lessonDone ? "Aula concluída" : "Pronto para seguir?"}</div>
-                      <p className="mt-1 text-xs text-white/40">{nextLesson ? `Próxima: ${nextLesson.titulo}` : "Esta é a última aula do curso."}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={completeLesson}
-                      disabled={completing || (lessonDone && !nextLesson)}
-                      className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-5 text-sm font-black text-black disabled:opacity-50"
-                    >
-                      {completing ? "Salvando..." : lessonDone ? "Ir para próxima aula" : "Concluir e continuar"}
-                      {!completing && (lessonDone ? <ArrowRight className="size-4" /> : <Check className="size-4" />)}
-                    </button>
-                  </div>
-                </div>
-              )}
+                <button
+                  type="button"
+                  onClick={completeLesson}
+                  disabled={completing || (lessonDone && !nextLesson)}
+                  className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-5 text-sm font-black text-black disabled:opacity-50"
+                >
+                  {completing ? "Salvando..." : lessonDone ? "Ir para próxima aula" : "Concluir e continuar"}
+                  {!completing && (lessonDone ? <ArrowRight className="size-4" /> : <Check className="size-4" />)}
+                </button>
+              </div>
             </section>
           </div>
         </main>

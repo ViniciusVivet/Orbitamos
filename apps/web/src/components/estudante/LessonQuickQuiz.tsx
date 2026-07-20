@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, RotateCcw, XCircle } from "lucide-react";
 
 type QuizQuestion = { question: string; options: string[]; answer: string };
@@ -8,9 +8,12 @@ type QuizQuestion = { question: string; options: string[]; answer: string };
 export default function LessonQuickQuiz({
   questions,
   storageKey,
+  onScoreChange,
 }: {
   questions: QuizQuestion[];
   storageKey: string | null;
+  /** Notifica o placar (corretas, total) sempre que uma resposta muda — inclusive na montagem */
+  onScoreChange?: (correct: number, total: number) => void;
 }) {
   const [answers, setAnswers] = useState<Record<number, string>>(() => {
     if (!storageKey || typeof window === "undefined") return {};
@@ -23,6 +26,14 @@ export default function LessonQuickQuiz({
   const letters = ["A", "B", "C", "D"];
   const answered = Object.keys(answers).length;
   const correct = questions.filter((question, index) => answers[index] === question.answer).length;
+
+  const onScoreChangeRef = useRef(onScoreChange);
+  useEffect(() => {
+    onScoreChangeRef.current = onScoreChange;
+  }, [onScoreChange]);
+  useEffect(() => {
+    onScoreChangeRef.current?.(correct, questions.length);
+  }, [correct, questions.length]);
 
   const select = (index: number, option: string) => {
     if (answers[index] === questions[index]?.answer) return;
@@ -100,13 +111,23 @@ export default function LessonQuickQuiz({
         })}
       </div>
 
-      {correct === questions.length && (
-        <div className="mt-5 flex items-center justify-between gap-4 rounded-xl border border-orbit-electric/20 bg-orbit-electric/[.06] p-3">
+      {answered > 0 && (
+        <div
+          className={`mt-5 flex items-center justify-between gap-4 rounded-xl border p-3 ${
+            correct === questions.length
+              ? "border-emerald-400/25 bg-emerald-400/[.07]"
+              : "border-orbit-electric/20 bg-orbit-electric/[.06]"
+          }`}
+        >
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-orbit-electric">Resultado desta revisão</div>
+            <div className={`text-[10px] font-bold uppercase tracking-widest ${correct === questions.length ? "text-emerald-300" : "text-orbit-electric"}`}>
+              {correct === questions.length ? "Revisão completa" : "Progresso da revisão"}
+            </div>
             <div className="mt-1 text-sm font-black text-white">{correct} de {questions.length} corretas</div>
           </div>
-          <span className="text-xs text-white/40">Salvo neste dispositivo</span>
+          <span className="text-xs text-white/40">
+            {correct === questions.length ? "Mandou bem! Siga para a prática." : "Salvo neste dispositivo"}
+          </span>
         </div>
       )}
     </div>
