@@ -528,6 +528,15 @@ export default function CourseLearningRoom() {
                     <div className="mt-4 rounded-xl bg-black/25 p-3 text-xs leading-5 text-white/45">
                       <strong className="text-white/70">Entrega esperada:</strong> {guide.practice.deliverable}
                     </div>
+                    {guide.practice.href && (
+                      <Link
+                        href={guide.practice.href}
+                        className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 py-2 text-xs font-black text-black transition hover:bg-orbit-electric"
+                      >
+                        Abrir laboratório guiado
+                        <ArrowRight className="size-3.5" />
+                      </Link>
+                    )}
                   </div>
                   <div className="mt-5">
                     <LessonQuickQuiz

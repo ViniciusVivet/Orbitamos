@@ -8,6 +8,7 @@ export type LessonGuide = {
     title: string;
     description: string;
     deliverable: string;
+    href?: string;
   };
   quiz: Array<{
     question: string;
@@ -69,6 +70,7 @@ export function getLessonGuide(curso: Curso, aula: Aula, lessonIndex = 0): Lesso
     web: {
       checklist: ["Criar ou editar um arquivo HTML", "Testar no navegador", "Ajustar pelo menos um detalhe visual"],
       practice: {
+        href: "/estudante/pratica/variaveis-js",
         title: "Construa uma pequena tela",
         description: "Monte uma seção simples com título, texto, botão e pelo menos uma organização visual.",
         deliverable: "Print da tela ou link do arquivo/projeto.",
@@ -159,6 +161,7 @@ export function getLessonGuide(curso: Curso, aula: Aula, lessonIndex = 0): Lesso
     logica: {
       checklist: ["Entender entrada", "Pensar no processamento", "Definir a saída esperada"],
       practice: {
+        href: "/estudante/pratica/variaveis-python",
         title: "Resolva no papel antes do código",
         description: "Escreva o passo a passo de um problema simples e depois transforme em código.",
         deliverable: "Algoritmo em texto ou código testado.",
