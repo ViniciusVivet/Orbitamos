@@ -350,16 +350,49 @@ export const cursos: Curso[] = [
     id: "fallback-csharp",
     slug: "csharp-fundamentos",
     titulo: "C# Fundamentos",
-    descricao: "Base de C# para quem está iniciando no ecossistema .NET.",
+    descricao: "Da sintaxe básica ao ASP.NET Core: tudo que um dev C# junior precisa dominar.",
     modulos: [
       {
         id: "csharp-m1",
-        titulo: "Primeiras aulas",
+        titulo: "Sintaxe e Primeiros Passos",
         aulas: [
-          { id: "csharp-a1", titulo: "C# - aula 1", youtubeVideoId: "", materiais: [material("csharp-mat-1", "C# - aula 1", "DOCX", "/course-materials/csharp-fundamentos/03-c-aula-1.docx")] },
-          { id: "csharp-a2", titulo: "C# - atividade prática 1", youtubeVideoId: "", materiais: [material("csharp-mat-2", "C# - atividade prática 1", "DOCX", "/course-materials/csharp-fundamentos/01-c-aula-pratica-atv-1.docx")] },
-          { id: "csharp-a3", titulo: "Averiguar C#", youtubeVideoId: "", materiais: [material("csharp-mat-3", "Averiguar C#", "DOCX", "/course-materials/csharp-fundamentos/02-averiguar-c.docx")] },
-          { id: "csharp-a4", titulo: "C# nível medio - Cinema do Bruno", youtubeVideoId: "", materiais: [material("csharp-mat-4", "C# nível medio - Cinema do Bruno", "DOCX", "/course-materials/csharp-fundamentos/04-c-2-nivel-medio-cinema-do-bruno.docx")] },
+          { id: "csharp-a1", titulo: "Introdução ao C# e .NET", youtubeVideoId: "2HkoGbsVY6k", conteudo: "O que é C#, o ecossistema .NET, instalação do Visual Studio / VS Code e primeiro programa.", materiais: [material("csharp-mat-1", "C# - aula 1", "DOCX", "/course-materials/csharp-fundamentos/03-c-aula-1.docx")] },
+          { id: "csharp-a5", titulo: "Variáveis, tipos e operadores", youtubeVideoId: "PKMm-cHe56g", conteudo: "int, double, string, bool, var, operadores aritméticos, conversão de tipos e Console." },
+          { id: "csharp-a6", titulo: "Condições e laços de repetição", youtubeVideoId: "r3XA7uSBCfY", conteudo: "if/else, switch, for, while, do-while, foreach e controle de fluxo." },
+          { id: "csharp-a2", titulo: "Atividade prática: primeiros programas", youtubeVideoId: "NGUtWOnz2S8", conteudo: "Exercícios guiados para fixar sintaxe, entrada/saída e lógica básica em C#.", materiais: [material("csharp-mat-2", "C# - atividade prática 1", "DOCX", "/course-materials/csharp-fundamentos/01-c-aula-pratica-atv-1.docx")] },
+        ],
+      },
+      {
+        id: "csharp-m2",
+        titulo: "Orientação a Objetos",
+        aulas: [
+          { id: "csharp-a7", titulo: "Classes, objetos e construtores", youtubeVideoId: "6CYGsNL7opg", conteudo: "Criando classes, atributos, métodos, construtores e instanciando objetos." },
+          { id: "csharp-a8", titulo: "Herança, polimorfismo e interfaces", youtubeVideoId: "9Edx_u99ttk", conteudo: "Reutilização de código com herança, override, classes abstratas e interfaces." },
+          { id: "csharp-a3", titulo: "Encapsulamento e propriedades", youtubeVideoId: "eNEZQTg7cBs", conteudo: "Properties (get/set), modificadores de acesso (public, private, protected) e boas práticas.", materiais: [material("csharp-mat-3", "Averiguar C#", "DOCX", "/course-materials/csharp-fundamentos/02-averiguar-c.docx")] },
+        ],
+      },
+      {
+        id: "csharp-m3",
+        titulo: "Collections e LINQ",
+        aulas: [
+          { id: "csharp-a9", titulo: "List, Dictionary e arrays", youtubeVideoId: "4Mi4OuSMo4A", conteudo: "Coleções genéricas: List<T>, Dictionary<TKey,TValue>, arrays e quando usar cada uma." },
+          { id: "csharp-a10", titulo: "LINQ: consultas em coleções", youtubeVideoId: "gwD9awr3NNo", conteudo: "Where, Select, OrderBy, GroupBy, First, Any, All e lambda expressions." },
+        ],
+      },
+      {
+        id: "csharp-m4",
+        titulo: "ASP.NET Core e APIs",
+        aulas: [
+          { id: "csharp-a11", titulo: "Criando uma API REST com ASP.NET Core", youtubeVideoId: "I5ZkkG3yTwM", conteudo: "Controllers, rotas, verbos HTTP (GET, POST, PUT, DELETE), dependency injection e middleware." },
+          { id: "csharp-a12", titulo: "Entity Framework Core e banco de dados", youtubeVideoId: "heJY-Q2B6Y0", conteudo: "DbContext, models, migrations, CRUD com EF Core e conexão com SQL Server / PostgreSQL." },
+          { id: "csharp-a13", titulo: "API RESTful completa com EF Core", youtubeVideoId: "YHYcvSHHFkw", conteudo: "Projeto prático: API com autenticação, validação, relacionamentos e boas práticas." },
+        ],
+      },
+      {
+        id: "csharp-m5",
+        titulo: "Projeto Prático",
+        aulas: [
+          { id: "csharp-a4", titulo: "Projeto: sistema Cinema do Bruno", youtubeVideoId: "TG62LdG6FyE", conteudo: "Projeto de nível intermediário integrando OOP, coleções e lógica de negócio.", materiais: [material("csharp-mat-4", "C# nível medio - Cinema do Bruno", "DOCX", "/course-materials/csharp-fundamentos/04-c-2-nivel-medio-cinema-do-bruno.docx")] },
         ],
       },
     ],
