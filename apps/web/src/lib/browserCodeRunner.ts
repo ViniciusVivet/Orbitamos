@@ -104,6 +104,10 @@ self.onmessage = async function (event) {
   const logs = [];
   try {
     const pyodide = await pyodideReady;
+    self.fetch = undefined;
+    self.XMLHttpRequest = undefined;
+    self.WebSocket = undefined;
+    self.EventSource = undefined;
     pyodide.setStdout({ batched: (message) => logs.push(String(message)) });
     pyodide.setStderr({ batched: (message) => logs.push(String(message)) });
     await pyodide.runPythonAsync(event.data.code);
