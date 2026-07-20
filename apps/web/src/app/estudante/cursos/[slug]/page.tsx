@@ -382,7 +382,7 @@ export default function CursoPage() {
               </div>
             )}
             <div className="flex flex-col gap-4 lg:flex-row">
-              <div className="w-full shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black lg:max-w-3xl">
+              <div className="w-full shrink-0 self-start overflow-hidden rounded-xl border border-white/10 bg-black lg:max-w-3xl">
                 {youtubeEmbedUrl ? (
                   <div className="aspect-video w-full">
                     <iframe
