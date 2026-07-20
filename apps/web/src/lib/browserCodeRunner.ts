@@ -56,11 +56,23 @@ export function runJavaScriptInWorker(code: string, timeoutMs = 2500): Promise<B
   }
 
   return new Promise((resolve) => {
-    const blob = new Blob([JAVASCRIPT_WORKER_START, code, JAVASCRIPT_WORKER_END], {
-      type: "text/javascript",
-    });
-    const workerUrl = URL.createObjectURL(blob);
-    const worker = new Worker(workerUrl);
+    let workerUrl = "";
+    let worker: Worker;
+    try {
+      const blob = new Blob([JAVASCRIPT_WORKER_START, code, JAVASCRIPT_WORKER_END], {
+        type: "text/javascript",
+      });
+      workerUrl = URL.createObjectURL(blob);
+      worker = new Worker(workerUrl);
+    } catch {
+      if (workerUrl) URL.revokeObjectURL(workerUrl);
+      resolve({
+        output: "",
+        error: "O navegador bloqueou a inicialização do ambiente JavaScript. Recarregue a página ou use outro navegador.",
+        timedOut: false,
+      });
+      return;
+    }
     let settled = false;
     const startedAt = performance.now();
 
@@ -130,9 +142,21 @@ export function runPythonInWorker(code: string, timeoutMs = 20000): Promise<Brow
   }
 
   return new Promise((resolve) => {
-    const blob = new Blob([PYTHON_WORKER_SOURCE], { type: "text/javascript" });
-    const workerUrl = URL.createObjectURL(blob);
-    const worker = new Worker(workerUrl, { type: "module" });
+    let workerUrl = "";
+    let worker: Worker;
+    try {
+      const blob = new Blob([PYTHON_WORKER_SOURCE], { type: "text/javascript" });
+      workerUrl = URL.createObjectURL(blob);
+      worker = new Worker(workerUrl, { type: "module" });
+    } catch {
+      if (workerUrl) URL.revokeObjectURL(workerUrl);
+      resolve({
+        output: "",
+        error: "O navegador bloqueou a inicialização do Python. Recarregue a página ou use um navegador atualizado.",
+        timedOut: false,
+      });
+      return;
+    }
     const startedAt = performance.now();
     let settled = false;
 

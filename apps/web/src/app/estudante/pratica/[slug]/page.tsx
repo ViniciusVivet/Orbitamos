@@ -11,6 +11,25 @@ import ReliableCodeEditor from "@/components/estudante/ReliableCodeEditor";
 
 type MobileTab = "editor" | "guia";
 
+function explainRuntimeError(error: string, timedOut: boolean, language: "javascript" | "typescript" | "python") {
+  if (timedOut) return "A execução excedeu o limite de tempo. Procure um laço sem condição de saída ou uma tarefa que nunca termina.";
+  if (/is not defined|not defined/i.test(error)) {
+    return language === "python"
+      ? "O código tentou usar um nome que ainda não foi definido. Confira a grafia e crie a variável ou função antes de utilizá-la."
+      : "O código tentou usar uma variável ou função que ainda não foi declarada. Confira a grafia e a ordem das declarações.";
+  }
+  if (/syntaxerror|invalid syntax|unexpected token/i.test(error)) {
+    return "Há um erro de sintaxe. Confira parênteses, aspas, dois-pontos, chaves e a linha indicada no console.";
+  }
+  if (/indentationerror|unexpected indent|expected an indented block/i.test(error)) {
+    return "A indentação do Python está inconsistente. Use quatro espaços dentro de funções, condições e laços.";
+  }
+  if (/typeerror/i.test(error)) {
+    return "Uma operação recebeu um tipo de valor incompatível. Confira os argumentos e os valores usados nessa linha.";
+  }
+  return `O runtime encontrou um erro: ${error}`;
+}
+
 export default function PraticaPage() {
   const params = useParams();
   const router = useRouter();
@@ -94,10 +113,23 @@ export default function PraticaPage() {
     const result = desafio.linguagem === "python"
       ? await runPythonInWorker(code)
       : await runJavaScriptInWorker(code);
-    const resultOutput = [result.output, result.error ? `Erro: ${result.error}` : ""].filter(Boolean).join("\n");
+    const friendlyError = result.error
+      ? explainRuntimeError(result.error, result.timedOut, desafio.linguagem)
+      : "";
+    const resultOutput = [result.output, friendlyError ? `Erro: ${friendlyError}` : ""].filter(Boolean).join("\n");
     setOutput(`${resultOutput || "Execução concluída sem saída."}\n\nTempo: ${result.durationMs ?? 0} ms`);
 
     const step = desafio.steps[currentStep];
+    if (result.error && step) {
+      const newStatus = [...stepStatus];
+      newStatus[currentStep] = "error";
+      setStepStatus(newStatus);
+      setChatMessages((previous) => [...previous, { tipo: "erro", texto: friendlyError }]);
+      setMobileTab("guia");
+      setRunning(false);
+      return;
+    }
+
     if (step) {
       const passed = !result.error && step.validacao(code, resultOutput);
       const newStatus = [...stepStatus];

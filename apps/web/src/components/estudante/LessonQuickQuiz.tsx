@@ -25,7 +25,7 @@ export default function LessonQuickQuiz({
   const correct = questions.filter((question, index) => answers[index] === question.answer).length;
 
   const select = (index: number, option: string) => {
-    if (answers[index]) return;
+    if (answers[index] === questions[index]?.answer) return;
     const next = { ...answers, [index]: option };
     setAnswers(next);
     if (storageKey) localStorage.setItem(storageKey, JSON.stringify(next));
@@ -60,12 +60,12 @@ export default function LessonQuickQuiz({
               <div className="mt-3 space-y-2">
                 {question.options.map((option, optionIndex) => {
                   const isSelected = selected === option;
-                  const revealedCorrect = Boolean(selected) && option === question.answer;
+                  const revealedCorrect = selectedIsCorrect && option === question.answer;
                   return (
                     <button
                       key={option}
                       type="button"
-                      disabled={Boolean(selected)}
+                      disabled={selectedIsCorrect}
                       onClick={() => select(questionIndex, option)}
                       className={`flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left text-sm transition ${
                         revealedCorrect
@@ -92,7 +92,7 @@ export default function LessonQuickQuiz({
                   <strong className="text-white">{selectedIsCorrect ? "Correto." : "Ainda não."}</strong>{" "}
                   {selectedIsCorrect
                     ? `“${question.answer}” responde diretamente ao conceito central da pergunta.`
-                    : `“${selected}” não representa a função principal pedida. A correta é “${question.answer}”. Compare as opções e volte ao material se ainda houver dúvida.`}
+                    : `“${selected}” não representa a função principal pedida. Compare as opções, consulte o material se necessário e tente novamente.`}
                 </div>
               )}
             </fieldset>
@@ -100,7 +100,7 @@ export default function LessonQuickQuiz({
         })}
       </div>
 
-      {answered === questions.length && (
+      {correct === questions.length && (
         <div className="mt-5 flex items-center justify-between gap-4 rounded-xl border border-orbit-electric/20 bg-orbit-electric/[.06] p-3">
           <div>
             <div className="text-[10px] font-bold uppercase tracking-widest text-orbit-electric">Resultado desta revisão</div>
