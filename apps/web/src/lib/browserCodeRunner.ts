@@ -6,7 +6,7 @@ export type BrowserCodeResult = {
 };
 
 const WORKER_SOURCE = `
-self.onmessage = function (event) {
+self.onmessage = async function (event) {
   const logs = [];
   const stringify = function (value) {
     if (typeof value === "object" && value !== null) {
@@ -34,9 +34,9 @@ self.onmessage = function (event) {
       "WebSocket",
       "EventSource",
       "importScripts",
-      '"use strict";\\n' + event.data.code
+      '"use strict";\\nreturn (async function () {\\n' + event.data.code + '\\n})();'
     );
-    execute(safeConsole, undefined, undefined, undefined, undefined, undefined);
+    await execute(safeConsole, undefined, undefined, undefined, undefined, undefined);
     self.postMessage({ output: logs.join("\\n"), error: null, timedOut: false });
   } catch (error) {
     const message = error && error.message ? error.message : String(error);
