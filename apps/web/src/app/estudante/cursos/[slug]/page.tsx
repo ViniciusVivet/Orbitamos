@@ -109,6 +109,26 @@ function Curriculum({
     Object.fromEntries(course.modulos.map((module) => [module.id, module.aulas.some((lesson) => lesson.id === lessonId)]))
   );
 
+  useEffect(() => {
+    let active = true;
+    const currentModule = course.modulos.find((module) =>
+      module.aulas.some((lesson) => lesson.id === lessonId)
+    );
+
+    if (currentModule) {
+      queueMicrotask(() => {
+        if (!active) return;
+        setOpenModules((current) =>
+          current[currentModule.id] ? current : { ...current, [currentModule.id]: true }
+        );
+      });
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [course.modulos, lessonId]);
+
   return (
     <nav className="space-y-2" aria-label="Conteúdo do curso">
       {course.modulos.map((module, moduleIndex) => {

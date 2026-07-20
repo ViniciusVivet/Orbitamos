@@ -24,9 +24,19 @@ export default function ReliableCodeEditor({
   useEffect(() => {
     let active = true;
     const mobile = window.matchMedia("(max-width: 767px), (pointer: coarse)").matches;
+
+    if (mobile) {
+      queueMicrotask(() => {
+        if (active) setFallback(true);
+      });
+      return () => {
+        active = false;
+      };
+    }
+
     const timer = window.setTimeout(() => {
       if (active && !ready) setFallback(true);
-    }, mobile ? 100 : 8000);
+    }, 8000);
     return () => {
       active = false;
       window.clearTimeout(timer);

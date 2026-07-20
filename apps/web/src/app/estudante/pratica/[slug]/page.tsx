@@ -195,6 +195,30 @@ export default function PraticaPage() {
           {desafio.categoria && <span className="rounded-full bg-orbit-purple/10 px-2 py-1 text-[9px] font-bold uppercase text-orbit-purple">{desafio.categoria}</span>}
           {desafio.minutos && <span className="rounded-full bg-white/[.05] px-2 py-1 text-[9px] text-white/35">~{desafio.minutos} min</span>}
         </div>
+        {(desafio.exemplo || desafio.casosTeste?.length) && (
+          <details className="mt-3 rounded-xl bg-black/20 px-3 py-2">
+            <summary className="cursor-pointer text-[11px] font-semibold text-white/55">
+              Exemplo e critérios de validação
+            </summary>
+            <div className="mt-3 space-y-3 border-t border-white/5 pt-3">
+              {desafio.exemplo && (
+                <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-black/30 p-2.5 font-mono text-[10px] leading-5 text-white/55">
+                  {desafio.exemplo}
+                </pre>
+              )}
+              {desafio.casosTeste?.length ? (
+                <ul className="space-y-1.5">
+                  {desafio.casosTeste.map((testCase) => (
+                    <li key={testCase} className="flex items-start gap-2 text-[10px] leading-5 text-white/45">
+                      <CheckCircle2 className="mt-0.5 size-3 shrink-0 text-orbit-electric" aria-hidden="true" />
+                      {testCase}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          </details>
+        )}
       </div>
 
       {/* Chat messages */}
