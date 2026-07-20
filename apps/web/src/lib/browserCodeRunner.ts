@@ -5,9 +5,10 @@ export type BrowserCodeResult = {
   durationMs?: number;
 };
 
-const WORKER_SOURCE = `
-self.onmessage = async function (event) {
+const JAVASCRIPT_WORKER_START = `
+(async function () {
   const logs = [];
+  const sendResult = self.postMessage.bind(self);
   const stringify = function (value) {
     if (typeof value === "object" && value !== null) {
       try { return JSON.stringify(value); } catch { return String(value); }
@@ -27,26 +28,22 @@ self.onmessage = async function (event) {
     self.EventSource = undefined;
     self.importScripts = undefined;
 
-    const execute = new Function(
-      "console",
-      "fetch",
-      "XMLHttpRequest",
-      "WebSocket",
-      "EventSource",
-      "importScripts",
-      '"use strict";\\nreturn (async function () {\\n' + event.data.code + '\\n})();'
-    );
-    await execute(safeConsole, undefined, undefined, undefined, undefined, undefined);
-    self.postMessage({ output: logs.join("\\n"), error: null, timedOut: false });
+    const console = safeConsole;
+    await (async function () {
+`;
+
+const JAVASCRIPT_WORKER_END = `
+    })();
+    sendResult({ output: logs.join("\\n"), error: null, timedOut: false });
   } catch (error) {
     const message = error && error.message ? error.message : String(error);
-    self.postMessage({
+    sendResult({
       output: logs.join("\\n"),
       error: message,
       timedOut: false
     });
   }
-};
+})();
 `;
 
 export function runJavaScriptInWorker(code: string, timeoutMs = 2500): Promise<BrowserCodeResult> {
@@ -59,7 +56,9 @@ export function runJavaScriptInWorker(code: string, timeoutMs = 2500): Promise<B
   }
 
   return new Promise((resolve) => {
-    const blob = new Blob([WORKER_SOURCE], { type: "text/javascript" });
+    const blob = new Blob([JAVASCRIPT_WORKER_START, code, JAVASCRIPT_WORKER_END], {
+      type: "text/javascript",
+    });
     const workerUrl = URL.createObjectURL(blob);
     const worker = new Worker(workerUrl);
     let settled = false;
@@ -89,7 +88,6 @@ export function runJavaScriptInWorker(code: string, timeoutMs = 2500): Promise<B
         error: "Não foi possível executar este código com segurança.",
         timedOut: false,
       });
-    worker.postMessage({ code });
   });
 }
 
