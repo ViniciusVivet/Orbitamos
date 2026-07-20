@@ -9,7 +9,7 @@ import { listarAulasConcluidas, listarCursosAcademy, totalAulas } from "@/lib/cu
 
 const STORAGE_PREFIX = "orbitamos-roadmap-check";
 
-function useRoadmapProgress(userId: string | undefined) {
+function useRoadmapProgress(userId: string | number | undefined) {
   const [manualChecks, setManualChecks] = useState<Record<string, boolean>>({});
   const [courseProgress, setCourseProgress] = useState<Record<string, number>>({});
   const [loaded, setLoaded] = useState(false);
