@@ -9,15 +9,6 @@ import {
   type ContactItem,
 } from "@/lib/api";
 
-function formatDate(s: string) {
-  try {
-    const d = new Date(s);
-    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
-  } catch {
-    return s;
-  }
-}
-
 function timeAgo(s: string) {
   try {
     const diff = Date.now() - new Date(s).getTime();
@@ -41,17 +32,10 @@ export default function ColaboradorContatos() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
 
-  const load = () => {
+  useEffect(() => {
     if (!token || !user?.isInternal) return;
-    setLoading(true);
-    setError("");
-    getContacts(token)
-      .then(setContacts)
-      .catch((e) => setError(e instanceof Error ? e.message : "Erro ao carregar contatos"))
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => { load(); }, [token, user?.isInternal]);
+    getContacts(token).then(setContacts).catch((e) => setError(e instanceof Error ? e.message : "Erro ao carregar contatos")).finally(() => setLoading(false));
+  }, [token, user?.isInternal]);
 
   const handleMarkAsRead = async (c: ContactItem) => {
     if (!token || c.read) return;

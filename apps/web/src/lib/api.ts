@@ -357,6 +357,12 @@ export interface CollaboratorProfile {
   headline: string; bio: string;
   availability: "available" | "partial" | "unavailable";
   skills: string[]; portfolioUrls: string[];
+  preferredJobTypes: string[];
+  preferredWorkModels: string[];
+  weeklyHours: number | null;
+  minimumBudget: number | null;
+  openToContact: boolean;
+  profileVisible: boolean;
 }
 
 /**
@@ -1055,21 +1061,21 @@ export async function applyToJob(jobId: number, coverLetter: string): Promise<vo
   if (error) throw new Error("Não foi possível enviar a candidatura.");
 }
 
-const EMPTY_COLLABORATOR_PROFILE: CollaboratorProfile = { headline: "", bio: "", availability: "available", skills: [], portfolioUrls: [] };
+const EMPTY_COLLABORATOR_PROFILE: CollaboratorProfile = { headline: "", bio: "", availability: "available", skills: [], portfolioUrls: [], preferredJobTypes: [], preferredWorkModels: [], weeklyHours: null, minimumBudget: null, openToContact: true, profileVisible: true };
 export async function getCollaboratorProfile(): Promise<CollaboratorProfile> {
   const client = requireSupabase();
   const { data: authData } = await client.auth.getUser();
   if (!authData.user) throw new Error("Sessão expirada.");
   const { data, error } = await client.from("v3_collaborator_profiles").select("*").eq("user_id", authData.user.id).maybeSingle();
   if (error) throw new Error("Não foi possível carregar o perfil profissional.");
-  return data ? { headline: data.headline ?? "", bio: data.bio ?? "", availability: data.availability, skills: data.skills ?? [], portfolioUrls: data.portfolio_urls ?? [] } : EMPTY_COLLABORATOR_PROFILE;
+  return data ? { headline: data.headline ?? "", bio: data.bio ?? "", availability: data.availability, skills: data.skills ?? [], portfolioUrls: data.portfolio_urls ?? [], preferredJobTypes: data.preferred_job_types ?? [], preferredWorkModels: data.preferred_work_models ?? [], weeklyHours: data.weekly_hours ?? null, minimumBudget: data.minimum_budget === null ? null : Number(data.minimum_budget), openToContact: data.open_to_contact ?? true, profileVisible: data.profile_visible ?? true } : EMPTY_COLLABORATOR_PROFILE;
 }
 
 export async function saveCollaboratorProfile(profile: CollaboratorProfile): Promise<CollaboratorProfile> {
   const client = requireSupabase();
   const { data: authData } = await client.auth.getUser();
   if (!authData.user) throw new Error("Sessão expirada.");
-  const { error } = await client.from("v3_collaborator_profiles").upsert({ user_id: authData.user.id, headline: profile.headline.trim() || null, bio: profile.bio.trim() || null, availability: profile.availability, skills: profile.skills, portfolio_urls: profile.portfolioUrls, updated_at: new Date().toISOString() });
+  const { error } = await client.from("v3_collaborator_profiles").upsert({ user_id: authData.user.id, headline: profile.headline.trim() || null, bio: profile.bio.trim() || null, availability: profile.availability, skills: profile.skills, portfolio_urls: profile.portfolioUrls, preferred_job_types: profile.preferredJobTypes, preferred_work_models: profile.preferredWorkModels, weekly_hours: profile.weeklyHours, minimum_budget: profile.minimumBudget, open_to_contact: profile.openToContact, profile_visible: profile.profileVisible, updated_at: new Date().toISOString() });
   if (error) throw new Error("Não foi possível salvar o perfil profissional.");
   return profile;
 }

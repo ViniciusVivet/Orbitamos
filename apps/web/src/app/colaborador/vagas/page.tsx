@@ -3,7 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { Briefcase, Search, MapPin, Clock, Filter, Send, X } from "lucide-react";
-import { applyToJob, getJobs, Job } from "@/lib/api";
+import { applyToJob, getJobs, getMyApplications, Job } from "@/lib/api";
 
 const TYPE_OPTIONS = [
   { value: "", label: "Todos" },
@@ -34,11 +34,12 @@ export default function ColaboradorVagas() {
   const [coverLetter, setCoverLetter] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState("");
+  const [appliedJobIds, setAppliedJobIds] = useState<number[]>([]);
 
   const submitApplication = async () => {
     if (!selected) return;
     setSubmitting(true); setError("");
-    try { await applyToJob(selected.id, coverLetter); setSuccess(`Candidatura enviada para ${selected.title}.`); setSelected(null); setCoverLetter(""); }
+    try { await applyToJob(selected.id, coverLetter); setAppliedJobIds((ids) => [...ids, selected.id]); setSuccess(`Candidatura enviada para ${selected.title}.`); setSelected(null); setCoverLetter(""); }
     catch (e) { setError(e instanceof Error ? e.message : "Erro ao enviar candidatura"); }
     finally { setSubmitting(false); }
   };
@@ -47,8 +48,11 @@ export default function ColaboradorVagas() {
     if (!token) return;
     setLoading(true);
     setError("");
-    getJobs(token, typeFilter ? { type: typeFilter } : undefined)
-      .then(setJobs)
+    Promise.all([getJobs(token, typeFilter ? { type: typeFilter } : undefined), getMyApplications()])
+      .then(([availableJobs, applications]) => {
+        setJobs(availableJobs);
+        setAppliedJobIds(applications.filter((item) => item.status !== "withdrawn").map((item) => item.jobId));
+      })
       .catch((e) => setError(e instanceof Error ? e.message : "Erro ao carregar vagas"))
       .finally(() => setLoading(false));
   }, [token, typeFilter]);
@@ -167,7 +171,7 @@ export default function ColaboradorVagas() {
                     )}
                   </div>
                 </div>
-                <button onClick={() => { setSelected(job); setError(""); setSuccess(""); }} className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg bg-orbit-purple px-3 text-xs font-bold text-white transition hover:brightness-110"><Send className="size-3.5"/>Candidatar</button>
+                {appliedJobIds.includes(job.id) ? <span className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-3 text-xs font-bold text-emerald-300"><Send className="size-3.5"/>Já enviada</span> : <button onClick={() => { setSelected(job); setError(""); setSuccess(""); }} className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg bg-orbit-purple px-3 text-xs font-bold text-white transition hover:brightness-110"><Send className="size-3.5"/>Candidatar</button>}
               </div>
             </div>
           ))}

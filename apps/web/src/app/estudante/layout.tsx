@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import EstudanteSidebar from "@/components/estudante/EstudanteSidebar";
 import NotificacoesPanel, { NotificacaoBadge } from "@/components/estudante/NotificacoesPanel";
+import Link from "next/link";
 
 export default function EstudanteLayout({
   children,
@@ -64,7 +65,14 @@ export default function EstudanteLayout({
           {user?.name && (
             <span className="hidden sm:inline truncate text-white/50 text-sm">· {user.name}</span>
           )}
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-1">
+            <Link
+              href="/colaborador"
+              className="inline-flex min-h-10 items-center rounded-lg border border-orbit-purple/35 bg-orbit-purple/10 px-3 text-[11px] font-bold text-orbit-purple lg:hidden"
+              aria-label="Ir para a área do colaborador"
+            >
+              Trabalhar
+            </Link>
             <NotificacaoBadge count={2} onClick={() => setNotifOpen(true)} />
           </div>
         </header>

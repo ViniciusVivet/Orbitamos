@@ -5,7 +5,7 @@ import { Check, Globe, Loader2, MapPin, Pencil, Plus, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCollaboratorProfile, getDisplayAvatarUrl, saveCollaboratorProfile, type CollaboratorProfile } from "@/lib/api";
 
-const empty: CollaboratorProfile = { headline: "", bio: "", availability: "available", skills: [], portfolioUrls: [] };
+const empty: CollaboratorProfile = { headline: "", bio: "", availability: "available", skills: [], portfolioUrls: [], preferredJobTypes: [], preferredWorkModels: [], weeklyHours: null, minimumBudget: null, openToContact: true, profileVisible: true };
 const availability = { available: "Disponível", partial: "Disponibilidade parcial", unavailable: "Indisponível" };
 
 export default function ColaboradorPerfil() {

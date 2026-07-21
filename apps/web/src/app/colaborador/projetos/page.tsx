@@ -21,6 +21,15 @@ function classifyProject(p: Project): KanbanColumn {
   return "a-fazer";
 }
 
+function projectStatusLabel(status?: string) {
+  const value = status?.toLowerCase();
+  if (value === "in_progress") return "Em andamento";
+  if (value === "completed") return "Concluído";
+  if (value === "paused") return "Pausado";
+  if (value === "todo") return "A fazer";
+  return status || "A fazer";
+}
+
 export default function ColaboradorProjetos() {
   const { token } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -124,7 +133,7 @@ export default function ColaboradorProjetos() {
                         <p className="mt-1 text-[11px] text-white/40 line-clamp-2">{p.description}</p>
                       )}
                       <div className="mt-2 flex items-center justify-between">
-                        <span className="text-[10px] text-white/25">{p.status}</span>
+                        <span className="text-[10px] text-white/25">{projectStatusLabel(p.status)}</span>
                         <Link
                           href="/colaborador/squad"
                           className="flex items-center gap-1 text-[10px] text-orbit-electric hover:underline"
@@ -160,7 +169,7 @@ export default function ColaboradorProjetos() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="truncate text-sm font-medium text-white">{p.title}</p>
-                  <p className="mt-0.5 text-[11px] text-white/35">{p.description || p.status}</p>
+                  <p className="mt-0.5 text-[11px] text-white/35">{p.description || projectStatusLabel(p.status)}</p>
                 </div>
                 <span className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold ${
                   classifyProject(p) === "concluido"

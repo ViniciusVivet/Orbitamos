@@ -1,27 +1,27 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { Bell, BriefcaseBusiness, Check, Eye, Loader2, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import PerfilForm from "@/components/perfil/PerfilForm";
+import { getCollaboratorProfile, saveCollaboratorProfile, type CollaboratorProfile } from "@/lib/api";
+
+const jobTypes = ["Freela", "PJ", "CLT", "Estágio"];
+const workModels = ["Remoto", "Híbrido", "Presencial"];
+const toggle = (items:string[], value:string) => items.includes(value) ? items.filter(item=>item!==value) : [...items,value];
 
 export default function ColaboradorConta() {
-  const { user, token, updateProfile, setUserFromResponse } = useAuth();
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white sm:text-3xl">Configurações da conta</h1>
-        <p className="mt-1 text-sm text-white/60 sm:text-base">Nome, foto, endereço, telefone e outros dados do perfil</p>
-      </div>
-
-      <PerfilForm
-        user={user}
-        token={token}
-        onSave={updateProfile}
-        onAvatarUploaded={setUserFromResponse}
-        title="Perfil"
-        description="Dados exibidos na sua área de colaborador"
-        accentColor="purple"
-      />
-    </div>
-  );
+  const { user,token,updateProfile,setUserFromResponse }=useAuth();
+  const [prefs,setPrefs]=useState<CollaboratorProfile|null>(null);
+  const [loading,setLoading]=useState(true); const [saving,setSaving]=useState(false); const [message,setMessage]=useState("");
+  useEffect(()=>{getCollaboratorProfile().then(setPrefs).catch(e=>setMessage(e instanceof Error?e.message:"Erro ao carregar preferências")).finally(()=>setLoading(false));},[]);
+  const save=async()=>{if(!prefs)return;setSaving(true);setMessage("");try{await saveCollaboratorProfile(prefs);setMessage("Preferências profissionais salvas.");}catch(e){setMessage(e instanceof Error?e.message:"Erro ao salvar preferências");}finally{setSaving(false);}};
+  return <div className="space-y-7"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-orbit-purple/70">Preferências e privacidade</p><h1 className="mt-1 text-2xl font-black text-white">Configurações</h1><p className="mt-1 text-sm text-white/45">Controle seus dados pessoais e como você quer trabalhar na Orbitamos.</p></div>
+    <div className="grid gap-3 sm:grid-cols-3"><a href="#profissional" className="rounded-xl border border-white/10 bg-white/[0.03] p-4 hover:border-orbit-purple/30"><BriefcaseBusiness className="size-5 text-orbit-purple"/><p className="mt-2 text-sm font-bold text-white">Preferências de trabalho</p><p className="mt-1 text-xs text-white/35">Contratos, modelo e capacidade</p></a><a href="#privacidade" className="rounded-xl border border-white/10 bg-white/[0.03] p-4 hover:border-orbit-electric/30"><ShieldCheck className="size-5 text-orbit-electric"/><p className="mt-2 text-sm font-bold text-white">Privacidade</p><p className="mt-1 text-xs text-white/35">Visibilidade e contato</p></a><a href="#pessoal" className="rounded-xl border border-white/10 bg-white/[0.03] p-4 hover:border-emerald-500/30"><Eye className="size-5 text-emerald-400"/><p className="mt-2 text-sm font-bold text-white">Dados pessoais</p><p className="mt-1 text-xs text-white/35">Foto, telefone e endereço</p></a></div>
+    {message&&<div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white/65">{message}</div>}
+    <section id="profissional" className="scroll-mt-24 rounded-2xl border border-white/10 bg-white/[0.025] p-5 sm:p-6"><div className="flex items-center gap-3"><div className="grid size-10 place-items-center rounded-xl bg-orbit-purple/15"><BriefcaseBusiness className="size-5 text-orbit-purple"/></div><div><h2 className="font-bold text-white">Preferências profissionais</h2><p className="text-xs text-white/40">Usaremos isso para destacar oportunidades mais relevantes.</p></div></div>{loading||!prefs?<div className="py-12 text-center text-sm text-white/35">Carregando preferências...</div>:<div className="mt-6 grid gap-6 lg:grid-cols-2"><div><label className="text-xs font-bold uppercase tracking-wider text-white/40">Tipos de oportunidade</label><div className="mt-3 flex flex-wrap gap-2">{jobTypes.map(item=><button key={item} onClick={()=>setPrefs({...prefs,preferredJobTypes:toggle(prefs.preferredJobTypes,item.toLowerCase())})} className={`min-h-10 rounded-full border px-4 text-xs font-semibold ${prefs.preferredJobTypes.includes(item.toLowerCase())?"border-orbit-purple/40 bg-orbit-purple/15 text-orbit-purple":"border-white/10 text-white/45 hover:bg-white/5"}`}>{item}</button>)}</div></div><div><label className="text-xs font-bold uppercase tracking-wider text-white/40">Modelo de trabalho</label><div className="mt-3 flex flex-wrap gap-2">{workModels.map(item=><button key={item} onClick={()=>setPrefs({...prefs,preferredWorkModels:toggle(prefs.preferredWorkModels,item.toLowerCase())})} className={`min-h-10 rounded-full border px-4 text-xs font-semibold ${prefs.preferredWorkModels.includes(item.toLowerCase())?"border-orbit-electric/40 bg-orbit-electric/15 text-orbit-electric":"border-white/10 text-white/45 hover:bg-white/5"}`}>{item}</button>)}</div></div><label className="block"><span className="text-xs font-bold uppercase tracking-wider text-white/40">Horas disponíveis por semana</span><input type="number" min="1" max="80" value={prefs.weeklyHours??""} onChange={e=>setPrefs({...prefs,weeklyHours:e.target.value?Number(e.target.value):null})} placeholder="Ex.: 20" className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-black/20 px-3 text-sm text-white outline-none focus:border-orbit-purple/50"/></label><label className="block"><span className="text-xs font-bold uppercase tracking-wider text-white/40">Valor mínimo por projeto (R$)</span><input type="number" min="0" step="50" value={prefs.minimumBudget??""} onChange={e=>setPrefs({...prefs,minimumBudget:e.target.value?Number(e.target.value):null})} placeholder="Opcional" className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-black/20 px-3 text-sm text-white outline-none focus:border-orbit-purple/50"/></label></div>}</section>
+    {prefs&&<section id="privacidade" className="scroll-mt-24 rounded-2xl border border-white/10 bg-white/[0.025] p-5 sm:p-6"><div className="flex items-center gap-3"><div className="grid size-10 place-items-center rounded-xl bg-orbit-electric/15"><ShieldCheck className="size-5 text-orbit-electric"/></div><div><h2 className="font-bold text-white">Visibilidade e contato</h2><p className="text-xs text-white/40">Você pode mudar estas opções a qualquer momento.</p></div></div><div className="mt-5 space-y-3">{[{key:"profileVisible" as const,title:"Perfil profissional visível",description:"Permite que membros e equipe encontrem seu perfil profissional.",icon:Eye},{key:"openToContact" as const,title:"Aceitar contatos sobre projetos",description:"Sinaliza que a equipe pode chamar você para oportunidades compatíveis.",icon:Bell}].map(item=><button key={item.key} onClick={()=>setPrefs({...prefs,[item.key]:!prefs[item.key]})} className="flex w-full items-center gap-4 rounded-xl border border-white/8 bg-black/15 p-4 text-left hover:bg-white/[0.03]"><item.icon className="size-5 shrink-0 text-white/40"/><span className="flex-1"><strong className="block text-sm text-white">{item.title}</strong><span className="mt-1 block text-xs text-white/35">{item.description}</span></span><span className={`relative h-6 w-11 shrink-0 rounded-full transition ${prefs[item.key]?"bg-orbit-electric":"bg-white/15"}`}><span className={`absolute top-1 size-4 rounded-full bg-white transition ${prefs[item.key]?"left-6":"left-1"}`}/></span></button>)}</div></section>}
+    {prefs&&<div className="flex justify-end"><button onClick={save} disabled={saving} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-6 text-xs font-bold text-black disabled:opacity-50">{saving?<Loader2 className="size-4 animate-spin"/>:<Check className="size-4"/>}{saving?"Salvando...":"Salvar preferências"}</button></div>}
+    <section id="pessoal" className="scroll-mt-24"><PerfilForm user={user} token={token} onSave={updateProfile} onAvatarUploaded={setUserFromResponse} title="Dados pessoais" description="Nome, foto e informações de contato da sua conta" accentColor="purple"/></section>
+  </div>;
 }
