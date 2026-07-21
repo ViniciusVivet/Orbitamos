@@ -177,6 +177,7 @@ docs/migrations/005_supabase_native_platform.sql
 docs/migrations/006_supabase_academy_content.sql
 docs/migrations/007_security_hardening.sql
 docs/migrations/008_course_materials_seed.sql
+docs/migrations/010_collaborator_workspace.sql
 ```
 
 Resumo:

@@ -30,8 +30,6 @@ export default function ColaboradorProjetos() {
 
   useEffect(() => {
     if (!token) return;
-    setLoading(true);
-    setError("");
     getMyProjects(token)
       .then(setProjects)
       .catch((e) => setError(e instanceof Error ? e.message : "Erro ao carregar projetos"))

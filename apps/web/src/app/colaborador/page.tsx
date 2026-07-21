@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Briefcase, FolderOpen, Send, Clock, TrendingUp, Users, ChevronRight, Zap } from "lucide-react";
-import { getMyProjects, getJobs, Project, Job } from "@/lib/api";
+import { getMyApplications, getMyProjects, getJobs, Project, Job, JobApplication } from "@/lib/api";
 
 function MetricCard({
   icon: Icon,
@@ -53,14 +53,16 @@ export default function ColaboradorInicio() {
   const { user, token } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [applications, setApplications] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!token) return;
-    Promise.all([getMyProjects(token), getJobs(token)])
-      .then(([p, j]) => {
+    Promise.all([getMyProjects(token), getJobs(token), getMyApplications()])
+      .then(([p, j, a]) => {
         setProjects(p);
         setJobs(j);
+        setApplications(a);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -70,12 +72,11 @@ export default function ColaboradorInicio() {
   const projetosAtivos = projects.filter((p) => p.status?.toLowerCase() !== "encerrado").length;
   const projetosConcluidos = projects.filter((p) => p.status?.toLowerCase() === "encerrado").length;
 
-  // Mock activity feed
-  const atividades = [
-    { texto: "Nova vaga disponível: Desenvolvedor Frontend", tempo: "2h atrás", tipo: "vaga" as const },
-    { texto: "Seu perfil foi visualizado 3 vezes", tempo: "5h atrás", tipo: "perfil" as const },
-    { texto: "Bem-vindo à área do colaborador!", tempo: "Hoje", tipo: "sistema" as const },
-  ];
+  const atividades = applications.slice(0, 4).map((item) => ({
+    texto: `${item.jobTitle}: ${item.status === "accepted" ? "candidatura aceita" : item.status === "declined" ? "processo encerrado" : "candidatura em andamento"}`,
+    tempo: new Date(item.createdAt).toLocaleDateString("pt-BR"),
+    tipo: "vaga" as const,
+  }));
 
   return (
     <div className="space-y-6">
@@ -116,7 +117,7 @@ export default function ColaboradorInicio() {
         <MetricCard
           icon={Send}
           label="Candidaturas"
-          value={loading ? "—" : 0}
+          value={loading ? "—" : applications.length}
           color="amber"
           href="/colaborador/candidaturas"
         />
@@ -177,7 +178,7 @@ export default function ColaboradorInicio() {
         {/* Atividade recente — 1 col */}
         <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
           <h2 className="mb-3 text-sm font-bold text-white">Atividade recente</h2>
-          <div className="space-y-3">
+          {atividades.length === 0 ? <div className="rounded-lg border border-dashed border-white/10 px-4 py-8 text-center"><Clock className="mx-auto size-7 text-white/15"/><p className="mt-2 text-xs text-white/35">Sua atividade real aparecerá aqui.</p></div> : <div className="space-y-3">
             {atividades.map((a, i) => (
               <div key={i} className="flex gap-3">
                 <div className="flex flex-col items-center">
@@ -192,7 +193,7 @@ export default function ColaboradorInicio() {
                 </div>
               </div>
             ))}
-          </div>
+          </div>}
         </div>
       </div>
 

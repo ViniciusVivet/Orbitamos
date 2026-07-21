@@ -343,6 +343,20 @@ export interface Job {
   type: string;
   status: string;
   createdAt: string;
+  workModel?: string;
+  skills?: string[];
+  budgetLabel?: string | null;
+}
+
+export type ApplicationStatus = "pending" | "reviewing" | "accepted" | "declined" | "withdrawn";
+export interface JobApplication {
+  id: number; jobId: number; jobTitle: string; jobType: string;
+  status: ApplicationStatus; coverLetter?: string | null; feedback?: string | null; createdAt: string;
+}
+export interface CollaboratorProfile {
+  headline: string; bio: string;
+  availability: "available" | "partial" | "unavailable";
+  skills: string[]; portfolioUrls: string[];
 }
 
 /**
@@ -947,7 +961,18 @@ export async function addProgressLesson(
  * Lista projetos do usuário (área do colaborador)
  */
 export async function getMyProjects(token: string): Promise<Project[]> {
-  if (isSupabaseConfigured) return [];
+  if (isSupabaseConfigured) {
+    const client = requireSupabase();
+    const { data: authData } = await client.auth.getUser();
+    if (!authData.user) throw new Error("Sessão expirada.");
+    const { data: memberships, error: membershipError } = await client.from("v3_project_members").select("project_id").eq("user_id", authData.user.id);
+    if (membershipError) throw new Error("Não foi possível carregar seus projetos.");
+    const ids = (memberships ?? []).map((row) => row.project_id);
+    if (!ids.length) return [];
+    const { data, error } = await client.from("v3_collaborator_projects").select("*").in("id", ids).order("updated_at", { ascending: false });
+    if (error) throw new Error("Não foi possível carregar seus projetos.");
+    return (data ?? []).map((row) => ({ id: row.id, title: row.title, description: row.description, status: row.status, createdAt: row.created_at }));
+  }
 
   try {
     const response = await authFetch(`${API_URL}/projects`, {
@@ -980,7 +1005,13 @@ export async function getJobs(
   token: string,
   options?: GetJobsOptions
 ): Promise<Job[]> {
-  if (isSupabaseConfigured) return [];
+  if (isSupabaseConfigured) {
+    let query = requireSupabase().from("v3_jobs").select("*").eq("status", "open").order("published_at", { ascending: false });
+    if (options?.type?.trim()) query = query.ilike("type", options.type.trim());
+    const { data, error } = await query;
+    if (error) throw new Error("Não foi possível carregar as vagas.");
+    return (data ?? []).map((row) => ({ id: row.id, title: row.title, description: row.description, type: row.type, status: row.status, createdAt: row.published_at ?? row.created_at, workModel: row.work_model, skills: row.skills ?? [], budgetLabel: row.budget_label }));
+  }
 
   try {
     const params = new URLSearchParams();
@@ -1002,6 +1033,61 @@ export async function getJobs(
     if (error instanceof Error) throw error;
     throw new Error("Erro ao carregar vagas");
   }
+}
+
+export async function getMyApplications(): Promise<JobApplication[]> {
+  const client = requireSupabase();
+  const { data: authData } = await client.auth.getUser();
+  if (!authData.user) throw new Error("Sessão expirada.");
+  const { data, error } = await client.from("v3_job_applications")
+    .select("id,job_id,status,cover_letter,feedback,created_at,v3_jobs(title,type)")
+    .eq("user_id", authData.user.id).order("created_at", { ascending: false });
+  if (error) throw new Error("Não foi possível carregar suas candidaturas.");
+  return (data ?? []).map((row) => { const job = Array.isArray(row.v3_jobs) ? row.v3_jobs[0] : row.v3_jobs; return { id: row.id, jobId: row.job_id, jobTitle: job?.title ?? "Vaga indisponível", jobType: job?.type ?? "", status: row.status as ApplicationStatus, coverLetter: row.cover_letter, feedback: row.feedback, createdAt: row.created_at }; });
+}
+
+export async function applyToJob(jobId: number, coverLetter: string): Promise<void> {
+  const client = requireSupabase();
+  const { data: authData } = await client.auth.getUser();
+  if (!authData.user) throw new Error("Sessão expirada.");
+  const { error } = await client.from("v3_job_applications").insert({ job_id: jobId, user_id: authData.user.id, cover_letter: coverLetter.trim() || null });
+  if (error?.code === "23505") throw new Error("Você já se candidatou a esta vaga.");
+  if (error) throw new Error("Não foi possível enviar a candidatura.");
+}
+
+const EMPTY_COLLABORATOR_PROFILE: CollaboratorProfile = { headline: "", bio: "", availability: "available", skills: [], portfolioUrls: [] };
+export async function getCollaboratorProfile(): Promise<CollaboratorProfile> {
+  const client = requireSupabase();
+  const { data: authData } = await client.auth.getUser();
+  if (!authData.user) throw new Error("Sessão expirada.");
+  const { data, error } = await client.from("v3_collaborator_profiles").select("*").eq("user_id", authData.user.id).maybeSingle();
+  if (error) throw new Error("Não foi possível carregar o perfil profissional.");
+  return data ? { headline: data.headline ?? "", bio: data.bio ?? "", availability: data.availability, skills: data.skills ?? [], portfolioUrls: data.portfolio_urls ?? [] } : EMPTY_COLLABORATOR_PROFILE;
+}
+
+export async function saveCollaboratorProfile(profile: CollaboratorProfile): Promise<CollaboratorProfile> {
+  const client = requireSupabase();
+  const { data: authData } = await client.auth.getUser();
+  if (!authData.user) throw new Error("Sessão expirada.");
+  const { error } = await client.from("v3_collaborator_profiles").upsert({ user_id: authData.user.id, headline: profile.headline.trim() || null, bio: profile.bio.trim() || null, availability: profile.availability, skills: profile.skills, portfolio_urls: profile.portfolioUrls, updated_at: new Date().toISOString() });
+  if (error) throw new Error("Não foi possível salvar o perfil profissional.");
+  return profile;
+}
+
+export async function getSquadMembers(): Promise<Array<{ id: string; name: string; avatarUrl?: string | null; headline: string; skills: string[] }>> {
+  const client = requireSupabase();
+  const { data: authData } = await client.auth.getUser();
+  if (!authData.user) throw new Error("Sessão expirada.");
+  const { data: mine, error } = await client.from("v3_project_members").select("project_id").eq("user_id", authData.user.id);
+  if (error || !mine?.length) return [];
+  const { data: members } = await client.from("v3_project_members").select("user_id").in("project_id", mine.map((m) => m.project_id));
+  const ids = [...new Set((members ?? []).map((m) => m.user_id))];
+  if (!ids.length) return [];
+  const [{ data: profiles }, { data: professional }] = await Promise.all([
+    client.from("v3_profiles").select("id,name,avatar_url").in("id", ids),
+    client.from("v3_collaborator_profiles").select("user_id,headline,skills").in("user_id", ids),
+  ]);
+  return (profiles ?? []).map((p) => { const extra = (professional ?? []).find((x) => x.user_id === p.id); return { id: p.id, name: p.name ?? "Colaborador", avatarUrl: p.avatar_url, headline: extra?.headline ?? "Colaborador Orbitamos", skills: extra?.skills ?? [] }; });
 }
 
 /** Perfil público do usuário (para modal no fórum, visto por último no chat). */
@@ -1717,4 +1803,3 @@ export async function getChatUsers(token: string): Promise<ChatUser[]> {
   if (!response.ok) throw new Error(result.message || "Erro ao carregar usuários");
   return result.users ?? [];
 }
-

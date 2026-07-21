@@ -1,263 +1,40 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { Check, Globe, Loader2, MapPin, Pencil, Plus, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getDisplayAvatarUrl } from "@/lib/api";
-import { useState } from "react";
-import { Globe, MapPin, Clock, Edit3, Save, X, Plus } from "lucide-react";
-import Link from "next/link";
+import { getCollaboratorProfile, getDisplayAvatarUrl, saveCollaboratorProfile, type CollaboratorProfile } from "@/lib/api";
 
-const DISPONIBILIDADE_OPTIONS = ["Disponível", "Parcialmente disponível", "Indisponível"];
-
-const SKILL_SUGGESTIONS = [
-  "React", "Next.js", "TypeScript", "Node.js", "Python", "Figma",
-  "Tailwind", "PostgreSQL", "Supabase", "Docker", "Git", "AWS",
-  "UI/UX", "Branding", "SEO", "WordPress", "Flutter", "React Native",
-];
+const empty: CollaboratorProfile = { headline: "", bio: "", availability: "available", skills: [], portfolioUrls: [] };
+const availability = { available: "Disponível", partial: "Disponibilidade parcial", unavailable: "Indisponível" };
 
 export default function ColaboradorPerfil() {
   const { user } = useAuth();
+  const [profile, setProfile] = useState(empty);
+  const [draft, setDraft] = useState(empty);
   const [editing, setEditing] = useState(false);
-  const [bio, setBio] = useState("Desenvolvedor apaixonado por criar experiências digitais incríveis.");
-  const [skills, setSkills] = useState<string[]>(["React", "Next.js", "TypeScript", "Tailwind"]);
-  const [disponibilidade, setDisponibilidade] = useState("Disponível");
-  const [portfolio, setPortfolio] = useState<string[]>(["https://meusite.com"]);
-  const [newSkill, setNewSkill] = useState("");
-  const [newLink, setNewLink] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [skill, setSkill] = useState("");
+  const [url, setUrl] = useState("");
+  useEffect(() => { getCollaboratorProfile().then((data) => { setProfile(data); setDraft(data); }).catch((e) => setMessage(e instanceof Error ? e.message : "Erro ao carregar perfil")).finally(() => setLoading(false)); }, []);
+  const save = async () => { setSaving(true); setMessage(""); try { const saved = await saveCollaboratorProfile(draft); setProfile(saved); setEditing(false); setMessage("Perfil profissional atualizado."); } catch (e) { setMessage(e instanceof Error ? e.message : "Erro ao salvar"); } finally { setSaving(false); } };
+  const initials = user?.name?.split(" ").map(n => n[0]).slice(0,2).join("").toUpperCase() ?? "?";
+  const completion = [profile.headline, profile.bio, profile.skills.length, profile.portfolioUrls.length, user?.avatarUrl].filter(Boolean).length * 20;
+  if (loading) return <div className="py-24 text-center text-sm text-white/40">Carregando perfil profissional...</div>;
 
-  const initials = user?.name?.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase() ?? "?";
-
-  const addSkill = (skill: string) => {
-    if (skill && !skills.includes(skill)) {
-      setSkills([...skills, skill]);
-    }
-    setNewSkill("");
-  };
-
-  const removeSkill = (skill: string) => {
-    setSkills(skills.filter((s) => s !== skill));
-  };
-
-  const addLink = () => {
-    if (newLink.trim() && !portfolio.includes(newLink.trim())) {
-      setPortfolio([...portfolio, newLink.trim()]);
-      setNewLink("");
-    }
-  };
-
-  const removeLink = (link: string) => {
-    setPortfolio(portfolio.filter((l) => l !== link));
-  };
-
-  return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-end justify-between">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[.2em] text-orbit-purple/70">Público</p>
-          <h1 className="mt-1 text-2xl font-black text-white">Meu Perfil</h1>
-          <p className="mt-0.5 text-sm text-white/40">Como outros membros e recrutadores te veem.</p>
-        </div>
-        <button
-          onClick={() => setEditing(!editing)}
-          className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition ${
-            editing
-              ? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
-              : "border border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
-          }`}
-        >
-          {editing ? <><Save className="size-3" /> Salvar</> : <><Edit3 className="size-3" /> Editar</>}
-        </button>
-      </div>
-
-      {/* Profile card */}
-      <div className="rounded-xl border border-white/10 bg-white/[0.02] p-6">
-        <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
-          {/* Avatar */}
-          <div className="relative">
-            {getDisplayAvatarUrl(user?.avatarUrl) ? (
-              <img
-                src={getDisplayAvatarUrl(user?.avatarUrl)!}
-                alt={user?.name ?? ""}
-                className="size-20 rounded-2xl object-cover ring-2 ring-orbit-purple/30"
-              />
-            ) : (
-              <div className="flex size-20 items-center justify-center rounded-2xl bg-gradient-to-br from-orbit-electric/40 to-orbit-purple/40 ring-2 ring-orbit-purple/30">
-                <span className="text-xl font-black text-white">{initials}</span>
-              </div>
-            )}
-            <span className="absolute -bottom-1 -right-1 size-4 rounded-full border-2 border-[#0d1117] bg-emerald-400" />
-          </div>
-
-          {/* Info */}
-          <div className="flex-1 text-center sm:text-left">
-            <h2 className="text-xl font-black text-white">{user?.name}</h2>
-            <p className="mt-0.5 text-sm text-white/40">{user?.email}</p>
-
-            <div className="mt-3 flex flex-wrap justify-center gap-3 sm:justify-start">
-              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ${
-                disponibilidade === "Disponível"
-                  ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
-                  : disponibilidade === "Parcialmente disponível"
-                  ? "bg-amber-500/15 text-amber-400 border border-amber-500/25"
-                  : "bg-red-500/15 text-red-400 border border-red-500/25"
-              }`}>
-                <Clock className="size-3" />
-                {disponibilidade}
-              </span>
-              <span className="inline-flex items-center gap-1.5 text-[11px] text-white/35">
-                <MapPin className="size-3" />
-                Brasil
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Bio */}
-        <div className="mt-5">
-          <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[.15em] text-white/35">Sobre</label>
-          {editing ? (
-            <textarea
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              rows={3}
-              className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white placeholder:text-white/25 outline-none focus:border-orbit-purple/50 resize-none"
-              placeholder="Fale sobre você, experiência, interesses..."
-            />
-          ) : (
-            <p className="text-sm text-white/60 leading-relaxed">{bio}</p>
-          )}
-        </div>
-
-        {/* Disponibilidade */}
-        {editing && (
-          <div className="mt-4">
-            <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[.15em] text-white/35">Disponibilidade</label>
-            <div className="flex flex-wrap gap-2">
-              {DISPONIBILIDADE_OPTIONS.map((opt) => (
-                <button
-                  key={opt}
-                  onClick={() => setDisponibilidade(opt)}
-                  className={`rounded-full px-3 py-2 text-xs font-medium transition touch-manipulation min-h-[36px] ${
-                    disponibilidade === opt
-                      ? "bg-orbit-purple/20 text-orbit-purple border border-orbit-purple/30"
-                      : "text-white/40 hover:text-white border border-white/10 hover:bg-white/5"
-                  }`}
-                >
-                  {opt}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Skills */}
-      <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
-        <h3 className="mb-3 text-sm font-bold text-white">Habilidades</h3>
-        <div className="flex flex-wrap gap-2">
-          {skills.map((skill) => (
-            <span
-              key={skill}
-              className="inline-flex items-center gap-1.5 rounded-full border border-orbit-electric/20 bg-orbit-electric/10 px-3 py-1 text-xs font-medium text-orbit-electric"
-            >
-              {skill}
-              {editing && (
-                <button onClick={() => removeSkill(skill)} className="text-orbit-electric/50 hover:text-red-400">
-                  <X className="size-3" />
-                </button>
-              )}
-            </span>
-          ))}
-        </div>
-
-        {editing && (
-          <div className="mt-3">
-            <div className="flex gap-2">
-              <input
-                value={newSkill}
-                onChange={(e) => setNewSkill(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addSkill(newSkill)}
-                placeholder="Adicionar skill..."
-                className="h-8 flex-1 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-xs text-white placeholder:text-white/25 outline-none focus:border-orbit-electric/50"
-              />
-              <button
-                onClick={() => addSkill(newSkill)}
-                className="flex items-center gap-1 rounded-lg bg-orbit-electric/15 px-3 text-xs text-orbit-electric hover:bg-orbit-electric/25"
-              >
-                <Plus className="size-3" /> Adicionar
-              </button>
-            </div>
-            <div className="mt-2 flex flex-wrap gap-1">
-              {SKILL_SUGGESTIONS.filter((s) => !skills.includes(s)).slice(0, 8).map((s) => (
-                <button
-                  key={s}
-                  onClick={() => addSkill(s)}
-                  className="rounded-full border border-white/8 px-2 py-0.5 text-[10px] text-white/30 transition hover:border-orbit-electric/30 hover:text-orbit-electric"
-                >
-                  + {s}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Portfolio links */}
-      <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
-        <h3 className="mb-3 text-sm font-bold text-white">Portfólio & Links</h3>
-        <div className="space-y-2">
-          {portfolio.map((link) => (
-            <div key={link} className="flex items-center gap-3 rounded-lg border border-white/8 bg-white/[0.03] px-3 py-2">
-              <Globe className="size-4 shrink-0 text-orbit-purple" />
-              <a
-                href={link}
-                target="_blank"
-                rel="noreferrer"
-                className="flex-1 truncate text-xs text-orbit-electric hover:underline"
-              >
-                {link}
-              </a>
-              {editing && (
-                <button onClick={() => removeLink(link)} className="text-white/30 hover:text-red-400">
-                  <X className="size-3.5" />
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {editing && (
-          <div className="mt-3 flex gap-2">
-            <input
-              value={newLink}
-              onChange={(e) => setNewLink(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addLink()}
-              placeholder="https://..."
-              className="h-8 flex-1 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-xs text-white placeholder:text-white/25 outline-none focus:border-orbit-purple/50"
-            />
-            <button
-              onClick={addLink}
-              className="flex items-center gap-1 rounded-lg bg-orbit-purple/15 px-3 text-xs text-orbit-purple hover:bg-orbit-purple/25"
-            >
-              <Plus className="size-3" /> Link
-            </button>
-          </div>
-        )}
-
-        {portfolio.length === 0 && !editing && (
-          <p className="text-xs text-white/30">Nenhum link adicionado.</p>
-        )}
-      </div>
-
-      {/* Tip */}
-      <div className="rounded-lg border border-white/5 bg-white/[0.01] px-4 py-3 text-center">
-        <p className="text-[11px] text-white/30">
-          Edite seu perfil para aparecer melhor nas buscas.{" "}
-          <Link href="/colaborador/conta" className="text-orbit-purple hover:underline">
-            Alterar foto e dados pessoais
-          </Link>
-        </p>
-      </div>
+  return <div className="space-y-6">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-orbit-purple/70">Presença profissional</p><h1 className="mt-1 text-2xl font-black text-white">Meu perfil</h1><p className="mt-1 text-sm text-white/45">Dados reais usados para apresentar seu trabalho e combinar oportunidades.</p></div>{editing ? <div className="flex gap-2"><button onClick={() => { setDraft(profile); setEditing(false); }} className="min-h-11 rounded-xl border border-white/10 px-4 text-xs text-white/60">Cancelar</button><button onClick={save} disabled={saving} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-orbit-electric px-4 text-xs font-bold text-black disabled:opacity-50">{saving ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}Salvar</button></div> : <button onClick={() => setEditing(true)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-orbit-purple/30 bg-orbit-purple/10 px-4 text-xs font-bold text-orbit-purple"><Pencil className="size-4" />Editar perfil</button>}</div>
+    {message && <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white/65">{message}</div>}
+    <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
+      <section className="space-y-5 rounded-2xl border border-white/10 bg-white/[0.025] p-5 sm:p-7">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">{getDisplayAvatarUrl(user?.avatarUrl) ? <img src={getDisplayAvatarUrl(user?.avatarUrl)!} alt="" className="size-20 rounded-2xl object-cover" /> : <div className="grid size-20 place-items-center rounded-2xl bg-gradient-to-br from-orbit-electric/30 to-orbit-purple/30 text-xl font-black">{initials}</div>}<div><h2 className="text-xl font-black text-white">{user?.name}</h2>{editing ? <input value={draft.headline} onChange={e => setDraft({...draft, headline:e.target.value})} placeholder="Ex.: Desenvolvedor Front-end" className="mt-2 h-10 w-full rounded-lg border border-white/10 bg-black/20 px-3 text-sm text-white outline-none focus:border-orbit-electric/50" /> : <p className="mt-1 text-sm text-white/50">{profile.headline || "Adicione um título profissional"}</p>}<p className="mt-2 flex items-center gap-1.5 text-xs text-white/35"><MapPin className="size-3" />{[user?.city,user?.state].filter(Boolean).join(" / ") || "Localização não informada"}</p></div></div>
+        <div><label className="text-[10px] font-bold uppercase tracking-[.15em] text-white/35">Sobre</label>{editing ? <textarea value={draft.bio} onChange={e => setDraft({...draft,bio:e.target.value})} rows={5} maxLength={700} placeholder="Conte sua experiência, especialidades e o tipo de problema que você resolve." className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-white outline-none focus:border-orbit-electric/50" /> : <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-white/60">{profile.bio || "Sua apresentação profissional aparecerá aqui quando você completar o perfil."}</p>}</div>
+        <div><label className="text-[10px] font-bold uppercase tracking-[.15em] text-white/35">Habilidades</label><div className="mt-2 flex flex-wrap gap-2">{draft.skills.map(s => <span key={s} className="inline-flex items-center gap-1 rounded-full border border-orbit-electric/20 bg-orbit-electric/10 px-3 py-1 text-xs text-orbit-electric">{s}{editing && <button onClick={() => setDraft({...draft,skills:draft.skills.filter(x=>x!==s)})}><X className="size-3" /></button>}</span>)}{!draft.skills.length && !editing && <span className="text-sm text-white/35">Nenhuma habilidade adicionada.</span>}</div>{editing && <div className="mt-3 flex gap-2"><input value={skill} onChange={e=>setSkill(e.target.value)} placeholder="Adicionar habilidade" className="h-10 flex-1 rounded-lg border border-white/10 bg-black/20 px-3 text-sm text-white outline-none"/><button onClick={()=>{const v=skill.trim();if(v&&!draft.skills.includes(v))setDraft({...draft,skills:[...draft.skills,v]});setSkill("");}} className="grid size-10 place-items-center rounded-lg bg-white/10"><Plus className="size-4" /></button></div>}</div>
+        <div><label className="text-[10px] font-bold uppercase tracking-[.15em] text-white/35">Portfólio e links</label><div className="mt-2 space-y-2">{draft.portfolioUrls.map(link => <div key={link} className="flex items-center gap-2 rounded-lg border border-white/8 bg-black/20 px-3 py-2"><Globe className="size-4 text-orbit-purple"/><a href={link} target="_blank" rel="noreferrer" className="min-w-0 flex-1 truncate text-xs text-orbit-electric">{link}</a>{editing&&<button onClick={()=>setDraft({...draft,portfolioUrls:draft.portfolioUrls.filter(x=>x!==link)})}><X className="size-4 text-white/40"/></button>}</div>)}{!draft.portfolioUrls.length&&!editing&&<p className="text-sm text-white/35">Nenhum link adicionado.</p>}</div>{editing&&<div className="mt-3 flex gap-2"><input value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://seuportfolio.com" className="h-10 flex-1 rounded-lg border border-white/10 bg-black/20 px-3 text-sm text-white outline-none"/><button onClick={()=>{try{const value=new URL(url).toString();if(!draft.portfolioUrls.includes(value))setDraft({...draft,portfolioUrls:[...draft.portfolioUrls,value]});setUrl("");}catch{setMessage("Informe um link válido com https://");}}} className="grid size-10 place-items-center rounded-lg bg-white/10"><Plus className="size-4"/></button></div>}</div>
+      </section>
+      <aside className="space-y-4"><div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5"><div className="flex items-center justify-between"><span className="text-sm font-bold text-white">Perfil completo</span><span className="text-sm font-black text-orbit-electric">{completion}%</span></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple" style={{width:`${completion}%`}} /></div><p className="mt-3 text-xs leading-5 text-white/40">Perfis completos ajudam a equipe a encontrar a pessoa certa para cada projeto.</p></div><div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5"><p className="text-xs font-bold uppercase tracking-wider text-white/35">Disponibilidade</p>{editing ? <select value={draft.availability} onChange={e=>setDraft({...draft,availability:e.target.value as CollaboratorProfile["availability"]})} className="mt-3 h-11 w-full rounded-lg border border-white/10 bg-[#111827] px-3 text-sm text-white"><option value="available">Disponível</option><option value="partial">Parcial</option><option value="unavailable">Indisponível</option></select> : <p className="mt-3 text-sm font-semibold text-emerald-300">{availability[profile.availability]}</p>}</div></aside>
     </div>
-  );
+  </div>;
 }

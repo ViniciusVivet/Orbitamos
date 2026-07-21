@@ -2,8 +2,8 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
-import { Briefcase, Search, MapPin, Clock, ChevronRight, Filter } from "lucide-react";
-import { getJobs, Job } from "@/lib/api";
+import { Briefcase, Search, MapPin, Clock, Filter, Send, X } from "lucide-react";
+import { applyToJob, getJobs, Job } from "@/lib/api";
 
 const TYPE_OPTIONS = [
   { value: "", label: "Todos" },
@@ -30,6 +30,18 @@ export default function ColaboradorVagas() {
   const [error, setError] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState<Job | null>(null);
+  const [coverLetter, setCoverLetter] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState("");
+
+  const submitApplication = async () => {
+    if (!selected) return;
+    setSubmitting(true); setError("");
+    try { await applyToJob(selected.id, coverLetter); setSuccess(`Candidatura enviada para ${selected.title}.`); setSelected(null); setCoverLetter(""); }
+    catch (e) { setError(e instanceof Error ? e.message : "Erro ao enviar candidatura"); }
+    finally { setSubmitting(false); }
+  };
 
   useEffect(() => {
     if (!token) return;
@@ -92,6 +104,7 @@ export default function ColaboradorVagas() {
           {error}
         </div>
       )}
+      {success && <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{success}</div>}
 
       {/* Results count */}
       {!loading && (
@@ -154,12 +167,13 @@ export default function ColaboradorVagas() {
                     )}
                   </div>
                 </div>
-                <ChevronRight className="size-4 shrink-0 text-white/20 transition-transform group-hover:translate-x-0.5 group-hover:text-orbit-purple" />
+                <button onClick={() => { setSelected(job); setError(""); setSuccess(""); }} className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg bg-orbit-purple px-3 text-xs font-bold text-white transition hover:brightness-110"><Send className="size-3.5"/>Candidatar</button>
               </div>
             </div>
           ))}
         </div>
       )}
+      {selected && <div className="fixed inset-0 z-[70] grid place-items-center bg-black/70 p-4 backdrop-blur-sm"><div className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#0b0e17] p-5 shadow-2xl"><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-wider text-orbit-purple">Candidatura</p><h2 className="mt-1 text-lg font-black text-white">{selected.title}</h2><p className="mt-1 text-xs text-white/40">{selected.type} · {selected.workModel || "Remoto"}</p></div><button onClick={() => setSelected(null)} className="grid size-10 place-items-center rounded-lg text-white/40 hover:bg-white/10" aria-label="Fechar"><X className="size-4"/></button></div><label className="mt-5 block text-xs font-semibold text-white/60">Apresentação <span className="font-normal text-white/30">(opcional)</span></label><textarea value={coverLetter} onChange={e=>setCoverLetter(e.target.value)} rows={6} maxLength={1500} placeholder="Conte brevemente por que esta oportunidade combina com você..." className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white outline-none focus:border-orbit-purple/50"/><p className="mt-1 text-right text-[10px] text-white/25">{coverLetter.length}/1500</p><div className="mt-5 flex justify-end gap-2"><button onClick={()=>setSelected(null)} className="min-h-11 rounded-xl border border-white/10 px-4 text-xs text-white/60">Cancelar</button><button onClick={submitApplication} disabled={submitting} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-5 text-xs font-bold text-black disabled:opacity-50"><Send className="size-4"/>{submitting?"Enviando...":"Enviar candidatura"}</button></div></div></div>}
     </div>
   );
 }

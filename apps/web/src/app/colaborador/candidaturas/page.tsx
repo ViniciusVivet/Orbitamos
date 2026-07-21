@@ -1,204 +1,45 @@
 "use client";
 
-import { useState } from "react";
-import { Send, Clock, CheckCircle2, XCircle, ChevronDown, Briefcase } from "lucide-react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Briefcase, CheckCircle2, Clock, RefreshCw, Send, XCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { getMyApplications, type ApplicationStatus, type JobApplication } from "@/lib/api";
 
-type Status = "pendente" | "aceita" | "recusada";
-
-type Candidatura = {
-  id: string;
-  vaga: string;
-  tipo: string;
-  dataEnvio: string;
-  status: Status;
-  feedback?: string;
+const statusConfig = {
+  pending: { label: "Pendente", icon: Clock, className: "border-amber-500/25 bg-amber-500/10 text-amber-300" },
+  reviewing: { label: "Em análise", icon: Clock, className: "border-sky-500/25 bg-sky-500/10 text-sky-300" },
+  accepted: { label: "Aceita", icon: CheckCircle2, className: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300" },
+  declined: { label: "Não selecionada", icon: XCircle, className: "border-red-500/25 bg-red-500/10 text-red-300" },
+  withdrawn: { label: "Retirada", icon: XCircle, className: "border-white/15 bg-white/5 text-white/50" },
 };
-
-// Mock data — será substituído por dados reais do Supabase
-const mockCandidaturas: Candidatura[] = [
-  {
-    id: "1",
-    vaga: "Desenvolvedor Frontend React",
-    tipo: "Freela",
-    dataEnvio: "2026-07-15",
-    status: "pendente",
-  },
-  {
-    id: "2",
-    vaga: "Designer UI/UX para MVP",
-    tipo: "PJ",
-    dataEnvio: "2026-07-10",
-    status: "aceita",
-    feedback: "Parabéns! Entraremos em contato para alinhar escopo.",
-  },
-  {
-    id: "3",
-    vaga: "Backend Node.js - API REST",
-    tipo: "Freela",
-    dataEnvio: "2026-07-05",
-    status: "recusada",
-    feedback: "O perfil não atendeu os requisitos técnicos desta vez.",
-  },
-];
-
-const STATUS_CONFIG = {
-  pendente: {
-    label: "Pendente",
-    icon: Clock,
-    classes: "bg-amber-500/15 text-amber-400 border-amber-500/25",
-    dot: "bg-amber-400",
-  },
-  aceita: {
-    label: "Aceita",
-    icon: CheckCircle2,
-    classes: "bg-emerald-500/15 text-emerald-400 border-emerald-500/25",
-    dot: "bg-emerald-400",
-  },
-  recusada: {
-    label: "Recusada",
-    icon: XCircle,
-    classes: "bg-red-500/15 text-red-400 border-red-500/25",
-    dot: "bg-red-400",
-  },
-};
-
-const FILTER_OPTIONS: { value: Status | ""; label: string }[] = [
-  { value: "", label: "Todas" },
-  { value: "pendente", label: "Pendentes" },
-  { value: "aceita", label: "Aceitas" },
-  { value: "recusada", label: "Recusadas" },
-];
 
 export default function ColaboradorCandidaturas() {
-  const [filter, setFilter] = useState<Status | "">("");
-  const [expanded, setExpanded] = useState<string | null>(null);
-
-  const candidaturas = mockCandidaturas.filter((c) => !filter || c.status === filter);
-
-  const counts = {
-    total: mockCandidaturas.length,
-    pendente: mockCandidaturas.filter((c) => c.status === "pendente").length,
-    aceita: mockCandidaturas.filter((c) => c.status === "aceita").length,
-    recusada: mockCandidaturas.filter((c) => c.status === "recusada").length,
+  const { token } = useAuth();
+  const [items, setItems] = useState<JobApplication[]>([]);
+  const [filter, setFilter] = useState<ApplicationStatus | "">("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const load = () => {
+    if (!token) return;
+    setLoading(true); setError("");
+    getMyApplications().then(setItems).catch((e) => setError(e instanceof Error ? e.message : "Erro ao carregar candidaturas")).finally(() => setLoading(false));
   };
+  useEffect(() => {
+    if (!token) return;
+    getMyApplications().then(setItems).catch((e) => setError(e instanceof Error ? e.message : "Erro ao carregar candidaturas")).finally(() => setLoading(false));
+  }, [token]);
+  const visible = items.filter((item) => !filter || item.status === filter);
 
-  return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div>
-        <p className="text-xs font-bold uppercase tracking-[.2em] text-amber-400/70">Pipeline</p>
-        <h1 className="mt-1 text-2xl font-black text-white">Minhas candidaturas</h1>
-        <p className="mt-0.5 text-sm text-white/40">Acompanhe o status de cada candidatura enviada.</p>
-      </div>
-
-      {/* Stats mini */}
-      <div className="grid grid-cols-4 gap-1.5 sm:flex sm:flex-wrap sm:gap-2">
-        <div className="rounded-lg border border-white/10 bg-white/[0.03] px-2 sm:px-3 py-1.5 text-center sm:text-left text-[11px] sm:text-xs">
-          <span className="block sm:inline text-white/40">Total</span>{" "}
-          <span className="block sm:inline font-bold text-white">{counts.total}</span>
-        </div>
-        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-2 sm:px-3 py-1.5 text-center sm:text-left text-[11px] sm:text-xs">
-          <span className="block sm:inline text-amber-400/60">Pend.</span>{" "}
-          <span className="block sm:inline font-bold text-amber-400">{counts.pendente}</span>
-        </div>
-        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-2 sm:px-3 py-1.5 text-center sm:text-left text-[11px] sm:text-xs">
-          <span className="block sm:inline text-emerald-400/60">Aceitas</span>{" "}
-          <span className="block sm:inline font-bold text-emerald-400">{counts.aceita}</span>
-        </div>
-        <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-2 sm:px-3 py-1.5 text-center sm:text-left text-[11px] sm:text-xs">
-          <span className="block sm:inline text-red-400/60">Recus.</span>{" "}
-          <span className="block sm:inline font-bold text-red-400">{counts.recusada}</span>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="flex gap-1 overflow-x-auto pb-1 -mx-1 px-1">
-        {FILTER_OPTIONS.map((opt) => (
-          <button
-            key={opt.value || "all"}
-            onClick={() => setFilter(opt.value)}
-            className={`shrink-0 rounded-full px-3 py-2 text-xs font-medium transition touch-manipulation min-h-[36px] ${
-              filter === opt.value
-                ? "bg-white/10 text-white border border-white/20"
-                : "text-white/40 hover:text-white hover:bg-white/5"
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
-
-      {/* List */}
-      {candidaturas.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-white/10 py-16 text-center">
-          <Send className="mx-auto size-10 text-white/15" />
-          <p className="mt-3 text-sm text-white/40">Nenhuma candidatura {filter ? `com status "${filter}"` : "ainda"}.</p>
-          <Link href="/colaborador/vagas" className="mt-2 inline-block text-xs text-orbit-electric hover:underline">
-            Ver vagas disponíveis
-          </Link>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {candidaturas.map((c) => {
-            const config = STATUS_CONFIG[c.status];
-            const StatusIcon = config.icon;
-            const isExpanded = expanded === c.id;
-
-            return (
-              <div
-                key={c.id}
-                className="rounded-xl border border-white/8 bg-white/[0.02] transition-all hover:border-white/15"
-              >
-                <button
-                  type="button"
-                  onClick={() => setExpanded(isExpanded ? null : c.id)}
-                  className="flex w-full items-center gap-3 p-4 text-left"
-                >
-                  <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/[0.05]">
-                    <Briefcase className="size-4 text-white/40" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-medium text-white">{c.vaga}</p>
-                    <div className="mt-1 flex items-center gap-2">
-                      <span className="text-[11px] text-white/30">{c.tipo}</span>
-                      <span className="text-[11px] text-white/20">·</span>
-                      <span className="text-[11px] text-white/30">
-                        Enviada em {new Date(c.dataEnvio).toLocaleDateString("pt-BR")}
-                      </span>
-                    </div>
-                  </div>
-                  <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase ${config.classes}`}>
-                    <StatusIcon className="size-3" />
-                    {config.label}
-                  </span>
-                  <ChevronDown className={`size-4 text-white/20 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-                </button>
-
-                {isExpanded && (
-                  <div className="border-t border-white/5 px-4 pb-4 pt-3">
-                    <div className="flex items-start gap-3">
-                      <div className={`mt-0.5 size-2 rounded-full ${config.dot}`} />
-                      <div>
-                        <p className="text-xs font-medium text-white/60">
-                          {c.status === "pendente" && "Aguardando análise da equipe."}
-                          {c.status === "aceita" && "Sua candidatura foi aprovada!"}
-                          {c.status === "recusada" && "Candidatura não selecionada."}
-                        </p>
-                        {c.feedback && (
-                          <p className="mt-1.5 text-xs text-white/40 leading-relaxed italic">
-                            &ldquo;{c.feedback}&rdquo;
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+  return <div className="space-y-6">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div><p className="text-xs font-bold uppercase tracking-[.2em] text-amber-300/70">Pipeline</p><h1 className="mt-1 text-2xl font-black text-white">Minhas candidaturas</h1><p className="mt-1 text-sm text-white/45">Acompanhe cada oportunidade sem perder o próximo passo.</p></div>
+      <button onClick={load} disabled={loading} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 text-xs font-semibold text-white/70 hover:bg-white/10 disabled:opacity-50"><RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} />Atualizar</button>
     </div>
-  );
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {[["Todas", items.length, ""], ["Em andamento", items.filter(i => i.status === "pending" || i.status === "reviewing").length, "pending"], ["Aceitas", items.filter(i => i.status === "accepted").length, "accepted"], ["Encerradas", items.filter(i => i.status === "declined" || i.status === "withdrawn").length, "declined"]].map(([label,count,value]) => <button key={String(label)} onClick={() => setFilter(value as ApplicationStatus | "")} className={`rounded-xl border p-3 text-left transition ${filter === value ? "border-orbit-electric/40 bg-orbit-electric/10" : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"}`}><span className="block text-xl font-black text-white">{count}</span><span className="text-[11px] text-white/45">{label}</span></button>)}
+    </div>
+    {error && <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">{error}</div>}
+    {loading ? <div className="py-20 text-center text-sm text-white/40">Carregando candidaturas...</div> : visible.length === 0 ? <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-6 py-16 text-center"><Send className="mx-auto size-10 text-white/15" /><h2 className="mt-4 font-bold text-white">{items.length ? "Nenhuma candidatura neste filtro" : "Seu pipeline começa aqui"}</h2><p className="mx-auto mt-2 max-w-md text-sm text-white/40">{items.length ? "Escolha outro status para visualizar suas candidaturas." : "Quando você se candidatar a uma vaga, o andamento real aparecerá nesta página."}</p><Link href="/colaborador/vagas" className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-orbit-electric px-5 text-xs font-bold text-black">Explorar oportunidades</Link></div> : <div className="space-y-3">{visible.map(item => { const config = statusConfig[item.status]; const Icon = config.icon; return <article key={item.id} className="rounded-2xl border border-white/10 bg-white/[0.025] p-5"><div className="flex flex-col gap-4 sm:flex-row sm:items-start"><div className="grid size-11 shrink-0 place-items-center rounded-xl bg-white/5"><Briefcase className="size-5 text-white/40" /></div><div className="min-w-0 flex-1"><h2 className="font-bold text-white">{item.jobTitle}</h2><p className="mt-1 text-xs text-white/35">{item.jobType} · enviada em {new Date(item.createdAt).toLocaleDateString("pt-BR")}</p>{item.coverLetter && <p className="mt-3 line-clamp-2 text-sm text-white/50">{item.coverLetter}</p>}{item.feedback && <div className="mt-3 rounded-lg border border-white/8 bg-black/20 p-3 text-xs text-white/55"><strong className="text-white/75">Retorno da equipe:</strong> {item.feedback}</div>}</div><span className={`inline-flex w-fit items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase ${config.className}`}><Icon className="size-3" />{config.label}</span></div></article>})}</div>}
+  </div>;
 }

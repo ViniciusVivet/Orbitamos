@@ -62,7 +62,7 @@ export default function ColaboradorLayout({
             Colaborador
           </span>
           <div className="ml-auto">
-            <NotificacaoBadge count={2} onClick={() => setNotifOpen(true)} />
+            <NotificacaoBadge count={0} onClick={() => setNotifOpen(true)} />
           </div>
         </header>
         <div className="container mx-auto px-4 py-4 sm:py-6 lg:px-6 lg:py-8 max-w-full">
