@@ -246,6 +246,7 @@ export interface User {
   avatarUrl?: string | null;
   role?: UserRole;
   isInternal?: boolean;
+  adminRole?: "none" | "staff" | "admin";
   phone?: string | null;
   birthDate?: string | null;
   address?: string | null;
@@ -334,6 +335,13 @@ export interface Project {
   description: string;
   status: string;
   createdAt: string;
+  clientName?: string | null;
+  priority?: "low" | "medium" | "high" | "urgent";
+  startDate?: string | null;
+  dueDate?: string | null;
+  progress?: number;
+  briefing?: string | null;
+  links?: Array<{ label: string; url: string }>;
 }
 
 export interface Job {
@@ -346,6 +354,10 @@ export interface Job {
   workModel?: string;
   skills?: string[];
   budgetLabel?: string | null;
+  requirements?: string[];
+  scope?: string | null;
+  openings?: number;
+  applicationDeadline?: string | null;
 }
 
 export type ApplicationStatus = "pending" | "reviewing" | "accepted" | "declined" | "withdrawn";
@@ -375,6 +387,7 @@ type SupabaseProfileRow = {
   avatar_url: string | null;
   role: UserRole | null;
   is_internal: boolean | null;
+  admin_role?: "none" | "staff" | "admin" | null;
   phone: string | null;
   birth_date: string | null;
   address: string | null;
@@ -404,6 +417,7 @@ function profileRowToUser(profile: SupabaseProfileRow): User {
     avatarUrl: profile.avatar_url,
     role: profile.role ?? "STUDENT",
     isInternal: profile.is_internal ?? false,
+    adminRole: profile.admin_role ?? "none",
     phone: profile.phone,
     birthDate: profile.birth_date,
     address: profile.address,
@@ -977,7 +991,7 @@ export async function getMyProjects(token: string): Promise<Project[]> {
     if (!ids.length) return [];
     const { data, error } = await client.from("v3_collaborator_projects").select("*").in("id", ids).order("updated_at", { ascending: false });
     if (error) throw new Error("Não foi possível carregar seus projetos.");
-    return (data ?? []).map((row) => ({ id: row.id, title: row.title, description: row.description, status: row.status, createdAt: row.created_at }));
+    return (data ?? []).map((row) => ({ id: row.id, title: row.title, description: row.description, status: row.status, createdAt: row.created_at, clientName: row.client_name, priority: row.priority, startDate: row.start_date, dueDate: row.due_date, progress: row.progress ?? 0, briefing: row.briefing, links: Array.isArray(row.links) ? row.links : [] }));
   }
 
   try {
@@ -1016,7 +1030,7 @@ export async function getJobs(
     if (options?.type?.trim()) query = query.ilike("type", options.type.trim());
     const { data, error } = await query;
     if (error) throw new Error("Não foi possível carregar as vagas.");
-    return (data ?? []).map((row) => ({ id: row.id, title: row.title, description: row.description, type: row.type, status: row.status, createdAt: row.published_at ?? row.created_at, workModel: row.work_model, skills: row.skills ?? [], budgetLabel: row.budget_label }));
+    return (data ?? []).map((row) => ({ id: row.id, title: row.title, description: row.description, type: row.type, status: row.status, createdAt: row.published_at ?? row.created_at, workModel: row.work_model, skills: row.skills ?? [], budgetLabel: row.budget_label, requirements: row.requirements ?? [], scope: row.scope, openings: row.openings ?? 1, applicationDeadline: row.application_deadline }));
   }
 
   try {
@@ -1041,6 +1055,13 @@ export async function getJobs(
   }
 }
 
+export async function getJobById(id: number): Promise<Job | null> {
+  const { data, error } = await requireSupabase().from("v3_jobs").select("*").eq("id", id).eq("status", "open").maybeSingle();
+  if (error) throw new Error("Não foi possível carregar a vaga.");
+  if (!data) return null;
+  return { id: data.id, title: data.title, description: data.description, type: data.type, status: data.status, createdAt: data.published_at ?? data.created_at, workModel: data.work_model, skills: data.skills ?? [], budgetLabel: data.budget_label, requirements: data.requirements ?? [], scope: data.scope, openings: data.openings ?? 1, applicationDeadline: data.application_deadline };
+}
+
 export async function getMyApplications(): Promise<JobApplication[]> {
   const client = requireSupabase();
   const { data: authData } = await client.auth.getUser();
@@ -1059,6 +1080,11 @@ export async function applyToJob(jobId: number, coverLetter: string): Promise<vo
   const { error } = await client.from("v3_job_applications").insert({ job_id: jobId, user_id: authData.user.id, cover_letter: coverLetter.trim() || null });
   if (error?.code === "23505") throw new Error("Você já se candidatou a esta vaga.");
   if (error) throw new Error("Não foi possível enviar a candidatura.");
+}
+
+export async function withdrawApplication(applicationId: number): Promise<void> {
+  const { error } = await requireSupabase().rpc("v3_withdraw_application", { application_id: applicationId });
+  if (error) throw new Error("Não foi possível retirar a candidatura.");
 }
 
 const EMPTY_COLLABORATOR_PROFILE: CollaboratorProfile = { headline: "", bio: "", availability: "available", skills: [], portfolioUrls: [], preferredJobTypes: [], preferredWorkModels: [], weeklyHours: null, minimumBudget: null, openToContact: true, profileVisible: true };
@@ -1427,6 +1453,8 @@ async function getCurrentSupabaseUserId(): Promise<string> {
   return userId;
 }
 
+// Supabase gera formatos de relacionamento diferentes conforme cardinalidade.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function profileToChatUser(profile: any): ChatUser {
   return {
     id: profile.id,
@@ -1438,6 +1466,7 @@ function profileToChatUser(profile: any): ChatUser {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function buildSupabaseConversation(conversation: any): Promise<ChatConversation> {
   const client = requireSupabase();
   const currentUserId = await getCurrentSupabaseUserId();
@@ -1446,6 +1475,7 @@ async function buildSupabaseConversation(conversation: any): Promise<ChatConvers
     .select("user_id, profiles:v3_profiles(id,name,email,avatar_url,role)")
     .eq("conversation_id", conversation.id);
   const participants = (participantRows ?? [])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .map((row: any) => row.profiles)
     .filter(Boolean)
     .map(profileToChatUser);
@@ -1534,6 +1564,7 @@ export async function getChatMessages(token: string, conversationId: number): Pr
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data ?? []).map((message: any) => ({
       id: message.id,
       content: message.content,
@@ -1571,6 +1602,7 @@ export async function sendChatMessage(
       .select("id,content,sender_id,created_at, profiles:v3_profiles(name,avatar_url)")
       .single();
     if (error) throw new Error(error.message);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const message = data as any;
     const senderProfile = Array.isArray(message.profiles) ? message.profiles[0] : message.profiles;
     return {

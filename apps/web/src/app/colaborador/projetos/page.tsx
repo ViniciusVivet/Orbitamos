@@ -132,6 +132,8 @@ export default function ColaboradorProjetos() {
                       {p.description && (
                         <p className="mt-1 text-[11px] text-white/40 line-clamp-2">{p.description}</p>
                       )}
+                      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple" style={{ width: `${p.progress ?? 0}%` }} /></div>
+                      <div className="mt-2 flex items-center justify-between text-[10px] text-white/30"><span>{p.progress ?? 0}% concluído</span>{p.dueDate && <span>Prazo {new Date(`${p.dueDate}T12:00:00`).toLocaleDateString("pt-BR")}</span>}</div>
                       <div className="mt-2 flex items-center justify-between">
                         <span className="text-[10px] text-white/25">{projectStatusLabel(p.status)}</span>
                         <Link

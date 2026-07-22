@@ -17,7 +17,9 @@ const navItems = [
   { href: "/colaborador/projetos", label: "Projetos", icon: "📂" },
   { href: "/colaborador/squad", label: "Squad", icon: "👥" },
   { href: "/colaborador/perfil", label: "Meu Perfil", icon: "🪪" },
+  { href: "/colaborador/portfolio", label: "Portfólio", icon: "✨" },
   { href: "/colaborador/conta", label: "Configurações", icon: "⚙️" },
+  { href: "/colaborador/privacidade", label: "Privacidade", icon: "🔒" },
 ];
 
 interface ColaboradorSidebarProps {
@@ -32,7 +34,7 @@ export default function ColaboradorSidebar({ mobileOpen = false, onCloseMobile }
   const notifRef = useRef<HTMLDivElement>(null);
   const visibleNavItems = navItems.filter(
     (item) => item.href !== "/colaborador/contatos" || user?.isInternal
-  );
+  ).concat(user?.adminRole === "staff" || user?.adminRole === "admin" ? [{ href: "/admin", label: "Painel interno", icon: "🛡️" }] : []);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

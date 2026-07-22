@@ -7,6 +7,7 @@ const PROTECTED_PREFIXES = [
   "/orbitacademy",
   "/dashboard",
   "/mensagens",
+  "/admin",
 ];
 
 function isProtectedPath(pathname: string): boolean {
@@ -64,5 +65,6 @@ export const config = {
     "/orbitacademy/:path*",
     "/dashboard/:path*",
     "/mensagens/:path*",
+    "/admin/:path*",
   ],
 };

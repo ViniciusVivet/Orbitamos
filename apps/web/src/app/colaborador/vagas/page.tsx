@@ -2,8 +2,9 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Briefcase, Search, MapPin, Clock, Filter, Send, X } from "lucide-react";
-import { applyToJob, getJobs, getMyApplications, Job } from "@/lib/api";
+import { applyToJob, getCollaboratorProfile, getJobs, getMyApplications, Job, type CollaboratorProfile } from "@/lib/api";
 
 const TYPE_OPTIONS = [
   { value: "", label: "Todos" },
@@ -35,6 +36,7 @@ export default function ColaboradorVagas() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState("");
   const [appliedJobIds, setAppliedJobIds] = useState<number[]>([]);
+  const [profile, setProfile] = useState<CollaboratorProfile | null>(null);
 
   const submitApplication = async () => {
     if (!selected) return;
@@ -48,19 +50,30 @@ export default function ColaboradorVagas() {
     if (!token) return;
     setLoading(true);
     setError("");
-    Promise.all([getJobs(token, typeFilter ? { type: typeFilter } : undefined), getMyApplications()])
-      .then(([availableJobs, applications]) => {
+    Promise.all([getJobs(token, typeFilter ? { type: typeFilter } : undefined), getMyApplications(), getCollaboratorProfile()])
+      .then(([availableJobs, applications, professionalProfile]) => {
         setJobs(availableJobs);
+        setProfile(professionalProfile);
         setAppliedJobIds(applications.filter((item) => item.status !== "withdrawn").map((item) => item.jobId));
       })
       .catch((e) => setError(e instanceof Error ? e.message : "Erro ao carregar vagas"))
       .finally(() => setLoading(false));
   }, [token, typeFilter]);
 
+  const matchScore = (job: Job) => {
+    if (!profile) return 0;
+    const profileSkills = profile.skills.map((skill) => skill.toLowerCase());
+    const overlap = (job.skills ?? []).filter((skill) => profileSkills.includes(skill.toLowerCase())).length;
+    const skillScore = job.skills?.length ? Math.round((overlap / job.skills.length) * 60) : 20;
+    const typeScore = !profile.preferredJobTypes.length || profile.preferredJobTypes.includes(job.type.toLowerCase()) ? 20 : 0;
+    const modelScore = !profile.preferredWorkModels.length || profile.preferredWorkModels.includes((job.workModel ?? "remoto").toLowerCase()) ? 20 : 0;
+    return Math.min(100, skillScore + typeScore + modelScore);
+  };
+
   const filtered = jobs.filter((j) =>
     !search.trim() || j.title.toLowerCase().includes(search.toLowerCase()) ||
     j.description?.toLowerCase().includes(search.toLowerCase())
-  );
+  ).sort((a, b) => matchScore(b) - matchScore(a));
 
   return (
     <div className="space-y-5">
@@ -149,6 +162,7 @@ export default function ColaboradorVagas() {
                     <h3 className="text-sm font-bold text-white group-hover:text-orbit-purple transition-colors">
                       {job.title}
                     </h3>
+                    {matchScore(job) >= 40 && <span className="mt-1 inline-block text-[10px] font-bold text-emerald-300">{matchScore(job)}% compatível com seu perfil</span>}
                     <div className="mt-1.5 flex flex-wrap items-center gap-2">
                       <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase ${getTypeColor(job.type)}`}>
                         {job.type}
@@ -169,6 +183,7 @@ export default function ColaboradorVagas() {
                         {job.description}
                       </p>
                     )}
+                    <Link href={`/colaborador/vagas/${job.id}`} className="mt-3 inline-block text-xs font-semibold text-orbit-electric hover:underline">Ver detalhes completos</Link>
                   </div>
                 </div>
                 {appliedJobIds.includes(job.id) ? <span className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-3 text-xs font-bold text-emerald-300"><Send className="size-3.5"/>Já enviada</span> : <button onClick={() => { setSelected(job); setError(""); setSuccess(""); }} className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg bg-orbit-purple px-3 text-xs font-bold text-white transition hover:brightness-110"><Send className="size-3.5"/>Candidatar</button>}

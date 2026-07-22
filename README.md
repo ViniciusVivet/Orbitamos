@@ -179,6 +179,7 @@ docs/migrations/007_security_hardening.sql
 docs/migrations/008_course_materials_seed.sql
 docs/migrations/010_collaborator_workspace.sql
 docs/migrations/011_collaborator_preferences.sql
+docs/migrations/012_admin_operations_security.sql
 ```
 
 Resumo:
