@@ -1478,7 +1478,7 @@ async function buildSupabaseConversation(conversation: any): Promise<ChatConvers
   const currentUserId = await getCurrentSupabaseUserId();
   const { data: participantRows } = await client
     .from("v3_conversation_participants")
-    .select("user_id, profiles:v3_profiles(id,name,email,avatar_url,role)")
+    .select("user_id, profiles:v3_profiles(id,name,avatar_url,role)")
     .eq("conversation_id", conversation.id);
   const participants = (participantRows ?? [])
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1833,7 +1833,7 @@ export async function getChatUsers(token: string): Promise<ChatUser[]> {
     const currentUserId = await getCurrentSupabaseUserId();
     const { data, error } = await requireSupabase()
       .from("v3_profiles")
-      .select("id,name,email,avatar_url,role")
+      .select("id,name,avatar_url,role")
       .neq("id", currentUserId)
       .order("name", { ascending: true });
     if (error) throw new Error(error.message);

@@ -5,6 +5,15 @@ import { cn } from "@/lib/utils";
 import AvatarWithPresence from "@/components/chat/AvatarWithPresence";
 import { type ChatUser, type UserId } from "@/lib/api";
 
+const ROLE_LABELS: Record<string, string> = {
+  STUDENT: "Estudante",
+  FREELANCER: "Colaborador",
+};
+
+function roleLabel(role: string): string {
+  return ROLE_LABELS[role] ?? "Membro Orbitamos";
+}
+
 interface Props {
   users: ChatUser[];
   selectedUserId: UserId | null;
@@ -33,7 +42,7 @@ export default function NewDirectChatModal({ users, selectedUserId, onSelectUser
               <AvatarWithPresence avatarUrl={u.avatarUrl} name={u.name} lastSeenAt={u.lastSeenAt} size="md" />
               <div>
                 <p className="font-medium">{u.name}</p>
-                <p className="text-xs text-white/50">{u.email}</p>
+                <p className="text-xs text-white/50">{roleLabel(u.role)}</p>
               </div>
             </button>
           ))}
