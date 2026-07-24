@@ -110,3 +110,15 @@ replay_pid*
 # Temporary files
 *.tmp
 *.temp
+
+# Arquivos de trabalho / rascunho na raiz (nao versionar)
+# Assets do projeto ficam em apps/web/public
+/*.png
+/*.jpg
+/*.jpeg
+/*.webp
+/*.mp4
+/Captura de Tela*
+/fotos do orbi/
+/fotos para o claude ver/
+/cards novos/
