@@ -26,6 +26,7 @@ import ScrollReveal from "@/components/ScrollReveal";
 import TextReveal from "@/components/TextReveal";
 import CountUp from "@/components/CountUp";
 import MagneticButton from "@/components/MagneticButton";
+import LazyVideo from "@/components/LazyVideo";
 import useHeroScene from "@/components/three/HeroScene";
 import useTechOrbitScene from "@/components/three/TechOrbitScene";
 import useWarpCTAScene from "@/components/three/WarpCTAScene";
@@ -399,7 +400,7 @@ export default function Home() {
 
       {/* ═══ SERVICES ═══ */}
       <section className="relative overflow-hidden">
-        <video
+        <LazyVideo
           src="/services-bg.mp4"
           autoPlay
           loop
@@ -647,7 +648,7 @@ export default function Home() {
             <SpaceCanvas setup={warpSetup} />
           </div>
         )}
-        <video
+        <LazyVideo
           src="/cosmos.mp4"
           autoPlay
           loop

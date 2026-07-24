@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import ScrollReveal from "@/components/ScrollReveal";
 import TextReveal from "@/components/TextReveal";
+import LazyVideo from "@/components/LazyVideo";
 
 const SERVICOS = [
   {
@@ -262,7 +263,7 @@ export default function WhatWeBuild() {
       style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
     >
       {/* Vídeo de fundo — terra girando */}
-      <video
+      <LazyVideo
         ref={videoRef}
         src="/terra-real.mp4"
         autoPlay

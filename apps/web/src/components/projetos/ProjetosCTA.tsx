@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import ScrollReveal from "@/components/ScrollReveal";
 import TextReveal from "@/components/TextReveal";
 import MagneticButton from "@/components/MagneticButton";
+import LazyVideo from "@/components/LazyVideo";
 import useWarpCTAScene from "@/components/three/WarpCTAScene";
 
 const SpaceCanvas = dynamic(() => import("@/components/three/SpaceCanvas"), { ssr: false });
@@ -64,7 +65,7 @@ export default function ProjetosCTA({ variant = "section" }: ProjetosCTAProps) {
       )}
 
       <div className="absolute inset-0 z-0">
-        <video
+        <LazyVideo
           ref={videoRef}
           src="/cosmos.mp4"
           autoPlay
