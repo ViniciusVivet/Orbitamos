@@ -442,6 +442,14 @@ function progressRowToDashboardProgress(progress?: SupabaseProgressRow | null): 
 
 async function getSupabaseProfile(userId: string): Promise<User> {
   const client = requireSupabase();
+  // Le o proprio perfil completo (inclui campos privados como telefone/endereco)
+  // via funcao SECURITY DEFINER. Migration 013_profiles_pii_hardening.sql.
+  const rpc = await client.rpc("v3_get_my_profile").maybeSingle();
+  if (!rpc.error && rpc.data) {
+    return profileRowToUser(rpc.data as SupabaseProfileRow);
+  }
+
+  // Fallback para ambientes sem a migration 013 aplicada.
   const { data, error } = await client
     .from("v3_profiles")
     .select("*")
@@ -459,16 +467,14 @@ async function ensureSupabaseProfile(params: {
   role?: UserRole;
 }): Promise<User> {
   const client = requireSupabase();
-  const { data, error } = await client
+  const { error } = await client
     .from("v3_profiles")
     .upsert({
       id: params.id,
       email: params.email,
       name: params.name,
       role: params.role ?? "STUDENT",
-    }, { onConflict: "id" })
-    .select("*")
-    .single();
+    }, { onConflict: "id" });
 
   if (error) throw new Error(error.message);
 
@@ -476,7 +482,8 @@ async function ensureSupabaseProfile(params: {
     .from("v3_user_progress")
     .upsert({ user_id: params.id }, { onConflict: "user_id" });
 
-  return profileRowToUser(data as SupabaseProfileRow);
+  // Retorna o perfil completo pela funcao definer (evita SELECT * nas colunas privadas).
+  return getSupabaseProfile(params.id);
 }
 
 export async function register(data: RegisterData): Promise<AuthResponse> {
@@ -766,15 +773,14 @@ export async function updateProfile(
       zip_code: data.zipCode,
     };
 
-    const { data: profile, error } = await client
+    const { error } = await client
       .from("v3_profiles")
       .update(payload)
-      .eq("id", userId)
-      .select("*")
-      .single();
+      .eq("id", userId);
 
     if (error) throw new Error(error.message);
-    return { success: true, user: profileRowToUser(profile as SupabaseProfileRow) };
+    // Retorna o perfil atualizado pela funcao definer (evita SELECT * nas colunas privadas).
+    return { success: true, user: await getSupabaseProfile(userId) };
   }
 
   try {
@@ -1171,7 +1177,7 @@ export async function getForumMessages(parentId?: number): Promise<ForumMessage[
   if (isSupabaseConfigured) {
     let query = requireSupabase()
       .from("v3_forum_messages")
-      .select("*, profiles:v3_profiles(id,name,avatar_url,state,birth_date)")
+      .select("*, profiles:v3_profiles(id,name,avatar_url,state)")
       .order("created_at", { ascending: false });
     query = parentId != null ? query.eq("parent_id", parentId) : query.is("parent_id", null);
     const { data, error } = await query;
