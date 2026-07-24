@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import EstudanteSidebar from "@/components/estudante/EstudanteSidebar";
 import NotificacoesPanel, { NotificacaoBadge } from "@/components/estudante/NotificacoesPanel";
+import { listNotifications, type NotificationItem } from "@/lib/workspace";
 import Link from "next/link";
 
 export default function EstudanteLayout({
@@ -16,6 +17,12 @@ export default function EstudanteLayout({
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const loadNotifications = () => listNotifications().then(setNotifications).catch(() => setNotifications([]));
+
+  useEffect(() => {
+    if (isAuthenticated) loadNotifications();
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (loading) return;
@@ -73,7 +80,7 @@ export default function EstudanteLayout({
             >
               Trabalhar
             </Link>
-            <NotificacaoBadge count={2} onClick={() => setNotifOpen(true)} />
+            <NotificacaoBadge count={notifications.filter((item) => !item.readAt).length} onClick={() => setNotifOpen(true)} />
           </div>
         </header>
         <div className="container mx-auto px-4 py-4 sm:py-6 lg:px-6 lg:py-8 max-w-full">
@@ -81,7 +88,7 @@ export default function EstudanteLayout({
         </div>
       </main>
 
-      <NotificacoesPanel open={notifOpen} onClose={() => setNotifOpen(false)} />
+      <NotificacoesPanel open={notifOpen} onClose={() => setNotifOpen(false)} items={notifications} onChange={loadNotifications} />
     </div>
   );
 }

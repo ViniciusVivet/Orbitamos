@@ -1,78 +1,62 @@
 "use client";
 
-import { useState } from "react";
-import { Bell, BookOpen, Award, Users, Sparkles, X } from "lucide-react";
+import Link from "next/link";
+import { Bell, BookOpen, Award, Users, Sparkles, Send, FolderKanban, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { markAllNotificationsRead, markNotificationRead, type NotificationItem } from "@/lib/workspace";
 
-export type Notificacao = {
-  id: string;
-  tipo: "aula" | "conquista" | "comunidade" | "sistema";
-  titulo: string;
-  descricao: string;
-  tempo: string;
-  lida: boolean;
-};
-
-const mockNotificacoes: Notificacao[] = [
-  {
-    id: "1",
-    tipo: "aula",
-    titulo: "Nova aula disponível",
-    descricao: "Módulo 3: Funções avançadas em JavaScript",
-    tempo: "1h atrás",
-    lida: false,
-  },
-  {
-    id: "2",
-    tipo: "conquista",
-    titulo: "Conquista desbloqueada!",
-    descricao: "Você completou seu primeiro desafio de código.",
-    tempo: "3h atrás",
-    lida: false,
-  },
-  {
-    id: "3",
-    tipo: "comunidade",
-    titulo: "Nova resposta no fórum",
-    descricao: "Alguém respondeu seu tópico sobre React hooks.",
-    tempo: "1d atrás",
-    lida: true,
-  },
-  {
-    id: "4",
-    tipo: "sistema",
-    titulo: "Bem-vindo à OrbitAcademy!",
-    descricao: "Comece sua jornada escolhendo uma trilha.",
-    tempo: "3d atrás",
-    lida: true,
-  },
-];
-
-const TIPO_CONFIG = {
+// Mapeia o `type` cru vindo de v3_notifications para um visual (icone + cor).
+const TIPO_CONFIG: Record<string, { icon: typeof Bell; color: string; bg: string }> = {
   aula: { icon: BookOpen, color: "text-orbit-electric", bg: "bg-orbit-electric/15" },
+  lesson: { icon: BookOpen, color: "text-orbit-electric", bg: "bg-orbit-electric/15" },
   conquista: { icon: Award, color: "text-amber-400", bg: "bg-amber-500/15" },
+  achievement: { icon: Award, color: "text-amber-400", bg: "bg-amber-500/15" },
   comunidade: { icon: Users, color: "text-orbit-purple", bg: "bg-orbit-purple/15" },
+  application: { icon: Send, color: "text-orbit-purple", bg: "bg-orbit-purple/15" },
+  project: { icon: FolderKanban, color: "text-orbit-electric", bg: "bg-orbit-electric/15" },
   sistema: { icon: Sparkles, color: "text-white/50", bg: "bg-white/10" },
+  system: { icon: Sparkles, color: "text-white/50", bg: "bg-white/10" },
 };
+
+function configFor(type: string) {
+  return TIPO_CONFIG[type] ?? TIPO_CONFIG.system;
+}
+
+function tempoRelativo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const min = Math.round(diff / 60000);
+  if (min < 1) return "agora";
+  if (min < 60) return `${min}min atrás`;
+  const h = Math.round(min / 60);
+  if (h < 24) return `${h}h atrás`;
+  const d = Math.round(h / 24);
+  if (d < 7) return `${d}d atrás`;
+  return new Date(iso).toLocaleDateString("pt-BR");
+}
 
 interface NotificacoesPanelProps {
   open: boolean;
   onClose: () => void;
+  items: NotificationItem[];
+  onChange: () => void;
 }
 
-export default function NotificacoesPanel({ open, onClose }: NotificacoesPanelProps) {
-  const [notificacoes, setNotificacoes] = useState(mockNotificacoes);
-  const naoLidas = notificacoes.filter((n) => !n.lida).length;
-
-  const marcarTodasLidas = () => {
-    setNotificacoes(notificacoes.map((n) => ({ ...n, lida: true })));
-  };
-
-  const marcarLida = (id: string) => {
-    setNotificacoes(notificacoes.map((n) => n.id === id ? { ...n, lida: true } : n));
-  };
-
+export default function NotificacoesPanel({ open, onClose, items, onChange }: NotificacoesPanelProps) {
   if (!open) return null;
+  const naoLidas = items.filter((n) => !n.readAt).length;
+
+  const marcarTodasLidas = async () => {
+    await markAllNotificationsRead();
+    onChange();
+  };
+
+  const abrir = async (item: NotificationItem) => {
+    if (!item.readAt) {
+      await markNotificationRead(item.id);
+      onChange();
+    }
+    onClose();
+  };
 
   return (
     <>
@@ -101,24 +85,21 @@ export default function NotificacoesPanel({ open, onClose }: NotificacoesPanelPr
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {notificacoes.length === 0 ? (
+          {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Bell className="size-8 text-white/15" />
               <p className="mt-3 text-sm text-white/40">Sem notificações.</p>
             </div>
           ) : (
             <div className="divide-y divide-white/5">
-              {notificacoes.map((n) => {
-                const config = TIPO_CONFIG[n.tipo];
+              {items.map((n) => {
+                const config = configFor(n.type);
                 const Icon = config.icon;
-                return (
-                  <button
-                    key={n.id}
-                    type="button"
-                    onClick={() => marcarLida(n.id)}
+                const inner = (
+                  <div
                     className={cn(
                       "flex w-full items-start gap-3 px-4 py-3.5 text-left transition touch-manipulation min-h-[56px]",
-                      n.lida ? "opacity-60" : "bg-white/[0.02] hover:bg-white/[0.04]"
+                      n.readAt ? "opacity-60" : "bg-white/[0.02] hover:bg-white/[0.04]"
                     )}
                   >
                     <div className={cn("mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg", config.bg)}>
@@ -126,14 +107,23 @@ export default function NotificacoesPanel({ open, onClose }: NotificacoesPanelPr
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <p className={cn("truncate text-xs font-medium", n.lida ? "text-white/50" : "text-white")}>
-                          {n.titulo}
+                        <p className={cn("truncate text-xs font-medium", n.readAt ? "text-white/50" : "text-white")}>
+                          {n.title}
                         </p>
-                        {!n.lida && <span className="size-1.5 shrink-0 rounded-full bg-orbit-electric" />}
+                        {!n.readAt && <span className="size-1.5 shrink-0 rounded-full bg-orbit-electric" />}
                       </div>
-                      <p className="mt-0.5 text-[11px] text-white/35 line-clamp-1">{n.descricao}</p>
-                      <p className="mt-1 text-[10px] text-white/20">{n.tempo}</p>
+                      <p className="mt-0.5 text-[11px] text-white/35 line-clamp-1">{n.body}</p>
+                      <p className="mt-1 text-[10px] text-white/20">{tempoRelativo(n.createdAt)}</p>
                     </div>
+                  </div>
+                );
+                return n.href ? (
+                  <Link key={n.id} href={n.href} onClick={() => abrir(n)} className="block">
+                    {inner}
+                  </Link>
+                ) : (
+                  <button key={n.id} type="button" onClick={() => abrir(n)} className="w-full">
+                    {inner}
                   </button>
                 );
               })}
