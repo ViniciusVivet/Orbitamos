@@ -11,24 +11,68 @@ const API_URL =
 /** Base da API sem /api (para montar URLs de upload/avatar em produção). */
 export const API_BASE_URL = API_URL.replace(/\/api\/?$/, "");
 
-const MAX_AVATAR_UPLOAD_BYTES = 2 * 1024 * 1024;
+// Aceitamos imagens grandes na entrada porque redimensionamos no navegador antes
+// de subir — o arquivo final fica pequeno (bom para o Supabase free tier) e o
+// usuario nao esbarra em "imagem muito grande" com fotos normais de celular.
+const MAX_AVATAR_INPUT_BYTES = 25 * 1024 * 1024;
+const MAX_GIF_BYTES = 8 * 1024 * 1024;
+const MAX_AVATAR_DIMENSION = 1080;
 const ALLOWED_AVATAR_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
   "image/webp": "webp",
 };
 
-function getSafeAvatarExtension(file: File): string {
-  if (file.size > MAX_AVATAR_UPLOAD_BYTES) {
-    throw new Error("Imagem muito grande. Envie um arquivo de até 2MB.");
+type PreparedUpload = { blob: Blob; extension: string; contentType: string };
+
+/**
+ * Prepara a imagem para upload: valida, corrige orientacao e redimensiona
+ * (canvas) para no maximo MAX_AVATAR_DIMENSION px, exportando WebP leve.
+ * GIF passa direto (para preservar a animacao), apenas com limite de tamanho.
+ */
+async function prepareAvatarUpload(file: File): Promise<PreparedUpload> {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Envie um arquivo de imagem (JPG, PNG, GIF ou WebP).");
+  }
+  if (file.size > MAX_AVATAR_INPUT_BYTES) {
+    throw new Error("Imagem muito grande. Envie uma imagem de até 25 MB.");
   }
 
-  const extension = ALLOWED_AVATAR_TYPES[file.type];
-  if (!extension) {
-    throw new Error("Formato invalido. Use JPG, PNG ou WEBP.");
+  const passthrough = (): PreparedUpload => ({
+    blob: file,
+    extension: ALLOWED_AVATAR_TYPES[file.type] ?? "jpg",
+    contentType: file.type || "image/jpeg",
+  });
+
+  if (file.type === "image/gif") {
+    if (file.size > MAX_GIF_BYTES) throw new Error("GIF muito grande. Use um GIF de até 8 MB.");
+    return { blob: file, extension: "gif", contentType: "image/gif" };
   }
 
-  return extension;
+  if (typeof document === "undefined" || typeof createImageBitmap === "undefined") {
+    return passthrough();
+  }
+
+  const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" }).catch(() => null);
+  if (!bitmap) return passthrough();
+
+  const scale = Math.min(1, MAX_AVATAR_DIMENSION / Math.max(bitmap.width, bitmap.height));
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    bitmap.close?.();
+    return passthrough();
+  }
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close?.();
+
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.85));
+  if (!blob) return passthrough();
+  return { blob, extension: "webp", contentType: "image/webp" };
 }
 
 /**
@@ -822,16 +866,19 @@ export async function uploadAvatarViaApi(
     const userId = sessionData.session?.user.id;
     if (!userId) throw new Error("Sessão não encontrada");
 
-    const extension = getSafeAvatarExtension(file);
+    const { blob, extension, contentType } = await prepareAvatarUpload(file);
     const path = `${userId}/avatar.${extension}`;
     const { error: uploadError } = await client.storage
       .from("avatars")
-      .upload(path, file, { upsert: true, contentType: file.type });
+      .upload(path, blob, { upsert: true, contentType });
     if (uploadError) throw new Error(uploadError.message);
 
     const { data: publicUrl } = client.storage.from("avatars").getPublicUrl(path);
-    const result = await updateProfile(token, { avatarUrl: publicUrl.publicUrl });
-    return { success: true, avatarUrl: publicUrl.publicUrl, user: result.user };
+    // Cache-bust: a URL publica do Storage e fixa, entao sem isso o navegador
+    // continuaria mostrando a foto antiga (parece que "nao mudou").
+    const bustedUrl = `${publicUrl.publicUrl}?v=${Date.now()}`;
+    const result = await updateProfile(token, { avatarUrl: bustedUrl });
+    return { success: true, avatarUrl: bustedUrl, user: result.user };
   }
 
   const formData = new FormData();
@@ -1803,17 +1850,18 @@ export async function uploadGroupAvatar(
 ): Promise<{ success: boolean; avatarUrl: string; conversation: ChatConversation }> {
   if (isSupabaseConfigured) {
     const client = requireSupabase();
-    const extension = getSafeAvatarExtension(file);
+    const { blob, extension, contentType } = await prepareAvatarUpload(file);
     const path = `groups/${conversationId}/avatar.${extension}`;
     const { error: uploadError } = await client.storage
       .from("avatars")
-      .upload(path, file, { upsert: true, contentType: file.type });
+      .upload(path, blob, { upsert: true, contentType });
     if (uploadError) throw new Error(uploadError.message);
     const { data: publicUrl } = client.storage.from("avatars").getPublicUrl(path);
+    const bustedUrl = `${publicUrl.publicUrl}?v=${Date.now()}`;
     const { success, conversation } = await updateGroupConversation(token, conversationId, {
-      avatarUrl: publicUrl.publicUrl,
+      avatarUrl: bustedUrl,
     });
-    return { success, avatarUrl: publicUrl.publicUrl, conversation };
+    return { success, avatarUrl: bustedUrl, conversation };
   }
 
   const formData = new FormData();

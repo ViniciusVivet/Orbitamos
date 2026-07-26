@@ -157,7 +157,7 @@ export default function PerfilForm({
 
         <div>
           <label className="text-sm font-medium text-white/80">Foto de perfil</label>
-          <p className="mt-0.5 text-xs text-white/50">Subir imagem pela plataforma (JPG, PNG, GIF ou WebP — até 5 MB)</p>
+          <p className="mt-0.5 text-xs text-white/50">Pode mandar foto grande (até 25 MB) — a gente ajusta o tamanho automaticamente. JPG, PNG, GIF ou WebP.</p>
           <div className="mt-2 flex flex-col gap-3">
             <label className="flex w-fit cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-white/30 bg-white/5 px-4 py-3 text-sm font-medium text-white hover:border-orbit-electric/50 hover:bg-white/10">
               <input
@@ -171,14 +171,11 @@ export default function PerfilForm({
                   setUploadError(null);
                   setUploadingAvatar(true);
                   try {
-                    let url: string | null = null;
-                    if (token) {
-                      const result = await uploadAvatarViaApi(token, file);
-                      url = result.avatarUrl;
-                      if (result.user && onAvatarUploaded) onAvatarUploaded(result.user);
-                    }
-                    if (url) {
-                      setEditAvatarUrl(url);
+                    // No Supabase o token nao e usado (usa a sessao); passamos "" com seguranca.
+                    const result = await uploadAvatarViaApi(token ?? "", file);
+                    if (result.user && onAvatarUploaded) onAvatarUploaded(result.user);
+                    if (result.avatarUrl) {
+                      setEditAvatarUrl(result.avatarUrl);
                     } else {
                       setUploadError("Não foi possível enviar a foto. Tente de novo ou use uma URL.");
                     }
