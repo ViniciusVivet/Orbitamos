@@ -212,3 +212,47 @@ export async function deleteAdminMaterial(id: string): Promise<void> {
   const { error } = await requireSupabase().from("lesson_materials").delete().eq("id", id);
   if (error) throw new Error("Não foi possível remover o material.");
 }
+
+// Redimensiona imagem no navegador para no maximo maxDim px (WebP leve). null se nao der.
+async function resizeToWebp(file: File, maxDim: number, quality = 0.85): Promise<Blob | null> {
+  if (typeof document === "undefined" || typeof createImageBitmap === "undefined") return null;
+  const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" }).catch(() => null);
+  if (!bitmap) return null;
+  const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width; canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) { bitmap.close?.(); return null; }
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close?.();
+  return new Promise((resolve) => canvas.toBlob(resolve, "image/webp", quality));
+}
+
+const MAX_ACADEMY_ASSET_BYTES = 25 * 1024 * 1024;
+
+/**
+ * Sobe um arquivo para o bucket 'academy' (migration 017) e retorna a URL publica.
+ * Imagens sao redimensionadas (bom para o free tier); documentos vao como estao.
+ * Aceita entrada generosa (ate 25 MB) porque imagem e comprimida antes de subir.
+ */
+export async function uploadAcademyAsset(folder: string, file: File): Promise<string> {
+  if (file.size > MAX_ACADEMY_ASSET_BYTES) {
+    throw new Error("Arquivo muito grande. Envie um arquivo de até 25 MB.");
+  }
+  const client = requireSupabase();
+  const isImage = file.type.startsWith("image/") && file.type !== "image/gif";
+  let blob: Blob = file;
+  let ext = (file.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
+  let contentType = file.type || "application/octet-stream";
+  if (isImage) {
+    const resized = await resizeToWebp(file, 1280);
+    if (resized) { blob = resized; ext = "webp"; contentType = "image/webp"; }
+  }
+  const safeFolder = folder.replace(/[^a-z0-9/_-]/gi, "") || "misc";
+  const path = `${safeFolder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const { error } = await client.storage.from("academy").upload(path, blob, { upsert: false, contentType });
+  if (error) throw new Error(error.message);
+  return client.storage.from("academy").getPublicUrl(path).data.publicUrl;
+}
