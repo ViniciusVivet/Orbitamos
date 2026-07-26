@@ -1,9 +1,9 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BriefcaseBusiness,ClipboardCheck,FolderKanban,LayoutDashboard,Rocket,ShieldCheck,Users } from "lucide-react";
+import { BookOpen,BriefcaseBusiness,ClipboardCheck,FolderKanban,LayoutDashboard,Rocket,ShieldCheck,Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-const items=[{href:"/admin",label:"Visão geral",icon:LayoutDashboard},{href:"/admin/vagas",label:"Vagas",icon:BriefcaseBusiness},{href:"/admin/candidaturas",label:"Candidaturas",icon:ClipboardCheck},{href:"/admin/projetos",label:"Projetos e squads",icon:FolderKanban},{href:"/admin/solicitacoes",label:"Privacidade",icon:ShieldCheck}];
+const items=[{href:"/admin",label:"Visão geral",icon:LayoutDashboard},{href:"/admin/cursos",label:"Cursos",icon:BookOpen},{href:"/admin/vagas",label:"Vagas",icon:BriefcaseBusiness},{href:"/admin/candidaturas",label:"Candidaturas",icon:ClipboardCheck},{href:"/admin/projetos",label:"Projetos e squads",icon:FolderKanban},{href:"/admin/solicitacoes",label:"Privacidade",icon:ShieldCheck}];
 export default function AdminSidebar(){
   const path=usePathname(); const{user}=useAuth();
   const visible=items.filter(item=>item.href!=="/admin/solicitacoes"||user?.adminRole==="admin");

@@ -58,3 +58,157 @@ export async function requestAccountAction(type:"deletion"|"data_export",reason:
 export type AccountRequest={id:number;userId:string;userName:string;userEmail:string;type:"deletion"|"data_export";status:"pending"|"processing"|"completed"|"cancelled";reason:string;createdAt:string};
 export async function listAccountRequests():Promise<AccountRequest[]>{const client=requireSupabase();const{data,error}=await client.from("v3_account_requests").select("*").order("created_at",{ascending:false});if(error)throw new Error("Não foi possível carregar solicitações.");const rows=data??[];const contacts=await fetchProfilesContact(rows.map(r=>r.user_id));return rows.map(r=>{const p=contacts.get(r.user_id);return{id:r.id,userId:r.user_id,userName:p?.name||"Usuário",userEmail:p?.email??"",type:r.type,status:r.status,reason:r.reason??"",createdAt:r.created_at};});}
 export async function updateAccountRequest(id:number,status:AccountRequest["status"]):Promise<void>{const{error}=await requireSupabase().from("v3_account_requests").update({status,updated_at:new Date().toISOString()}).eq("id",id);if(error)throw new Error("Não foi possível atualizar a solicitação.");}
+
+// ==================== ORBITACADEMY (admin de cursos) ====================
+
+export type AdminQuizQuestion = { question: string; options: string[]; answer: string };
+export type AdminMaterial = { id?: string; title: string; kind: string; fileUrl: string; externalUrl: string; position: number };
+export type AdminLesson = {
+  id?: string; slug: string; title: string; description: string;
+  youtubeVideoId: string; content: string; isPublished: boolean; position: number;
+  quiz: AdminQuizQuestion[]; materials: AdminMaterial[];
+};
+export type AdminModule = { id?: string; slug: string; title: string; description: string; position: number; lessons: AdminLesson[] };
+export type AdminCourse = {
+  id?: string; slug: string; title: string; description: string;
+  coverUrl: string; level: string; isPublished: boolean; position: number; modules: AdminModule[];
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapQuiz(raw: any): AdminQuizQuestion[] {
+  if (!Array.isArray(raw)) return [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return raw.map((q: any) => ({
+    question: q?.question ?? "",
+    options: Array.isArray(q?.options) ? q.options.map(String) : [],
+    answer: q?.answer ?? "",
+  }));
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const byPosition = (a: any, b: any) => (a.position ?? 0) - (b.position ?? 0);
+
+export async function listAdminCourses(): Promise<AdminCourse[]> {
+  const { data, error } = await requireSupabase()
+    .from("courses")
+    .select(`
+      id, slug, title, description, cover_url, level, is_published, position,
+      course_modules (
+        id, slug, title, description, position,
+        lessons (
+          id, slug, title, description, youtube_video_id, content, is_published, position, quiz,
+          lesson_materials ( id, title, kind, file_url, external_url, position )
+        )
+      )
+    `)
+    .order("position", { ascending: true });
+  if (error) throw new Error("Não foi possível carregar os cursos.");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return ((data ?? []) as any[]).map((c) => ({
+    id: c.id, slug: c.slug, title: c.title, description: c.description ?? "",
+    coverUrl: c.cover_url ?? "", level: c.level ?? "", isPublished: c.is_published, position: c.position ?? 0,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    modules: ((c.course_modules ?? []) as any[]).sort(byPosition).map((m) => ({
+      id: m.id, slug: m.slug, title: m.title, description: m.description ?? "", position: m.position ?? 0,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      lessons: ((m.lessons ?? []) as any[]).sort(byPosition).map((l) => ({
+        id: l.id, slug: l.slug, title: l.title, description: l.description ?? "",
+        youtubeVideoId: l.youtube_video_id ?? "", content: l.content ?? "",
+        isPublished: l.is_published, position: l.position ?? 0, quiz: mapQuiz(l.quiz),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        materials: ((l.lesson_materials ?? []) as any[]).sort(byPosition).map((mat) => ({
+          id: mat.id, title: mat.title, kind: mat.kind ?? "PDF",
+          fileUrl: mat.file_url ?? "", externalUrl: mat.external_url ?? "", position: mat.position ?? 0,
+        })),
+      })),
+    })),
+  }));
+}
+
+export async function saveAdminCourse(course: Omit<AdminCourse, "modules">): Promise<string> {
+  const client = requireSupabase();
+  const payload = {
+    slug: course.slug.trim(), title: course.title.trim(), description: course.description.trim() || null,
+    cover_url: course.coverUrl.trim() || null, level: course.level.trim() || null,
+    is_published: course.isPublished, position: course.position, updated_at: new Date().toISOString(),
+  };
+  if (course.id) {
+    const { error } = await client.from("courses").update(payload).eq("id", course.id);
+    if (error) throw new Error(error.message);
+    return course.id;
+  }
+  const { data, error } = await client.from("courses").insert(payload).select("id").single();
+  if (error) throw new Error(error.message);
+  return data.id as string;
+}
+
+export async function deleteAdminCourse(id: string): Promise<void> {
+  const { error } = await requireSupabase().from("courses").delete().eq("id", id);
+  if (error) throw new Error("Não foi possível remover o curso.");
+}
+
+export async function saveAdminModule(courseId: string, mod: Omit<AdminModule, "lessons">): Promise<string> {
+  const client = requireSupabase();
+  const payload = {
+    course_id: courseId, slug: mod.slug.trim(), title: mod.title.trim(),
+    description: mod.description.trim() || null, position: mod.position, updated_at: new Date().toISOString(),
+  };
+  if (mod.id) {
+    const { error } = await client.from("course_modules").update(payload).eq("id", mod.id);
+    if (error) throw new Error(error.message);
+    return mod.id;
+  }
+  const { data, error } = await client.from("course_modules").insert(payload).select("id").single();
+  if (error) throw new Error(error.message);
+  return data.id as string;
+}
+
+export async function deleteAdminModule(id: string): Promise<void> {
+  const { error } = await requireSupabase().from("course_modules").delete().eq("id", id);
+  if (error) throw new Error("Não foi possível remover o módulo.");
+}
+
+export async function saveAdminLesson(moduleId: string, lesson: Omit<AdminLesson, "materials">): Promise<string> {
+  const client = requireSupabase();
+  const payload = {
+    module_id: moduleId, slug: lesson.slug.trim(), title: lesson.title.trim(),
+    description: lesson.description.trim() || null, youtube_video_id: lesson.youtubeVideoId.trim() || null,
+    content: lesson.content.trim() || null, is_published: lesson.isPublished, position: lesson.position,
+    quiz: lesson.quiz, updated_at: new Date().toISOString(),
+  };
+  if (lesson.id) {
+    const { error } = await client.from("lessons").update(payload).eq("id", lesson.id);
+    if (error) throw new Error(error.message);
+    return lesson.id;
+  }
+  const { data, error } = await client.from("lessons").insert(payload).select("id").single();
+  if (error) throw new Error(error.message);
+  return data.id as string;
+}
+
+export async function deleteAdminLesson(id: string): Promise<void> {
+  const { error } = await requireSupabase().from("lessons").delete().eq("id", id);
+  if (error) throw new Error("Não foi possível remover a aula.");
+}
+
+export async function saveAdminMaterial(lessonId: string, material: AdminMaterial): Promise<string> {
+  const client = requireSupabase();
+  const payload = {
+    lesson_id: lessonId, title: material.title.trim(), kind: material.kind.trim() || "PDF",
+    file_url: material.fileUrl.trim() || null, external_url: material.externalUrl.trim() || null,
+    position: material.position,
+  };
+  if (material.id) {
+    const { error } = await client.from("lesson_materials").update(payload).eq("id", material.id);
+    if (error) throw new Error(error.message);
+    return material.id;
+  }
+  const { data, error } = await client.from("lesson_materials").insert(payload).select("id").single();
+  if (error) throw new Error(error.message);
+  return data.id as string;
+}
+
+export async function deleteAdminMaterial(id: string): Promise<void> {
+  const { error } = await requireSupabase().from("lesson_materials").delete().eq("id", id);
+  if (error) throw new Error("Não foi possível remover o material.");
+}
