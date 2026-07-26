@@ -29,9 +29,8 @@ export default function Navigation() {
     ...(!loading && isAuthenticated && user?.role === "STUDENT"
       ? [{ href: cursos.length > 0 ? `/estudante/cursos/${cursos[0].slug}` : "/estudante/aulas", label: "Sala de Aula" }]
       : []),
-    ...(!loading && isAuthenticated && user
-      ? [{ href: user.role === "FREELANCER" ? "/colaborador" : "/estudante", label: user.role === "FREELANCER" ? "Área Colaborador" : "Área do Estudante", isProfile: true }]
-      : []),
+    // A ida para a area do usuario fica so no botao "Portal" a direita (evita duplicar
+    // "Area do Estudante"/"Area Colaborador" no menu e no botao ao mesmo tempo).
   ];
 
   // Portal link for the right side
@@ -69,28 +68,6 @@ export default function Navigation() {
 
             <div className="hidden md:flex items-center gap-7 ml-10">
               {navLinks.map((link) => {
-                if ((link as { isProfile?: boolean }).isProfile) {
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className="relative flex items-center gap-2 text-sm font-medium text-white/60 hover:text-white transition-colors duration-150"
-                    >
-                      {getDisplayAvatarUrl(user!.avatarUrl) ? (
-                        <img src={getDisplayAvatarUrl(user!.avatarUrl)!} alt={user!.name} className="h-6 w-6 rounded-full object-cover" />
-                      ) : (
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple text-[10px] font-bold text-black">
-                          {initials}
-                        </span>
-                      )}
-                      <span>{link.label}</span>
-                      {isActive(link.href) && (
-                        <span className="absolute -bottom-[0.55rem] left-0 right-0 h-[2px] rounded-full bg-orbit-electric" />
-                      )}
-                    </Link>
-                  );
-                }
-
                 // Projetos link with dropdown
                 if ((link as { hasDropdown?: boolean }).hasDropdown) {
                   return (
