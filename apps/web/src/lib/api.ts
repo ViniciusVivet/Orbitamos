@@ -484,24 +484,30 @@ function progressRowToDashboardProgress(progress?: SupabaseProgressRow | null): 
   };
 }
 
+// Colunas legiveis por qualquer autenticado (as sensiveis — email, phone, address,
+// birth_date, zip_code — foram revogadas nas migrations 013/014). Usadas no fallback.
+const PROFILE_PUBLIC_COLUMNS = "id,name,avatar_url,role,is_internal,admin_role,city,neighborhood,state,created_at";
+
 async function getSupabaseProfile(userId: string): Promise<User> {
   const client = requireSupabase();
   // Le o proprio perfil completo (inclui campos privados como telefone/endereco)
   // via funcao SECURITY DEFINER. Migration 013_profiles_pii_hardening.sql.
-  const rpc = await client.rpc("v3_get_my_profile").maybeSingle();
-  if (!rpc.error && rpc.data) {
-    return profileRowToUser(rpc.data as SupabaseProfileRow);
+  // Usamos a forma em array (sem maybeSingle) por ser mais robusta com funcoes setof.
+  const rpc = await client.rpc("v3_get_my_profile");
+  if (!rpc.error && Array.isArray(rpc.data) && rpc.data[0]) {
+    return profileRowToUser(rpc.data[0] as SupabaseProfileRow);
   }
 
-  // Fallback para ambientes sem a migration 013 aplicada.
+  // Fallback (RPC indisponivel): le apenas colunas publicas — NUNCA "*", que
+  // esbarraria no REVOKE de colunas sensiveis das migrations 013/014.
   const { data, error } = await client
     .from("v3_profiles")
-    .select("*")
+    .select(PROFILE_PUBLIC_COLUMNS)
     .eq("id", userId)
     .single();
 
   if (error) throw new Error(error.message);
-  return profileRowToUser(data as SupabaseProfileRow);
+  return profileRowToUser(data as unknown as SupabaseProfileRow);
 }
 
 async function ensureSupabaseProfile(params: {
@@ -871,14 +877,18 @@ export async function uploadAvatarViaApi(
     const { error: uploadError } = await client.storage
       .from("avatars")
       .upload(path, blob, { upsert: true, contentType });
-    if (uploadError) throw new Error(uploadError.message);
+    if (uploadError) throw new Error(`Falha ao enviar a imagem: ${uploadError.message}`);
 
     const { data: publicUrl } = client.storage.from("avatars").getPublicUrl(path);
     // Cache-bust: a URL publica do Storage e fixa, entao sem isso o navegador
     // continuaria mostrando a foto antiga (parece que "nao mudou").
     const bustedUrl = `${publicUrl.publicUrl}?v=${Date.now()}`;
-    const result = await updateProfile(token, { avatarUrl: bustedUrl });
-    return { success: true, avatarUrl: bustedUrl, user: result.user };
+    try {
+      const result = await updateProfile(token, { avatarUrl: bustedUrl });
+      return { success: true, avatarUrl: bustedUrl, user: result.user };
+    } catch (e) {
+      throw new Error(`Falha ao salvar o perfil: ${e instanceof Error ? e.message : String(e)}`);
+    }
   }
 
   const formData = new FormData();
