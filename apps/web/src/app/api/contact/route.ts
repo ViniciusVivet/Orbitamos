@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createHash } from "node:crypto";
 
 const MAX_FIELD_LENGTHS = {
   name: 120,
@@ -32,6 +33,29 @@ function isRateLimited(key: string): boolean {
   if (current.count >= RATE_LIMIT_MAX) return true;
   current.count += 1;
   return false;
+}
+
+/**
+ * Rate limit persistente no Supabase (compartilhado entre instancias serverless).
+ * Retorna true=permitido, false=bloqueado, null=indisponivel (cai pro in-memory).
+ * Envia apenas um hash do IP, nunca o IP em texto puro.
+ */
+async function checkRateLimitDb(ip: string): Promise<boolean | null> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return null;
+
+  const ipHash = createHash("sha256").update(ip).digest("hex");
+  const client = createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data, error } = await client.rpc("v3_contact_rate_check", {
+    p_ip_hash: ipHash,
+    p_max: RATE_LIMIT_MAX,
+    p_window_secs: RATE_LIMIT_WINDOW_MS / 1000,
+  });
+  if (error) return null;
+  return data === true;
 }
 
 function clean(value: unknown, maxLength: number): string {
@@ -77,7 +101,9 @@ async function saveContact(params: {
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
-  if (isRateLimited(ip)) {
+  const dbAllowed = await checkRateLimitDb(ip);
+  const limited = dbAllowed === null ? isRateLimited(ip) : !dbAllowed;
+  if (limited) {
     return NextResponse.json(
       { error: "Muitas tentativas. Tente novamente em alguns minutos." },
       { status: 429 }
