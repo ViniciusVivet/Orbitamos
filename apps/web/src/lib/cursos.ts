@@ -5,6 +5,12 @@
 
 import { isSupabaseConfigured, requireSupabase } from "@/lib/supabase";
 
+export interface QuizPergunta {
+  question: string;
+  options: string[];
+  answer: string;
+}
+
 export interface Aula {
   id: string;
   titulo: string;
@@ -14,6 +20,8 @@ export interface Aula {
   /** Texto opcional ao lado do video */
   conteudo?: string;
   materiais?: MaterialAula[];
+  /** Quiz de revisao autoral (do painel admin). Se vazio, o aluno ve o quiz automatico por area. */
+  quiz?: QuizPergunta[];
 }
 
 export interface MaterialAula {
@@ -609,6 +617,7 @@ type SupabaseLessonRow = {
   youtube_video_id: string | null;
   content: string | null;
   position: number | null;
+  quiz?: unknown;
   lesson_materials?: Array<{
     id: string;
     title: string;
@@ -636,6 +645,22 @@ type SupabaseCourseRow = {
   position: number | null;
   course_modules?: SupabaseModuleRow[];
 };
+
+function parseLessonQuiz(raw: unknown): QuizPergunta[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const questions = raw
+    .map((item) => {
+      const q = item as { question?: unknown; options?: unknown; answer?: unknown };
+      const options = Array.isArray(q.options) ? q.options.map((o) => String(o)) : [];
+      return {
+        question: typeof q.question === "string" ? q.question : "",
+        options,
+        answer: typeof q.answer === "string" ? q.answer : "",
+      };
+    })
+    .filter((q) => q.question && q.options.length >= 2);
+  return questions.length > 0 ? questions : undefined;
+}
 
 function mapSupabaseCourse(row: SupabaseCourseRow): Curso {
   const allModules = row.course_modules ?? [];
@@ -676,6 +701,7 @@ function mapSupabaseCourse(row: SupabaseCourseRow): Curso {
           titulo: lesson.title,
           youtubeVideoId: lesson.youtube_video_id ?? "",
           conteudo: lesson.content ?? undefined,
+          quiz: parseLessonQuiz(lesson.quiz),
           materiais: [...(lesson.lesson_materials ?? [])]
             .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
             .map((material) => ({
@@ -693,9 +719,9 @@ function mapSupabaseCourse(row: SupabaseCourseRow): Curso {
 export async function listarCursosAcademy(): Promise<Curso[]> {
   if (!isSupabaseConfigured) return cursos;
 
-  const { data, error } = await requireSupabase()
-    .from("courses")
-    .select(`
+  // A coluna `quiz` so existe apos a migration 016. Tentamos com ela e, se falhar,
+  // repetimos sem — assim o catalogo do banco continua funcionando antes da migration.
+  const buildSelect = (withQuiz: boolean) => `
       id,
       slug,
       title,
@@ -714,7 +740,7 @@ export async function listarCursosAcademy(): Promise<Curso[]> {
           description,
           youtube_video_id,
           content,
-          position,
+          position,${withQuiz ? "\n          quiz," : ""}
           lesson_materials (
             id,
             title,
@@ -725,9 +751,22 @@ export async function listarCursosAcademy(): Promise<Curso[]> {
           )
         )
       )
-    `)
+    `;
+
+  const client = requireSupabase();
+  let { data, error } = await client
+    .from("courses")
+    .select(buildSelect(true))
     .eq("is_published", true)
     .order("position", { ascending: true });
+
+  if (error) {
+    ({ data, error } = await client
+      .from("courses")
+      .select(buildSelect(false))
+      .eq("is_published", true)
+      .order("position", { ascending: true }));
+  }
 
   if (error) {
     if (process.env.NODE_ENV !== "production") console.error("[cursos] erro ao carregar cursos:", error);

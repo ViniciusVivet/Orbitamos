@@ -609,7 +609,7 @@ export default function CourseLearningRoom() {
                 <div className="mt-5 max-w-3xl">
                   <LessonQuickQuiz
                     key={lesson.id}
-                    questions={guide.quiz}
+                    questions={lesson.quiz && lesson.quiz.length > 0 ? lesson.quiz : guide.quiz}
                     storageKey={userId ? `orbitamos-quiz-v2-${userId}-${lesson.id}` : null}
                     onScoreChange={(correct, total) => setQuizScore({ correct, total })}
                   />
