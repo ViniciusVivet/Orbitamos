@@ -508,7 +508,7 @@ export default function ForumPage() {
                 </button>
               </form>
 
-              <div className="mt-3 flex gap-2 overflow-x-auto pb-1 xl:hidden">
+              <div className="mt-3 flex gap-2 overflow-x-auto pb-1 xl:hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {["Todos", ...TOPICS.map((topic) => topic.label)].map((label) => (
                   <button
                     key={label}

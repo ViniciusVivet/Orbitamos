@@ -95,7 +95,7 @@ export default function ColaboradorVagas() {
             className="h-11 w-full rounded-lg border border-white/10 bg-white/[0.04] pl-9 pr-4 text-sm text-white placeholder:text-white/30 outline-none transition focus:border-orbit-electric/50 focus:ring-2 focus:ring-orbit-electric/10"
           />
         </div>
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <Filter className="size-3.5 shrink-0 text-white/40" />
           <div className="flex gap-1">
             {TYPE_OPTIONS.map((opt) => (

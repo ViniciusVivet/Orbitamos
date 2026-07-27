@@ -149,7 +149,7 @@ export default function PraticaIndex() {
                 className="h-12 w-full rounded-xl border border-white/10 bg-black/35 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-orbit-electric/50 focus:ring-4 focus:ring-orbit-electric/10"
               />
             </div>
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {([
                 ["todos", "Todos"],
                 ["novo", "Novos"],
