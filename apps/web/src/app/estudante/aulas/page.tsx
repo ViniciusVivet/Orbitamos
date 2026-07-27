@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Check, ListFilter, Search, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import CourseRow from "@/components/estudante/CourseRow";
 import { useAuth } from "@/contexts/AuthContext";
 import type { UserId } from "@/lib/api";
 import {
@@ -357,7 +358,7 @@ export default function EstudanteAulas() {
                 ))}
               </div>
             ) : filteredMatchingCourses.length > 0 ? (
-              <div className="flex snap-x gap-4 overflow-x-auto pb-4">{filteredMatchingCourses.map((curso, index) => courseCard(curso, index))}</div>
+              <CourseRow className="flex snap-x gap-4 overflow-x-auto pb-4">{filteredMatchingCourses.map((curso, index) => courseCard(curso, index))}</CourseRow>
             ) : (
               <div className="rounded-3xl border border-dashed border-white/15 bg-white/[.025] px-6 py-14 text-center">
                 <Search className="mx-auto size-8 text-white/25" />
@@ -399,9 +400,9 @@ export default function EstudanteAulas() {
               <section>
                 <h2 className="text-2xl font-black text-white">Explore todos os cursos</h2>
                 <p className="mt-1 text-sm text-white/45">Deslize para encontrar sua próxima habilidade.</p>
-                <div className="mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5 [scrollbar-color:rgba(255,255,255,.18)_transparent]">
+                <CourseRow className="mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5">
                   {cursos.map((curso, index) => courseCard(curso, index))}
-                </div>
+                </CourseRow>
               </section>
             )}
 
@@ -416,9 +417,9 @@ export default function EstudanteAulas() {
                   </div>
                   <span className="hidden text-xs text-white/35 sm:block">{track.cursos.length} cursos</span>
                 </div>
-                <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5 [scrollbar-color:rgba(255,255,255,.18)_transparent]">
+                <CourseRow className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5">
                   {track.cursos.map((curso, index) => courseCard(curso, index + trackIndex, true))}
-                </div>
+                </CourseRow>
               </section>
             ))}
 
