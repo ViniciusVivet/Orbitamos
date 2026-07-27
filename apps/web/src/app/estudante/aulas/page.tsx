@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Search, Sparkles, X } from "lucide-react";
+import { Check, ListFilter, Search, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import type { UserId } from "@/lib/api";
@@ -137,6 +137,20 @@ export default function EstudanteAulas() {
   );
 
   const trackGroups = useMemo(() => getCourseTrackGroups(cursos), [cursos]);
+
+  const [selectedTracks, setSelectedTracks] = useState<string[]>([]);
+  const toggleTrack = (id: string) =>
+    setSelectedTracks((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
+  const allowedSlugs = useMemo(() => {
+    if (!selectedTracks.length) return null;
+    const set = new Set<string>();
+    trackGroups.forEach((track) => {
+      if (selectedTracks.includes(track.id)) track.cursos.forEach((curso) => set.add(curso.slug));
+    });
+    return set;
+  }, [selectedTracks, trackGroups]);
+  const visibleTracks = selectedTracks.length ? trackGroups.filter((track) => selectedTracks.includes(track.id)) : trackGroups;
+
   const suggested =
     cursos.find((curso) => (progressByCourse.get(curso.slug) ?? 0) > 0 && (progressByCourse.get(curso.slug) ?? 0) < totalAulas(curso)) ??
     cursos.find((curso) => (progressByCourse.get(curso.slug) ?? 0) < totalAulas(curso)) ??
@@ -168,6 +182,15 @@ export default function EstudanteAulas() {
       )
     );
   }, [cursos, query]);
+
+  const filteredSearchResults = useMemo(
+    () => (allowedSlugs ? searchResults.filter((result) => allowedSlugs.has(result.curso.slug)) : searchResults),
+    [searchResults, allowedSlugs]
+  );
+  const filteredMatchingCourses = useMemo(
+    () => (allowedSlugs ? matchingCourses.filter((curso) => allowedSlugs.has(curso.slug)) : matchingCourses),
+    [matchingCourses, allowedSlugs]
+  );
 
   function courseCard(curso: Curso, index: number, compact = false) {
     const total = totalAulas(curso);
@@ -257,6 +280,36 @@ export default function EstudanteAulas() {
               </button>
             )}
           </div>
+
+          {trackGroups.length > 0 && (
+            <div className="mt-3 flex max-w-full flex-wrap items-center gap-2">
+              <span className="mr-1 inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-white/35">
+                <ListFilter className="size-3.5" /> Áreas
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedTracks([])}
+                className={`inline-flex min-h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition ${selectedTracks.length === 0 ? "border-orbit-electric/50 bg-orbit-electric/15 text-orbit-electric" : "border-white/10 bg-white/[.03] text-white/55 hover:bg-white/[.07] hover:text-white"}`}
+              >
+                Todas
+              </button>
+              {trackGroups.map((track) => {
+                const active = selectedTracks.includes(track.id);
+                return (
+                  <button
+                    key={track.id}
+                    type="button"
+                    onClick={() => toggleTrack(track.id)}
+                    className={`inline-flex min-h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition ${active ? "border-orbit-electric/50 bg-orbit-electric/15 text-orbit-electric" : "border-white/10 bg-white/[.03] text-white/55 hover:bg-white/[.07] hover:text-white"}`}
+                  >
+                    <span aria-hidden>{track.icon}</span>
+                    {track.titulo}
+                    {active && <Check className="size-3.5" />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
@@ -274,7 +327,7 @@ export default function EstudanteAulas() {
               <div>
                 <p className="text-xs font-bold uppercase tracking-[.2em] text-orbit-electric">Busca inteligente</p>
                 <h2 className="mt-1 text-2xl font-black text-white">
-                  {searchResults.length} {searchResults.length === 1 ? "aula encontrada" : "aulas encontradas"}
+                  {filteredSearchResults.length} {filteredSearchResults.length === 1 ? "aula encontrada" : "aulas encontradas"}
                 </h2>
                 <p className="mt-1 text-sm text-white/45">Resultados relacionados a “{query}”</p>
               </div>
@@ -283,9 +336,9 @@ export default function EstudanteAulas() {
               </Button>
             </div>
 
-            {searchResults.length > 0 ? (
+            {filteredSearchResults.length > 0 ? (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {searchResults.map(({ aula, curso, modulo, completed }, index) => (
+                {filteredSearchResults.map(({ aula, curso, modulo, completed }, index) => (
                   <Link
                     key={`${curso.id}-${aula.id}`}
                     href={`/estudante/cursos/${curso.slug}`}
@@ -303,8 +356,8 @@ export default function EstudanteAulas() {
                   </Link>
                 ))}
               </div>
-            ) : matchingCourses.length > 0 ? (
-              <div className="flex snap-x gap-4 overflow-x-auto pb-4">{matchingCourses.map((curso, index) => courseCard(curso, index))}</div>
+            ) : filteredMatchingCourses.length > 0 ? (
+              <div className="flex snap-x gap-4 overflow-x-auto pb-4">{filteredMatchingCourses.map((curso, index) => courseCard(curso, index))}</div>
             ) : (
               <div className="rounded-3xl border border-dashed border-white/15 bg-white/[.025] px-6 py-14 text-center">
                 <Search className="mx-auto size-8 text-white/25" />
@@ -342,15 +395,17 @@ export default function EstudanteAulas() {
               </section>
             )}
 
-            <section>
-              <h2 className="text-2xl font-black text-white">Explore todos os cursos</h2>
-              <p className="mt-1 text-sm text-white/45">Deslize para encontrar sua próxima habilidade.</p>
-              <div className="mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5 [scrollbar-color:rgba(255,255,255,.18)_transparent]">
-                {cursos.map((curso, index) => courseCard(curso, index))}
-              </div>
-            </section>
+            {selectedTracks.length === 0 && (
+              <section>
+                <h2 className="text-2xl font-black text-white">Explore todos os cursos</h2>
+                <p className="mt-1 text-sm text-white/45">Deslize para encontrar sua próxima habilidade.</p>
+                <div className="mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5 [scrollbar-color:rgba(255,255,255,.18)_transparent]">
+                  {cursos.map((curso, index) => courseCard(curso, index))}
+                </div>
+              </section>
+            )}
 
-            {trackGroups.map((track, trackIndex) => (
+            {visibleTracks.map((track, trackIndex) => (
               <section key={track.id}>
                 <div className="mb-4 flex items-end justify-between gap-4">
                   <div>
