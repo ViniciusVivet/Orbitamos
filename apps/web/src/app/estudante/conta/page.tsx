@@ -19,26 +19,28 @@ export default function EstudanteConta() {
 
   return (
     <div className="-mx-4 -mt-4 min-h-screen overflow-hidden pb-14 sm:-mt-6 lg:-mx-6 lg:-mt-8">
-      <section className="relative isolate overflow-hidden border-b border-white/10 px-4 pb-9 pt-10 sm:px-8 lg:px-10">
+      <section className="relative isolate overflow-hidden border-b border-white/10 px-4 py-5 sm:px-8 sm:py-6 lg:px-10">
         <div className="absolute inset-0 -z-20 bg-[#03050a]" />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_90%_at_88%_10%,rgba(139,92,246,.25),transparent_60%),radial-gradient(ellipse_55%_80%_at_4%_55%,rgba(0,212,255,.14),transparent_68%)]" />
-        <div className="mx-auto max-w-7xl">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-orbit-electric">
-            <UserRound className="size-4" /> Sua identidade na Orbitamos
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_120%_at_92%_0%,rgba(139,92,246,.16),transparent_60%),radial-gradient(ellipse_50%_100%_at_0%_100%,rgba(0,212,255,.1),transparent_68%)]" />
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[.22em] text-orbit-electric">
+              <UserRound className="size-3.5" /> Sua identidade na Orbitamos
+            </div>
+            <h1 className="mt-1.5 text-xl font-black tracking-tight text-white sm:text-2xl lg:text-3xl">
+              Conta e <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">perfil.</span>
+            </h1>
+            <p className="mt-1.5 max-w-xl text-xs leading-5 text-white/50 sm:text-sm">
+              Mantenha seus dados atualizados para personalizar sua experiência e se apresentar na comunidade.
+            </p>
           </div>
-          <h1 className="mt-3 text-4xl font-black tracking-tight text-white sm:text-5xl">
-            Conta e <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">perfil.</span>
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/55">
-            Mantenha seus dados atualizados para personalizar sua experiência e se apresentar melhor dentro da comunidade.
-          </p>
 
-          <div className="mt-7 max-w-xl rounded-2xl border border-white/10 bg-black/30 p-4 backdrop-blur-xl">
+          <div className="w-full shrink-0 rounded-2xl border border-white/10 bg-black/30 p-3.5 backdrop-blur-xl lg:w-80">
             <div className="flex items-center justify-between text-sm">
               <span className="font-bold text-white">Perfil {completeness}% completo</span>
-              <span className="text-xs text-white/40">{completedFields} de {profileFields.length} informações essenciais</span>
+              <span className="text-[11px] text-white/40">{completedFields}/{profileFields.length}</span>
             </div>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+            <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-white/10">
               <div className="h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple" style={{ width: `${completeness}%` }} />
             </div>
           </div>

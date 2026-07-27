@@ -105,40 +105,40 @@ export default function EstudanteProgresso() {
 
   return (
     <div className="-mx-4 -mt-4 min-h-screen overflow-hidden pb-14 sm:-mt-6 lg:-mx-6 lg:-mt-8">
-      <section className="relative isolate overflow-hidden border-b border-white/10 px-4 pb-10 pt-10 sm:px-8 lg:px-10">
+      <section className="relative isolate overflow-hidden border-b border-white/10 px-4 py-5 sm:px-8 sm:py-6 lg:px-10">
         <div className="absolute inset-0 -z-20 bg-[#03050a]" />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_65%_100%_at_85%_10%,rgba(139,92,246,.27),transparent_60%),radial-gradient(ellipse_55%_80%_at_5%_55%,rgba(0,212,255,.16),transparent_68%)]" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_55%_120%_at_88%_0%,rgba(139,92,246,.18),transparent_60%),radial-gradient(ellipse_50%_100%_at_5%_100%,rgba(0,212,255,.12),transparent_68%)]" />
         <div className="mx-auto max-w-7xl">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-orbit-electric">
-            <Orbit className="size-4" /> Telemetria da jornada
+          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[.22em] text-orbit-electric">
+            <Orbit className="size-3.5" /> Telemetria da jornada
           </div>
-          <h1 className="mt-3 text-2xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
+          <h1 className="mt-1.5 text-xl font-black tracking-tight text-white sm:text-2xl lg:text-3xl">
             Sua evolução, <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">sem atalhos.</span>
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/55">
-            Acompanhe o que você concluiu, o que está praticando e qual é o próximo marco da sua órbita.
+          <p className="mt-1.5 max-w-xl text-xs leading-5 text-white/50 sm:text-sm">
+            Acompanhe o que concluiu, o que está praticando e qual é o próximo marco da sua órbita.
           </p>
 
-          <div className="mt-8 grid grid-cols-2 gap-3 xl:grid-cols-4">
-            <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/[.07] p-4">
-              <BookOpen className="size-5 text-cyan-300" />
-              <div className="mt-4 text-3xl font-black text-white">{completedLessons}</div>
-              <div className="mt-1 text-xs text-white/45">de {totalLessons || "—"} aulas concluídas</div>
+          <div className="mt-5 grid grid-cols-2 gap-2.5 xl:grid-cols-4">
+            <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/[.07] p-3.5">
+              <BookOpen className="size-4 text-cyan-300" />
+              <div className="mt-2 text-2xl font-black text-white">{completedLessons}</div>
+              <div className="mt-0.5 text-[11px] text-white/45">de {totalLessons || "—"} aulas concluídas</div>
             </div>
-            <div className="rounded-2xl border border-violet-400/20 bg-violet-400/[.07] p-4">
-              <Rocket className="size-5 text-violet-300" />
-              <div className="mt-4 text-3xl font-black text-white">{progress.xp}</div>
-              <div className="mt-1 text-xs text-white/45">XP · nível {progress.level}</div>
+            <div className="rounded-xl border border-violet-400/20 bg-violet-400/[.07] p-3.5">
+              <Rocket className="size-4 text-violet-300" />
+              <div className="mt-2 text-2xl font-black text-white">{progress.xp}</div>
+              <div className="mt-0.5 text-[11px] text-white/45">XP · nível {progress.level}</div>
             </div>
-            <div className="rounded-2xl border border-orange-400/20 bg-orange-400/[.07] p-4">
-              <Flame className="size-5 text-orange-300" />
-              <div className="mt-4 text-3xl font-black text-white">{progress.streakDays}</div>
-              <div className="mt-1 text-xs text-white/45">{progress.streakDays === 1 ? "dia de sequência" : "dias de sequência"}</div>
+            <div className="rounded-xl border border-orange-400/20 bg-orange-400/[.07] p-3.5">
+              <Flame className="size-4 text-orange-300" />
+              <div className="mt-2 text-2xl font-black text-white">{progress.streakDays}</div>
+              <div className="mt-0.5 text-[11px] text-white/45">{progress.streakDays === 1 ? "dia de sequência" : "dias de sequência"}</div>
             </div>
-            <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[.07] p-4">
-              <Code2 className="size-5 text-emerald-300" />
-              <div className="mt-4 text-3xl font-black text-white">{completedChallenges}</div>
-              <div className="mt-1 text-xs text-white/45">de {desafios.length} desafios concluídos</div>
+            <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/[.07] p-3.5">
+              <Code2 className="size-4 text-emerald-300" />
+              <div className="mt-2 text-2xl font-black text-white">{completedChallenges}</div>
+              <div className="mt-0.5 text-[11px] text-white/45">de {desafios.length} desafios concluídos</div>
             </div>
           </div>
         </div>

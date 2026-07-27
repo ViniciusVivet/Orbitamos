@@ -35,33 +35,35 @@ const mentoringGoals = [
 export default function EstudanteMentorias() {
   return (
     <div className="-mx-4 -mt-4 min-h-screen overflow-hidden pb-14 sm:-mt-6 lg:-mx-6 lg:-mt-8">
-      <section className="relative isolate overflow-hidden border-b border-white/10 px-4 pb-10 pt-10 sm:px-8 lg:px-10">
+      <section className="relative isolate overflow-hidden border-b border-white/10 px-4 py-5 sm:px-8 sm:py-6 lg:px-10">
         <div className="absolute inset-0 -z-20 bg-[#03050a]" />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_90%_at_85%_10%,rgba(139,92,246,.3),transparent_62%),radial-gradient(ellipse_55%_75%_at_5%_55%,rgba(0,212,255,.14),transparent_70%)]" />
-        <div className="mx-auto max-w-7xl">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-violet-300">
-            <Users className="size-4" /> Orientação humana
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_120%_at_88%_0%,rgba(139,92,246,.2),transparent_62%),radial-gradient(ellipse_50%_100%_at_5%_100%,rgba(0,212,255,.1),transparent_70%)]" />
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[.22em] text-violet-300">
+              <Users className="size-3.5" /> Orientação humana
+            </div>
+            <h1 className="mt-1.5 max-w-2xl text-xl font-black tracking-tight text-white sm:text-2xl lg:text-3xl">
+              Você não precisa descobrir <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">tudo sozinho.</span>
+            </h1>
+            <p className="mt-1.5 max-w-xl text-xs leading-5 text-white/50 sm:text-sm">
+              Transforme dúvida em plano: explique seu momento, receba uma direção e volte para a prática com um próximo passo claro.
+            </p>
           </div>
-          <h1 className="mt-3 max-w-4xl text-2xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
-            Você não precisa descobrir <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">tudo sozinho.</span>
-          </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-white/55">
-            Use a mentoria para transformar dúvida em plano: explique seu momento, receba uma direção e volte para a prática com um próximo passo claro.
-          </p>
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col">
             <Link
               href={whatsappMentoriaUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-black text-black transition hover:bg-white/90 touch-manipulation"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-white px-5 text-[13px] font-black text-black transition hover:bg-white/90 touch-manipulation"
             >
               <MessageCircle className="size-4" /> Solicitar orientação
             </Link>
             <Link
               href="/mentorias"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/20 bg-black/20 px-6 text-sm font-bold text-white transition hover:bg-white/10 touch-manipulation"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/20 bg-black/20 px-5 text-[13px] font-bold text-white transition hover:bg-white/10 touch-manipulation"
             >
-              Conhecer os programas <ArrowRight className="size-4" />
+              Ver programas <ArrowRight className="size-4" />
             </Link>
           </div>
         </div>

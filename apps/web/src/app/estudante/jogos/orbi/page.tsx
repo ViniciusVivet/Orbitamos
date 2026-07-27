@@ -71,39 +71,38 @@ export default function GuiaOrbiMapa() {
   return (
     <div className="-mx-4 -mt-4 min-h-screen pb-14 sm:-mt-6 lg:-mx-6 lg:-mt-8">
       {/* Hero */}
-      <section className="relative isolate overflow-hidden border-b border-white/10 px-4 pb-10 pt-8 sm:px-8 lg:px-10">
+      <section className="relative isolate overflow-hidden border-b border-white/10 px-4 py-5 sm:px-8 sm:py-6 lg:px-10">
         <div className="absolute inset-0 -z-20 bg-[#03050a]" />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_95%_at_80%_0%,rgba(0,212,255,.2),transparent_60%),radial-gradient(ellipse_55%_80%_at_10%_70%,rgba(139,92,246,.22),transparent_68%)]" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_55%_120%_at_85%_0%,rgba(0,212,255,.16),transparent_60%),radial-gradient(ellipse_50%_100%_at_8%_100%,rgba(139,92,246,.16),transparent_68%)]" />
         <div className="mx-auto max-w-7xl">
           <Link href="/estudante/jogos" className="inline-flex items-center gap-1.5 text-xs font-bold text-white/45 transition hover:text-white">
             <ArrowLeft className="size-3.5" /> Todos os jogos
           </Link>
-          <div className="mt-4 flex flex-col gap-6 sm:flex-row sm:items-center">
+          <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center">
             <img
               src="/orbi-tech.png"
               alt="Orbi, o mascote da Orbitamos"
-              className="w-28 shrink-0 sm:w-36"
+              className="w-16 shrink-0 sm:w-24"
               style={{ animation: "orbi-game-hover 3.5s ease-in-out infinite" }}
             />
-            <div>
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-orbit-electric">
-                <Rocket className="size-4" /> Guia o Orbi
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[.22em] text-orbit-electric">
+                <Rocket className="size-3.5" /> Guia o Orbi
               </div>
-              <h1 className="mt-2 max-w-3xl text-2xl font-black tracking-tight text-white sm:text-4xl">
+              <h1 className="mt-1.5 max-w-3xl text-xl font-black tracking-tight text-white sm:text-2xl lg:text-3xl">
                 Programe o voo do Orbi{" "}
                 <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">
                   comando por comando.
                 </span>
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-white/55">
-                Monte a sequência, aperte play e veja o mascote atravessar o campo de asteroides até o portal.
-                Dos primeiros passos até funções e recursão — sem escrever uma linha de código.
+              <p className="mt-1.5 max-w-xl text-xs leading-5 text-white/50 sm:text-sm">
+                Monte a sequência, aperte play e leve o mascote até o portal — de primeiros passos a funções e recursão, sem digitar código.
               </p>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <div className="rounded-full border border-white/10 bg-black/30 px-4 py-2 text-xs text-white/55">
+              <div className="mt-3 flex flex-wrap gap-2">
+                <div className="rounded-full border border-white/10 bg-black/30 px-3 py-1.5 text-[11px] text-white/60">
                   <strong className="text-white">{concluidos}</strong>/{niveisGuiaOrbi.length} níveis
                 </div>
-                <div className="flex items-center gap-1.5 rounded-full border border-amber-400/20 bg-amber-400/[.07] px-4 py-2 text-xs text-amber-200">
+                <div className="flex items-center gap-1.5 rounded-full border border-amber-400/20 bg-amber-400/[.07] px-3 py-1.5 text-[11px] text-amber-200">
                   <Star className="size-3.5 fill-amber-300 text-amber-300" />
                   <strong>{totalEstrelas}</strong>/{niveisGuiaOrbi.length * 3} estrelas
                 </div>

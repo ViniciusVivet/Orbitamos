@@ -12,7 +12,8 @@ export default function ColaboradorLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
+  const firstName = user?.name?.trim().split(" ")[0] ?? "";
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -54,18 +55,23 @@ export default function ColaboradorLayout({
         onCloseMobile={() => setMobileMenuOpen(false)}
       />
       <main className="min-h-screen pl-0 lg:pl-56">
-        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-white/10 bg-black/40 backdrop-blur-md px-4 py-3 lg:px-6">
+        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-white/[0.06] bg-[#05070d]/70 px-4 py-2.5 backdrop-blur-xl lg:px-6">
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className="lg:hidden flex h-12 min-w-[44px] shrink-0 items-center justify-center rounded-lg text-white/80 hover:bg-white/10 hover:text-white touch-manipulation"
+            className="lg:hidden flex h-10 min-w-[40px] shrink-0 items-center justify-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white touch-manipulation"
             aria-label="Abrir menu"
           >
             <span className="text-xl">&#9776;</span>
           </button>
-          <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-sm font-semibold uppercase tracking-wider text-transparent">
-            Colaborador
-          </span>
+          <div className="flex min-w-0 items-center gap-2.5">
+            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-orbit-purple to-orbit-electric text-xs font-black text-black">
+              {firstName ? firstName[0].toUpperCase() : "?"}
+            </span>
+            <p className="min-w-0 truncate text-sm font-medium text-white/90">
+              {firstName ? `Olá, ${firstName}` : "Colaborador"}
+            </p>
+          </div>
           <div className="ml-auto">
             <NotificacaoBadge count={notifications.filter((item) => !item.readAt).length} onClick={() => setNotifOpen(true)} />
           </div>
