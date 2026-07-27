@@ -219,26 +219,25 @@ export default function EstudanteAulas() {
 
   return (
     <div className="-mx-4 -mt-4 overflow-hidden pb-12 sm:-mt-6 lg:-mx-6 lg:-mt-8">
-      <section className="relative isolate overflow-hidden border-b border-white/10 px-4 pb-6 pt-6 sm:px-8 sm:pb-8 sm:pt-8 lg:px-12">
+      <section className="relative isolate overflow-hidden border-b border-white/10 px-4 py-5 sm:px-8 sm:py-6 lg:px-12">
         <div className="absolute inset-0 -z-20 bg-[#03050a]" />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_75%_70%_at_80%_15%,rgba(139,92,246,.34),transparent_60%),radial-gradient(ellipse_60%_70%_at_15%_40%,rgba(0,212,255,.22),transparent_65%)]" />
-        <div className="absolute inset-x-0 bottom-0 -z-10 h-20 bg-gradient-to-t from-black to-transparent" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_120%_at_85%_0%,rgba(139,92,246,.22),transparent_60%),radial-gradient(ellipse_50%_100%_at_10%_100%,rgba(0,212,255,.16),transparent_65%)]" />
 
         <div className="mx-auto max-w-7xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-orbit-electric/25 bg-orbit-electric/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[.2em] text-orbit-electric">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-orbit-electric/25 bg-orbit-electric/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[.2em] text-orbit-electric">
             <Sparkles className="size-3" /> Seu universo de aprendizado
           </div>
-          <h1 className="mt-3 max-w-3xl text-2xl font-black leading-[1.1] text-white sm:text-3xl lg:text-4xl">
-            Aprenda no seu ritmo.
-            <span className="inline sm:block bg-gradient-to-r from-orbit-electric via-white to-orbit-purple bg-clip-text text-transparent">
-              {" "}Evolua em cada missão.
+          <h1 className="mt-2 max-w-3xl text-xl font-black leading-[1.1] tracking-tight text-white sm:text-2xl lg:text-3xl">
+            Aprenda no seu ritmo.{" "}
+            <span className="bg-gradient-to-r from-orbit-electric via-white to-orbit-purple bg-clip-text text-transparent">
+              Evolua em cada missão.
             </span>
           </h1>
-          <p className="mt-2 max-w-2xl text-xs leading-5 text-white/60 sm:text-sm">
+          <p className="mt-1.5 max-w-2xl text-xs leading-5 text-white/55 sm:text-sm">
             Aulas, práticas e trilhas organizadas para você sair da teoria e construir projetos reais.
           </p>
 
-          <div className="relative mt-5 max-w-3xl">
+          <div className="relative mt-4 max-w-3xl">
             <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-orbit-electric" />
             <input
               value={query}

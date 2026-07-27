@@ -14,6 +14,7 @@ export default function EstudanteLayout({
   children: React.ReactNode;
 }) {
   const { user, isAuthenticated, loading } = useAuth();
+  const firstName = user?.name?.trim().split(" ")[0] ?? "";
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -57,25 +58,27 @@ export default function EstudanteLayout({
         onCloseMobile={() => setMobileMenuOpen(false)}
       />
       <main className="min-h-screen pl-0 lg:pl-56">
-        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-white/10 bg-black/40 backdrop-blur-md px-4 py-3 lg:px-6">
+        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-white/[0.06] bg-[#05070d]/70 px-4 py-2.5 backdrop-blur-xl lg:px-6">
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className="lg:hidden flex h-12 min-w-[44px] shrink-0 items-center justify-center rounded-lg text-white/80 hover:bg-white/10 hover:text-white touch-manipulation"
+            className="lg:hidden flex h-10 min-w-[40px] shrink-0 items-center justify-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white touch-manipulation"
             aria-label="Abrir menu"
           >
             <span className="text-xl">&#9776;</span>
           </button>
-          <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-sm font-semibold uppercase tracking-wider text-transparent min-w-0 truncate">
-            Sua sessão
-          </span>
-          {user?.name && (
-            <span className="hidden sm:inline truncate text-white/50 text-sm">· {user.name}</span>
-          )}
-          <div className="ml-auto flex items-center gap-1">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-orbit-electric to-orbit-purple text-xs font-black text-black">
+              {firstName ? firstName[0].toUpperCase() : "?"}
+            </span>
+            <p className="min-w-0 truncate text-sm font-medium text-white/90">
+              {firstName ? `Olá, ${firstName}` : "Bem-vindo"}
+            </p>
+          </div>
+          <div className="ml-auto flex items-center gap-1.5">
             <Link
               href="/colaborador"
-              className="inline-flex min-h-10 items-center rounded-lg border border-orbit-purple/35 bg-orbit-purple/10 px-3 text-[11px] font-bold text-orbit-purple lg:hidden"
+              className="inline-flex min-h-9 items-center rounded-lg border border-orbit-purple/30 bg-orbit-purple/10 px-3 text-[11px] font-bold text-orbit-purple lg:hidden"
               aria-label="Ir para a área do colaborador"
             >
               Trabalhar

@@ -34,30 +34,31 @@ export default function JogosIndex() {
   return (
     <div className="-mx-4 -mt-4 min-h-screen pb-14 sm:-mt-6 lg:-mx-6 lg:-mt-8">
       {/* Hero */}
-      <section className="relative isolate overflow-hidden border-b border-white/10 px-4 pb-10 pt-10 sm:px-8 lg:px-10">
+      <section className="relative isolate overflow-hidden border-b border-white/10 px-4 py-5 sm:px-8 sm:py-6 lg:px-10">
         <div className="absolute inset-0 -z-20 bg-[#03050a]" />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_95%_at_15%_8%,rgba(139,92,246,.24),transparent_60%),radial-gradient(ellipse_55%_80%_at_90%_60%,rgba(0,212,255,.18),transparent_68%)]" />
-        <div className="mx-auto max-w-7xl">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-orbit-purple">
-            <Gamepad2 className="size-4" /> Jogos Orbitamos
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_120%_at_10%_0%,rgba(139,92,246,.18),transparent_60%),radial-gradient(ellipse_50%_100%_at_95%_100%,rgba(0,212,255,.14),transparent_68%)]" />
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[.22em] text-orbit-purple">
+              <Gamepad2 className="size-3.5" /> Jogos Orbitamos
+            </div>
+            <h1 className="mt-1.5 text-xl font-black tracking-tight text-white sm:text-2xl lg:text-3xl">
+              Aprenda a pensar em código{" "}
+              <span className="bg-gradient-to-r from-orbit-purple to-orbit-electric bg-clip-text text-transparent">jogando.</span>
+            </h1>
+            <p className="mt-1.5 max-w-xl text-xs leading-5 text-white/50 sm:text-sm">
+              Dois jogos, zero digitação: guie o Orbi pelo espaço com comandos ou monte programas com blocos. Funciona até no celular.
+            </p>
           </div>
-          <h1 className="mt-3 max-w-4xl text-2xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
-            Aprenda a pensar em código{" "}
-            <span className="bg-gradient-to-r from-orbit-purple to-orbit-electric bg-clip-text text-transparent">jogando.</span>
-          </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-white/55">
-            Dois jogos, zero digitação: guie o mascote Orbi pelo espaço programando comandos, ou monte
-            programas organizando blocos embaralhados. Perfeito para treinar em qualquer lugar, até pelo celular.
-          </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <div className="rounded-full border border-white/10 bg-black/30 px-4 py-2 text-xs text-white/55">
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <div className="rounded-full border border-white/10 bg-black/30 px-3 py-1.5 text-[11px] text-white/60">
               <strong className="text-white">2</strong> jogos · <strong className="text-white">{fasesMonteCodigo.length + 8}</strong> fases
             </div>
-            <div className="rounded-full border border-emerald-400/20 bg-emerald-400/[.07] px-4 py-2 text-xs text-emerald-200">
+            <div className="rounded-full border border-emerald-400/20 bg-emerald-400/[.07] px-3 py-1.5 text-[11px] text-emerald-200">
               <strong>{concluidas}</strong> concluídas
             </div>
-            <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/30 px-4 py-2 text-xs text-white/55">
-              <Smartphone className="size-3.5" /> Funciona no celular
+            <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/30 px-3 py-1.5 text-[11px] text-white/60">
+              <Smartphone className="size-3.5" /> No celular
             </div>
           </div>
         </div>

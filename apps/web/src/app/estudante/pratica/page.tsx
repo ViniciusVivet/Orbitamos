@@ -81,27 +81,29 @@ export default function PraticaIndex() {
 
   return (
     <div className="-mx-4 -mt-4 min-h-screen overflow-hidden pb-14 sm:-mt-6 lg:-mx-6 lg:-mt-8">
-      <section className="relative isolate overflow-hidden border-b border-white/10 px-4 pb-10 pt-10 sm:px-8 lg:px-10">
+      <section className="relative isolate overflow-hidden border-b border-white/10 px-4 py-5 sm:px-8 sm:py-6 lg:px-10">
         <div className="absolute inset-0 -z-20 bg-[#03050a]" />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_95%_at_85%_8%,rgba(0,212,255,.22),transparent_60%),radial-gradient(ellipse_55%_80%_at_5%_60%,rgba(139,92,246,.2),transparent_68%)]" />
-        <div className="mx-auto max-w-7xl">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-orbit-electric">
-            <TerminalSquare className="size-4" /> Laboratório Orbitamos
-          </div>
-          <h1 className="mt-3 max-w-4xl text-2xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
-            Aprender código exige <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">escrever código.</span>
-          </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-white/55">
-            Resolva missões curtas, execute com segurança no navegador e receba orientação por etapas sem entregar a resposta de primeira.
-          </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <div className="rounded-full border border-white/10 bg-black/30 px-4 py-2 text-xs text-white/55">
-              <strong className="text-white">{desafios.length}</strong> desafios disponíveis
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_120%_at_90%_0%,rgba(0,212,255,.16),transparent_60%),radial-gradient(ellipse_50%_100%_at_0%_100%,rgba(139,92,246,.14),transparent_68%)]" />
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[.22em] text-orbit-electric">
+              <TerminalSquare className="size-3.5" /> Laboratório Orbitamos
             </div>
-            <div className="rounded-full border border-emerald-400/20 bg-emerald-400/[.07] px-4 py-2 text-xs text-emerald-200">
+            <h1 className="mt-1.5 text-xl font-black tracking-tight text-white sm:text-2xl lg:text-3xl">
+              Aprender código exige <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">escrever código.</span>
+            </h1>
+            <p className="mt-1.5 max-w-xl text-xs leading-5 text-white/50 sm:text-sm">
+              Missões curtas, execução segura no navegador e ajuda por etapas — sem entregar a resposta de primeira.
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <div className="rounded-full border border-white/10 bg-black/30 px-3 py-1.5 text-[11px] text-white/60">
+              <strong className="text-white">{desafios.length}</strong> desafios
+            </div>
+            <div className="rounded-full border border-emerald-400/20 bg-emerald-400/[.07] px-3 py-1.5 text-[11px] text-emerald-200">
               <strong>{completed}</strong> concluídos
             </div>
-            <div className="rounded-full border border-amber-400/20 bg-amber-400/[.07] px-4 py-2 text-xs text-amber-200">
+            <div className="rounded-full border border-amber-400/20 bg-amber-400/[.07] px-3 py-1.5 text-[11px] text-amber-200">
               <strong>{inProgress}</strong> em andamento
             </div>
           </div>
