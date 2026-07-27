@@ -873,10 +873,18 @@ export async function uploadAvatarViaApi(
     if (!userId) throw new Error("Sessão não encontrada");
 
     const { blob, extension, contentType } = await prepareAvatarUpload(file);
-    const path = `${userId}/avatar.${extension}`;
-    const { error: uploadError } = await client.storage
-      .from("avatars")
-      .upload(path, blob, { upsert: true, contentType });
+    let path = `${userId}/avatar.${extension}`;
+    let uploadError = (await client.storage.from("avatars").upload(path, blob, { upsert: true, contentType })).error;
+
+    // Fallback: se o bucket recusar o tipo convertido (ex.: WebP restrito), sobe o arquivo original.
+    if (uploadError) {
+      const fallbackExt = ALLOWED_AVATAR_TYPES[file.type] ?? "jpg";
+      path = `${userId}/avatar.${fallbackExt}`;
+      uploadError = (await client.storage.from("avatars").upload(path, file, {
+        upsert: true,
+        contentType: file.type || "image/jpeg",
+      })).error;
+    }
     if (uploadError) throw new Error(`Falha ao enviar a imagem: ${uploadError.message}`);
 
     const { data: publicUrl } = client.storage.from("avatars").getPublicUrl(path);
