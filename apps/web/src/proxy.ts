@@ -44,9 +44,14 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const result = await supabase.auth.getUser();
+    user = result.data.user;
+  } catch {
+    // Protected routes must fail closed when the auth provider is unavailable.
+    user = null;
+  }
 
   if (!user) {
     const redirectUrl = request.nextUrl.clone();

@@ -1,53 +1,89 @@
-# Testes automatizados
+# Testes e validações
 
-Ultima atualizacao: 2026-06-24
+Última atualização: 2026-07-30
 
-## Estado atual
+## Suítes atuais
 
-O app principal e `apps/web`. O backend Spring em `apps/api` e legado/fallback, entao os testes Java ajudam a preservar historico tecnico, mas nao sao o principal criterio para publicar a versao atual.
+O frontend usa Vitest para testes comportamentais e o test runner nativo do
+Node para contratos estáticos de segurança/operação.
 
-## Comandos principais
-
-Frontend:
-
-```bash
+```powershell
 cd apps/web
-npm run lint
-npm run build
+
+npm test                 # suíte Vitest
+npm run test:watch       # desenvolvimento
+npm run test:coverage    # suíte + limites de cobertura
+npm run test:contracts   # contratos SQL/rotas legados
+npx tsc --noEmit         # TypeScript
 ```
 
-Backend legado:
+`test:collaborator` foi preservado como alias de `test:contracts` para não
+quebrar comandos antigos.
 
-```bash
-cd apps/api
-mvn test
-```
+## Cobertura implementada
 
-## Onde adicionar testes novos
+| Área | Exemplos validados |
+| --- | --- |
+| Contato | limpeza, limites, email, IP e rate limiter |
+| Rota de contato | JSON inválido, persistência, falha de banco, EmailJS e `429` |
+| Materiais | traversal, MIME types, fallback PDF/DOCX, metadados e headers |
+| Proxy | rotas públicas, redirects anônimos e usuário autenticado |
+| Cursos | IDs únicos, lookup, total e próxima aula |
+| Portfólio | slugs, lookup e filtros |
+| Desafios | integridade, lookup e sequência por linguagem |
+| Jogos | execução, colisão, recursão, estrelas, navegação e storage |
+| Contratos | admin, candidatura, dados mockados e estrutura operacional |
 
-| Parte | Local sugerido | Observacao |
-| --- | --- | --- |
-| Web/React | `apps/web/src/**/*.test.tsx` | Configurar Vitest ou Jest antes de criar suite nova |
-| Rotas auxiliares do Next | perto da rota testada | Priorizar contato, materiais e auth helpers |
-| Spring legado | `apps/api/src/test/java` | Manter se o Java voltar a ser usado |
+## Resultado observado em 2026-07-30
 
-## Prioridade real
+| Verificação | Resultado |
+| --- | --- |
+| `npm test` | 8 arquivos, 101 testes passando |
+| `npm run test:coverage` | passou |
+| Statements selecionados | 98,27% |
+| Branches selecionados | 91,39% |
+| Functions selecionadas | 100% |
+| Lines selecionadas | 100% |
+| `npm run test:contracts` | 5 testes passando |
+| `npx tsc --noEmit` | passou |
+| `npm run build` | compilou e passou TypeScript; falhou no prerender de `/orbitacademy` com `Expected workStore to be initialized` |
 
-Como o produto esta em migracao para Supabase, a validacao mais importante hoje e:
+Os limites mínimos ficam em `apps/web/vitest.config.mts`:
 
-- Build do Next sem erro.
-- Login/cadastro com Supabase Auth.
-- Leitura e escrita em tabelas `v3_*` respeitando RLS.
-- Acesso a aulas e materiais.
-- Contato salvo em `v3_contacts`.
-- Navegacao entre area de estudante e colaborador.
+- statements: 80%;
+- branches: 70%;
+- functions: 80%;
+- lines: 80%.
 
-## Quando ampliar cobertura
+A cobertura é deliberadamente focada nos módulos selecionados no arquivo de
+configuração. Ela não representa 100% do aplicativo inteiro.
 
-Adicionar testes automatizados primeiro nos fluxos que quebram dinheiro ou login:
+## CI
 
-- Formulario de contato.
-- Login/cadastro/perfil.
-- Listagem e preview de materiais de aula.
-- Permissoes de colaborador/admin.
-- Funcoes de progresso do aluno.
+`.github/workflows/web-tests.yml` executa em PRs e pushes para `main` que
+alteram o web app, migrations ou o próprio workflow:
+
+1. `npm ci`;
+2. typecheck;
+3. testes com cobertura;
+4. contratos.
+
+Lint e build ainda não foram colocados como bloqueio desse workflow. A
+auditoria anterior encontrou erros de lint existentes; em 2026-07-30, o lint
+isolado excedeu o limite de execução local. O build compilou e passou pelo
+TypeScript, mas falhou ao prerenderizar `/orbitacademy` por uma invariant
+interna do Next.js. Eles devem entrar no CI quando essas falhas forem
+corrigidas e validadas.
+
+## Limites restantes
+
+Ainda faltam:
+
+- testes em navegador real;
+- integração contra um Supabase descartável;
+- execução automatizada das policies RLS;
+- testes React dos componentes e formulários;
+- testes do backend Spring em CI.
+
+Próxima prioridade: Supabase local/staging para provar que usuário comum,
+staff e admin recebem exatamente as permissões esperadas.

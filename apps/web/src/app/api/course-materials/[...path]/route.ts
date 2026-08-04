@@ -2,47 +2,19 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest } from "next/server";
+import {
+  candidateCourseMaterialFilenames,
+  getCourseMaterialContentType,
+  isSafeCourseMaterialSegment,
+  normalizeCourseMaterialStem,
+} from "@/lib/courseMaterials";
 
 export const runtime = "nodejs";
-
-const CONTENT_TYPES: Record<string, string> = {
-  ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  ".xlsm": "application/vnd.ms-excel.sheet.macroEnabled.12",
-  ".pdf": "application/pdf",
-};
 
 type ResolvedMaterial = {
   file: Buffer;
   filename: string;
 };
-
-function isSafeSegment(segment: string): boolean {
-  return Boolean(segment) && segment !== "." && segment !== ".." && !segment.includes("/") && !segment.includes("\\");
-}
-
-function candidateFilenames(filename: string): string[] {
-  const parsed = path.parse(filename);
-  const candidates = [filename];
-
-  if (parsed.ext.toLowerCase() === ".pdf") {
-    candidates.push(`${parsed.name}.docx`, `${parsed.name}.xlsx`, `${parsed.name}.xlsm`);
-  }
-
-  return Array.from(new Set(candidates));
-}
-
-function normalizeFileStem(filename: string): string {
-  return path
-    .parse(filename)
-    .name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/^\d+[-_\s]+/, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 async function fuzzyFilenames(baseDir: string, parentSegments: string[], requestedFilename: string): Promise<string[]> {
   const directory = path.join(baseDir, ...parentSegments);
@@ -51,12 +23,12 @@ async function fuzzyFilenames(baseDir: string, parentSegments: string[], request
 
   try {
     const entries = await readdir(directory, { withFileTypes: true });
-    const requestedStem = normalizeFileStem(requestedFilename);
+    const requestedStem = normalizeCourseMaterialStem(requestedFilename);
     return entries
       .filter((entry) => entry.isFile())
       .map((entry) => entry.name)
       .filter((filename) => {
-        const stem = normalizeFileStem(filename);
+        const stem = normalizeCourseMaterialStem(filename);
         return stem.includes(requestedStem) || requestedStem.includes(stem);
       });
   } catch {
@@ -70,7 +42,7 @@ async function readCourseMaterial(requestedPath: string[]): Promise<ResolvedMate
     path.join(process.cwd(), "apps", "web", "public", "course-materials"),
   ];
   const parentSegments = requestedPath.slice(0, -1);
-  const filenameCandidates = candidateFilenames(requestedPath[requestedPath.length - 1]);
+  const filenameCandidates = candidateCourseMaterialFilenames(requestedPath[requestedPath.length - 1]);
 
   let lastError: unknown;
   for (const baseDir of candidateBaseDirs) {
@@ -119,11 +91,14 @@ async function isAuthenticated(request: NextRequest): Promise<boolean> {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  return Boolean(user);
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return Boolean(user);
+  } catch {
+    return false;
+  }
 }
 
 export async function GET(
@@ -135,13 +110,13 @@ export async function GET(
   }
 
   const { path: requestedPath } = await context.params;
-  if (!requestedPath?.length || !requestedPath.every(isSafeSegment)) {
+  if (!requestedPath?.length || !requestedPath.every(isSafeCourseMaterialSegment)) {
     return new Response("Arquivo invalido", { status: 400 });
   }
 
   try {
     const { file, filename } = await readCourseMaterial(requestedPath);
-    const contentType = CONTENT_TYPES[path.extname(filename).toLowerCase()] ?? "application/octet-stream";
+    const contentType = getCourseMaterialContentType(filename);
     const disposition = request.nextUrl.searchParams.get("download") === "1" ? "attachment" : "inline";
 
     if (request.nextUrl.searchParams.get("meta") === "1") {
