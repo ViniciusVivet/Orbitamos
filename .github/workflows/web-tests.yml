@@ -45,8 +45,19 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
+      # Auditorias informativas enquanto o legado existente e estabilizado.
+      # Elas tornam regressões visiveis sem bloquear entregas por problemas
+      # que ja existem na linha de base atual.
+      - name: Lint audit (non-blocking)
+        continue-on-error: true
+        run: npm run lint
+
       - name: Unit and route tests with coverage
         run: npm run test:coverage
 
       - name: Security and collaborator contracts
         run: npm run test:contracts
+
+      - name: Production build audit (non-blocking)
+        continue-on-error: true
+        run: npm run build

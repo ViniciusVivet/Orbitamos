@@ -1,6 +1,6 @@
 # Testes e validações
 
-Última atualização: 2026-07-30
+Última atualização: 2026-08-05
 
 ## Suítes atuais
 
@@ -65,15 +65,17 @@ alteram o web app, migrations ou o próprio workflow:
 
 1. `npm ci`;
 2. typecheck;
-3. testes com cobertura;
-4. contratos.
+3. auditoria informativa de lint;
+4. testes com cobertura;
+5. contratos;
+6. auditoria informativa do build de produção.
 
-Lint e build ainda não foram colocados como bloqueio desse workflow. A
-auditoria anterior encontrou erros de lint existentes; em 2026-07-30, o lint
-isolado excedeu o limite de execução local. O build compilou e passou pelo
-TypeScript, mas falhou ao prerenderizar `/orbitacademy` por uma invariant
-interna do Next.js. Eles devem entrar no CI quando essas falhas forem
-corrigidas e validadas.
+Lint e build usam `continue-on-error`: seus resultados ficam visíveis no CI,
+mas ainda não bloqueiam entregas por problemas presentes na linha de base. Em
+2026-08-05, o lint encontrou 21 erros e 44 avisos. O build compilou e passou
+pelo TypeScript, mas falhou ao prerenderizar `/orbitacademy` por uma invariant
+interna do Next.js. Depois de essas falhas serem corrigidas e validadas, as
+duas auditorias devem se tornar bloqueantes.
 
 ## Limites restantes
 
