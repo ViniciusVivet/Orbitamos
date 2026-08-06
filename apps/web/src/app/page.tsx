@@ -16,7 +16,6 @@ import {
   ShieldCheck,
   Smartphone,
   Sparkles,
-  TrendingUp,
   Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -27,7 +26,6 @@ import TextReveal from "@/components/TextReveal";
 import CountUp from "@/components/CountUp";
 import MagneticButton from "@/components/MagneticButton";
 import LazyVideo from "@/components/LazyVideo";
-import useHeroScene from "@/components/three/HeroScene";
 import useTechOrbitScene from "@/components/three/TechOrbitScene";
 import useWarpCTAScene from "@/components/three/WarpCTAScene";
 
@@ -194,7 +192,6 @@ export default function Home() {
   const [active, setActive] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  const heroSetup = useHeroScene();
   const techSetup = useTechOrbitScene();
   const warpSetup = useWarpCTAScene();
 

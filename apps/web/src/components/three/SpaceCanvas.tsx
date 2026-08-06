@@ -3,9 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
-const isMobileDevice = () =>
-  typeof window !== "undefined" && (window.innerWidth < 768 || /Mobi|Android/i.test(navigator.userAgent));
-
 export interface SpaceCanvasHandle {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
@@ -33,8 +30,6 @@ export default function SpaceCanvas({ className, style, dpr, setup }: SpaceCanva
   useEffect(() => {
     if (!visible || !containerRef.current) return;
     const container = containerRef.current;
-    const mobile = isMobileDevice();
-
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({

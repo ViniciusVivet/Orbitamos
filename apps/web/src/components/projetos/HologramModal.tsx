@@ -24,7 +24,6 @@ export default function HologramModal({ projeto, projetos, onClose }: HologramMo
   const [currentIdx, setCurrentIdx] = useState(initialIdx < 0 ? 0 : initialIdx);
   const [phase, setPhase] = useState<SlidePhase>("idle");
   const [dir, setDir] = useState<SlideDir>("right");
-  const [nextIdx, setNextIdx] = useState<number | null>(null);
   const isAnimating = useRef(false);
 
   const current = projetos[currentIdx];
@@ -36,7 +35,6 @@ export default function HologramModal({ projeto, projetos, onClose }: HologramMo
     const target = (currentIdx + delta + projetos.length) % projetos.length;
     isAnimating.current = true;
     setDir(direction);
-    setNextIdx(target);
     setPhase("exit");
 
     setTimeout(() => {
@@ -44,7 +42,6 @@ export default function HologramModal({ projeto, projetos, onClose }: HologramMo
       setPhase("enter");
       setTimeout(() => {
         setPhase("idle");
-        setNextIdx(null);
         isAnimating.current = false;
       }, 180);
     }, 180);

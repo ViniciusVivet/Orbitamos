@@ -2,6 +2,11 @@
 
 import { useEffect, useState } from "react";
 
+function seededValue(index: number, salt: number): number {
+  const value = Math.sin(index * 12.9898 + salt * 78.233) * 43758.5453;
+  return value - Math.floor(value);
+}
+
 interface RocketProgressProps {
   progress: number; // 0 a 100
   message?: string;
@@ -21,8 +26,8 @@ export default function RocketProgress({
     const diff = targetProgress - displayProgress;
     
     if (Math.abs(diff) < 0.1) {
-      setDisplayProgress(targetProgress);
-      return;
+      const timeout = window.setTimeout(() => setDisplayProgress(targetProgress), 0);
+      return () => window.clearTimeout(timeout);
     }
 
     const interval = setInterval(() => {
@@ -56,12 +61,12 @@ export default function RocketProgress({
               key={i}
               className="absolute rounded-full bg-white animate-pulse"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                width: `${Math.random() * 3 + 1}px`,
-                height: `${Math.random() * 3 + 1}px`,
-                animationDelay: `${Math.random() * 2}s`,
-                animationDuration: `${Math.random() * 2 + 1}s`,
+                left: `${seededValue(i, 1) * 100}%`,
+                top: `${seededValue(i, 2) * 100}%`,
+                width: `${seededValue(i, 3) * 3 + 1}px`,
+                height: `${seededValue(i, 4) * 3 + 1}px`,
+                animationDelay: `${seededValue(i, 5) * 2}s`,
+                animationDuration: `${seededValue(i, 6) * 2 + 1}s`,
               }}
             />
           ))}
@@ -126,8 +131,8 @@ export default function RocketProgress({
                       key={i}
                       className="absolute w-0.5 h-0.5 sm:w-1 sm:h-1 bg-yellow-400 rounded-full animate-ping"
                       style={{
-                        left: `${Math.random() * 100}%`,
-                        bottom: `${Math.random() * 50}%`,
+                        left: `${seededValue(i, 7) * 100}%`,
+                        bottom: `${seededValue(i, 8) * 50}%`,
                         animationDelay: `${i * 0.3}s`,
                       }}
                     />

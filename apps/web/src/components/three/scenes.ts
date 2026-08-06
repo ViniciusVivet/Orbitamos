@@ -229,12 +229,10 @@ export function createWarpStars(scene: THREE.Scene, count = 300) {
 /* ── Holo ring (contact scene) ── */
 export function createHoloRings(scene: THREE.Scene) {
   const group = new THREE.Group();
-  const rings = [
-    createOrbitRing(group as unknown as THREE.Scene, 2.2, 0x00d4ff, 0.2, [1.2, 0, 0]),
-    createOrbitRing(group as unknown as THREE.Scene, 2.6, 0x8b5cf6, 0.15, [0.8, 0.5, 0.3]),
-    createOrbitRing(group as unknown as THREE.Scene, 3.0, 0x00d4ff, 0.1, [0.4, -0.3, 0.6]),
-    createOrbitRing(group as unknown as THREE.Scene, 3.4, 0x8b5cf6, 0.08, [-0.2, 0.8, 0.1]),
-  ];
+  createOrbitRing(group as unknown as THREE.Scene, 2.2, 0x00d4ff, 0.2, [1.2, 0, 0]);
+  createOrbitRing(group as unknown as THREE.Scene, 2.6, 0x8b5cf6, 0.15, [0.8, 0.5, 0.3]);
+  createOrbitRing(group as unknown as THREE.Scene, 3.0, 0x00d4ff, 0.1, [0.4, -0.3, 0.6]);
+  createOrbitRing(group as unknown as THREE.Scene, 3.4, 0x8b5cf6, 0.08, [-0.2, 0.8, 0.1]);
   scene.add(group);
   return group;
 }

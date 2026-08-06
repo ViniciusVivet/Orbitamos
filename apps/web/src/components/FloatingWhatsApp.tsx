@@ -18,7 +18,8 @@ export default function FloatingWhatsApp({ page }: FloatingWhatsAppProps) {
   const href = whatsappFloatByPage[page];
 
   useEffect(() => {
-    setMounted(true);
+    const timeout = window.setTimeout(() => setMounted(true), 0);
+    return () => window.clearTimeout(timeout);
   }, []);
 
   const button = (

@@ -49,10 +49,12 @@ export function useConversationsSync({
   const selectedIdRef = useRef(selectedId);
   const currentUserIdRef = useRef(currentUserId);
 
-  onMessageForSelectedRef.current = onMessageForSelected;
-  onConversationActivityRef.current = onConversationActivity;
-  selectedIdRef.current = selectedId;
-  currentUserIdRef.current = currentUserId;
+  useEffect(() => {
+    onMessageForSelectedRef.current = onMessageForSelected;
+    onConversationActivityRef.current = onConversationActivity;
+    selectedIdRef.current = selectedId;
+    currentUserIdRef.current = currentUserId;
+  }, [onMessageForSelected, onConversationActivity, selectedId, currentUserId]);
 
   // Função de inscrição reutilizável (captura clientRef e subscribedRef via closure)
   const subscribeRef = useRef<(convId: number) => void>(() => {});
@@ -63,7 +65,8 @@ export function useConversationsSync({
     const wsUrl = getChatWsUrl();
     if (!wsUrl) return;
 
-    subscribedRef.current.clear();
+    const subscriptions = subscribedRef.current;
+    subscriptions.clear();
 
     const client = new Client({
       webSocketFactory: () => new SockJS(wsUrl) as unknown as WebSocket,
@@ -112,7 +115,7 @@ export function useConversationsSync({
     return () => {
       client.deactivate();
       clientRef.current = null;
-      subscribedRef.current.clear();
+      subscriptions.clear();
       subscribeRef.current = () => {};
     };
   }, [token]);

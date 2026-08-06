@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useRef, useState } from "react";
 
 type Mission = { id: string; title: string; done: boolean };
 
@@ -13,13 +12,24 @@ const DEFAULT: Mission[] = [
 
 export default function Missions() {
   const [missions, setMissions] = useState<Mission[]>(DEFAULT);
+  const storageReady = useRef(false);
 
   useEffect(() => {
-    const raw = localStorage.getItem("orbit-missions");
-    if (raw) setMissions(JSON.parse(raw));
+    queueMicrotask(() => {
+      const raw = localStorage.getItem("orbit-missions");
+      if (raw) {
+        try {
+          setMissions(JSON.parse(raw) as Mission[]);
+        } catch {
+          localStorage.removeItem("orbit-missions");
+        }
+      }
+      storageReady.current = true;
+    });
   }, []);
 
   useEffect(() => {
+    if (!storageReady.current) return;
     localStorage.setItem("orbit-missions", JSON.stringify(missions));
   }, [missions]);
 

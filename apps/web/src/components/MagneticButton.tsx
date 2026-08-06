@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useState, useEffect } from "react";
+import { useRef, useCallback, useState } from "react";
 
 interface MagneticButtonProps {
   children: React.ReactNode;
@@ -19,21 +19,16 @@ export default function MagneticButton({
 }: MagneticButtonProps) {
   const ref = useRef<HTMLElement>(null);
   const [transform, setTransform] = useState("translate(0px, 0px)");
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    setIsMobile(window.innerWidth < 768);
-  }, []);
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
-      if (isMobile || !ref.current) return;
+      if (window.innerWidth < 768 || !ref.current) return;
       const rect = ref.current.getBoundingClientRect();
       const x = e.clientX - rect.left - rect.width / 2;
       const y = e.clientY - rect.top - rect.height / 2;
       setTransform(`translate(${x * strength}px, ${y * strength}px)`);
     },
-    [strength, isMobile]
+    [strength]
   );
 
   const handleMouseLeave = useCallback(() => {

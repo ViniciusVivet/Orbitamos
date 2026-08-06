@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useCallback, Suspense } from "react";
+import { useMemo, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import ProjetosHero from "@/components/projetos/ProjetosHero";
 import ProjetosStats from "@/components/projetos/ProjetosStats";
@@ -17,21 +17,17 @@ import { CATEGORIAS, type CategoriaSlug, type Projeto } from "@/types/projeto";
 type FilterSlug = "todos" | CategoriaSlug;
 
 function ProjetosContent() {
-  const [activeFilter, setActiveFilter] = useState<FilterSlug>("todos");
-  const [selectedProjeto, setSelectedProjeto] = useState<Projeto | null>(null);
   const searchParams = useSearchParams();
-
-  useEffect(() => {
+  const [activeFilter, setActiveFilter] = useState<FilterSlug>(() => {
+    const category = searchParams.get("categoria");
+    return category && (category === "todos" || CATEGORIAS.some((item) => item.slug === category))
+      ? (category as FilterSlug)
+      : "todos";
+  });
+  const [selectedProjeto, setSelectedProjeto] = useState<Projeto | null>(() => {
     const caseSlug = searchParams.get("case");
-    if (caseSlug) {
-      const projeto = projetos.find((p) => p.slug === caseSlug);
-      if (projeto) setSelectedProjeto(projeto);
-    }
-    const cat = searchParams.get("categoria");
-    if (cat && (cat === "todos" || CATEGORIAS.some((c) => c.slug === cat))) {
-      setActiveFilter(cat as FilterSlug);
-    }
-  }, [searchParams]);
+    return projetos.find((project) => project.slug === caseSlug) ?? null;
+  });
 
   const handleCloseModal = useCallback(() => setSelectedProjeto(null), []);
 

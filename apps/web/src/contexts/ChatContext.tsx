@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import type { ChatConversation, ChatMessageItem } from "@/lib/api";
 
@@ -34,6 +34,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const setActiveConversation = useCallback((id: number | null, conv?: ChatConversation | null) => {
     setActiveConversationIdState(id);
     setActiveConversationData(conv ?? null);
+    setFloatingVisible(id != null);
     if (id != null) setFloatingMessages([]);
     if (id != null) setUnreadByConv((prev) => ({ ...prev, [id]: 0 }));
   }, []);
@@ -64,21 +65,13 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   const isOnMessagesPage = pathname === "/mensagens";
 
-  useEffect(() => {
-    if (isOnMessagesPage && activeConversationId != null) {
-      setFloatingVisible(false);
-    } else if (activeConversationId != null) {
-      setFloatingVisible(true);
-    }
-  }, [isOnMessagesPage, activeConversationId]);
-
   return (
     <ChatContext.Provider
       value={{
         activeConversationId,
         activeConversation,
         floatingMinimized,
-        floatingVisible,
+        floatingVisible: isOnMessagesPage ? false : floatingVisible,
         unreadByConv,
         floatingMessages,
         setActiveConversation,

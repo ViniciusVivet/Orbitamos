@@ -1,12 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function StudyTools() {
   // Notebook
   const [note, setNote] = useState("");
-  useEffect(() => { setNote(localStorage.getItem("orbit-note") || ""); }, []);
-  useEffect(() => { localStorage.setItem("orbit-note", note); }, [note]);
+  const noteReady = useRef(false);
+  useEffect(() => {
+    queueMicrotask(() => {
+      setNote(localStorage.getItem("orbit-note") || "");
+      noteReady.current = true;
+    });
+  }, []);
+  useEffect(() => {
+    if (noteReady.current) localStorage.setItem("orbit-note", note);
+  }, [note]);
 
   // Pomodoro simples
   const [seconds, setSeconds] = useState(25 * 60);

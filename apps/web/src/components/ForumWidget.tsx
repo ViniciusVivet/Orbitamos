@@ -69,6 +69,8 @@ export default function ForumWidget() {
   useEffect(() => {
     if (!open) return;
     loadMessages();
+    // Opening the widget triggers one fetch; query changes are submitted explicitly.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const handleSend = async () => {

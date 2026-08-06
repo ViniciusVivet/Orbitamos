@@ -9,12 +9,11 @@ import {
   getChatMessages,
   sendChatMessage,
   getDisplayAvatarUrl,
-  type ChatMessageItem,
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn, formatChatTime } from "@/lib/utils";
-import { MessageCircle, Minus, X, Send, ChevronUp, GripVertical } from "lucide-react";
+import { MessageCircle, Minus, X, Send, GripVertical } from "lucide-react";
 import { useDraggablePosition } from "@/hooks/useDraggablePosition";
 
 export default function FloatingChat() {

@@ -16,7 +16,9 @@ export default function MissionsSidebar() {
   useEffect(() => {
     if (!isAuthenticated || !token) return;
     let isMounted = true;
-    setLoading(true);
+    queueMicrotask(() => {
+      if (isMounted) setLoading(true);
+    });
     getDashboardSummary(token)
       .then((result) => {
         if (!isMounted) return;

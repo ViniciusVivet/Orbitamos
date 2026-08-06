@@ -17,8 +17,11 @@ export function useChatWebSocket(
 ) {
   const onMessageRef = useRef(onMessage);
   const onUnreadRef = useRef(onUnread);
-  onMessageRef.current = onMessage;
-  onUnreadRef.current = onUnread;
+
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+    onUnreadRef.current = onUnread;
+  }, [onMessage, onUnread]);
 
   useEffect(() => {
     if (!token || currentUserId == null || conversationId == null) return;
