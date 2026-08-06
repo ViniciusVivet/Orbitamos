@@ -86,6 +86,28 @@ describe("practice catalog integrity", () => {
     }
     expect(getNextDesafio("nao-existe")).toBeUndefined();
   });
+
+  it("keeps hidden checks out of the visible starter code", () => {
+    for (const desafio of desafios) {
+      if (!desafio.testCode) continue;
+      expect(desafio.codigoInicial).not.toContain(desafio.testCode);
+      expect(desafio.testCode.trim()).not.toBe("");
+    }
+    expect(desafios.filter((desafio) => desafio.testCode).length).toBeGreaterThanOrEqual(8);
+  });
+
+  it("accepts the reference solutions in JavaScript hidden checks", () => {
+    const javascriptChallenges = desafios.filter(
+      (desafio) => desafio.linguagem === "javascript" && desafio.testCode && desafio.solucao
+    );
+    for (const desafio of javascriptChallenges) {
+      const output: string[] = [];
+      const safeConsole = { log: (value: unknown) => output.push(String(value)) };
+      const execute = new Function("console", `${desafio.solucao}\n${desafio.testCode}`);
+      expect(() => execute(safeConsole)).not.toThrow();
+      expect(output.at(-1)?.toLowerCase()).not.toContain("false");
+    }
+  });
 });
 
 describe("Monte o Código integrity", () => {

@@ -2,14 +2,33 @@ export type BrowserCodeResult = {
   output: string;
   error: string | null;
   timedOut: boolean;
+  cancelled?: boolean;
+  truncated?: boolean;
+  verificationOutput?: string;
   durationMs?: number;
   /** Linha do código do aluno onde o erro ocorreu (1-indexada), quando identificável */
   errorLine?: number | null;
 };
 
+export const MAX_CODE_LENGTH = 100_000;
+export const MAX_OUTPUT_LENGTH = 100_000;
+export const MAX_OUTPUT_LINES = 500;
+
+function codeTooLargeResult(): BrowserCodeResult {
+  return {
+    output: "",
+    error: "O código ultrapassou o limite de 100 KB. Divida a solução em uma versão menor.",
+    timedOut: false,
+  };
+}
+
 const JAVASCRIPT_WORKER_START = `
 (async function () {
   const logs = [];
+  const verificationLogs = [];
+  let verifying = false;
+  let outputLength = 0;
+  let truncated = false;
   const sendResult = self.postMessage.bind(self);
   const stringify = function (value) {
     if (typeof value === "object" && value !== null) {
@@ -17,11 +36,24 @@ const JAVASCRIPT_WORKER_START = `
     }
     return String(value);
   };
-  const safeConsole = {
-    log: function () { logs.push(Array.from(arguments).map(stringify).join(" ")); },
-    error: function () { logs.push(Array.from(arguments).map(stringify).join(" ")); },
-    warn: function () { logs.push(Array.from(arguments).map(stringify).join(" ")); }
+  const capture = function (args) {
+    if (truncated) return;
+    const line = Array.from(args).map(stringify).join(" ");
+    const target = verifying ? verificationLogs : logs;
+    if (target.length >= ${MAX_OUTPUT_LINES} || outputLength + line.length > ${MAX_OUTPUT_LENGTH}) {
+      target.push("[Saída truncada: limite do console atingido]");
+      truncated = true;
+      return;
+    }
+    target.push(line);
+    outputLength += line.length + 1;
   };
+  const safeConsole = {
+    log: function () { capture(arguments); },
+    error: function () { capture(arguments); },
+    warn: function () { capture(arguments); }
+  };
+  const beginVerification = function () { verifying = true; };
 
   try {
     self.fetch = undefined;
@@ -36,7 +68,7 @@ const JAVASCRIPT_WORKER_START = `
 
 const JAVASCRIPT_WORKER_END = `
     })();
-    sendResult({ output: logs.join("\\n"), error: null, timedOut: false });
+    sendResult({ output: logs.join("\\n"), verificationOutput: verificationLogs.join("\\n"), error: null, timedOut: false, truncated });
   } catch (error) {
     const message = error && error.message ? error.message : String(error);
     let rawLine = null;
@@ -48,7 +80,8 @@ const JAVASCRIPT_WORKER_END = `
       output: logs.join("\\n"),
       error: message,
       timedOut: false,
-      rawLine: rawLine
+      rawLine: rawLine,
+      truncated: truncated
     });
   }
 })();
@@ -65,7 +98,8 @@ function mapJsErrorLine(rawLine: number | null | undefined, code: string): numbe
   return userLine;
 }
 
-export function runJavaScriptInWorker(code: string, timeoutMs = 2500): Promise<BrowserCodeResult> {
+export function runJavaScriptInWorker(code: string, timeoutMs = 2500, signal?: AbortSignal, verificationCode = ""): Promise<BrowserCodeResult> {
+  if (code.length + verificationCode.length > MAX_CODE_LENGTH) return Promise.resolve(codeTooLargeResult());
   if (typeof window === "undefined" || typeof Worker === "undefined") {
     return Promise.resolve({
       output: "",
@@ -78,7 +112,8 @@ export function runJavaScriptInWorker(code: string, timeoutMs = 2500): Promise<B
     let workerUrl = "";
     let worker: Worker;
     try {
-      const blob = new Blob([JAVASCRIPT_WORKER_START, code, JAVASCRIPT_WORKER_END], {
+      const verificationSource = verificationCode ? `\nbeginVerification();\n${verificationCode}\n` : "";
+      const blob = new Blob([JAVASCRIPT_WORKER_START, code, verificationSource, JAVASCRIPT_WORKER_END], {
         type: "text/javascript",
       });
       workerUrl = URL.createObjectURL(blob);
@@ -101,8 +136,16 @@ export function runJavaScriptInWorker(code: string, timeoutMs = 2500): Promise<B
       window.clearTimeout(timer);
       worker.terminate();
       URL.revokeObjectURL(workerUrl);
+      signal?.removeEventListener("abort", abortRun);
       resolve({ ...result, durationMs: Math.round(performance.now() - startedAt) });
     };
+
+    const abortRun = () => finish({
+      output: "",
+      error: "Execução interrompida pelo estudante.",
+      timedOut: false,
+      cancelled: true,
+    });
 
     const timer = window.setTimeout(() => {
       finish({
@@ -111,6 +154,8 @@ export function runJavaScriptInWorker(code: string, timeoutMs = 2500): Promise<B
         timedOut: true,
       });
     }, timeoutMs);
+    signal?.addEventListener("abort", abortRun, { once: true });
+    if (signal?.aborted) abortRun();
 
     worker.onmessage = (event: MessageEvent<BrowserCodeResult & { rawLine?: number | null }>) => {
       const { rawLine, ...result } = event.data;
@@ -140,21 +185,43 @@ const pyodideReady = loadPyodide({ indexURL: "${PYODIDE_BASE_URL}" });
 
 self.onmessage = async function (event) {
   const logs = [];
+  let verificationLogs = [];
+  let outputLength = 0;
+  let truncated = false;
+  const capture = (message) => {
+    if (truncated) return;
+    const line = String(message);
+    if (logs.length >= ${MAX_OUTPUT_LINES} || outputLength + line.length > ${MAX_OUTPUT_LENGTH}) {
+      logs.push("[Saída truncada: limite do console atingido]");
+      truncated = true;
+      return;
+    }
+    logs.push(line);
+    outputLength += line.length + 1;
+  };
   try {
     const pyodide = await pyodideReady;
     self.fetch = undefined;
     self.XMLHttpRequest = undefined;
     self.WebSocket = undefined;
     self.EventSource = undefined;
-    pyodide.setStdout({ batched: (message) => logs.push(String(message)) });
-    pyodide.setStderr({ batched: (message) => logs.push(String(message)) });
+    pyodide.setStdout({ batched: capture });
+    pyodide.setStderr({ batched: capture });
     await pyodide.runPythonAsync(event.data.code);
-    self.postMessage({ output: logs.join("\\n"), error: null, timedOut: false });
+    const visibleOutput = logs.join("\\n");
+    if (event.data.verificationCode) {
+      verificationLogs = [];
+      pyodide.setStdout({ batched: (message) => verificationLogs.push(String(message)) });
+      pyodide.setStderr({ batched: (message) => verificationLogs.push(String(message)) });
+      await pyodide.runPythonAsync(event.data.verificationCode);
+    }
+    self.postMessage({ output: visibleOutput, verificationOutput: verificationLogs.join("\\n"), error: null, timedOut: false, truncated });
   } catch (error) {
     self.postMessage({
       output: logs.join("\\n"),
       error: error && error.message ? error.message : String(error),
-      timedOut: false
+      timedOut: false,
+      truncated: truncated
     });
   }
 };
@@ -176,7 +243,8 @@ function extractPythonError(error: string | null, code: string): { message: stri
   return { message, line };
 }
 
-export function runPythonInWorker(code: string, timeoutMs = 20000): Promise<BrowserCodeResult> {
+export function runPythonInWorker(code: string, timeoutMs = 20000, signal?: AbortSignal, verificationCode = ""): Promise<BrowserCodeResult> {
+  if (code.length + verificationCode.length > MAX_CODE_LENGTH) return Promise.resolve(codeTooLargeResult());
   if (typeof window === "undefined" || typeof Worker === "undefined") {
     return Promise.resolve({
       output: "",
@@ -210,8 +278,16 @@ export function runPythonInWorker(code: string, timeoutMs = 20000): Promise<Brow
       window.clearTimeout(timer);
       worker.terminate();
       URL.revokeObjectURL(workerUrl);
+      signal?.removeEventListener("abort", abortRun);
       resolve({ ...result, durationMs: Math.round(performance.now() - startedAt) });
     };
+
+    const abortRun = () => finish({
+      output: "",
+      error: "Execução interrompida pelo estudante.",
+      timedOut: false,
+      cancelled: true,
+    });
 
     const timer = window.setTimeout(() => {
       finish({
@@ -220,6 +296,8 @@ export function runPythonInWorker(code: string, timeoutMs = 20000): Promise<Brow
         timedOut: true,
       });
     }, timeoutMs);
+    signal?.addEventListener("abort", abortRun, { once: true });
+    if (signal?.aborted) abortRun();
 
     worker.onmessage = (event: MessageEvent<BrowserCodeResult>) => {
       const { message, line } = extractPythonError(event.data.error, code);
@@ -231,6 +309,6 @@ export function runPythonInWorker(code: string, timeoutMs = 20000): Promise<Brow
         error: "Não foi possível iniciar o Python. Verifique sua conexão e tente novamente.",
         timedOut: false,
       });
-    worker.postMessage({ code });
+    worker.postMessage({ code, verificationCode });
   });
 }

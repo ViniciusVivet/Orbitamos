@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { runJavaScriptInWorker, runPythonInWorker } from "./browserCodeRunner";
+import { MAX_CODE_LENGTH, runJavaScriptInWorker, runPythonInWorker } from "./browserCodeRunner";
 
 describe("browser code runner server fallbacks", () => {
   afterEach(() => vi.unstubAllGlobals());
@@ -23,5 +23,18 @@ describe("browser code runner server fallbacks", () => {
       error: "Seu navegador não oferece o ambiente necessário para executar Python.",
       timedOut: false,
     });
+  });
+
+  it.each([
+    ["JavaScript", runJavaScriptInWorker],
+    ["Python", runPythonInWorker],
+  ])("rejects oversized %s before creating a worker", async (_language, run) => {
+    vi.stubGlobal("window", {});
+    const worker = vi.fn();
+    vi.stubGlobal("Worker", worker);
+    const result = await run("x".repeat(MAX_CODE_LENGTH + 1));
+    expect(result.error).toContain("100 KB");
+    expect(result.timedOut).toBe(false);
+    expect(worker).not.toHaveBeenCalled();
   });
 });

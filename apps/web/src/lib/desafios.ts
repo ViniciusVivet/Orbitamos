@@ -1,6 +1,6 @@
 export type DesafioStep = {
   instrucao: string;
-  validacao: (code: string, output: string) => boolean;
+  validacao: (code: string, output: string, verificationOutput?: string) => boolean;
   acerto: string;
   erro: string;
   dica: string;
@@ -22,6 +22,8 @@ export type Desafio = {
   dicas?: string[];
   solucao?: string;
   codigoInicial: string;
+  /** Verificações adicionais executadas fora do console visível do estudante. */
+  testCode?: string;
   steps: DesafioStep[];
 };
 
@@ -163,13 +165,33 @@ type ExerciseSpec = {
   validar: (code: string, output: string) => boolean;
 };
 
+const hiddenTestCode: Record<string, string> = {
+  "operadores-js": `console.log(JSON.stringify([precoFinal(100, 0) === 100, precoFinal(80, 50) === 40, precoFinal(10, 100) === 0]));`,
+  "condicionais-js": `console.log(JSON.stringify([classificar(10) === "Aprovado", classificar(5) === "Recuperação", classificar(0) === "Reprovado"]));`,
+  "objetos-js": `console.log(JSON.stringify([resumo({ nome: "Bia", idade: 31 }) === "Bia tem 31 anos"]));`,
+  "strings-js": `console.log(JSON.stringify([ehPalindromo("ovo") === true, ehPalindromo("orbitamos") === false]));`,
+  "funcoes-python": `print([celsius_para_fahrenheit(0) == 32, celsius_para_fahrenheit(100) == 212])`,
+  "strings-python": `print([contar_vogais("AEIOU") == 5, contar_vogais("xyz") == 0])`,
+  "erros-python": `print([dividir(9, 3) == 3, isinstance(dividir(1, 0), str)])`,
+  "classes-python": `teste = Conta(10)\nteste.depositar(5)\nprint([teste.saldo == 15])`,
+};
+
+function hiddenChecksPassed(output?: string): boolean {
+  if (!output) return false;
+  const normalized = output.toLowerCase();
+  return !normalized.includes("false") && /true/.test(normalized);
+}
+
 function createExercise(spec: ExerciseSpec): Desafio {
+  const testCode = hiddenTestCode[spec.slug];
   return {
     ...spec,
+    testCode,
     steps: [
       {
         instrucao: spec.instrucao,
-        validacao: spec.validar,
+        validacao: (code, output, verificationOutput) =>
+          spec.validar(code, output) && (!testCode || hiddenChecksPassed(verificationOutput)),
         acerto: "Todos os casos principais passaram. Excelente trabalho!",
         erro: "A saída ainda não atende aos casos esperados. Compare com os exemplos e tente novamente.",
         dica: spec.dicas[0],

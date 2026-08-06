@@ -2,12 +2,12 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Play, RotateCcw, ChevronRight, Lightbulb, CheckCircle2, XCircle, ArrowLeft, Code2, MessageSquare, Eye, EyeOff, Copy, Check, BookOpen, Trash2 } from "lucide-react";
+import { Play, Square, RotateCcw, ChevronRight, Lightbulb, CheckCircle2, XCircle, ArrowLeft, Code2, MessageSquare, Eye, EyeOff, Copy, Check, BookOpen, Trash2, Maximize2, Minimize2 } from "lucide-react";
 import Link from "next/link";
 import { getDesafio, getNextDesafio, type DesafioStep } from "@/lib/desafios";
 import { runJavaScriptInWorker, runPythonInWorker } from "@/lib/browserCodeRunner";
 import { useAuth } from "@/contexts/AuthContext";
-import ReliableCodeEditor from "@/components/estudante/ReliableCodeEditor";
+import ReliableCodeEditor, { type ReliableCodeEditorHandle } from "@/components/estudante/ReliableCodeEditor";
 
 type MobileTab = "editor" | "guia";
 
@@ -76,15 +76,17 @@ type ConsoleRun = {
   lines: string[];
   error: { message: string; friendly: string; line: number | null } | null;
   durationMs: number;
+  truncated?: boolean;
 };
 
-export default function PraticaPage() {
+type SaveStatus = "idle" | "saving" | "saved" | "error";
+
+export function PraticaWorkspace({ userId = null }: { userId?: string | number | null }) {
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
   const desafio = getDesafio(slug);
   const nextChallenge = getNextDesafio(slug);
-  const { user } = useAuth();
 
   const [code, setCode] = useState("");
   const [consoleRun, setConsoleRun] = useState<ConsoleRun | null>(null);
@@ -98,10 +100,14 @@ export default function PraticaPage() {
   const [showSolution, setShowSolution] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [running, setRunning] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [draftRestored, setDraftRestored] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>("editor");
+  const [consoleExpanded, setConsoleExpanded] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const storageKey = user?.id ? `orbitamos-pratica-${user.id}-${slug}` : null;
+  const editorRef = useRef<ReliableCodeEditorHandle>(null);
+  const activeRunRef = useRef<AbortController | null>(null);
+  const storageKey = userId ? `orbitamos-pratica-${userId}-${slug}` : null;
 
   useEffect(() => {
     if (!desafio) return;
@@ -133,6 +139,7 @@ export default function PraticaPage() {
       setStepStatus(restoredStatus);
       setCompleted(restoredStatus.every((status) => status === "success"));
       setDraftRestored(Boolean(restoredCode));
+      setSaveStatus(restoredCode ? "saved" : "idle");
       setChatMessages([
         { tipo: "sistema", texto: `Desafio: ${desafio.titulo}` },
         { tipo: "sistema", texto: desafio.steps[restoredStep].instrucao },
@@ -145,8 +152,14 @@ export default function PraticaPage() {
 
   useEffect(() => {
     if (!storageKey || !desafio || !code) return;
+    setSaveStatus("saving");
     const timer = window.setTimeout(() => {
-      localStorage.setItem(storageKey, JSON.stringify({ code, currentStep, stepStatus }));
+      try {
+        localStorage.setItem(storageKey, JSON.stringify({ code, currentStep, stepStatus }));
+        setSaveStatus("saved");
+      } catch {
+        setSaveStatus("error");
+      }
     }, 350);
     return () => window.clearTimeout(timer);
   }, [code, currentStep, desafio, stepStatus, storageKey]);
@@ -185,6 +198,7 @@ export default function PraticaPage() {
   const handleCodeChange = useCallback((nextCode: string) => {
     setCode(nextCode);
     setErrorMark(null);
+    setSaveStatus("saving");
   }, []);
 
   const executeCode = useCallback(async () => {
@@ -194,9 +208,12 @@ export default function PraticaPage() {
     setShowDica(false);
     setShowSolution(false);
     setRunning(true);
+    const controller = new AbortController();
+    activeRunRef.current = controller;
+    try {
     const result = desafio.linguagem === "python"
-      ? await runPythonInWorker(code)
-      : await runJavaScriptInWorker(code);
+      ? await runPythonInWorker(code, 20000, controller.signal, desafio.testCode)
+      : await runJavaScriptInWorker(code, 2500, controller.signal, desafio.testCode);
     const friendlyError = result.error
       ? explainRuntimeError(result.error, result.timedOut, desafio.linguagem)
       : "";
@@ -205,7 +222,13 @@ export default function PraticaPage() {
       lines: result.output ? result.output.split("\n") : [],
       error: result.error ? { message: result.error, friendly: friendlyError, line: errorLine } : null,
       durationMs: result.durationMs ?? 0,
+      truncated: result.truncated,
     });
+
+    if (result.cancelled) {
+      setChatMessages((previous) => [...previous, { tipo: "sistema", texto: "Execução interrompida. Seu código continua salvo para você ajustar e tentar novamente." }]);
+      return;
+    }
 
     const step = desafio.steps[currentStep];
     if (result.error && step) {
@@ -216,12 +239,11 @@ export default function PraticaPage() {
       const lineNote = errorLine ? ` O editor marcou a linha ${errorLine} em vermelho.` : "";
       setChatMessages((previous) => [...previous, { tipo: "erro", texto: `${friendlyError}${lineNote}` }]);
       setMobileTab("guia");
-      setRunning(false);
       return;
     }
 
     if (step) {
-      const passed = !result.error && step.validacao(code, result.output);
+      const passed = !result.error && step.validacao(code, result.output, result.verificationOutput);
       const newStatus = [...stepStatus];
       if (passed) {
         newStatus[currentStep] = "success";
@@ -247,8 +269,46 @@ export default function PraticaPage() {
         setChatMessages((prev) => [...prev, { tipo: "erro", texto: step.erro }]);
       }
     }
-    setRunning(false);
+    } catch {
+      setConsoleRun({
+        lines: [],
+        error: { message: "Falha inesperada no executor.", friendly: "Não foi possível executar agora. Seu código continua salvo; tente novamente.", line: null },
+        durationMs: 0,
+      });
+    } finally {
+      if (activeRunRef.current === controller) activeRunRef.current = null;
+      setRunning(false);
+    }
   }, [code, currentStep, desafio, running, stepStatus]);
+
+  const stopExecution = useCallback(() => {
+    activeRunRef.current?.abort();
+  }, []);
+
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey)) return;
+      if (event.key === "Enter") {
+        event.preventDefault();
+        void executeCode();
+      } else if (event.key.toLowerCase() === "l") {
+        event.preventDefault();
+        setConsoleRun(null);
+        setErrorMark(null);
+      } else if (event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        if (!storageKey) return;
+        try {
+          localStorage.setItem(storageKey, JSON.stringify({ code, currentStep, stepStatus }));
+          setSaveStatus("saved");
+        } catch {
+          setSaveStatus("error");
+        }
+      }
+    };
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, [code, currentStep, executeCode, stepStatus, storageKey]);
 
   const handleReset = () => {
     if (!desafio) return;
@@ -262,6 +322,7 @@ export default function PraticaPage() {
     setShowDica(false);
     setCompleted(false);
     setDraftRestored(false);
+    setSaveStatus("idle");
     setChatMessages([
       { tipo: "sistema", texto: `Desafio reiniciado: ${desafio.titulo}` },
       { tipo: "sistema", texto: desafio.steps[0].instrucao },
@@ -299,7 +360,9 @@ export default function PraticaPage() {
       <div className="border-b border-white/10 p-3">
         <div className="mb-2 flex items-center justify-between gap-2">
           <p className="text-[10px] font-bold uppercase tracking-wider text-white/40">Progresso</p>
-          <span className="text-[10px] text-white/30">{draftRestored ? "Rascunho restaurado" : "Auto-save"}</span>
+          <span className={`text-[10px] ${saveStatus === "error" ? "text-red-300" : "text-white/30"}`}>
+            {saveStatus === "saving" ? "Salvando..." : saveStatus === "saved" ? (draftRestored ? "Rascunho restaurado · salvo" : "Salvo neste dispositivo") : saveStatus === "error" ? "Não foi possível salvar" : "Auto-save"}
+          </span>
         </div>
         <div className="space-y-1.5">
           {desafio.steps.map((step, i) => (
@@ -466,7 +529,7 @@ export default function PraticaPage() {
       <div className="flex items-center gap-2 border-b border-white/10 bg-[#161b22] px-3 py-2 sm:px-4">
         <button
           onClick={() => router.back()}
-          className="flex shrink-0 items-center gap-1 text-xs text-white/50 hover:text-white transition-colors touch-manipulation min-h-[36px] min-w-[36px] justify-center sm:justify-start sm:min-w-0"
+          className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1 text-xs text-white/50 transition-colors hover:text-white touch-manipulation sm:justify-start sm:min-w-0 md:min-h-9"
         >
           <ArrowLeft className="size-4 sm:size-3.5" />
           <span className="hidden sm:inline">Voltar</span>
@@ -481,34 +544,36 @@ export default function PraticaPage() {
           <button
             type="button"
             onClick={handleReset}
-            className="flex shrink-0 items-center justify-center gap-1 rounded-lg border border-white/10 bg-white/5 p-2 sm:px-3 sm:py-1.5 text-xs text-white/70 transition hover:bg-white/10 touch-manipulation min-h-[36px]"
+            className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1 rounded-lg border border-white/10 bg-white/5 p-2 text-xs text-white/70 transition hover:bg-white/10 touch-manipulation sm:px-3 sm:py-1.5 md:min-h-9 md:min-w-0"
             aria-label="Reiniciar"
           >
             <RotateCcw className="size-3.5 sm:size-3" />
             <span className="hidden sm:inline">Reiniciar</span>
           </button>
-          <button
-            type="button"
-            onClick={executeCode}
-            disabled={running}
-            aria-busy={running}
-            className="flex shrink-0 items-center gap-1.5 rounded-lg bg-emerald-500/90 px-3 sm:px-4 py-2 sm:py-1.5 text-xs font-bold text-black transition hover:bg-emerald-400 disabled:cursor-wait disabled:opacity-60 touch-manipulation min-h-[36px]"
-          >
-            <Play className="size-3.5 sm:size-3" />
-            <span className="hidden xs:inline">{running ? "Executando..." : "Executar"}</span>
-          </button>
+          {running ? (
+            <button type="button" onClick={stopExecution} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-red-500/90 px-3 py-2 text-xs font-bold text-white transition hover:bg-red-400 touch-manipulation md:min-h-9 md:min-w-0" aria-label="Interromper execução">
+              <Square className="size-3.5 fill-current" />
+              <span className="hidden xs:inline">Parar</span>
+            </button>
+          ) : (
+            <button type="button" onClick={executeCode} title="Executar (Ctrl/⌘ + Enter)" className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-emerald-500/90 px-3 py-2 text-xs font-bold text-black transition hover:bg-emerald-400 touch-manipulation md:min-h-9 md:min-w-0">
+              <Play className="size-3.5" />
+              <span className="hidden xs:inline">Executar</span>
+            </button>
+          )}
         </div>
       </div>
 
       {/* Mobile tabs */}
       <div className="flex border-b border-white/10 md:hidden" role="tablist" aria-label="Painéis do laboratório">
         <button
+          id="practice-code-tab"
           type="button"
           onClick={() => setMobileTab("editor")}
           role="tab"
           aria-selected={mobileTab === "editor"}
           aria-controls="practice-editor-panel"
-          className={`flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-bold transition touch-manipulation ${
+          className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-bold transition touch-manipulation ${
             mobileTab === "editor" ? "text-orbit-electric border-b-2 border-orbit-electric bg-orbit-electric/5" : "text-white/40"
           }`}
         >
@@ -516,12 +581,13 @@ export default function PraticaPage() {
           Código
         </button>
         <button
+          id="practice-guide-tab"
           type="button"
           onClick={() => setMobileTab("guia")}
           role="tab"
           aria-selected={mobileTab === "guia"}
           aria-controls="practice-guide-panel"
-          className={`flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-bold transition touch-manipulation relative ${
+          className={`relative flex min-h-11 flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-bold transition touch-manipulation ${
             mobileTab === "guia" ? "text-orbit-purple border-b-2 border-orbit-purple bg-orbit-purple/5" : "text-white/40"
           }`}
         >
@@ -536,9 +602,10 @@ export default function PraticaPage() {
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Editor + Console — full width mobile, 80% desktop */}
-        <div id="practice-editor-panel" role="tabpanel" className={`flex flex-col border-r border-white/10 ${mobileTab === "editor" ? "flex-1" : "hidden md:flex md:flex-1"}`}>
+        <div id="practice-editor-panel" role="tabpanel" aria-labelledby="practice-code-tab" className={`flex flex-col border-r border-white/10 ${mobileTab === "editor" ? "flex-1" : "hidden md:flex md:flex-1"}`}>
           <div className="flex-1 min-h-0">
             <ReliableCodeEditor
+              ref={editorRef}
               language={desafio.linguagem}
               value={code}
               onChange={handleCodeChange}
@@ -556,6 +623,12 @@ export default function PraticaPage() {
               {consoleRun && (
                 <span className="ml-auto flex items-center gap-2">
                   <span className="text-[9px] text-white/25">{consoleRun.durationMs} ms</span>
+                  <button type="button" onClick={() => setConsoleExpanded((value) => !value)} aria-label={consoleExpanded ? "Reduzir console" : "Expandir console"} className="text-white/30 transition hover:text-white/70 md:hidden">
+                    {consoleExpanded ? <Minimize2 className="size-3" /> : <Maximize2 className="size-3" />}
+                  </button>
+                  <button type="button" onClick={() => navigator.clipboard.writeText([...consoleRun.lines, consoleRun.error?.message].filter(Boolean).join("\n")).catch(() => {})} aria-label="Copiar saída do console" className="text-white/30 transition hover:text-white/70">
+                    <Copy className="size-3" />
+                  </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -571,7 +644,7 @@ export default function PraticaPage() {
                 </span>
               )}
             </div>
-            <div role="status" aria-live="polite" className="h-24 sm:h-32 overflow-auto px-3 py-2 font-mono text-xs">
+            <div role="status" aria-live="polite" className={`${consoleExpanded ? "h-64" : "h-24"} overflow-auto px-3 py-2 font-mono text-xs transition-[height] sm:h-32`}>
               {!consoleRun && (
                 <span className="text-white/25">Clique em &quot;Executar&quot; para ver o resultado...</span>
               )}
@@ -582,6 +655,9 @@ export default function PraticaPage() {
               ))}
               {consoleRun && !consoleRun.error && consoleRun.lines.length === 0 && (
                 <div className="leading-5 text-white/30">Execução concluída sem saída no console.</div>
+              )}
+              {consoleRun?.truncated && (
+                <div className="mt-1 text-[10px] text-amber-300">A saída foi limitada para manter o editor rápido.</div>
               )}
               {consoleRun?.error && (
                 <div className="mt-1.5 rounded-md border-l-2 border-red-500 bg-red-500/[0.08] px-2.5 py-2">
@@ -597,10 +673,15 @@ export default function PraticaPage() {
         </div>
 
         {/* Guide panel — full width mobile, sidebar desktop */}
-        <div id="practice-guide-panel" role="tabpanel" className={`flex flex-col bg-[#0d1117] ${mobileTab === "guia" ? "flex-1" : "hidden md:flex md:w-72 md:min-w-[260px] md:max-w-[320px]"}`}>
+        <div id="practice-guide-panel" role="tabpanel" aria-labelledby="practice-guide-tab" className={`flex flex-col bg-[#0d1117] ${mobileTab === "guia" ? "flex-1" : "hidden md:flex md:w-72 md:min-w-[260px] md:max-w-[320px]"}`}>
           {guiaContent}
         </div>
       </div>
     </div>
   );
+}
+
+export default function PraticaPage() {
+  const { user } = useAuth();
+  return <PraticaWorkspace userId={user?.id} />;
 }

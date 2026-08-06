@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:ide": "node scripts/audit-student-ide.mjs",
     "test:contracts": "node --test scripts/test-collaborator.mjs",
     "test:collaborator": "node --test scripts/test-collaborator.mjs"
   },
@@ -38,6 +39,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^18",

@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import type { Monaco } from "@monaco-editor/react";
 import type { editor as MonacoEditorNS, languages, Position } from "monaco-editor";
 import { AlertTriangle, Code2 } from "lucide-react";
@@ -126,24 +126,85 @@ function registerCompletionProviders(monaco: Monaco) {
   }
 }
 
-export default function ReliableCodeEditor({
+export type ReliableCodeEditorHandle = {
+  focus: () => void;
+  insertText: (text: string) => void;
+};
+
+const COMMON_MOBILE_KEYS = ["Tab", "(", ")", "[", "]", "{", "}", '"', "'", "=", "_"];
+
+const ReliableCodeEditor = forwardRef<ReliableCodeEditorHandle, {
+  value: string;
+  language: "javascript" | "typescript" | "python";
+  onChange: (value: string) => void;
+  errorLine?: number | null;
+  errorMessage?: string;
+}>(function ReliableCodeEditor({
   value,
   language,
   onChange,
   errorLine,
   errorMessage,
-}: {
-  value: string;
-  language: "javascript" | "typescript" | "python";
-  onChange: (value: string) => void;
-  /** Linha (1-indexada) a sublinhar em vermelho; null/undefined limpa o marcador */
-  errorLine?: number | null;
-  errorMessage?: string;
-}) {
+}, forwardedRef) {
   const [ready, setReady] = useState(false);
   const [fallback, setFallback] = useState(false);
   const editorRef = useRef<MonacoEditorNS.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const insertText = (text: string) => {
+    const insertion = text === "Tab" ? (language === "python" ? "    " : "  ") : text;
+    const editor = editorRef.current;
+    if (editor) {
+      const selection = editor.getSelection();
+      if (selection) {
+        editor.executeEdits("mobile-toolbar", [{ range: selection, text: insertion, forceMoveMarkers: true }]);
+        editor.focus();
+      }
+      return;
+    }
+
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    onChange(`${value.slice(0, start)}${insertion}${value.slice(end)}`);
+    requestAnimationFrame(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + insertion.length, start + insertion.length);
+    });
+  };
+
+  useImperativeHandle(forwardedRef, () => ({
+    focus: () => (editorRef.current ? editorRef.current.focus() : textareaRef.current?.focus()),
+    insertText,
+  }));
+
+  const mobileToolbar = (
+    <div className="flex shrink-0 gap-1 overflow-x-auto border-t border-white/10 bg-[#161b22] px-2 py-1.5 md:hidden [scrollbar-width:none] pb-[max(.375rem,env(safe-area-inset-bottom))]">
+      {[...COMMON_MOBILE_KEYS, ...(language === "python" ? [":", "#"] : ["=>", ";"])].map((key, index) => (
+        <button
+          key={`${key}-${index}`}
+          type="button"
+          onPointerDown={(event) => event.preventDefault()}
+          onClick={() => insertText(key)}
+          className="min-h-9 min-w-9 shrink-0 rounded-md border border-white/10 bg-white/[0.04] px-2 font-mono text-sm font-semibold text-slate-200 active:bg-orbit-electric/20 active:text-orbit-electric"
+          aria-label={key === "Tab" ? "Inserir indentação" : `Inserir ${key}`}
+        >
+          {key}
+        </button>
+      ))}
+    </div>
+  );
+
+  const statusBar = (
+    <div className="flex h-6 shrink-0 items-center gap-3 border-t border-white/10 bg-[#111820] px-3 font-mono text-[9px] text-white/35">
+      <span className="font-bold uppercase text-orbit-electric/70">{language === "python" ? "Python" : language === "typescript" ? "TypeScript" : "JavaScript"}</span>
+      <span>{value.split("\n").length} linhas</span>
+      <span>{value.length.toLocaleString("pt-BR")} caracteres</span>
+      <span className="ml-auto hidden text-white/25 sm:inline">Ctrl/⌘ + Enter para executar</span>
+    </div>
+  );
 
   useEffect(() => {
     let active = true;
@@ -199,20 +260,24 @@ export default function ReliableCodeEditor({
           Editor compatível ativado
         </div>
         <textarea
+          ref={textareaRef}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           spellCheck={false}
           autoCapitalize="off"
           autoCorrect="off"
           aria-label="Editor de código"
-          className="min-h-0 flex-1 resize-none bg-[#0d1117] p-4 font-mono text-[13px] leading-6 text-slate-100 outline-none"
+          className="min-h-0 flex-1 resize-none bg-[#0d1117] p-4 font-mono text-base leading-6 text-slate-100 outline-none sm:text-[13px]"
         />
+        {statusBar}
+        {mobileToolbar}
       </div>
     );
   }
 
   return (
-    <div className="relative h-full min-h-0">
+    <div className="relative flex h-full min-h-0 flex-col">
+      <div className="relative min-h-0 flex-1">
       {!ready && (
         <div className="absolute inset-0 z-10 grid place-items-center bg-[#0d1117]">
           <div className="text-center">
@@ -260,6 +325,13 @@ export default function ReliableCodeEditor({
           suggest: { preview: true, showWords: true },
         }}
       />
+      </div>
+      {statusBar}
+      {mobileToolbar}
     </div>
   );
-}
+});
+
+ReliableCodeEditor.displayName = "ReliableCodeEditor";
+
+export default ReliableCodeEditor;
