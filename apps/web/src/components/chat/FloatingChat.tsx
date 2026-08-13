@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useChat } from "@/contexts/ChatContext";
-import { useChatWebSocket } from "@/hooks/useChatWebSocket";
 import {
   getChatMessages,
   sendChatMessage,
@@ -30,21 +29,11 @@ export default function FloatingChat() {
     clearUnread,
     appendFloatingMessage,
     setFloatingMessages,
-    addUnread,
   } = useChat();
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  useChatWebSocket(
-    token,
-    activeConversationId,
-    user?.id,
-    appendFloatingMessage,
-    addUnread,
-    floatingMinimized
-  );
 
   useEffect(() => {
     if (!token || activeConversationId == null) return;

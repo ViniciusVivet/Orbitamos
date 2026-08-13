@@ -615,7 +615,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
           </div>
 
           {/* Console output */}
-          <div className="border-t border-white/10 bg-[#0d1117]">
+          <div className="relative z-10 border-t border-white/10 bg-[#0d1117]">
             <div className="flex items-center gap-2 border-b border-white/5 px-3 py-1.5">
               <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">Console</span>
               {consoleRun && !consoleRun.error && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}

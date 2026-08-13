@@ -22,7 +22,7 @@ Peca opiniao apenas para:
 - **Hospedagem**: Vercel
 - **Auth/Banco/Storage**: Supabase Auth, Supabase Postgres e Supabase Storage
 - **Rotas auxiliares**: API Routes do Next em `apps/web/src/app/api`
-- **Backend Spring**: legado/fallback em `apps/api`, sem papel ativo na producao atual
+- **Backend Spring**: removido; nao reintroduzir fallback fora do Supabase sem decisao arquitetural explicita
 - **Cron anti-pausa**: job externo faz 1 requisicao diaria para manter o projeto Supabase ativo no free tier
 
 Nao documentar IPs, caminhos de chaves, comandos SSH/SCP, tokens, secrets, URLs privadas de painel ou credenciais reais em arquivos versionados.

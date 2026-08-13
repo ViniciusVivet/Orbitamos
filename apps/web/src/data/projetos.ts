@@ -164,6 +164,79 @@ export const projetos: Projeto[] = [
       "Presença digital alinhada ao posicionamento do selo, pronta para imprensa, booking e novos lançamentos.",
   },
   {
+    slug: "radar-da-rima",
+    nome: "Radar da Rima",
+    categoria: "sistemas-dashboards",
+    resumo:
+      "Plataforma mobile-first que mapeia batalhas de rima pelo Brasil e conecta público, MCs e organizadores em uma operação completa de eventos.",
+    tags: ["Geolocalização", "Eventos", "Comunidade", "Mobile-first"],
+    status: "publicado",
+    link: "https://batalhai.vercel.app/",
+    thumbnail: "https://batalhai.vercel.app/opengraph-image?ea1a014aede2503f",
+    imagemPrincipal: "https://batalhai.vercel.app/opengraph-image?ea1a014aede2503f",
+    contexto:
+      "As batalhas de rima movimentam uma cena cultural ampla, mas a descoberta de eventos, o reconhecimento dos MCs e a organização das edições ainda aconteciam de forma dispersa entre redes sociais e grupos locais.",
+    problema:
+      "O público não tinha um mapa confiável para encontrar batalhas próximas; MCs não contavam com uma vitrine unificada para carreira e ranking; organizadores operavam inscrições, filas, check-in e resultados por processos manuais.",
+    solucao:
+      "Criamos uma plataforma mobile-first com mapa Leaflet, busca por localização, feed da cena, ranking e perfis públicos. Para organizadores, construímos a gestão recorrente das batalhas, inscrições, lista de espera, check-in, resultados, mídia e analytics, com moderação administrativa e proteção antifraude.",
+    destaques: [
+      "Mapa nacional com geolocalização e filtros por cidade, zona, data e proximidade",
+      "Perfis de MC com ranking, histórico, mídia, badges, seguidores e story card compartilhável",
+      "Operação de cada edição com inscrição, fila, check-in e lançamento de resultados",
+      "Notificações internas e push, comentários, reações, denúncias e controles LGPD",
+    ],
+    stack: [
+      "Next.js 16",
+      "React 19",
+      "TypeScript",
+      "Tailwind CSS",
+      "Leaflet / OpenStreetMap",
+      "Supabase",
+      "Vitest",
+      "Playwright",
+    ],
+    resultado:
+      "MVP publicado que transforma uma cena espalhada em um ponto de encontro nacional: o público descobre, o MC constrói presença e o organizador opera a batalha no mesmo produto.",
+  },
+  {
+    slug: "orbicore-gestao",
+    nome: "OrbiCore",
+    categoria: "sistemas-dashboards",
+    resumo:
+      "Plataforma de gestão visual para pequenos negócios, reunindo contratos, MRR, vendas, estoque, pipeline, folha e metas em um único painel.",
+    tags: ["SaaS", "Gestão", "Dashboard", "Dados financeiros"],
+    status: "publicado",
+    link: "https://orbicore-ruby.vercel.app/",
+    github: "https://github.com/ViniciusVivet/OrbiCore",
+    thumbnail: "https://orbicore-ruby.vercel.app/og-image.png",
+    imagemPrincipal: "https://orbicore-ruby.vercel.app/og-image.png",
+    contexto:
+      "Pequenos negócios costumam acompanhar contratos, vendas, estoque, folha e metas em planilhas isoladas, sem uma leitura consolidada da saúde da operação.",
+    problema:
+      "Dados fragmentados dificultavam enxergar receita recorrente, risco de churn, margem, reposição de produtos, evolução do pipeline e cumprimento das metas, além de exigir cálculos manuais recorrentes.",
+    solucao:
+      "Desenvolvemos um painel protegido por autenticação que centraliza os principais módulos da gestão. O produto calcula MRR e projeções, acompanha o funil comercial, controla estoque e vendas, processa regras da folha e exporta os dados para Excel.",
+    destaques: [
+      "Dashboard consolidado com MRR, pipeline ponderado, churn e concentração de clientes",
+      "Gestão de contratos recorrentes com projeções por período",
+      "Estoque, vendas, custo, margem e alertas de reposição integrados",
+      "Folha com INSS, IRRF, DSR e acompanhamento anual e trimestral de metas",
+    ],
+    stack: [
+      "Next.js",
+      "TypeScript",
+      "Tailwind CSS",
+      "shadcn/ui",
+      "Recharts",
+      "Supabase",
+      "ExcelJS",
+      "Vercel",
+    ],
+    resultado:
+      "Sistema publicado que substitui controles dispersos por uma visão operacional única, responsiva e preparada para decisões recorrentes do negócio.",
+  },
+  {
     slug: "orbitamos-portal-tech",
     nome: "Orbitamos Portal Tech",
     categoria: "sistemas-dashboards",

@@ -1,46 +1,42 @@
-# Roadmap de produto
+# Roadmap de produto e engenharia
 
-Ultima atualizacao: 2026-06-24
+Última revisão: 2026-07-28
 
-## Direcao
+Este arquivo contém somente trabalho futuro ou incompleto. Funcionalidades já
+presentes ficam documentadas em [ARCHITECTURE.md](ARCHITECTURE.md).
 
-A Orbitamos deve continuar com duas frentes conectadas:
+## Prioridade imediata
 
-- **Studio digital**: vender projetos, gerar autoridade e captar clientes.
-- **Portal de tecnologia**: formar alunos, organizar aulas, comunidade, progresso e oportunidades.
+- Fazer lint, typecheck, testes e build passarem de forma reproduzível.
+- Adicionar CI para essas quatro verificações.
+- Criar testes de integração para RLS e funções Supabase.
+- Criar E2E dos fluxos de autenticação, contato, curso e candidatura.
+- Confirmar no Supabase remoto a aplicação das migrations `005` a `018`.
+- Confirmar e registrar o cron anti-pausa citado na documentação anterior.
 
-O curto prazo deve proteger custo baixo e estabilidade. O medio prazo pode adicionar automacao e painel administrativo. Backend proprio so volta quando existir regra de negocio suficiente para justificar custo e manutencao.
+## Consolidação
 
-## Curto prazo
+- Dividir `src/lib/api.ts` por domínio.
+- Reduzir páginas/componentes muito grandes de fórum, mensagens e cursos.
+- Definir uma única fonte de verdade para catálogo acadêmico.
+- Otimizar vídeos, imagens e cenas 3D com métricas de dispositivos reais.
+- Medir erros e disponibilidade dos fluxos críticos em produção.
 
-- Consolidar Supabase como backend principal da area logada.
-- Validar login, perfil, avatar, contatos, forum, mensagens e progresso em producao.
-- Melhorar a experiencia de aulas com preview de PDF/DOCX e download confiavel.
-- Manter portfolio publico atualizado com novos cases e metricas reais.
-- Ajustar RLS/policies quando novos fluxos forem adicionados.
+## Evolução de produto
 
-## Medio prazo
+- Certificados quando houver regra verificável de conclusão.
+- Supabase Realtime no chat quando o uso justificar presença e sincronização.
+- CMS do portfólio somente se a edição no código virar gargalo.
+- Automações de email/WhatsApp com consentimento e rotina operacional.
+- API dedicada apenas quando regras, integrações ou escala justificarem seu
+  custo e operação.
 
-- Criar painel administrativo para cursos, modulos, aulas e materiais.
-- Criar painel para portfolio/cases se o volume de projetos crescer.
-- Evoluir chat para Supabase Realtime.
-- Criar fluxo de vagas/candidaturas entre estudantes e colaboradores.
-- Adicionar certificados simples por conclusao de trilha.
+## Critério de entrada
 
-## Futuro
+Antes de iniciar uma funcionalidade:
 
-- Avaliar API propria em ASP.NET Core, Spring ou outro stack quando houver demanda real.
-- Considerar CMS se o conteudo publico ficar frequente demais para editar no codigo.
-- Considerar storage externo para materiais grandes.
-- Adicionar automacoes de WhatsApp/email quando existir rotina operacional.
-
-## Criterio de prioridade
-
-Antes de implementar qualquer feature, responder:
-
-1. Isso ajuda a vender projetos agora?
-2. Isso ajuda aluno a estudar melhor agora?
-3. Isso reduz manutencao/custo agora?
-4. Isso exige backend proprio ou Supabase resolve bem?
-
-Se a resposta nao for clara, deixar no backlog.
+1. Qual problema observado ela resolve?
+2. Qual métrica ou teste comprova sucesso?
+3. Supabase e Next.js atuais já resolvem?
+4. Quem opera e mantém isso depois do deploy?
+5. Quais dados pessoais e permissões estão envolvidos?

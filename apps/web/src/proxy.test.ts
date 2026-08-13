@@ -68,11 +68,12 @@ describe("authentication proxy", () => {
     expect(authMock.createServerClient).not.toHaveBeenCalled();
   });
 
-  it("keeps local fallback behavior when Supabase is not configured", async () => {
+  it("fails closed when Supabase is not configured", async () => {
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "");
     const response = await proxy(new NextRequest("http://localhost/admin"));
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(307);
+    expect(new URL(response.headers.get("location")!).pathname).toBe("/entrar");
     expect(authMock.createServerClient).not.toHaveBeenCalled();
   });
 });

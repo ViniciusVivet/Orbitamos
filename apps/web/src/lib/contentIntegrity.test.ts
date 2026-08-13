@@ -39,6 +39,14 @@ describe("portfolio integrity", () => {
     );
     expect(getProjetosByCategoria("inexistente")).toEqual([]);
   });
+
+  it("keeps the new product cases available across portfolio routes", () => {
+    expect(projetos).toHaveLength(9);
+    expect(getProjetoBySlug("radar-da-rima")?.link).toBe("https://batalhai.vercel.app/");
+    expect(getProjetoBySlug("orbicore-gestao")?.github).toBe(
+      "https://github.com/ViniciusVivet/OrbiCore"
+    );
+  });
 });
 
 describe("course catalog integrity", () => {

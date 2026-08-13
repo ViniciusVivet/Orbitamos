@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 const root=resolve(import.meta.dirname,"../../..");
 const read=(path)=>readFile(resolve(root,path),"utf8");
-test("candidato nao pode alterar livremente o status",async()=>{const sql=await read("docs/migrations/012_admin_operations_security.sql");assert.match(sql,/drop policy if exists "update own applications"/);assert.match(sql,/v3_withdraw_application/);assert.match(sql,/staff update applications/);});
+test("candidato nao pode alterar livremente o status",async()=>{const sql=await read("supabase/migrations/20260619001200_admin_operations_security.sql");assert.match(sql,/drop policy if exists "update own applications"/);assert.match(sql,/v3_withdraw_application/);assert.match(sql,/staff update applications/);});
 test("rotas administrativas estao protegidas",async()=>{const proxy=await read("apps/web/src/proxy.ts");const layout=await read("apps/web/src/app/admin/layout.tsx");assert.match(proxy,/"\/admin"/);assert.match(layout,/adminRole/);});
 test("troca mobile entre aprender e trabalhar permanece visivel",async()=>{const layout=await read("apps/web/src/app/estudante/layout.tsx");assert.match(layout,/aria-label="Ir para a área do colaborador"/);assert.match(layout,/>\s*Trabalhar\s*</);});
 test("area do colaborador nao contem dados mockados",async()=>{const files=["apps/web/src/app/colaborador/candidaturas/page.tsx","apps/web/src/app/colaborador/squad/page.tsx","apps/web/src/components/colaborador/NotificacoesPanel.tsx"];for(const file of files)assert.doesNotMatch(await read(file),/mock|Colaborador A|Colaborador B/i,file);});

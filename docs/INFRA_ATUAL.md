@@ -1,86 +1,67 @@
-# Infra atual
+# Infraestrutura atual
 
-Ultima atualizacao: 2026-06-24
+Última atualização: 2026-07-28
 
-## Estado de producao
+## Topologia
 
-A infraestrutura atual da Orbitamos e:
-
-```txt
+```text
 Namecheap DNS
   -> Vercel
-  -> Next.js em apps/web
-  -> Supabase Auth/Postgres/Storage
-  -> Cron externo diario anti-pausa do Supabase free tier
+     -> Next.js em apps/web
+        -> Supabase Auth
+        -> Supabase Postgres
+        -> Supabase Storage
 ```
 
-O backend Spring em `apps/api`, AWS EC2, CloudFront, Render e Railway sao historicos/fallback. Eles nao devem ser usados para subir a area logada agora, a menos que exista uma decisao explicita de voltar para backend proprio.
+## Domínios verificados
 
-## Dominios
+Em 2026-07-28:
 
-- Principal: `https://www.orbitamosbr.com`
-- Redirect/alias: `https://orbitamosbr.com`
-- Vercel preview: `orbitamos.vercel.app`
+- `https://www.orbitamosbr.com` respondeu com o site Orbitamos.
+- `orbitamosbr.com` resolveu para `216.198.79.1`.
+- `www.orbitamosbr.com` resolveu por CNAME para
+  `f271d0eb0fbd35c4.vercel-dns-017.com`.
 
-Guia de DNS: [DOMINIO_NAMECHEAP_VERCEL.md](DOMINIO_NAMECHEAP_VERCEL.md)
+O teste HTTP automatizado do domínio apex ficou inconclusivo no ambiente local
+por falha do cliente TLS. O redirecionamento apex -> `www` deve ser confirmado
+na Vercel e em um navegador ao alterar DNS.
 
-## Supabase
-
-Responsabilidades atuais:
-
-- Cadastro e login via Supabase Auth.
-- Perfis, progresso, contatos, forum e mensagens no Supabase Postgres.
-- Avatares no Supabase Storage.
-- Estrutura de cursos/aulas preparada pelas migrations.
-- Projeto mantido ativo por um cron externo com 1 requisicao diaria leve, para reduzir risco de pausa por inatividade no free tier.
-
-Guia principal da migracao: [SUPABASE_NATIVE_MIGRATION.md](SUPABASE_NATIVE_MIGRATION.md)
+Detalhes: [DOMINIO_NAMECHEAP_VERCEL.md](DOMINIO_NAMECHEAP_VERCEL.md).
 
 ## Vercel
 
-O projeto da Vercel deve apontar para:
+- Root Directory: `apps/web`
+- Variáveis obrigatórias: `NEXT_PUBLIC_SUPABASE_URL` e
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- Variáveis opcionais do formulário e service role:
+  [VARIAVEIS_AMBIENTE.md](VARIAVEIS_AMBIENTE.md)
 
-```txt
-Root Directory: apps/web
-```
+## Supabase
 
-Variaveis obrigatorias:
+Responsabilidades implementadas no repositório:
 
-```txt
-NEXT_PUBLIC_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY
-```
+- autenticação e sessão;
+- perfis e dados privados;
+- progresso e academia;
+- fórum e mensagens;
+- vagas, candidaturas, projetos e squads;
+- notificações, portfólio e solicitações de privacidade;
+- contatos e rate limit persistente;
+- buckets `avatars` e `academy-materials`.
 
-Variavel que deve ficar vazia/ausente no modo atual:
+A presença das migrations no Git não prova que todas foram aplicadas no
+projeto remoto. Use o checklist de
+[SUPABASE_NATIVE_MIGRATION.md](SUPABASE_NATIVE_MIGRATION.md).
 
-```txt
-NEXT_PUBLIC_API_URL
-```
+## Conteúdo e arquivos
 
-Essa variavel so deve voltar se o backend Spring for reativado de proposito.
+- Vídeos: IDs/links de provedor externo.
+- Materiais legados: `apps/web/public/course-materials`.
+- Materiais administrados: bucket `academy-materials`.
+- Avatares: bucket público `avatars`, com escrita limitada por policies.
 
-## Materiais de aula
+## Cron anti-pausa
 
-Arquivos de aula que precisam aparecer no portal ficam em:
-
-```txt
-apps/web/public/course-materials
-```
-
-Eles sao servidos pela rota:
-
-```txt
-/api/course-materials/[...path]
-```
-
-Videos devem ficar no YouTube ou provedor equivalente. O Supabase nao deve ser usado como biblioteca de video.
-
-## Documentacao historica
-
-Os guias antigos de EC2, CloudFront, Render, Railway e debug do backend Spring foram movidos para:
-
-```txt
-docs/legacy
-```
-
-Eles servem como memoria tecnica, nao como passo a passo atual de producao.
+Documentos anteriores mencionam um cron externo diário. Não há definição desse
+job no repositório, portanto sua existência e destino não foram confirmados
+por esta auditoria. Verifique o provedor externo antes de depender dele.

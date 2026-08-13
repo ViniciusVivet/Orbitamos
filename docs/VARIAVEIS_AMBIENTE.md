@@ -1,66 +1,45 @@
-# Variaveis de ambiente
+# Variáveis de ambiente
 
-Ultima atualizacao: 2026-06-24
+Última atualização: 2026-07-28
 
-## Frontend atual: Vercel + Supabase
+Esta lista foi cruzada com os acessos `process.env` em `apps/web/src`.
 
-Configure estas variaveis no projeto da Vercel, em `Settings -> Environment Variables`:
+## Web atual
 
-```txt
+| Variável | Obrigatória | Exposição | Uso |
+| --- | --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Sim | Navegador | URL do projeto Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Sim | Navegador | Cliente Supabase sujeito a RLS |
+| `SUPABASE_SERVICE_ROLE_KEY` | Não | Somente servidor | Contato e rate limit; nunca usar com `NEXT_PUBLIC_` |
+| `EMAILJS_SERVICE_ID` | Não | Somente rota do servidor | Envio complementar do contato |
+| `EMAILJS_TEMPLATE_ID` | Não | Somente rota do servidor | Template do EmailJS |
+| `EMAILJS_PUBLIC_KEY` | Não | Somente rota do servidor | Identificador público usado pela API EmailJS |
+
+Exemplo para `apps/web/.env.local`:
+
+```dotenv
 NEXT_PUBLIC_SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=SUA_ANON_KEY
+
+# Opcional: melhora a confiabilidade da gravação/rate limit do contato.
+# SUPABASE_SERVICE_ROLE_KEY=SUA_SERVICE_ROLE_KEY
+
+# Opcionais: notificação complementar por EmailJS.
+# EMAILJS_SERVICE_ID=
+# EMAILJS_TEMPLATE_ID=
+# EMAILJS_PUBLIC_KEY=
 ```
 
-Essas duas variaveis sao publicas por natureza no frontend. A `anon key` nao e senha de banco; a seguranca depende de RLS/policies no Supabase.
+Sem as três variáveis EmailJS, a rota ainda pode salvar o contato e retorna
+sucesso sem enviar email. Sem `SUPABASE_SERVICE_ROLE_KEY`, ela tenta usar a anon
+key; o resultado depende das policies e functions aplicadas.
 
-## Variavel legada
+Os nomes antigos `NEXT_PUBLIC_EMAILJS_*` e `NEXT_PUBLIC_CONTACT_EMAIL` não são
+lidos pelo código atual.
 
-Nao configure esta variavel no modo atual:
+## Segurança
 
-```txt
-NEXT_PUBLIC_API_URL
-```
-
-Ela aponta o frontend para o backend Spring legado. Se ela for configurada sem querer, partes da area logada podem tentar falar com uma API antiga/fora do ar.
-
-## Email de contato
-
-A rota `apps/web/src/app/api/contact/route.ts` pode enviar email via EmailJS se estas variaveis existirem:
-
-```txt
-EMAILJS_SERVICE_ID
-EMAILJS_TEMPLATE_ID
-EMAILJS_PUBLIC_KEY
-```
-
-Elas sao opcionais. O contato principal deve continuar sendo salvo no Supabase em `v3_contacts`.
-
-## Desenvolvimento local
-
-Para rodar localmente o web app com Supabase, crie:
-
-```txt
-apps/web/.env.local
-```
-
-Exemplo:
-
-```txt
-NEXT_PUBLIC_SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=SUA_ANON_KEY
-```
-
-Nao coloque senha do banco, JWT secret, service role key ou senha pessoal em `.env.local`.
-
-## Backend Spring legado
-
-O backend em `apps/api` pode exigir variaveis como `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` e `JWT_SECRET`.
-
-Isso e legado. Se o Spring for reativado no futuro, crie um novo documento operacional antes de colocar em producao. Nao reutilize arquivos antigos como `ec2-env.sh` sem revisar senha, host, CORS e deploy.
-
-## Regras de seguranca
-
-- Nunca commitar `.env`, `.env.local` ou arquivos com `export ...PASSWORD=`.
-- Senha de banco nao pode ser reaproveitada em conta pessoal.
-- Se uma senha apareceu em arquivo local antigo, trate como vazada e troque no provedor.
-- Secrets de producao devem ficar no dashboard da Vercel/Supabase, nao no repositorio.
+- A anon key é pública por desenho; RLS deve proteger os dados.
+- A service role ignora RLS e só pode existir em ambiente de servidor.
+- Nunca commite `.env`, `.env.local`, tokens, senhas ou chaves reais.
+- Após alterar variáveis na Vercel, faça novo deploy.

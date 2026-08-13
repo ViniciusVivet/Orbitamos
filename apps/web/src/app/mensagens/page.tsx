@@ -2,8 +2,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useChat } from "@/contexts/ChatContext";
-import { useConversationsSync } from "@/hooks/useConversationsSync";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -87,7 +86,7 @@ function groupMessagesByDay(messages: ChatMessageItem[]) {
 
 export default function MensagensPage() {
   const { user, token } = useAuth();
-  const { setActiveConversation, clearUnread, addUnread, unreadByConv } = useChat();
+  const { setActiveConversation, clearUnread, unreadByConv } = useChat();
   const searchParams = useSearchParams();
 
   // Estado de conversas e mensagens
@@ -127,39 +126,8 @@ export default function MensagensPage() {
     : null;
 
   // Ref para evitar stale closure no WebSocket
-  const selectedIdRef = useRef(selectedId);
-  selectedIdRef.current = selectedId;
 
   // ─── callbacks WebSocket ───────────────────────────────────────────────────
-
-  const appendMessage = useCallback((msg: ChatMessageItem) => {
-    setMessages((prev) => [...prev, msg]);
-  }, []);
-
-  const handleConversationActivity = useCallback(
-    (convId: number, msg: ChatMessageItem) => {
-      setConversations((prev) => {
-        const idx = prev.findIndex((c) => c.id === convId);
-        if (idx === -1) return prev;
-        const updated = {
-          ...prev[idx],
-          lastMessage: { content: msg.content, senderId: msg.senderId, createdAt: msg.createdAt },
-        };
-        return [updated, ...prev.filter((c) => c.id !== convId)];
-      });
-      if (convId !== selectedIdRef.current) addUnread(convId);
-    },
-    [addUnread]
-  );
-
-  useConversationsSync({
-    token,
-    conversations,
-    selectedId,
-    currentUserId: user?.id,
-    onMessageForSelected: appendMessage,
-    onConversationActivity: handleConversationActivity,
-  });
 
   // ─── efeitos ──────────────────────────────────────────────────────────────
 

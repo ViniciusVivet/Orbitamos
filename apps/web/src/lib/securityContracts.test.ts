@@ -1,10 +1,17 @@
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 const repositoryRoot = path.resolve(process.cwd(), "../..");
-const migration = (name: string) =>
-  readFile(path.join(repositoryRoot, "docs", "migrations", name), "utf8");
+const migrationsDirectory = path.join(repositoryRoot, "supabase", "migrations");
+const migration = async (name: string) => {
+  const files = await readdir(migrationsDirectory);
+  const [sequence, ...parts] = name.split("_");
+  const suffix = `${sequence}00_${parts.join("_")}`;
+  const filename = files.find((file) => file.endsWith(suffix));
+  if (!filename) throw new Error(`Migration not found: ${name}`);
+  return readFile(path.join(migrationsDirectory, filename), "utf8");
+};
 
 describe("Supabase security migrations", () => {
   it("revokes profile PII and only exposes the current profile through a guarded RPC", async () => {

@@ -28,6 +28,7 @@ import MagneticButton from "@/components/MagneticButton";
 import LazyVideo from "@/components/LazyVideo";
 import useTechOrbitScene from "@/components/three/TechOrbitScene";
 import useWarpCTAScene from "@/components/three/WarpCTAScene";
+import { projetos } from "@/data/projetos";
 
 const SpaceCanvas = dynamic(() => import("@/components/three/SpaceCanvas"), { ssr: false });
 
@@ -35,7 +36,7 @@ const WHATSAPP_URL =
   "https://wa.me/5511949138973?text=Ol%C3%A1%2C+vim+pelo+site+da+Orbitamos+e+quero+fazer+um+or%C3%A7amento";
 
 const stats = [
-  { value: "7+", label: "projetos entregues", icon: Layers3 },
+  { value: `${projetos.length}+`, label: "projetos entregues", icon: Layers3 },
   { value: "24h", label: "primeiro contato", icon: Zap },
   { value: "100%", label: "mobile-first", icon: Smartphone },
   { value: "IA", label: "automações sob medida", icon: Bot },
@@ -114,6 +115,24 @@ const services = [
 ];
 
 const featuredProjects = [
+  {
+    name: "Radar da Rima",
+    category: "Cultura, comunidade e eventos",
+    href: "/projetos/radar-da-rima",
+    image: "https://batalhai.vercel.app/opengraph-image?ea1a014aede2503f",
+    description:
+      "Mapa nacional de batalhas de rima com ranking de MCs e operação completa das edições para organizadores.",
+    outcomes: ["Mapa geolocalizado", "Ranking nacional", "Gestão de eventos"],
+  },
+  {
+    name: "OrbiCore",
+    category: "Gestão para pequenos negócios",
+    href: "/projetos/orbicore-gestao",
+    image: "https://orbicore-ruby.vercel.app/og-image.png",
+    description:
+      "Sistema que centraliza contratos, receita recorrente, pipeline, estoque, vendas, folha e metas.",
+    outcomes: ["MRR e contratos", "Estoque e vendas", "Indicadores integrados"],
+  },
   {
     name: "Sabrina Lashes",
     category: "Beleza e atendimento",

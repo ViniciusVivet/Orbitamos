@@ -1,75 +1,64 @@
-# Arquitetura: Área do Colaborador (Freelancer)
+# Arquitetura das áreas de colaborador e administração
 
-Visão da estrutura para o ambiente dedicado a colaboradores, de forma limpa e escalável.
+Última atualização: 2026-07-28
 
----
+## Área do colaborador
 
-## 1. Princípios
+As rotas `/colaborador/*` exigem sessão Supabase, mas não exigem
+`role === FREELANCER`. Essa é uma decisão observável no layout atual: qualquer
+usuário autenticado pode acessar a experiência de trabalho.
 
-- **Área separada por rota**: tudo do colaborador fica em `/colaborador/*`, com layout próprio (sidebar, identidade visual).
-- **Backend por recurso**: APIs por domínio (`/api/jobs`, `/api/projects`, `/api/dashboard/me`), não por “tipo de usuário”. Controle de acesso por **role** (FREELANCER) quando precisar.
-- **Frontend por feature**: dentro de `app/colaborador/` e `components/colaborador/`, uma pasta/página por funcionalidade (vagas, conta, squad, etc.).
-- **Escalável**: adicionar nova tela = nova pasta em `app/colaborador/` + item no sidebar; nova API = novo controller em `api/` + eventual novo recurso no Supabase.
+| Rota | Responsabilidade |
+| --- | --- |
+| `/colaborador` | Visão geral |
+| `/colaborador/vagas` | Vagas abertas |
+| `/colaborador/vagas/[id]` | Detalhe e candidatura |
+| `/colaborador/candidaturas` | Candidaturas do usuário |
+| `/colaborador/projetos` | Projetos dos quais o usuário participa |
+| `/colaborador/squad` | Pessoas e colaboração do projeto |
+| `/colaborador/perfil` | Perfil profissional |
+| `/colaborador/portfolio` | Itens de portfólio |
+| `/colaborador/contatos` | Contatos comerciais autorizados por RLS |
+| `/colaborador/conta` | Dados da conta |
+| `/colaborador/privacidade` | Solicitações relacionadas a dados |
+| `/mensagens` | Conversas compartilhadas |
 
----
+Dados principais:
 
-## 2. Rotas (Frontend)
+- `v3_collaborator_profiles`
+- `v3_jobs`
+- `v3_job_applications`
+- `v3_collaborator_projects`
+- `v3_project_members`
+- `v3_portfolio_items`
+- `v3_notifications`
+- `v3_account_requests`
 
-| Rota | Descrição | Status |
-|------|-----------|--------|
-| `/colaborador` | Início / resumo (vagas em destaque, projetos, atalhos) | ✅ |
-| `/colaborador/vagas` | Lista de vagas (freela, trampos) | ✅ |
-| `/colaborador/projetos` | Meus projetos conectados | ✅ (pode virar página dedicada) |
-| `/colaborador/conta` | Configurações da conta (nome, foto, preferências) | ✅ |
-| `/colaborador/squad` | Chat / contato com o squad | 🔜 placeholder |
-| *(futuro)* `/colaborador/relatorios` | Relatórios, entregas | - |
-| *(futuro)* `/colaborador/pagamentos` | Pagamentos, faturas | - |
+## Área administrativa
 
-Todas protegidas: só usuário logado com `role === FREELANCER`. Caso contrário, redirecionar para `/estudante` (estudante) ou `/dashboard` (fallback).
+O layout `/admin` exige `adminRole` igual a `staff` ou `admin`. As operações
+também são protegidas no Supabase por `v3_is_staff()`, `v3_is_admin()` e
+policies RLS.
 
----
+| Rota | Responsabilidade |
+| --- | --- |
+| `/admin` | Visão operacional |
+| `/admin/cursos` | Cursos, módulos, aulas e materiais |
+| `/admin/vagas` | Gestão de vagas |
+| `/admin/candidaturas` | Processo seletivo |
+| `/admin/projetos` | Projetos e squads |
+| `/admin/solicitacoes` | Solicitações de privacidade |
 
-## 3. Layout da área Colaborador
+`staff` não deve receber automaticamente operações exclusivas de `admin`. Essa
+distinção está no banco e deve ser preservada ao adicionar telas.
 
-- **Layout único** em `app/colaborador/layout.tsx`:
-  - Verifica auth + role; se não for FREELANCER, redireciona para `/dashboard`.
-  - Sidebar fixa com: Início, Vagas, Projetos, Squad, Configurações (conta).
-  - Área principal: `{children}` (conteúdo de cada página).
-- **Sidebar** em `components/colaborador/ColaboradorSidebar.tsx`: links ativos por pathname, avatar e nome do usuário, link “Sair”.
+## Fronteiras de segurança
 
-Assim, qualquer nova página em `/colaborador/xyz` herda o mesmo layout e sidebar; basta registrar o link no sidebar.
-
----
-
-## 4. Backend (APIs)
-
-Manter **recursos**, não “área colaborador”:
-
-| Recurso | Endpoint | Quem acessa |
-|---------|----------|-------------|
-| Vagas | `GET /api/jobs` | Autenticado (hoje); no futuro pode restringir a FREELANCER |
-| Projetos do usuário | `GET /api/projects` | Dono (userId do token) |
-| Perfil | `GET/PUT /api/dashboard/me` | Dono |
-| *(futuro)* Chat/Squad | `GET/POST /api/squad/messages` ou `/api/chat/*` | FREELANCER (ou squad por time) |
-
-- Novas funcionalidades = novos controllers e entidades (ex.: `SquadMessage`, `Payment`), sem “colaborador” no path da API.
-- Controle de acesso: no controller ou em um filtro, checar `user.getRole() == FREELANCER` quando a rota for exclusiva de colaborador.
-
----
-
-## 5. Onde crescer no futuro
-
-- **Chat/Squad**: entidade `SquadChannel` ou `SquadMessage`, repository, controller REST (ou WebSocket depois); página `/colaborador/squad` consome a API.
-- **Relatórios**: `GET /api/reports/...` ou dados agregados em `/api/dashboard/summary` para colaborador; página `/colaborador/relatorios`.
-- **Pagamentos**: entidades `Invoice`, `Payout`; APIs `GET/POST /api/invoices`, etc.; página `/colaborador/pagamentos`.
-- **Configurações avançadas**: preferências (notificações, disponibilidade) em `User` ou tabela `user_settings`; `PUT /api/dashboard/me` ou `PUT /api/settings`; formulário em `/colaborador/conta`.
-
-Crescimento: nova feature = nova rota em `app/colaborador/`, novo item no sidebar, e do lado do backend novos recursos/endpoints quando fizer sentido.
-
----
-
-## 6. Resumo
-
-- **Frontend**: área única `/colaborador` com layout (sidebar) e páginas por feature; redirect por role; nav do site aponta FREELANCER para `/colaborador`.
-- **Backend**: APIs por recurso (jobs, projects, dashboard/me, futuramente squad, reports, payments); acesso por token e role quando necessário.
-- **Escalabilidade**: adicionar tela = nova pasta em `app/colaborador/` + link no sidebar; adicionar recurso = novo controller/entidade e, se precisar, nova tabela no Supabase.
+- A interface oculta e redireciona, mas não é a fronteira de segurança.
+- Leitura e escrita devem permanecer limitadas por RLS.
+- Candidatos só podem retirar a própria candidatura pela função
+  `v3_withdraw_application`; não podem escolher livremente o status.
+- Campos pessoais de `v3_profiles` são protegidos pelas migrations `013` e
+  `014`.
+- Contatos comerciais só podem ser gerenciados por perfis internos
+  autorizados.

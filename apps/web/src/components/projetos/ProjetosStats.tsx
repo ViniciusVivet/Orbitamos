@@ -1,9 +1,10 @@
 import ScrollReveal from "@/components/ScrollReveal";
 import CountUp from "@/components/CountUp";
+import { projetos } from "@/data/projetos";
 
 const STATS = [
   {
-    valor: "7",
+    valor: String(projetos.length),
     label: "projetos entregues",
     accent: "#00D4FF",
     glow: "rgba(0,212,255,0.08)",

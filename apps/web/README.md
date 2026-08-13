@@ -1,80 +1,69 @@
-# Orbitamos Web — Frontend
+# Orbitamos Web
 
-Frontend da **Orbitamos** em **Next.js 16** (App Router), TypeScript e Tailwind CSS.
+Última atualização: 2026-07-28
 
-## Visão geral
+Aplicativo principal da Orbitamos em Next.js 16, React 18, TypeScript e
+Tailwind CSS.
 
-O app cobre duas frentes:
+## Responsabilidades
 
-1. **Site público comercial** — home orientada a orçamento e portfólio, página **`/projetos`** com cases, contato e demais páginas de marketing.
-2. **Plataforma autenticada** — áreas logadas (estudante, colaborador, fórum, mensagens, OrbitAcademy, etc.) consumindo a API em `apps/api`.
+- site comercial e portfólio;
+- autenticação Supabase;
+- áreas de estudante, colaborador e administração;
+- academia, prática, jogos e progresso;
+- fórum e mensagens;
+- vagas, candidaturas, projetos e squads;
+- rotas auxiliares de contato e materiais.
 
-## Stack
+## Executar localmente
 
-- **Next.js 16** — App Router
-- **React 18**
-- **TypeScript**
-- **Tailwind CSS** + shadcn/ui
-- **Three.js** — efeitos 3D onde aplicável
-
-## Como executar
-
-**Pré-requisitos:** Node.js 18+
-
-```bash
+```powershell
+cd apps/web
 npm install
-cp .env.example .env.local
-# NEXT_PUBLIC_API_URL=http://localhost:8080/api (ou URL de produção)
-
+Copy-Item .env.example .env.local
 npm run dev
-# http://localhost:3000
 ```
 
-**Docker** (se usar na raiz do monorepo): `docker-compose up web`
+Abra `http://localhost:3000`.
 
-## Páginas principais
-
-| Rota | Uso |
-|------|-----|
-| `/` | Home comercial (CTAs, serviços, destaque de projetos) |
-| `/projetos` | Portfólio e cases |
-| `/contato`, `/sobre` | Institucional |
-| `/mentorias`, `/orbitacademy` | Conteúdo legado / institucional |
-| `/estudante`, `/colaborador`, `/forum`, `/mensagens` | Áreas logadas |
-
-## Variáveis de ambiente
+No macOS/Linux, substitua `Copy-Item` por:
 
 ```bash
-# .env.local
-NEXT_PUBLIC_API_URL=http://localhost:8080/api
-NEXT_PUBLIC_APP_NAME=Orbitamos
+cp .env.example .env.local
 ```
 
-Outras chaves podem existir para integrações (EmailJS, etc.); veja `.env.example`.
+O exemplo local deve conter:
 
-## Scripts
-
-```bash
-npm run dev      # desenvolvimento
-npm run build    # build de produção
-npm run start    # servidor após build
-npm run lint     # ESLint
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=SUA_ANON_KEY
 ```
+
+Veja a lista completa e as regras de segurança em
+[docs/VARIAVEIS_AMBIENTE.md](../../docs/VARIAVEIS_AMBIENTE.md).
+
+## Scripts existentes
+
+```powershell
+npm run dev
+npm run lint
+npm test
+npm run test:coverage
+npm run test:contracts
+npx tsc --noEmit
+npm run build
+npm run start
+```
+
+Consulte os resultados conhecidos e limites da suíte em
+[docs/TESTES_AUTOMATIZADOS.md](../../docs/TESTES_AUTOMATIZADOS.md).
 
 ## Deploy
 
-**Vercel** — conectar o repositório, definir `NEXT_PUBLIC_API_URL` e demais variáveis conforme [docs/VARIAVEIS_AMBIENTE.md](../../docs/VARIAVEIS_AMBIENTE.md).
+Na Vercel:
 
-## Design system (paleta)
+- Root Directory: `apps/web`;
+- configure URL e anon key do Supabase;
+- faça novo deploy após mudar variáveis.
 
-- **orbit-electric:** `#00D4FF`
-- **orbit-purple:** `#8B5CF6`
-
-## Documentação
-
-- [README do monorepo](../../README.md)
-- [Next.js](https://nextjs.org/docs) · [Tailwind](https://tailwindcss.com/docs)
-
-## Licença
-
-MIT — veja [LICENSE](../../LICENSE).
+Documentação: [docs/README.md](../../docs/README.md).

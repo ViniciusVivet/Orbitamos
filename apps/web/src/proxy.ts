@@ -23,7 +23,12 @@ export async function proxy(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseAnonKey) return NextResponse.next();
+  if (!supabaseUrl || !supabaseAnonKey) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/entrar";
+    redirectUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(redirectUrl);
+  }
 
   let response = NextResponse.next({
     request,

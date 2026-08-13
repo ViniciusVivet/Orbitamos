@@ -1,3 +1,5 @@
+import { projetos } from "@/data/projetos";
+
 export default function ProjetosImpacto() {
   return (
     <section className="py-16 md:py-20" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
@@ -37,7 +39,7 @@ export default function ProjetosImpacto() {
             </div>
             <div className="flex gap-8 shrink-0">
               {[
-                { value: "7+", label: "Projetos entregues" },
+                { value: `${projetos.length}+`, label: "Projetos entregues" },
                 { value: "100%", label: "Satisfação" },
               ].map((s) => (
                 <div key={s.label} className="text-center">

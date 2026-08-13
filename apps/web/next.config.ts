@@ -13,9 +13,9 @@ const securityHeaders = [
       "default-src 'self'",
       `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://vercel.live https://cdn.jsdelivr.net${isDev ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://raw.githubusercontent.com https://*.supabase.co",
+      "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://raw.githubusercontent.com https://*.supabase.co https://batalhai.vercel.app https://orbicore-ruby.vercel.app",
       "font-src 'self'",
-      "connect-src 'self' https://orbitamosbr.com https://www.orbitamosbr.com https://api.orbitamosbr.com wss://api.orbitamosbr.com https://*.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net",
+      "connect-src 'self' https://orbitamosbr.com https://www.orbitamosbr.com https://*.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net",
       "media-src 'self'",
       "frame-src 'self' https://www.instagram.com https://www.youtube.com https://vercel.live https://view.officeapps.live.com",
       "worker-src 'self' blob:",
@@ -39,6 +39,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
       { protocol: "https", hostname: "res.cloudinary.com", pathname: "/**" },
+      { protocol: "https", hostname: "batalhai.vercel.app", pathname: "/**" },
+      { protocol: "https", hostname: "orbicore-ruby.vercel.app", pathname: "/**" },
     ],
   },
   async headers() {

@@ -1,15 +1,11 @@
-import { isSupabaseConfigured, requireSupabase } from "@/lib/supabase";
+import { requireSupabase } from "@/lib/supabase";
 
 /**
  * Funções para comunicação com a API do backend
  */
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "http://localhost:8080/api";
 
 /** Base da API sem /api (para montar URLs de upload/avatar em produção). */
-export const API_BASE_URL = API_URL.replace(/\/api\/?$/, "");
 
 // Aceitamos imagens grandes na entrada porque redimensionamos no navegador antes
 // de subir — o arquivo final fica pequeno (bom para o Supabase free tier) e o
@@ -81,29 +77,15 @@ async function prepareAvatarUpload(file: File): Promise<PreparedUpload> {
  * requisição, permitindo autenticação mesmo após o token sair da memória
  * (ex: refresh de página antes do login via cookie estar implementado no back).
  */
-function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
-  return fetch(url, { ...options, credentials: "include" });
-}
 
 /**
  * URL de avatar para exibição. Garante que a foto carregue sempre pela mesma base da API
  * usada pelo frontend (evita buraco transparente por Mixed Content ou URL errada).
- * - Se a URL for localhost/127.0.0.1, reescreve para API_BASE_URL.
- * - Se a URL for de upload da API (/api/uploads/avatars/...), reescreve para API_BASE_URL + path.
  */
 export function getDisplayAvatarUrl(avatarUrl: string | null | undefined): string | null | undefined {
   if (!avatarUrl?.trim()) return avatarUrl;
-  const trimmed = avatarUrl.trim();
   // URL de upload da própria API: usar sempre a base configurada no frontend
-  const uploadPathMatch = trimmed.match(/^(?:https?:\/\/[^/]+)?(\/api\/uploads\/avatars\/\S+)/);
-  if (uploadPathMatch) {
-    const path = uploadPathMatch[1];
-    return (API_BASE_URL.replace(/\/$/, "") + path);
-  }
-  if (trimmed.includes("localhost") || trimmed.includes("127.0.0.1")) {
-    return API_BASE_URL + trimmed.replace(/^https?:\/\/[^/]+/, "");
-  }
-  return trimmed;
+  return avatarUrl.trim();
 }
 
 export interface ContactData {
@@ -160,9 +142,8 @@ export interface ContactItem {
 /**
  * Lista todas as mensagens de contato (área colaborador/admin)
  */
-export async function getContacts(token: string): Promise<ContactItem[]> {
-  if (isSupabaseConfigured) {
-    const { data, error } = await requireSupabase()
+export async function getContacts(_token: string): Promise<ContactItem[]> {
+      const { data, error } = await requireSupabase()
       .from("v3_contacts")
       .select("id,name,email,message,read,created_at")
       .order("created_at", { ascending: false });
@@ -177,42 +158,13 @@ export async function getContacts(token: string): Promise<ContactItem[]> {
     }));
   }
 
-  const response = await authFetch(`${API_URL}/contacts`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.message || "Erro ao carregar contatos");
-  }
-  return response.json();
-}
-
 /**
  * Lista contatos não lidos
  */
 export async function getUnreadContacts(token: string): Promise<ContactItem[]> {
-  if (isSupabaseConfigured) {
-    const contacts = await getContacts(token);
+      const contacts = await getContacts(token);
     return contacts.filter((contact) => !contact.read);
   }
-
-  const response = await authFetch(`${API_URL}/contacts/unread`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.message || "Erro ao carregar contatos");
-  }
-  return response.json();
-}
 
 /**
  * Marca um contato como lido
@@ -221,8 +173,7 @@ export async function markContactAsRead(
   token: string,
   contactId: number
 ): Promise<ContactItem> {
-  if (isSupabaseConfigured) {
-    const { data, error } = await requireSupabase()
+      const { data, error } = await requireSupabase()
       .from("v3_contacts")
       .update({ read: true })
       .eq("id", contactId)
@@ -238,21 +189,6 @@ export async function markContactAsRead(
       createdAt: data.created_at,
     };
   }
-
-  const response = await authFetch(`${API_URL}/contacts/${contactId}/read`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.message || "Erro ao marcar como lido");
-  }
-  const data = await response.json();
-  return data.contact;
-}
 
 // ==================== AUTENTICAÇÃO ====================
 
@@ -537,8 +473,7 @@ async function ensureSupabaseProfile(params: {
 }
 
 export async function register(data: RegisterData): Promise<AuthResponse> {
-  if (isSupabaseConfigured) {
-    const client = requireSupabase();
+      const client = requireSupabase();
     const role = data.role ?? "STUDENT";
     const { data: authData, error } = await client.auth.signUp({
       email: data.email,
@@ -573,63 +508,11 @@ export async function register(data: RegisterData): Promise<AuthResponse> {
     };
   }
 
-  const maxRetries = 2;
-  let lastError: Error | null = null;
-
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      const controller = new AbortController();
-      // Timeout maior para serviços gratuitos que "acordam" devagar
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos
-
-      const response = await authFetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ...data, role: data.role ?? 'STUDENT' }),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || 'Erro ao criar conta');
-      }
-
-      return result;
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error('Erro desconhecido');
-      
-      // Se não for timeout ou erro de rede, não tenta novamente
-      if (lastError.name !== 'AbortError' && !lastError.message.includes('fetch')) {
-        throw lastError;
-      }
-
-      // Se for a última tentativa, lança o erro
-      if (attempt === maxRetries) {
-        if (lastError.name === 'AbortError' || lastError.message.includes('fetch')) {
-          throw new Error('Servidor demorou para responder. O serviço pode estar iniciando. Tente novamente em alguns segundos.');
-        }
-        throw lastError;
-      }
-
-      // Aguarda antes de tentar novamente (exponential backoff)
-      await new Promise(resolve => setTimeout(resolve, 2000 * (attempt + 1)));
-    }
-  }
-
-  throw lastError || new Error('Erro ao criar conta');
-}
-
 /**
  * Faz login de um usuário
  */
 export async function login(data: LoginData): Promise<AuthResponse> {
-  if (isSupabaseConfigured) {
-    const client = requireSupabase();
+      const client = requireSupabase();
     const { data: authData, error } = await client.auth.signInWithPassword({
       email: data.email,
       password: data.password,
@@ -667,63 +550,11 @@ export async function login(data: LoginData): Promise<AuthResponse> {
     };
   }
 
-  const maxRetries = 2;
-  let lastError: Error | null = null;
-
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      const controller = new AbortController();
-      // Timeout maior para serviços gratuitos que "acordam" devagar
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos
-
-      const response = await authFetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || 'Erro ao fazer login');
-      }
-
-      return result;
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error('Erro desconhecido');
-      
-      // Se não for timeout ou erro de rede, não tenta novamente
-      if (lastError.name !== 'AbortError' && !lastError.message.includes('fetch')) {
-        throw lastError;
-      }
-
-      // Se for a última tentativa, lança o erro
-      if (attempt === maxRetries) {
-        if (lastError.name === 'AbortError' || lastError.message.includes('fetch')) {
-          throw new Error('Servidor demorou para responder. O serviço pode estar iniciando. Tente novamente em alguns segundos.');
-        }
-        throw lastError;
-      }
-
-      // Aguarda antes de tentar novamente (exponential backoff)
-      await new Promise(resolve => setTimeout(resolve, 2000 * (attempt + 1)));
-    }
-  }
-
-  throw lastError || new Error('Erro ao fazer login');
-}
-
 /**
  * Busca dados do usuário autenticado
  */
-export async function getCurrentUser(token: string | null): Promise<{ success: boolean; user: User; token?: string }> {
-  if (isSupabaseConfigured) {
-    const client = requireSupabase();
+export async function getCurrentUser(_token: string | null): Promise<{ success: boolean; user: User; token?: string }> {
+      const client = requireSupabase();
     const { data: sessionData, error: sessionError } = await client.auth.getSession();
     if (sessionError || !sessionData.session?.user) {
       throw new Error("Sessão não encontrada");
@@ -732,61 +563,23 @@ export async function getCurrentUser(token: string | null): Promise<{ success: b
     return { success: true, user, token: sessionData.session.access_token };
   }
 
-  try {
-    const response = await authFetch(`${API_URL}/dashboard/me`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.message || 'Erro ao buscar dados do usuário');
-    }
-
-    return result;
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error('Erro desconhecido ao buscar dados do usuário');
-  }
-}
-
 /**
  * Invalida a sessão no backend — apaga o cookie httpOnly.
  */
 export async function logout(): Promise<void> {
-  if (isSupabaseConfigured) {
-    await requireSupabase().auth.signOut();
+      await requireSupabase().auth.signOut();
     return;
   }
-  await authFetch(`${API_URL}/auth/logout`, { method: "POST" }).catch(() => {});
-}
 
 /**
  * Renova o JWT sem pedir senha, desde que o token atual ainda seja válido.
  * Retorna o novo token ou null se a sessão expirou.
  */
 export async function refreshSession(): Promise<string | null> {
-  if (isSupabaseConfigured) {
-    const { data, error } = await requireSupabase().auth.refreshSession();
+      const { data, error } = await requireSupabase().auth.refreshSession();
     if (error) return null;
     return data.session?.access_token ?? null;
   }
-
-  try {
-    const res = await authFetch(`${API_URL}/auth/refresh`, { method: "POST" });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.success ? (data.token as string) : null;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * Atualiza perfil do usuário (nome, foto, endereço, telefone, data de nascimento, etc.)
@@ -805,8 +598,7 @@ export async function updateProfile(
     zipCode?: string | null;
   }
 ): Promise<{ success: boolean; user: User }> {
-  if (isSupabaseConfigured) {
-    const client = requireSupabase();
+      const client = requireSupabase();
     const { data: sessionData } = await client.auth.getSession();
     const userId = sessionData.session?.user.id;
     if (!userId) throw new Error("Sessão não encontrada");
@@ -833,31 +625,6 @@ export async function updateProfile(
     return { success: true, user: await getSupabaseProfile(userId) };
   }
 
-  try {
-    const response = await authFetch(`${API_URL}/dashboard/me`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.message || 'Erro ao atualizar perfil');
-    }
-
-    return result;
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error('Erro desconhecido ao atualizar perfil');
-  }
-}
-
 /**
  * Envia foto de perfil (imagem) pela própria plataforma.
  * POST multipart para o backend; retorna a nova URL e o usuário atualizado.
@@ -866,8 +633,7 @@ export async function uploadAvatarViaApi(
   token: string,
   file: File
 ): Promise<{ success: boolean; avatarUrl: string; user: User }> {
-  if (isSupabaseConfigured) {
-    const client = requireSupabase();
+      const client = requireSupabase();
     const { data: sessionData } = await client.auth.getSession();
     const userId = sessionData.session?.user.id;
     if (!userId) throw new Error("Sessão não encontrada");
@@ -899,28 +665,11 @@ export async function uploadAvatarViaApi(
     }
   }
 
-  const formData = new FormData();
-  formData.append('file', file);
-  const response = await authFetch(`${API_URL}/dashboard/me/avatar`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-    body: formData,
-  });
-  const result = await response.json();
-  if (!response.ok) {
-    throw new Error(result.message || 'Erro ao enviar foto');
-  }
-  return result;
-}
-
 /**
  * Busca o resumo do dashboard do usuário autenticado
  */
-export async function getDashboardSummary(token: string): Promise<DashboardSummary> {
-  if (isSupabaseConfigured) {
-    const client = requireSupabase();
+export async function getDashboardSummary(_token: string): Promise<DashboardSummary> {
+      const client = requireSupabase();
     const { data: sessionData } = await client.auth.getSession();
     const userId = sessionData.session?.user.id;
     if (!userId) throw new Error("Sessão não encontrada");
@@ -959,30 +708,6 @@ export async function getDashboardSummary(token: string): Promise<DashboardSumma
     };
   }
 
-  try {
-    const response = await authFetch(`${API_URL}/dashboard/summary`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.message || 'Erro ao buscar resumo do dashboard');
-    }
-
-    return result;
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error('Erro desconhecido ao buscar resumo do dashboard');
-  }
-}
-
 export interface AddProgressLessonBody {
   xpGained?: number;
   lessonTitle?: string;
@@ -996,8 +721,7 @@ export async function addProgressLesson(
   token: string,
   body: AddProgressLessonBody = {}
 ): Promise<{ success: boolean; progress: DashboardProgress }> {
-  if (isSupabaseConfigured) {
-    const client = requireSupabase();
+      const client = requireSupabase();
     const { data: sessionData } = await client.auth.getSession();
     const userId = sessionData.session?.user.id;
     if (!userId) throw new Error("Sessão não encontrada");
@@ -1033,27 +757,11 @@ export async function addProgressLesson(
     return { success: true, progress: progressRowToDashboardProgress(updated as SupabaseProgressRow) };
   }
 
-  const response = await authFetch(`${API_URL}/dashboard/me/progress/lesson`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(body),
-  });
-  const result = await response.json();
-  if (!response.ok) {
-    throw new Error(result.message || 'Erro ao registrar progresso da aula');
-  }
-  return result;
-}
-
 /**
  * Lista projetos do usuário (área do colaborador)
  */
-export async function getMyProjects(token: string): Promise<Project[]> {
-  if (isSupabaseConfigured) {
-    const client = requireSupabase();
+export async function getMyProjects(_token: string): Promise<Project[]> {
+      const client = requireSupabase();
     const { data: authData } = await client.auth.getUser();
     if (!authData.user) throw new Error("Sessão expirada.");
     const { data: memberships, error: membershipError } = await client.from("v3_project_members").select("project_id").eq("user_id", authData.user.id);
@@ -1064,25 +772,6 @@ export async function getMyProjects(token: string): Promise<Project[]> {
     if (error) throw new Error("Não foi possível carregar seus projetos.");
     return (data ?? []).map((row) => ({ id: row.id, title: row.title, description: row.description, status: row.status, createdAt: row.created_at, clientName: row.client_name, priority: row.priority, startDate: row.start_date, dueDate: row.due_date, progress: row.progress ?? 0, briefing: row.briefing, links: Array.isArray(row.links) ? row.links : [] }));
   }
-
-  try {
-    const response = await authFetch(`${API_URL}/projects`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    const result = await response.json();
-    if (!response.ok) {
-      throw new Error(result.message || 'Erro ao carregar projetos');
-    }
-    return result.projects ?? [];
-  } catch (error) {
-    if (error instanceof Error) throw error;
-    throw new Error('Erro ao carregar projetos');
-  }
-}
 
 export interface GetJobsOptions {
   /** Filtrar por tipo: freela, clt, estágio, etc. */
@@ -1096,35 +785,12 @@ export async function getJobs(
   token: string,
   options?: GetJobsOptions
 ): Promise<Job[]> {
-  if (isSupabaseConfigured) {
-    let query = requireSupabase().from("v3_jobs").select("*").eq("status", "open").order("published_at", { ascending: false });
+      let query = requireSupabase().from("v3_jobs").select("*").eq("status", "open").order("published_at", { ascending: false });
     if (options?.type?.trim()) query = query.ilike("type", options.type.trim());
     const { data, error } = await query;
     if (error) throw new Error("Não foi possível carregar as vagas.");
     return (data ?? []).map((row) => ({ id: row.id, title: row.title, description: row.description, type: row.type, status: row.status, createdAt: row.published_at ?? row.created_at, workModel: row.work_model, skills: row.skills ?? [], budgetLabel: row.budget_label, requirements: row.requirements ?? [], scope: row.scope, openings: row.openings ?? 1, applicationDeadline: row.application_deadline }));
   }
-
-  try {
-    const params = new URLSearchParams();
-    if (options?.type?.trim()) params.set("type", options.type.trim());
-    const url = params.toString() ? `${API_URL}/jobs?${params}` : `${API_URL}/jobs`;
-    const response = await authFetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    const result = await response.json();
-    if (!response.ok) {
-      throw new Error(result.message || "Erro ao carregar vagas");
-    }
-    return result.jobs ?? [];
-  } catch (error) {
-    if (error instanceof Error) throw error;
-    throw new Error("Erro ao carregar vagas");
-  }
-}
 
 export async function getJobById(id: number): Promise<Job | null> {
   const { data, error } = await requireSupabase().from("v3_jobs").select("*").eq("id", id).eq("status", "open").maybeSingle();
@@ -1205,8 +871,7 @@ export interface PublicProfile {
 }
 
 export async function getPublicProfile(token: string, userId: UserId): Promise<PublicProfile | null> {
-  if (isSupabaseConfigured) {
-    const { data, error } = await requireSupabase()
+      const { data, error } = await requireSupabase()
       .from("v3_profiles")
       .select("id,name,avatar_url,city,state,role")
       .eq("id", String(userId))
@@ -1223,24 +888,11 @@ export async function getPublicProfile(token: string, userId: UserId): Promise<P
     };
   }
 
-  try {
-    const response = await authFetch(`${API_URL}/users/${userId}/profile`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const result = await response.json();
-    if (!response.ok || !result.profile) return null;
-    return result.profile;
-  } catch {
-    return null;
-  }
-}
-
 /**
  * Lista mensagens do forum (tópicos raiz) ou respostas de um tópico
  */
 export async function getForumMessages(parentId?: number): Promise<ForumMessage[]> {
-  if (isSupabaseConfigured) {
-    let query = requireSupabase()
+      let query = requireSupabase()
       .from("v3_forum_messages")
       .select("*, profiles:v3_profiles(id,name,avatar_url,state)")
       .order("created_at", { ascending: false });
@@ -1265,28 +917,8 @@ export async function getForumMessages(parentId?: number): Promise<ForumMessage[
     }));
   }
 
-  try {
-    const params = new URLSearchParams();
-    if (parentId != null) params.set("parentId", String(parentId));
-    const url = params.toString() ? `${API_URL}/forum/messages?${params.toString()}` : `${API_URL}/forum/messages`;
-    const response = await authFetch(url, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error((err as { message?: string }).message || 'Erro ao carregar mensagens');
-    }
-    return response.json();
-  } catch (error) {
-    if (error instanceof Error) throw error;
-    throw new Error('Erro desconhecido ao carregar mensagens');
-  }
-}
-
 export async function searchForumMessages(query: string, parentId?: number): Promise<ForumMessage[]> {
-  if (isSupabaseConfigured) {
-    const messages = await getForumMessages(parentId);
+      const messages = await getForumMessages(parentId);
     const normalized = query.trim().toLowerCase();
     if (!normalized) return messages;
     return messages.filter((message) =>
@@ -1295,24 +927,6 @@ export async function searchForumMessages(query: string, parentId?: number): Pro
         .some((value) => String(value).toLowerCase().includes(normalized))
     );
   }
-
-  try {
-    const params = new URLSearchParams({ q: query });
-    if (parentId != null) params.set("parentId", String(parentId));
-    const response = await authFetch(`${API_URL}/forum/messages?${params.toString()}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error((err as { message?: string }).message || 'Erro ao buscar mensagens');
-    }
-    return response.json();
-  } catch (error) {
-    if (error instanceof Error) throw error;
-    throw new Error('Erro desconhecido ao buscar mensagens');
-  }
-}
 
 /**
  * Envia nova mensagem no forum (requer autenticação). Pode ser tópico (com título/cor/emoji) ou resposta (parentId).
@@ -1324,8 +938,7 @@ export async function postForumMessage(
   neighborhood?: string,
   options?: { parentId?: number; topicTitle?: string; topicColor?: string; topicEmoji?: string }
 ): Promise<ForumMessage> {
-  if (isSupabaseConfigured) {
-    const client = requireSupabase();
+      const client = requireSupabase();
     const { data: sessionData } = await client.auth.getSession();
     const userId = sessionData.session?.user.id;
     if (!userId) throw new Error("Sessão não encontrada");
@@ -1363,28 +976,6 @@ export async function postForumMessage(
     };
   }
 
-  try {
-    const body: Record<string, unknown> = { content, city: city ?? "", neighborhood: neighborhood ?? "" };
-    if (options?.parentId != null) body.parentId = options.parentId;
-    if (options?.topicTitle != null) body.topicTitle = options.topicTitle;
-    if (options?.topicColor != null) body.topicColor = options.topicColor;
-    if (options?.topicEmoji != null) body.topicEmoji = options.topicEmoji;
-    const response = await authFetch(`${API_URL}/forum/messages`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(body),
-    });
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error((err as { message?: string }).message || 'Erro ao enviar mensagem');
-    }
-    return response.json();
-  } catch (error) {
-    if (error instanceof Error) throw error;
-    throw new Error('Erro desconhecido ao enviar mensagem');
-  }
-}
-
 export async function updateForumMessage(
   token: string,
   id: number,
@@ -1393,8 +984,7 @@ export async function updateForumMessage(
   neighborhood?: string,
   options?: { topicTitle?: string; topicColor?: string; topicEmoji?: string }
 ): Promise<ForumMessage> {
-  if (isSupabaseConfigured) {
-    const { data, error } = await requireSupabase()
+      const { data, error } = await requireSupabase()
       .from("v3_forum_messages")
       .update({
         content,
@@ -1426,57 +1016,11 @@ export async function updateForumMessage(
     };
   }
 
-  try {
-    const body: Record<string, unknown> = { content, city: city ?? "", neighborhood: neighborhood ?? "" };
-    if (options?.topicTitle != null) body.topicTitle = options.topicTitle;
-    if (options?.topicColor != null) body.topicColor = options.topicColor;
-    if (options?.topicEmoji != null) body.topicEmoji = options.topicEmoji;
-    const response = await authFetch(`${API_URL}/forum/messages/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(body),
-    });
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error((err as { message?: string }).message || 'Erro ao atualizar mensagem');
-    }
-    return response.json();
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error('Erro desconhecido ao atualizar mensagem');
-  }
-}
-
 export async function deleteForumMessage(token: string, id: number): Promise<void> {
-  if (isSupabaseConfigured) {
-    const { error } = await requireSupabase().from("v3_forum_messages").delete().eq("id", id);
+      const { error } = await requireSupabase().from("v3_forum_messages").delete().eq("id", id);
     if (error) throw new Error(error.message);
     return;
   }
-
-  try {
-    const response = await authFetch(`${API_URL}/forum/messages/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error((err as { message?: string }).message || 'Erro ao excluir mensagem');
-    }
-  } catch (error) {
-    if (error instanceof Error) throw error;
-    throw new Error('Erro desconhecido ao excluir mensagem');
-  }
-}
 
 // ==================== CHAT (MENSAGENS) ====================
 
@@ -1580,9 +1124,8 @@ async function buildSupabaseConversation(conversation: any): Promise<ChatConvers
   };
 }
 
-export async function getChatConversations(token: string): Promise<ChatConversation[]> {
-  if (isSupabaseConfigured) {
-    const client = requireSupabase();
+export async function getChatConversations(_token: string): Promise<ChatConversation[]> {
+      const client = requireSupabase();
     const userId = await getCurrentSupabaseUserId();
     const { data: mine, error } = await client
       .from("v3_conversation_participants")
@@ -1600,17 +1143,8 @@ export async function getChatConversations(token: string): Promise<ChatConversat
     return Promise.all((conversations ?? []).map(buildSupabaseConversation));
   }
 
-  const response = await authFetch(`${API_URL}/chat/conversations`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const result = await response.json();
-  if (!response.ok) throw new Error(result.message || "Erro ao carregar conversas");
-  return result.conversations ?? [];
-}
-
 export async function getChatConversation(token: string, id: number): Promise<ChatConversation | null> {
-  if (isSupabaseConfigured) {
-    const { data, error } = await requireSupabase()
+      const { data, error } = await requireSupabase()
       .from("v3_conversations")
       .select("*")
       .eq("id", id)
@@ -1619,17 +1153,8 @@ export async function getChatConversation(token: string, id: number): Promise<Ch
     return buildSupabaseConversation(data);
   }
 
-  const response = await authFetch(`${API_URL}/chat/conversations/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const result = await response.json();
-  if (!response.ok) return null;
-  return result.conversation ?? null;
-}
-
 export async function getChatMessages(token: string, conversationId: number): Promise<ChatMessageItem[]> {
-  if (isSupabaseConfigured) {
-    const { data, error } = await requireSupabase()
+      const { data, error } = await requireSupabase()
       .from("v3_chat_messages")
       .select("id,content,sender_id,created_at, profiles:v3_profiles(name,avatar_url)")
       .eq("conversation_id", conversationId)
@@ -1647,21 +1172,12 @@ export async function getChatMessages(token: string, conversationId: number): Pr
     }));
   }
 
-  const response = await authFetch(`${API_URL}/chat/conversations/${conversationId}/messages`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const result = await response.json();
-  if (!response.ok) throw new Error(result.message || "Erro ao carregar mensagens");
-  return result.messages ?? [];
-}
-
 export async function sendChatMessage(
   token: string,
   conversationId: number,
   content: string
 ): Promise<ChatMessageItem> {
-  if (isSupabaseConfigured) {
-    const client = requireSupabase();
+      const client = requireSupabase();
     const userId = await getCurrentSupabaseUserId();
     const { data, error } = await client
       .from("v3_chat_messages")
@@ -1687,22 +1203,11 @@ export async function sendChatMessage(
     };
   }
 
-  const response = await authFetch(`${API_URL}/chat/conversations/${conversationId}/messages`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ content: content.trim() }),
-  });
-  const result = await response.json();
-  if (!response.ok) throw new Error(result.message || "Erro ao enviar mensagem");
-  return result.message;
-}
-
 export async function createDirectConversation(
   token: string,
   otherUserId: UserId
 ): Promise<{ conversation: ChatConversation; alreadyExists?: boolean }> {
-  if (isSupabaseConfigured) {
-    const client = requireSupabase();
+      const client = requireSupabase();
     const userId = await getCurrentSupabaseUserId();
     const targetId = String(otherUserId);
     const existing = await getChatConversations(token);
@@ -1728,24 +1233,13 @@ export async function createDirectConversation(
     return { conversation: await buildSupabaseConversation(conversation) };
   }
 
-  const response = await authFetch(`${API_URL}/chat/conversations`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ type: "DIRECT", otherUserId }),
-  });
-  const result = await response.json();
-  if (!response.ok) throw new Error(result.message || "Erro ao criar conversa");
-  return result;
-}
-
 export async function createGroupConversation(
   token: string,
   name: string,
   userIds: UserId[],
   avatarUrl?: string | null
 ): Promise<{ conversation: ChatConversation }> {
-  if (isSupabaseConfigured) {
-    const client = requireSupabase();
+      const client = requireSupabase();
     const userId = await getCurrentSupabaseUserId();
     const { data: conversation, error } = await client
       .from("v3_conversations")
@@ -1769,25 +1263,12 @@ export async function createGroupConversation(
     return { conversation: await buildSupabaseConversation(conversation) };
   }
 
-  const body: { type: string; name: string; userIds: UserId[]; avatarUrl?: string } = { type: "GROUP", name, userIds };
-  if (avatarUrl?.trim()) body.avatarUrl = avatarUrl.trim();
-  const response = await authFetch(`${API_URL}/chat/conversations`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify(body),
-  });
-  const result = await response.json();
-  if (!response.ok) throw new Error(result.message || "Erro ao criar grupo");
-  return result;
-}
-
 export async function updateGroupConversation(
   token: string,
   conversationId: number,
   data: { name?: string; avatarUrl?: string | null }
 ): Promise<{ success: boolean; conversation: ChatConversation }> {
-  if (isSupabaseConfigured) {
-    const { data: conversation, error } = await requireSupabase()
+      const { data: conversation, error } = await requireSupabase()
       .from("v3_conversations")
       .update({
         name: data.name,
@@ -1800,46 +1281,24 @@ export async function updateGroupConversation(
     return { success: true, conversation: await buildSupabaseConversation(conversation) };
   }
 
-  const response = await authFetch(`${API_URL}/chat/conversations/${conversationId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify(data),
-  });
-  const result = await response.json();
-  if (!response.ok) throw new Error(result.message || "Erro ao atualizar grupo");
-  return result;
-}
-
 export async function addGroupParticipant(
   token: string,
   conversationId: number,
   userId: UserId
 ): Promise<{ success: boolean }> {
-  if (isSupabaseConfigured) {
-    const { error } = await requireSupabase()
+      const { error } = await requireSupabase()
       .from("v3_conversation_participants")
       .insert({ conversation_id: conversationId, user_id: String(userId) });
     if (error) throw new Error(error.message);
     return { success: true };
   }
 
-  const response = await authFetch(`${API_URL}/chat/conversations/${conversationId}/participants`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ userId }),
-  });
-  const result = await response.json();
-  if (!response.ok) throw new Error(result.message || "Erro ao adicionar participante");
-  return result;
-}
-
 export async function removeGroupParticipant(
   token: string,
   conversationId: number,
   userId: UserId
 ): Promise<{ success: boolean }> {
-  if (isSupabaseConfigured) {
-    const { error } = await requireSupabase()
+      const { error } = await requireSupabase()
       .from("v3_conversation_participants")
       .delete()
       .eq("conversation_id", conversationId)
@@ -1847,15 +1306,6 @@ export async function removeGroupParticipant(
     if (error) throw new Error(error.message);
     return { success: true };
   }
-
-  const response = await authFetch(`${API_URL}/chat/conversations/${conversationId}/participants/${userId}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const result = await response.json();
-  if (!response.ok) throw new Error(result.message || "Erro ao remover participante");
-  return result;
-}
 
 /**
  * Upload de foto do grupo (arquivo). Apenas o criador pode enviar.
@@ -1866,8 +1316,7 @@ export async function uploadGroupAvatar(
   conversationId: number,
   file: File
 ): Promise<{ success: boolean; avatarUrl: string; conversation: ChatConversation }> {
-  if (isSupabaseConfigured) {
-    const client = requireSupabase();
+      const client = requireSupabase();
     const { blob, extension, contentType } = await prepareAvatarUpload(file);
     const path = `groups/${conversationId}/avatar.${extension}`;
     const { error: uploadError } = await client.storage
@@ -1882,21 +1331,8 @@ export async function uploadGroupAvatar(
     return { success, avatarUrl: bustedUrl, conversation };
   }
 
-  const formData = new FormData();
-  formData.append("file", file);
-  const response = await authFetch(`${API_URL}/chat/conversations/${conversationId}/avatar`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-    body: formData,
-  });
-  const result = await response.json();
-  if (!response.ok) throw new Error(result.message || "Erro ao enviar foto do grupo");
-  return result;
-}
-
-export async function getChatUsers(token: string): Promise<ChatUser[]> {
-  if (isSupabaseConfigured) {
-    const currentUserId = await getCurrentSupabaseUserId();
+export async function getChatUsers(_token: string): Promise<ChatUser[]> {
+      const currentUserId = await getCurrentSupabaseUserId();
     const { data, error } = await requireSupabase()
       .from("v3_profiles")
       .select("id,name,avatar_url,role")
@@ -1905,11 +1341,3 @@ export async function getChatUsers(token: string): Promise<ChatUser[]> {
     if (error) throw new Error(error.message);
     return (data ?? []).map(profileToChatUser);
   }
-
-  const response = await authFetch(`${API_URL}/chat/users`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const result = await response.json();
-  if (!response.ok) throw new Error(result.message || "Erro ao carregar usuários");
-  return result.users ?? [];
-}

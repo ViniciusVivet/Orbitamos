@@ -1,259 +1,125 @@
 # Orbitamos
 
-<div align="center">
+Estúdio digital na entrada; plataforma de tecnologia, educação e colaboração
+na área autenticada.
 
-![Orbitamos](https://img.shields.io/badge/Orbitamos-v3.0%20Supabase%20Native-00D4FF?style=for-the-badge&logo=rocket&logoColor=white)
-
-**Estudio digital na porta de entrada. Plataforma de tecnologia e educacao por dentro.**
-
-[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![Supabase](https://img.shields.io/badge/Supabase-Auth%20%2B%20Postgres%20%2B%20Storage-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com/)
-[![Vercel](https://img.shields.io/badge/Vercel-Frontend-black?style=flat-square&logo=vercel)](https://vercel.com/)
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-</div>
-
----
-
-## Contexto Atual
-
-Este repositório é o monorepo da **Orbitamos**, um produto com duas frentes no mesmo codebase:
-
-1. **Porta de entrada comercial**: site público que posiciona a Orbitamos como estúdio digital, com foco em projetos, portfólio, contato e conversão.
-2. **Plataforma autenticada**: portal educacional e comunitário com área do estudante, OrbitAcademy, progresso, fórum, mensagens, perfil e área de colaborador.
-
-Essa separação é intencional. O site público vende a capacidade de execução da Orbitamos como estúdio. A área logada preserva a visão original do projeto: uma plataforma de formação em tecnologia, comunidade e oportunidades.
-
-## Orbitamos v3.0
-
-**Data da virada:** 19 de junho de 2026.
-
-A v3.0 marca a volta estratégica para **Supabase nativo**:
-
-- **v1.0**: primeira versão usando Supabase como base principal.
-- **v2.0**: migração para backend próprio em Spring Boot na AWS EC2, com CloudFront e infraestrutura mais manual.
-- **v3.0**: retorno para Vercel + Supabase, reduzindo custo fixo e removendo dependência de servidor sempre ligado.
-
-Motivo da mudança: manter o projeto online com custo mínimo enquanto a operação ainda está em fase inicial. A AWS continua documentada como histórico/legado, mas a direção atual é depender o mínimo possível de infraestrutura própria.
-
-## Arquitetura Atual
-
-| Camada | Status atual | Observação |
-| --- | --- | --- |
-| Frontend | Vercel + Next.js | Site público e plataforma logada no mesmo app |
-| Domínio | `www.orbitamosbr.com` | Apex `orbitamosbr.com` redireciona para `www` |
-| Auth | Supabase Auth | Substitui login JWT do backend Spring na v3.0 |
-| Banco | Supabase Postgres | Perfis, progresso, fórum, chat, contatos e academia |
-| Storage | Supabase Storage | Avatars; materiais de aula podem usar bucket dedicado |
-| Cron anti-pausa | Job externo diario | Uma requisicao diaria evita pausa por inatividade no Supabase free tier |
-| Vídeos | YouTube embed | Vídeos de aula não devem ficar no banco/storage |
-| Backend Spring | Legado/fallback | Mantido no repo para referência e possível reuso futuro |
-| AWS EC2/CloudFront | Legado | Não é requisito para manter a área logada online |
-
-Fluxo principal da v3.0:
-
-```txt
-Usuário
-  -> Vercel / Next.js
-    -> Supabase Auth
-    -> Supabase Postgres
-    -> Supabase Storage
-    -> YouTube embeds para aulas em vídeo
-```
+Última atualização da documentação: 2026-07-28
 
 ## Produto
 
-### 1. Site público
+O mesmo aplicativo atende duas frentes:
 
-Rotas focadas em presença comercial:
+1. **Site comercial:** serviços, portfólio, cases e contato.
+2. **Portal autenticado:** estudante, colaborador, academia, progresso, fórum,
+   mensagens, vagas, projetos e administração.
 
-- `/` - apresentação da Orbitamos
-- `/projetos` - portfólio e cases
-- `/projetos/[slug]` - detalhe de projeto
-- `/contato` - captura de demanda
-- `/sobre` - narrativa institucional
-- `/orbitacademy` - ponte entre marca pública e formação em tecnologia
+Produção verificada em: [www.orbitamosbr.com](https://www.orbitamosbr.com).
 
-Essa camada deve ser rápida, estável e orientada a conversão.
+## Arquitetura atual
 
-### 2. Plataforma autenticada
-
-Rotas de produto e comunidade:
-
-- `/entrar` - cadastro/login
-- `/estudante` - dashboard do aluno
-- `/estudante/aulas` - listagem de cursos
-- `/estudante/cursos/[slug]` - sala de aula
-- `/estudante/progresso` - progresso e gamificação
-- `/estudante/conta` - perfil
-- `/forum` - comunidade
-- `/mensagens` - conversas e grupos
-- `/colaborador/*` - área de colaboradores/freelancers
-
-Na v3.0, essas rotas estão sendo migradas para Supabase nativo. O objetivo é não depender de um backend pago/sempre ligado para o fluxo principal.
-
-## Stack
-
-### Frontend (`apps/web`)
-
-- Next.js 16 App Router
-- React 18
-- TypeScript
-- Tailwind CSS
-- Supabase JS
-- Vercel
-
-### Backend legado (`apps/api`)
-
-- Spring Boot 3
-- Java 21
-- Spring Security/JWT
-- WebSocket/STOMP
-- PostgreSQL via Supabase
-
-O backend Java fica no repositório porque documenta parte importante da evolução do produto e pode ser reaproveitado quando fizer sentido voltar a ter uma API própria, por exemplo em ASP.NET Core, Spring ou outro serviço dedicado.
-
-## Estado da Migração Supabase
-
-Já preparado no código:
-
-- Auth via Supabase quando `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` existem.
-- Perfis de usuário.
-- Upload de avatar para Supabase Storage.
-- Contatos do site.
-- Progresso resumido do aluno.
-- Fórum.
-- Chat básico persistido no Supabase.
-- Estrutura acadêmica: cursos, módulos, aulas, materiais/PDFs, quizzes e progresso por aula.
-- Fallback legado para API Spring quando Supabase não está configurado.
-
-Pendente de execução manual no painel:
-
-- Rodar as migrations SQL no Supabase.
-- Criar buckets de Storage.
-- Configurar URLs de Auth.
-- Configurar variáveis na Vercel.
-- Manter ou revisar o cron externo anti-pausa do Supabase free tier.
-- Fazer redeploy.
-
-Guia principal: [docs/SUPABASE_NATIVE_MIGRATION.md](docs/SUPABASE_NATIVE_MIGRATION.md)
-
-Checklist local não versionado: `docs/local/SUPABASE_VERCEL_CHECKLIST.md`
-
-## Variáveis de Ambiente
-
-### Produção v3.0 - Vercel
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=SUA_ANON_KEY
-EMAILJS_SERVICE_ID=
-EMAILJS_TEMPLATE_ID=
-EMAILJS_PUBLIC_KEY=
+```text
+Vercel / Next.js 16
+  -> Supabase Auth
+  -> Supabase Postgres + RLS
+  -> Supabase Storage
+  -> rotas auxiliares do Next.js
 ```
 
-`NEXT_PUBLIC_API_URL` deve ficar ausente/vazio quando a área logada estiver usando Supabase nativo. Essa variável hoje é fallback para o backend Spring legado.
+| Camada | Tecnologia | Estado no repositório |
+| --- | --- | --- |
+| Aplicativo | Next.js, React, TypeScript e Tailwind | Principal |
+| Auth e dados | Supabase | Principal |
+| Hospedagem | Vercel | Principal |
 
-### Desenvolvimento local
+Detalhes e limites: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Estrutura
+
+```text
+apps/
+  web/                 aplicativo principal
+supabase/
+  migrations/          migrations SQL da plataforma atual
+  tests/database/      testes locais das policies RLS
+docs/
+  migrations/          migrations históricas 001 a 004
+  legacy/              documentos históricos
+  local/               runbooks locais ignorados pelo Git
+  README.md             índice da documentação
+```
+
+## Executar o aplicativo principal
+
+Pré-requisitos: Node.js e npm.
+
+```powershell
+cd apps/web
+npm install
+Copy-Item .env.example .env.local
+npm run dev
+```
+
+No macOS/Linux:
 
 ```bash
 cd apps/web
 npm install
+cp .env.example .env.local
 npm run dev
 ```
 
-App local: `http://localhost:3000`
+Configure em `.env.local`:
 
-## Migrations
-
-As migrations atuais ficam em `docs/migrations/`.
-
-Ordem importante para a v3.0:
-
-```txt
-docs/migrations/005_supabase_native_platform.sql
-docs/migrations/006_supabase_academy_content.sql
-docs/migrations/007_security_hardening.sql
-docs/migrations/008_course_materials_seed.sql
-docs/migrations/010_collaborator_workspace.sql
-docs/migrations/011_collaborator_preferences.sql
-docs/migrations/012_admin_operations_security.sql
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=SUA_ANON_KEY
 ```
 
-Resumo:
+Variáveis opcionais e regras de segurança:
+[docs/VARIAVEIS_AMBIENTE.md](docs/VARIAVEIS_AMBIENTE.md).
 
-- `005` cria a base da plataforma: profiles, progresso, contatos, fórum, conversas, mensagens e RLS.
-- `006` cria a base acadêmica: courses, modules, lessons, materials, quizzes, attempts e progresso por aula.
-- `007` endurece policies/RLS e funções sensíveis.
-- `008` popula os materiais de aula importados.
+## Validação
 
-## Estrutura do Repositório
-
-```txt
-orbitamos/
-├── apps/
-│   ├── web/          # Next.js: site público + plataforma autenticada
-│   └── api/          # Spring Boot legado/fallback
-├── docs/
-│   ├── migrations/   # SQLs do Supabase
-│   ├── local/        # runbooks/checklists locais ignorados pelo Git
-│   ├── legacy/       # guias históricos de AWS/Render/Spring
-│   └── *.md          # arquitetura, infra e histórico de decisões
-└── README.md
+```powershell
+cd apps/web
+npm run lint
+npx tsc --noEmit
+npm run test:coverage
+npm run test:contracts
+npm run build
 ```
 
-## Documentos Importantes
+O estado conhecido da suíte está documentado em
+[docs/TESTES_AUTOMATIZADOS.md](docs/TESTES_AUTOMATIZADOS.md). Não assuma que
+todos os comandos passam sem consultar esse registro e executar novamente.
 
-- [docs/SUPABASE_NATIVE_MIGRATION.md](docs/SUPABASE_NATIVE_MIGRATION.md) - execução da migração v3.0
-- [docs/DOMINIO_NAMECHEAP_VERCEL.md](docs/DOMINIO_NAMECHEAP_VERCEL.md) - domínio `orbitamosbr.com`
-- [docs/INFRA_ATUAL.md](docs/INFRA_ATUAL.md) - estado atual e nota de transição
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - arquitetura histórica do projeto
-- [apps/web/ENV_EXAMPLE.md](apps/web/ENV_EXAMPLE.md) - variáveis do frontend
+## Supabase
 
-## Roadmap Técnico
+A plataforma v3 usa as migrations `005` a `018`. Elas cobrem:
 
-Curto prazo:
+- perfil, PII e progresso;
+- academia, aulas, materiais e quizzes;
+- fórum e chat;
+- vagas, candidaturas, projetos e squads;
+- staff/admin, notificações, portfólio e privacidade;
+- contato, rate limit e storage.
 
-- Executar migrations no Supabase.
-- Configurar Vercel com variáveis Supabase.
-- Validar cron externo anti-pausa apontando para uma rota leve do app.
-- Validar cadastro, login, perfil, avatar, contato, fórum e chat em produção.
-- Validar em produção a leitura de cursos/progresso por aula a partir da estrutura acadêmica do Supabase.
+A existência de um arquivo SQL no Git não prova que ele foi aplicado no banco
+remoto. Ordem completa e consultas de verificação:
+[docs/SUPABASE_NATIVE_MIGRATION.md](docs/SUPABASE_NATIVE_MIGRATION.md).
 
-Médio prazo:
+## Documentação
 
-- Criar painel administrativo para cursos, aulas, materiais e quizzes.
-- Evoluir chat para Supabase Realtime.
-- Definir política de armazenamento para PDFs: bucket público simples ou bucket privado com URLs assinadas.
-- Reavaliar uma API própria quando houver demanda real de regra de negócio, integrações ou escala.
-
-Futuro:
-
-- Uma API dedicada pode voltar em C#/.NET, Spring ou outro stack, mas só quando o custo operacional fizer sentido para o estágio do projeto.
-
-## Como Pensar Este Projeto
-
-A Orbitamos não é apenas uma landing page nem apenas uma plataforma de cursos. O repositório junta uma operação comercial viável no curto prazo com uma visão de produto educacional no médio prazo.
-
-Essa decisão reduz duplicação de marca, mantém o histórico técnico acessível e permite evoluir a plataforma sem perder a capacidade de vender projetos agora.
-
-## Sobre
-
-**Douglas Vinicius Alves da Silva** - fundador da Orbitamos.
-
-[![GitHub](https://img.shields.io/badge/GitHub-ViniciusVivet-black?style=flat-square&logo=github)](https://github.com/ViniciusVivet)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-vivetsp-blue?style=flat-square&logo=linkedin)](https://linkedin.com/in/vivetsp)
+- [Índice](docs/README.md)
+- [Arquitetura](docs/ARCHITECTURE.md)
+- [Infraestrutura](docs/INFRA_ATUAL.md)
+- [Variáveis de ambiente](docs/VARIAVEIS_AMBIENTE.md)
+- [Supabase e migrations](docs/SUPABASE_NATIVE_MIGRATION.md)
+- [Testes](docs/TESTES_AUTOMATIZADOS.md)
+- [Contribuição](CONTRIBUTING.md)
 
 ## Licença
 
-MIT.
-
----
-
-<div align="center">
-
-**Orbitamos** - produto digital com propósito, comunidade e execução.
-
-</div>
+O README anterior declarava MIT, mas não há arquivo `LICENSE` versionado no
+repositório nesta revisão. Antes de distribuir o projeto como MIT, adicione o
+texto da licença e confirme a titularidade dos materiais e assets.

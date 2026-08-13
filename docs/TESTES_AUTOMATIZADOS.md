@@ -34,11 +34,11 @@ quebrar comandos antigos.
 | Jogos | execução, colisão, recursão, estrelas, navegação e storage |
 | Contratos | admin, candidatura, dados mockados e estrutura operacional |
 
-## Resultado observado em 2026-07-30
+## Resultado observado em 2026-08-07
 
 | Verificação | Resultado |
 | --- | --- |
-| `npm test` | 8 arquivos, 101 testes passando |
+| `npm test` | 13 arquivos, 133 testes passando |
 | `npm run test:coverage` | passou |
 | Statements selecionados | 98,27% |
 | Branches selecionados | 91,39% |
@@ -46,7 +46,8 @@ quebrar comandos antigos.
 | Lines selecionadas | 100% |
 | `npm run test:contracts` | 5 testes passando |
 | `npx tsc --noEmit` | passou |
-| `npm run build` | compilou e passou TypeScript; falhou no prerender de `/orbitacademy` com `Expected workStore to be initialized` |
+| `npm run lint` | passou sem erros; 33 avisos de imagens não otimizadas |
+| `npm run build` | passou; 55 páginas geradas |
 
 Os limites mínimos ficam em `apps/web/vitest.config.mts`:
 
@@ -65,17 +66,14 @@ alteram o web app, migrations ou o próprio workflow:
 
 1. `npm ci`;
 2. typecheck;
-3. auditoria informativa de lint;
+3. lint;
 4. testes com cobertura;
 5. contratos;
-6. auditoria informativa do build de produção.
+6. build de produção.
 
-Lint e build usam `continue-on-error`: seus resultados ficam visíveis no CI,
-mas ainda não bloqueiam entregas por problemas presentes na linha de base. Em
-2026-08-05, o lint encontrou 21 erros e 44 avisos. O build compilou e passou
-pelo TypeScript, mas falhou ao prerenderizar `/orbitacademy` por uma invariant
-interna do Next.js. Depois de essas falhas serem corrigidas e validadas, as
-duas auditorias devem se tornar bloqueantes.
+Todos os seis passos são bloqueantes. O build normaliza o caminho real do
+workspace no Windows antes de iniciar o Next.js, evitando módulos duplicados
+quando o diretório é aberto com capitalização diferente.
 
 ## Limites restantes
 
@@ -85,7 +83,6 @@ Ainda faltam:
 - integração contra um Supabase descartável;
 - execução automatizada das policies RLS;
 - testes React dos componentes e formulários;
-- testes do backend Spring em CI.
 
 Próxima prioridade: Supabase local/staging para provar que usuário comum,
 staff e admin recebem exatamente as permissões esperadas.

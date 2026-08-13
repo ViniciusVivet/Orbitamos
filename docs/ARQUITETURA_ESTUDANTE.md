@@ -1,37 +1,57 @@
-# Arquitetura: Área do Estudante
+# Arquitetura da área do estudante
 
-Visão da estrutura do ambiente dedicado a estudantes (alunos logados), separado do conteúdo público.
+Última atualização: 2026-07-28
 
----
+## Proteção e navegação
 
-## 1. Princípios
+Todas as rotas `/estudante/*` passam pelo proxy Supabase e pelo layout
+autenticado. O layout verifica sessão, não `role`. Um usuário autenticado pode
+alternar entre as experiências de estudante e colaborador.
 
-- **Área separada por rota**: tudo do estudante logado fica em `/estudante/*`, com layout próprio (sidebar).
-- **Público vs logado**: páginas como `/orbitacademy`, `/mentorias`, `/sobre` continuam **públicas** (atraem quem não está logado). Quando o usuário **loga como estudante**, entra no fluxo próprio em `/estudante`.
-- **Backend compartilhado**: APIs como `/api/dashboard/summary`, `/api/dashboard/me` servem o estudante; controle por role quando precisar.
-- **Escalável**: nova tela = nova pasta em `app/estudante/` + item no sidebar.
+`/dashboard` mantém um redirecionamento inicial baseado em `role`:
 
----
+- `STUDENT` -> `/estudante`
+- `FREELANCER` -> `/colaborador`
+- outro valor -> `/estudante`
 
-## 2. Rotas (Frontend)
+## Rotas implementadas
 
-| Rota | Descrição |
-|------|-----------|
-| `/estudante` | Início / resumo (progresso, próxima ação, checklist) |
-| `/estudante/aulas` | OrbitAcademy para o aluno (conteúdo + progresso) |
-| `/estudante/mentorias` | Suas mentorias e agenda |
-| `/estudante/progresso` | Progresso, checklist da semana, conquistas |
-| `/estudante/comunidade` | Mural / comunidade |
-| `/estudante/conta` | Configurações da conta (nome, foto) |
+| Rota | Responsabilidade |
+| --- | --- |
+| `/estudante` | Resumo, evolução e próximos passos |
+| `/estudante/orbita` | Jornada de carreira |
+| `/estudante/aulas` | Catálogo de cursos |
+| `/estudante/cursos/[slug]` | Curso, módulos, aulas e materiais |
+| `/estudante/pratica` | Catálogo de desafios |
+| `/estudante/pratica/[slug]` | Ambiente de prática |
+| `/estudante/jogos` | Catálogo de jogos |
+| `/estudante/jogos/[slug]` | Jogo selecionado |
+| `/estudante/jogos/orbi` | Jogo Guia Orbi |
+| `/estudante/jogos/orbi/[nivel]` | Nível do Guia Orbi |
+| `/estudante/mentorias` | Experiência de mentorias |
+| `/estudante/progresso` | Progresso e conquistas |
+| `/estudante/comunidade` | Entrada da comunidade |
+| `/estudante/conta` | Perfil e configurações |
+| `/mensagens` | Conversas compartilhadas com colaboradores |
+| `/forum` | Fórum autenticado |
 
-Todas protegidas: só usuário logado com `role === STUDENT`. Caso contrário, redirecionar para `/dashboard` (que por sua vez redireciona STUDENT → `/estudante` e FREELANCER → `/colaborador`).
+## Dados
 
----
+- Catálogo-base: `src/lib/cursos.ts`.
+- Experiência de aprendizado: `src/lib/learningExperience.ts`.
+- Desafios e jogos: módulos em `src/lib`.
+- Cursos persistidos: tabelas `courses`, `course_modules`, `lessons` e
+  `lesson_materials`.
+- Progresso: `lesson_progress` e `v3_user_progress`.
+- Notificações: `v3_notifications`.
 
-## 3. Fluxo
+Materiais podem vir do bucket `academy-materials` ou dos arquivos versionados
+em `public/course-materials`. A rota
+`/api/course-materials/[...path]` exige autenticação em produção.
 
-- **Não logado**: vê Home, Sobre, Mentorias, OrbitAcademy (público), Contato, Entrar.
-- **Logado como estudante**: após login vai para `/estudante`; nav mostra "Área do Estudante" → `/estudante`.
-- **Logado como colaborador**: após login vai para `/colaborador`; nav mostra "Área Colaborador" → `/colaborador`.
+## Pontos de atenção
 
-Assim o projeto não vira "gabunça": dois fluxos claros (estudante e colaborador), cada um com sua área e sidebar.
+- A proteção de página não substitui as policies RLS.
+- O catálogo TypeScript e o catálogo do banco precisam permanecer coerentes.
+- Alterações no modelo acadêmico devem vir acompanhadas de migration
+  idempotente e validação com usuário autenticado.

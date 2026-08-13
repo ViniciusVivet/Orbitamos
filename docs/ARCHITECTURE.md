@@ -1,99 +1,79 @@
 # Arquitetura da Orbitamos
 
-Ultima atualizacao: 2026-06-24
+Última atualização: 2026-07-28
 
-## Visao geral
+## Visão geral
 
-A Orbitamos hoje e um produto com duas frentes dentro do mesmo projeto:
+A Orbitamos reúne duas frentes no mesmo aplicativo Next.js:
 
-- **Studio digital**: site publico que apresenta a Orbitamos, portfolio, servicos e formulario de contato.
-- **Portal de tecnologia**: area logada para estudantes e colaboradores, com aulas, materiais, progresso, mensagens e funcionalidades academicas.
+- **Estúdio digital:** site público, serviços, portfólio, cases e contato.
+- **Portal autenticado:** estudante, colaborador, administração, fórum,
+  mensagens, cursos, prática, jogos, progresso, vagas e projetos.
 
-A direcao atual e manter tudo online com custo minimo usando **Vercel + Supabase**. O backend Spring/AWS continua no repositorio como legado/fallback, mas nao e o caminho principal para a operacao atual.
+O runtime principal usa exclusivamente Vercel e Supabase.
 
-## Runtime atual
+## Componentes em execução
 
-| Camada | Tecnologia | Status |
+| Camada | Implementação | Responsabilidade |
 | --- | --- | --- |
-| Frontend | Next.js em `apps/web` | Atual |
-| Hospedagem web | Vercel | Atual |
-| Auth | Supabase Auth | Atual |
-| Banco | Supabase Postgres | Atual |
-| Storage | Supabase Storage e arquivos publicos do Next | Atual |
-| API local do Next | `apps/web/src/app/api/*` | Atual para rotas auxiliares |
-| Backend Java | Spring Boot em `apps/api` | Legado/fallback |
-| AWS EC2/CloudFront | Infra antiga | Legado |
+| Web | Next.js 16 em `apps/web` | UI, páginas e rotas auxiliares |
+| Hospedagem | Vercel | Build e execução do Next.js |
+| Autenticação | Supabase Auth | Cadastro, login, sessão e usuário |
+| Banco | Supabase Postgres | Dados da plataforma e RLS |
+| Storage | Supabase Storage | Avatares e arquivos da academia |
+| Arquivos versionados | `apps/web/public/course-materials` | Materiais acadêmicos legados |
+| API auxiliar | `apps/web/src/app/api` | Contato e entrega autenticada de materiais |
 
-## Fluxo principal
+## Fluxos
 
-```txt
-Usuario
-  -> orbitamosbr.com / www.orbitamosbr.com
+```text
+Navegador
   -> Vercel / Next.js
-  -> Supabase Auth, Postgres e Storage
+     -> Supabase Auth
+     -> Supabase Postgres (protegido por RLS)
+     -> Supabase Storage
+     -> rotas /api do próprio Next.js
 ```
 
-Quando `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` existem, a area logada usa Supabase nativo. `NEXT_PUBLIC_API_URL` deve ficar ausente/vazio nesse modo; ela existe apenas para fallback do backend Spring.
+`NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` são obrigatórias.
+Sem elas, as operações de dados falham explicitamente, sem recorrer a outro
+backend.
 
-## Dados
+## Autorização
 
-As tabelas novas usam prefixo `v3_*` quando necessario para conviver com tabelas antigas que vieram do Spring/AWS.
+- `src/proxy.ts` exige usuário Supabase nas rotas protegidas.
+- As áreas `/estudante` e `/colaborador` exigem autenticação, mas não bloqueiam
+  o usuário por `role`; a interface permite alternar entre estudar e trabalhar.
+- `/dashboard` ainda usa `role` para escolher o redirecionamento inicial.
+- `/admin` exige `adminRole` igual a `staff` ou `admin` no frontend.
+- A autorização de dados sensíveis e operações administrativas deve continuar
+  garantida no banco pelas policies RLS e funções das migrations, não apenas
+  pela interface.
 
-Principais dominios de dados:
+## Domínios de dados
 
-- `v3_profiles`: perfil do usuario logado.
-- `v3_contacts`: contatos enviados pelo site publico.
-- `v3_forum_messages`: forum/comunidade.
-- `v3_conversations`, `v3_conversation_participants`, `v3_chat_messages`: mensagens.
-- `courses`, `course_modules`, `lessons`, `lesson_materials`, `quizzes`: estrutura academica.
-- `lesson_progress`, `user_progress`: progresso do aluno.
+| Domínio | Estruturas principais |
+| --- | --- |
+| Perfil | `v3_profiles`, `v3_collaborator_profiles`, `v3_portfolio_items` |
+| Aprendizado | `courses`, `course_modules`, `lessons`, `lesson_materials`, `lesson_progress`, quizzes |
+| Progresso | `v3_user_progress`, `lesson_progress` |
+| Comunidade | `v3_forum_messages` |
+| Mensagens | `v3_conversations`, `v3_conversation_participants`, `v3_chat_messages` |
+| Operação | `v3_jobs`, `v3_job_applications`, `v3_collaborator_projects`, `v3_project_members` |
+| Administração | `v3_notifications`, `v3_account_requests` |
+| Comercial | `v3_contacts` |
 
-As migrations ficam em `docs/migrations`.
+O portfólio público permanece versionado em
+`apps/web/src/data/projetos.ts`. O conteúdo acadêmico-base também possui dados
+versionados em TypeScript, com sincronização/leitura do Supabase quando
+configurado.
 
-## Conteudo academico
+## Decisões vigentes
 
-Videos devem ficar fora do banco, preferencialmente YouTube ou outro provedor de video.
-
-Materiais leves e PDFs podem ser servidos pelo projeto web em:
-
-```txt
-apps/web/public/course-materials
-```
-
-O acesso passa pela rota:
-
-```txt
-/api/course-materials/[...path]
-```
-
-Essa rota ajuda a evitar links quebrados e permite preview/download dentro da area de aulas.
-
-## Portfolio e site publico
-
-Os projetos expostos no portfolio ainda ficam hardcoded no frontend, principalmente em:
-
-```txt
-apps/web/src/data/projetos.ts
-```
-
-Metricas e textos publicos tambem podem aparecer em componentes/paginas do `apps/web/src`. Um CMS pode ser considerado depois, mas por enquanto hardcode e suficiente para custo zero e baixo volume de alteracoes.
-
-## Estrutura do repositorio
-
-```txt
-apps/
-  web/              # Next.js atual
-  api/              # Spring Boot legado/fallback
-docs/
-  migrations/       # SQLs aplicados no Supabase
-  legacy/           # documentos historicos de AWS/Render/Spring
-  local/            # arquivos locais ignorados pelo Git
-```
-
-## Decisoes importantes
-
-- Manter Supabase como backend principal enquanto o objetivo for custo minimo.
-- Nao recriar backend em Render free, porque cold start prejudica login e area logada.
-- Nao armazenar videos no Supabase; usar links externos.
-- Preservar o Spring Boot no repositorio como estudo/fallback, sem tratar como producao atual.
-- Separar documentacao atual de documentacao historica para evitar configuracoes erradas.
+- Supabase é o backend principal enquanto custo e simplicidade forem
+  prioritários.
+- Vídeos de aula usam provedor externo; não devem ser guardados no repositório
+  ou banco.
+- RLS é a fronteira de segurança para acessos feitos com a anon key.
+- Migrations em `supabase/migrations` são cumulativas e aplicadas em ordem.
+- Documentos legados não são runbooks de produção.

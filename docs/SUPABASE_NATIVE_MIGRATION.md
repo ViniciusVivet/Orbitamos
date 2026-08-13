@@ -1,99 +1,131 @@
-# Migracao para Supabase nativo
+# Supabase nativo
 
-Ultima atualizacao: 2026-06-24
+Última atualização: 2026-07-28
 
-Objetivo: manter o site publico na Vercel e tirar a dependencia da API Spring/AWS para a area logada.
+Este documento descreve o estado implementado no repositório. Ele não afirma
+que uma migration foi aplicada no banco remoto sem verificação no Supabase.
 
-## Estado atual
+## Pré-requisitos
 
-Ja esta preparado no codigo:
+- projeto Supabase;
+- URL e anon key configuradas;
+- acesso ao SQL Editor;
+- backup antes de aplicar SQL em banco com dados reais.
 
-- Auth via Supabase quando `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` existem.
-- Perfil, progresso, contato, forum e chat basico no Supabase.
-- Estrutura academica em Supabase: cursos, modulos, aulas, materiais, quizzes e progresso por aula.
-- Avatares no bucket `avatars`.
-- Materiais de aula servidos pelo Next em `apps/web/public/course-materials`.
-- API Spring mantida apenas como fallback legado.
+As migrations são escritas para serem reaplicáveis onde possível, mas isso não
+substitui backup e revisão.
 
-## SQL no Supabase
+## Ordem das migrations atuais
 
-No Supabase Dashboard:
+As migrations `001` a `004` em `docs/migrations` pertencem ao schema anterior.
+As migrations atuais ficam em `supabase/migrations` e são aplicadas da `005` à
+`018`, em ordem:
 
-1. Abra o projeto.
-2. Va em `SQL Editor`.
-3. Execute os arquivos em ordem:
+| Arquivo | Responsabilidade |
+| --- | --- |
+| `005_supabase_native_platform.sql` | Perfis, progresso, contato, fórum e chat |
+| `006_supabase_academy_content.sql` | Cursos, aulas, materiais, quizzes e progresso |
+| `007_security_hardening.sql` | Policies, colunas protegidas e storage de avatar |
+| `008_course_materials_seed.sql` | Seed inicial de materiais |
+| `009_publish_seeded_video_lessons.sql` | Publicação corretiva das aulas com vídeo |
+| `010_collaborator_workspace.sql` | Perfis profissionais, vagas, candidaturas e projetos |
+| `011_collaborator_preferences.sql` | Preferências e visibilidade profissional |
+| `012_admin_operations_security.sql` | Staff/admin, notificações, portfólio e privacidade |
+| `013_profiles_pii_hardening.sql` | Restrição de telefone, endereço e nascimento |
+| `014_profile_email_hardening.sql` | Restrição do email de perfil |
+| `015_contact_rate_limit.sql` | Rate limit persistente do contato |
+| `016_academy_admin.sql` | Policies administrativas da academia |
+| `017_academy_storage.sql` | Bucket e policies de materiais |
+| `018_avatars_bucket_fix.sql` | Correção do bucket e MIME types de avatar |
 
-```txt
-docs/migrations/005_supabase_native_platform.sql
-docs/migrations/006_supabase_academy_content.sql
-docs/migrations/007_security_hardening.sql
-docs/migrations/008_course_materials_seed.sql
+Não pule as migrations de endurecimento. O frontend usa funções introduzidas
+por elas, como `v3_get_my_profile`, `v3_is_staff`,
+`v3_withdraw_application` e `v3_contact_rate_check`.
+
+## Como verificar aplicação
+
+Antes de uma operação remota, prove a sequência no banco descartável seguindo
+[SUPABASE_LOCAL.md](SUPABASE_LOCAL.md).
+
+No SQL Editor, confirme pelo menos as estruturas esperadas:
+
+```sql
+select to_regclass('public.v3_profiles') as profiles;
+select to_regclass('public.courses') as courses;
+select to_regclass('public.v3_jobs') as jobs;
+select to_regclass('public.v3_notifications') as notifications;
+select to_regclass('public.v3_contact_attempts') as contact_attempts;
 ```
 
-Resumo:
+Confira funções:
 
-- `005`: cria a base v3 da plataforma, usando tabelas `v3_*` para conviver com tabelas antigas.
-- `006`: cria cursos, modulos, aulas, materiais, quizzes e progresso por aula.
-- `007`: endurece politicas/RLS e funcoes sensiveis.
-- `008`: popula os materiais de aula importados para a estrutura atual.
+```sql
+select routine_name
+from information_schema.routines
+where routine_schema = 'public'
+  and routine_name in (
+    'v3_get_my_profile',
+    'v3_is_staff',
+    'v3_is_admin',
+    'v3_withdraw_application',
+    'v3_contact_rate_check'
+  )
+order by routine_name;
+```
+
+Confira RLS:
+
+```sql
+select schemaname, tablename, rowsecurity
+from pg_tables
+where schemaname = 'public'
+  and tablename like 'v3_%'
+order by tablename;
+```
 
 ## Storage
 
-Crie o bucket:
+Buckets esperados:
 
-```txt
-avatars
-```
+- `avatars`: público para leitura, escrita limitada pelas policies;
+- `academy-materials`: público para leitura, gestão limitada a staff/admin.
 
-Marque como publico enquanto a estrategia for simplicidade e baixo custo operacional.
+Após aplicar `017` e `018`, confira em `Storage` os buckets, MIME types e
+policies. Não torne a service role pública para contornar policy incorreta.
 
-Para materiais de aula, a decisao atual e manter arquivos leves versionados em `apps/web/public/course-materials`. Se no futuro o volume crescer, mover para Supabase Storage ou outro provedor com URLs assinadas.
-
-## Auth URLs
+## Auth
 
 Em `Authentication -> URL Configuration`:
 
-Site URL:
-
-```txt
-https://www.orbitamosbr.com
-```
+```text
+Site URL: https://www.orbitamosbr.com
 
 Redirect URLs:
-
-```txt
 https://www.orbitamosbr.com/**
 https://orbitamosbr.com/**
 http://localhost:3000/**
 ```
 
-Durante a migracao, a confirmacao de email pode ficar desligada para evitar bloqueio de cadastro. Quando SMTP estiver configurado corretamente, reavaliar.
+A política de confirmação de email é uma decisão operacional. Não a desligue
+apenas para contornar SMTP sem registrar o risco.
 
-## Vercel
+## Validação funcional
 
-Em `Settings -> Environment Variables`:
+Depois das migrations e do deploy, teste com contas separadas:
 
-```txt
-NEXT_PUBLIC_SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=SUA_ANON_KEY
-```
-
-Remova ou deixe ausente:
-
-```txt
-NEXT_PUBLIC_API_URL
-```
-
-Depois faca redeploy.
+1. cadastro, login, refresh e logout;
+2. leitura e edição do próprio perfil;
+3. tentativa de ler PII de outro usuário;
+4. avatar;
+5. curso, material e progresso;
+6. fórum e conversa;
+7. vaga, candidatura e retirada;
+8. acesso negado ao admin para usuário comum;
+9. operações de staff/admin;
+10. contato e resposta `429` após exceder o limite.
 
 ## Dados antigos
 
-Nada nesta migracao apaga dados antigos por padrao.
-
-As tabelas antigas podem continuar no Supabase para consulta/migracao manual. Quando um usuario antigo precisar voltar, o caminho mais seguro e criar/recuperar a conta no Supabase Auth e garantir uma linha correspondente em `v3_profiles`.
-
-## Limites conhecidos
-
-- Chat ainda e persistencia basica; realtime fica para uma fase seguinte com Supabase Realtime.
-- Vagas/projetos internos da area colaborador ainda precisam de evolucao de produto.
-- Cursos ja aparecem no portal, mas um painel administrativo para editar aulas/materiais ainda e etapa futura.
+As migrations v3 não devem ser tratadas como ferramenta de exclusão do schema
+legado. Migração de usuários exige conta correspondente no Supabase Auth e
+perfil em `v3_profiles`. Planeje e valide essa migração separadamente.

@@ -4,14 +4,14 @@ on:
   pull_request:
     paths:
       - "apps/web/**"
-      - "docs/migrations/**"
+      - "supabase/**"
       - ".github/workflows/web-tests.yml"
   push:
     branches:
       - main
     paths:
       - "apps/web/**"
-      - "docs/migrations/**"
+      - "supabase/**"
       - ".github/workflows/web-tests.yml"
 
 permissions:
@@ -45,11 +45,7 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
-      # Auditorias informativas enquanto o legado existente e estabilizado.
-      # Elas tornam regressões visiveis sem bloquear entregas por problemas
-      # que ja existem na linha de base atual.
-      - name: Lint audit (non-blocking)
-        continue-on-error: true
+      - name: Lint
         run: npm run lint
 
       - name: Unit and route tests with coverage
@@ -58,6 +54,5 @@ jobs:
       - name: Security and collaborator contracts
         run: npm run test:contracts
 
-      - name: Production build audit (non-blocking)
-        continue-on-error: true
+      - name: Production build
         run: npm run build

@@ -6,7 +6,6 @@ import CursorOrbit from "@/components/CursorOrbit";
 import { ClientAuthProvider } from "@/components/AuthProvider";
 import { ChatProvider } from "@/contexts/ChatContext";
 import { ProgressProviderWithAuth } from "@/contexts/ProgressContext";
-import PreWakeProvider from "@/components/PreWakeProvider";
 import ForumWidget from "@/components/ForumWidget";
 import FloatingChat from "@/components/chat/FloatingChat";
 import ErrorBoundaryWrapper from "@/components/ErrorBoundaryWrapper";
@@ -81,15 +80,13 @@ export default function RootLayout({
             <ClientAuthProvider>
               <ProgressProviderWithAuth>
                 <ChatProvider>
-                  <PreWakeProvider>
-                    <CursorOrbit />
-                    <Navigation />
-                    <ForumWidget />
-                    <FloatingChat />
-                    <main className="pt-16 min-w-0 overflow-x-clip">
-                      {children}
-                    </main>
-                  </PreWakeProvider>
+                  <CursorOrbit />
+                  <Navigation />
+                  <ForumWidget />
+                  <FloatingChat />
+                  <main className="pt-16 min-w-0 overflow-x-clip">
+                    {children}
+                  </main>
                 </ChatProvider>
               </ProgressProviderWithAuth>
             </ClientAuthProvider>
