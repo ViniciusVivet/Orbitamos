@@ -5,7 +5,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Play, Square, RotateCcw, ChevronRight, Lightbulb, CheckCircle2, XCircle, ArrowLeft, Code2, MessageSquare, Eye, EyeOff, Copy, Check, BookOpen, Trash2, Maximize2, Minimize2 } from "lucide-react";
 import Link from "next/link";
 import { getDesafio, getNextDesafio, type DesafioStep } from "@/lib/desafios";
-import { runJavaScriptInWorker, runPythonInWorker } from "@/lib/browserCodeRunner";
+import { runJavaScriptInWorker, runPythonInWorker, warmPythonRuntime } from "@/lib/browserCodeRunner";
 import { useAuth } from "@/contexts/AuthContext";
 import ReliableCodeEditor, { type ReliableCodeEditorHandle } from "@/components/estudante/ReliableCodeEditor";
 
@@ -77,6 +77,7 @@ type ConsoleRun = {
   error: { message: string; friendly: string; line: number | null } | null;
   durationMs: number;
   truncated?: boolean;
+  outcome: "success" | "needs-work" | "error" | "cancelled";
 };
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
@@ -107,6 +108,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
   const chatEndRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<ReliableCodeEditorHandle>(null);
   const activeRunRef = useRef<AbortController | null>(null);
+  const codeRef = useRef("");
   const storageKey = userId ? `orbitamos-pratica-${userId}-${slug}` : null;
 
   useEffect(() => {
@@ -134,7 +136,9 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
           // ignore
         }
       }
-      setCode(restoredCode || desafio.codigoInicial);
+      const initialCode = restoredCode || desafio.codigoInicial;
+      codeRef.current = initialCode;
+      setCode(initialCode);
       setCurrentStep(restoredStep);
       setStepStatus(restoredStatus);
       setCompleted(restoredStatus.every((status) => status === "success"));
@@ -196,6 +200,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
   }, []);
 
   const handleCodeChange = useCallback((nextCode: string) => {
+    codeRef.current = nextCode;
     setCode(nextCode);
     setErrorMark(null);
     setSaveStatus("saving");
@@ -203,6 +208,8 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
 
   const executeCode = useCallback(async () => {
     if (!desafio || running) return;
+    const codeToRun = editorRef.current?.getValue() ?? codeRef.current;
+    codeRef.current = codeToRun;
     setConsoleRun(null);
     setErrorMark(null);
     setShowDica(false);
@@ -212,17 +219,18 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
     activeRunRef.current = controller;
     try {
     const result = desafio.linguagem === "python"
-      ? await runPythonInWorker(code, 20000, controller.signal, desafio.testCode)
-      : await runJavaScriptInWorker(code, 2500, controller.signal, desafio.testCode);
+      ? await runPythonInWorker(codeToRun, 20000, controller.signal, desafio.testCode)
+      : await runJavaScriptInWorker(codeToRun, 2500, controller.signal, desafio.testCode);
     const friendlyError = result.error
       ? explainRuntimeError(result.error, result.timedOut, desafio.linguagem)
       : "";
     const errorLine = result.errorLine ?? null;
     setConsoleRun({
       lines: result.output ? result.output.split("\n") : [],
-      error: result.error ? { message: result.error, friendly: friendlyError, line: errorLine } : null,
+      error: result.error && !result.cancelled ? { message: result.error, friendly: friendlyError, line: errorLine } : null,
       durationMs: result.durationMs ?? 0,
       truncated: result.truncated,
+      outcome: result.cancelled ? "cancelled" : result.error ? "error" : "needs-work",
     });
 
     if (result.cancelled) {
@@ -238,14 +246,14 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
       setStepStatus(newStatus);
       const lineNote = errorLine ? ` O editor marcou a linha ${errorLine} em vermelho.` : "";
       setChatMessages((previous) => [...previous, { tipo: "erro", texto: `${friendlyError}${lineNote}` }]);
-      setMobileTab("guia");
       return;
     }
 
     if (step) {
-      const passed = !result.error && step.validacao(code, result.output, result.verificationOutput);
+      const passed = !result.error && step.validacao(codeToRun, result.output, result.verificationOutput);
       const newStatus = [...stepStatus];
       if (passed) {
+        setConsoleRun((previous) => previous ? { ...previous, outcome: "success" } : previous);
         newStatus[currentStep] = "success";
         setStepStatus(newStatus);
         setChatMessages((prev) => [...prev, { tipo: "sucesso", texto: step.acerto }]);
@@ -254,13 +262,11 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
           setCurrentStep(nextStep);
           setTimeout(() => {
             setChatMessages((prev) => [...prev, { tipo: "sistema", texto: desafio.steps[nextStep].instrucao }]);
-            setMobileTab("guia");
           }, 1000);
         } else {
           setCompleted(true);
           setTimeout(() => {
             setChatMessages((prev) => [...prev, { tipo: "sucesso", texto: "Parabéns! Você completou o desafio inteiro!" }]);
-            setMobileTab("guia");
           }, 800);
         }
       } else {
@@ -274,16 +280,21 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
         lines: [],
         error: { message: "Falha inesperada no executor.", friendly: "Não foi possível executar agora. Seu código continua salvo; tente novamente.", line: null },
         durationMs: 0,
+        outcome: "error",
       });
     } finally {
       if (activeRunRef.current === controller) activeRunRef.current = null;
       setRunning(false);
     }
-  }, [code, currentStep, desafio, running, stepStatus]);
+  }, [currentStep, desafio, running, stepStatus]);
 
   const stopExecution = useCallback(() => {
     activeRunRef.current?.abort();
   }, []);
+
+  useEffect(() => {
+    if (desafio?.linguagem === "python") warmPythonRuntime();
+  }, [desafio?.linguagem]);
 
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
@@ -299,7 +310,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
         event.preventDefault();
         if (!storageKey) return;
         try {
-          localStorage.setItem(storageKey, JSON.stringify({ code, currentStep, stepStatus }));
+          localStorage.setItem(storageKey, JSON.stringify({ code: codeRef.current, currentStep, stepStatus }));
           setSaveStatus("saved");
         } catch {
           setSaveStatus("error");
@@ -308,12 +319,13 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
     };
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
-  }, [code, currentStep, executeCode, stepStatus, storageKey]);
+  }, [currentStep, executeCode, stepStatus, storageKey]);
 
   const handleReset = () => {
     if (!desafio) return;
     if (!window.confirm("Reiniciar apaga o código e o progresso salvos neste desafio. Deseja continuar?")) return;
     if (storageKey) localStorage.removeItem(storageKey);
+    codeRef.current = desafio.codigoInicial;
     setCode(desafio.codigoInicial);
     setConsoleRun(null);
     setErrorMark(null);
@@ -544,19 +556,19 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
           <button
             type="button"
             onClick={handleReset}
-            className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1 rounded-lg border border-white/10 bg-white/5 p-2 text-xs text-white/70 transition hover:bg-white/10 touch-manipulation sm:px-3 sm:py-1.5 md:min-h-9 md:min-w-0"
+            className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1 rounded-lg border border-white/10 bg-white/5 p-2 text-xs text-white/70 transition hover:bg-white/10 touch-manipulation sm:px-3 sm:py-1.5"
             aria-label="Reiniciar"
           >
             <RotateCcw className="size-3.5 sm:size-3" />
             <span className="hidden sm:inline">Reiniciar</span>
           </button>
           {running ? (
-            <button type="button" onClick={stopExecution} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-red-500/90 px-3 py-2 text-xs font-bold text-white transition hover:bg-red-400 touch-manipulation md:min-h-9 md:min-w-0" aria-label="Interromper execução">
+            <button type="button" onClick={stopExecution} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-red-500/90 px-3 py-2 text-xs font-bold text-white transition hover:bg-red-400 touch-manipulation" aria-label="Interromper execução">
               <Square className="size-3.5 fill-current" />
               <span className="hidden xs:inline">Parar</span>
             </button>
           ) : (
-            <button type="button" onClick={executeCode} title="Executar (Ctrl/⌘ + Enter)" className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-emerald-500/90 px-3 py-2 text-xs font-bold text-black transition hover:bg-emerald-400 touch-manipulation md:min-h-9 md:min-w-0">
+            <button type="button" onClick={executeCode} title="Executar (Ctrl/⌘ + Enter)" className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-emerald-500/90 px-3 py-2 text-xs font-bold text-black transition hover:bg-emerald-400 touch-manipulation">
               <Play className="size-3.5" />
               <span className="hidden xs:inline">Executar</span>
             </button>
@@ -602,8 +614,8 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Editor + Console — full width mobile, 80% desktop */}
-        <div id="practice-editor-panel" role="tabpanel" aria-labelledby="practice-code-tab" className={`flex flex-col border-r border-white/10 ${mobileTab === "editor" ? "flex-1" : "hidden md:flex md:flex-1"}`}>
-          <div className="flex-1 min-h-0">
+        <div id="practice-editor-panel" role="tabpanel" aria-labelledby="practice-code-tab" className={`min-w-0 flex-col overflow-hidden border-r border-white/10 ${mobileTab === "editor" ? "flex flex-1" : "hidden md:flex md:flex-1"}`}>
+          <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
             <ReliableCodeEditor
               ref={editorRef}
               language={desafio.linguagem}
@@ -617,16 +629,19 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
           {/* Console output */}
           <div className="relative z-10 border-t border-white/10 bg-[#0d1117]">
             <div className="flex items-center gap-2 border-b border-white/5 px-3 py-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">Console</span>
-              {consoleRun && !consoleRun.error && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
-              {consoleRun?.error && <span className="h-1.5 w-1.5 rounded-full bg-red-400" />}
+              <span className="text-[10px] font-bold uppercase tracking-wider text-white/60">Console</span>
+              {running && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orbit-electric" />}
+              {consoleRun?.outcome === "success" && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
+              {consoleRun?.outcome === "needs-work" && <span className="h-1.5 w-1.5 rounded-full bg-amber-300" />}
+              {consoleRun?.outcome === "error" && <span className="h-1.5 w-1.5 rounded-full bg-red-400" />}
+              {consoleRun?.outcome === "cancelled" && <span className="h-1.5 w-1.5 rounded-full bg-white/35" />}
               {consoleRun && (
                 <span className="ml-auto flex items-center gap-2">
-                  <span className="text-[9px] text-white/25">{consoleRun.durationMs} ms</span>
-                  <button type="button" onClick={() => setConsoleExpanded((value) => !value)} aria-label={consoleExpanded ? "Reduzir console" : "Expandir console"} className="text-white/30 transition hover:text-white/70 md:hidden">
+                  <span className="text-[9px] text-white/60">{consoleRun.durationMs} ms</span>
+                  <button type="button" onClick={() => setConsoleExpanded((value) => !value)} aria-label={consoleExpanded ? "Reduzir console" : "Expandir console"} className="text-white/60 transition hover:text-white/80 md:hidden">
                     {consoleExpanded ? <Minimize2 className="size-3" /> : <Maximize2 className="size-3" />}
                   </button>
-                  <button type="button" onClick={() => navigator.clipboard.writeText([...consoleRun.lines, consoleRun.error?.message].filter(Boolean).join("\n")).catch(() => {})} aria-label="Copiar saída do console" className="text-white/30 transition hover:text-white/70">
+                  <button type="button" onClick={() => navigator.clipboard.writeText([...consoleRun.lines, consoleRun.error?.message].filter(Boolean).join("\n")).catch(() => {})} aria-label="Copiar saída do console" className="text-white/60 transition hover:text-white/80">
                     <Copy className="size-3" />
                   </button>
                   <button
@@ -636,7 +651,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
                       setErrorMark(null);
                     }}
                     aria-label="Limpar console"
-                    className="flex items-center gap-1 text-[9px] font-bold uppercase text-white/30 transition hover:text-white/70 touch-manipulation"
+                    className="flex items-center gap-1 text-[9px] font-bold uppercase text-white/60 transition hover:text-white/80 touch-manipulation"
                   >
                     <Trash2 className="size-3" />
                     Limpar
@@ -644,9 +659,15 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
                 </span>
               )}
             </div>
-            <div role="status" aria-live="polite" className={`${consoleExpanded ? "h-64" : "h-24"} overflow-auto px-3 py-2 font-mono text-xs transition-[height] sm:h-32`}>
-              {!consoleRun && (
-                <span className="text-white/25">Clique em &quot;Executar&quot; para ver o resultado...</span>
+            <div role="status" aria-live="polite" className={`${consoleExpanded ? "h-64" : "h-28"} min-w-0 overflow-y-auto overflow-x-hidden px-3 py-2 font-mono text-xs transition-[height] sm:h-32`}>
+              {running && (
+                <div className="flex items-center gap-2 font-sans text-orbit-electric/80">
+                  <span className="size-3 animate-spin rounded-full border border-orbit-electric/30 border-t-orbit-electric" />
+                  {desafio.linguagem === "python" ? "Preparando Python e executando seu código..." : "Executando seu código..."}
+                </div>
+              )}
+              {!running && !consoleRun && (
+                <span className="text-white/60">Clique em &quot;Executar&quot; para ver o resultado...</span>
               )}
               {consoleRun?.lines.map((line, index) => (
                 <div key={index} className="whitespace-pre-wrap leading-5 text-slate-200">
@@ -654,18 +675,39 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
                 </div>
               ))}
               {consoleRun && !consoleRun.error && consoleRun.lines.length === 0 && (
-                <div className="leading-5 text-white/30">Execução concluída sem saída no console.</div>
+                <div className="leading-5 text-white/60">Execução concluída sem saída no console.</div>
               )}
               {consoleRun?.truncated && (
                 <div className="mt-1 text-[10px] text-amber-300">A saída foi limitada para manter o editor rápido.</div>
               )}
+              {consoleRun?.outcome === "needs-work" && !consoleRun.error && (
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-md border-l-2 border-amber-400 bg-amber-400/[0.08] px-2.5 py-2 font-sans text-[11px] text-amber-100">
+                  <span>O código rodou, mas ainda não passou em todos os critérios.</span>
+                  <button type="button" onClick={() => setMobileTab("guia")} className="font-bold text-amber-300 underline-offset-2 hover:underline md:hidden">
+                    Ver orientação
+                  </button>
+                </div>
+              )}
+              {consoleRun?.outcome === "success" && (
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-md border-l-2 border-emerald-400 bg-emerald-400/[0.08] px-2.5 py-2 font-sans text-[11px] text-emerald-100">
+                  <span>Boa! Esta etapa passou nos critérios do desafio.</span>
+                  <button type="button" onClick={() => setMobileTab("guia")} className="font-bold text-emerald-300 underline-offset-2 hover:underline md:hidden">
+                    Ver próximo passo
+                  </button>
+                </div>
+              )}
+              {consoleRun?.outcome === "cancelled" && (
+                <div className="mt-2 rounded-md border-l-2 border-white/30 bg-white/[0.05] px-2.5 py-2 font-sans text-[11px] text-white/60">
+                  Execução interrompida. Seu código não foi perdido e você pode continuar de onde parou.
+                </div>
+              )}
               {consoleRun?.error && (
-                <div className="mt-1.5 rounded-md border-l-2 border-red-500 bg-red-500/[0.08] px-2.5 py-2">
-                  <p className="leading-5 text-red-300">
+                <div className="mt-1.5 min-w-0 rounded-md border-l-2 border-red-500 bg-red-500/[0.08] px-2.5 py-2">
+                  <p className="break-words leading-5 text-red-300">
                     ✖ {consoleRun.error.line ? `Linha ${consoleRun.error.line}: ` : ""}
                     {consoleRun.error.message}
                   </p>
-                  <p className="mt-1 font-sans leading-5 text-amber-200/90">{consoleRun.error.friendly}</p>
+                  <p className="mt-1 break-words font-sans leading-5 text-amber-200/90">{consoleRun.error.friendly}</p>
                 </div>
               )}
             </div>

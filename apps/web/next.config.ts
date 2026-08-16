@@ -46,6 +46,13 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: "/vendor/pyodide/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+          { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
+        ],
+      },
+      {
         source: "/(.*)",
         headers: securityHeaders,
       },

@@ -1,4 +1,5 @@
 import { chromium, devices } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 
@@ -9,6 +10,9 @@ await mkdir(outputDir, { recursive: true });
 const profiles = [
   ["iphone-13", devices["iPhone 13"]],
   ["pixel-7", devices["Pixel 7"]],
+  ["pixel-7-landscape", { ...devices["Pixel 7 landscape"] }],
+  ["ipad-mini", devices["iPad Mini"]],
+  ["small-laptop", { viewport: { width: 1024, height: 640 } }],
   ["desktop", { viewport: { width: 1440, height: 900 } }],
 ];
 
@@ -21,16 +25,12 @@ async function openEditorTab(page) {
 }
 
 async function setEditorCode(page, code) {
-  const mobileEditor = page.getByLabel("Editor de código");
-  if (await mobileEditor.isVisible()) {
-    await mobileEditor.fill(code);
-    return mobileEditor;
-  }
-  const monacoEditor = page.locator(".monaco-editor");
-  await monacoEditor.click();
-  await page.keyboard.press("Control+A");
-  await page.keyboard.insertText(code);
-  return monacoEditor;
+  const editor = page.getByLabel("Editor de código", { exact: true });
+  await editor.waitFor({ state: "visible", timeout: 12_000 });
+  await editor.fill(code);
+  // CodeMirror reconcilia edição contenteditable em uma microtarefa; aguarda o modelo interno.
+  await page.waitForTimeout(150);
+  return editor;
 }
 
 async function auditConsoleControls(page, context, name) {
@@ -66,11 +66,12 @@ async function auditStopButton(page, name) {
   await stopButton.waitFor({ state: "visible", timeout: 2_000 });
   await stopButton.click();
   await page.getByText("Execução interrompida. Seu código continua salvo para você ajustar e tentar novamente.", { exact: true }).waitFor({ state: "attached" });
+  await page.getByText("Execução interrompida. Seu código não foi perdido e você pode continuar de onde parou.", { exact: true }).waitFor({ state: "attached" });
   if (await stopButton.isVisible()) throw new Error(`${name}: botão Parar continuou visível após cancelamento`);
 }
 
 try {
-  for (const [name, options] of profiles) {
+  for (const [name, options] of process.env.IDE_AUDIT_ONLY_PYTHON === "1" ? [] : profiles) {
     const context = await browser.newContext(options);
     const page = await context.newPage();
     const errors = [];
@@ -84,7 +85,7 @@ try {
       const visibleText = await page.locator("main").innerText();
       throw new Error(`${name}: IDE não abriu em ${page.url()}. Conteúdo: ${visibleText.slice(0, 500)}`);
     }
-    await page.locator('.monaco-editor, textarea[aria-label="Editor de código"]').waitFor({ timeout: 12_000 });
+    await page.getByLabel("Editor de código", { exact: true }).waitFor({ state: "visible", timeout: 12_000 });
 
     const guideTab = page.getByRole("tab", { name: "Guia", exact: true });
     if (await guideTab.isVisible()) {
@@ -102,36 +103,67 @@ try {
 
     const runButton = page.getByRole("button", { name: "Executar", exact: false });
     const runButtonBox = await runButton.boundingBox();
-    const editor = page.getByLabel("Editor de código");
+    const editor = page.getByLabel("Editor de código", { exact: true });
     const validCode = 'function precoFinal(preco, desconto) {\n  return preco - preco * (desconto / 100);\n}\n\nconsole.log(precoFinal(200, 15));';
+    await setEditorCode(page, validCode);
+
+    if (name === "iphone-13") {
+      await page.waitForTimeout(700);
+      await page.reload({ waitUntil: "networkidle" });
+      await openEditorTab(page);
+      const restoredText = await page.getByLabel("Editor de código", { exact: true }).innerText();
+      if (!restoredText.includes("precoFinal(200, 15)")) throw new Error(`${name}: rascunho não sobreviveu ao recarregamento`);
+    }
+
     if (await editor.isVisible()) {
-      await editor.fill(validCode);
       const equalsKey = page.getByRole("button", { name: "Inserir =", exact: true });
       if (await equalsKey.isVisible()) {
-        await editor.press("End");
+        await editor.click();
+        await editor.press("Control+End");
+        await page.waitForTimeout(100);
         await equalsKey.click();
-        if (!(await editor.inputValue()).endsWith("=")) throw new Error(`${name}: barra de símbolos não inseriu texto`);
+        const editorTextAfterSymbol = await editor.innerText();
+        if (!editorTextAfterSymbol.trimEnd().endsWith("=")) throw new Error(`${name}: barra de símbolos não inseriu no cursor. Conteúdo: ${JSON.stringify(editorTextAfterSymbol)}`);
         await editor.fill(validCode);
       }
     }
 
-    await runButton.click();
+    if (name === "iphone-13") await context.setOffline(true);
+    if (name === "desktop") await editor.press("Control+Enter");
+    else await runButton.click();
     const consoleOutput = page.locator('#practice-editor-panel [role="status"]');
     await consoleOutput.waitFor({ state: "attached" });
     await page.waitForTimeout(500);
     const consoleText = await consoleOutput.innerText();
-    const expectedOutput = name === "desktop" ? "undefined" : "170";
+    const expectedOutput = "170";
     if (!consoleText.split("\n").includes(expectedOutput)) {
       throw new Error(`${name}: execução não retornou ${expectedOutput}. Console: ${consoleText}`);
     }
+    await page.getByText("Boa! Esta etapa passou nos critérios do desafio.", { exact: true }).waitFor();
+    if (name === "iphone-13") await context.setOffline(false);
+    const mobileCodeTab = page.getByRole("tab", { name: "Código", exact: true });
+    if (await mobileCodeTab.count()) {
+      if ((await mobileCodeTab.getAttribute("aria-selected")) !== "true") throw new Error(`${name}: resultado da execução tirou o estudante do editor`);
+    }
     await auditConsoleControls(page, context, name);
     if (name !== "desktop") await auditStopButton(page, name);
+
+    const accessibility = await new AxeBuilder({ page }).include("#practice-editor-panel").analyze();
+    const seriousAccessibilityIssues = accessibility.violations.filter((violation) => {
+      const codeMirrorScrollerFalsePositive = violation.id === "scrollable-region-focusable"
+        && violation.nodes.every((node) => node.target.some((target) => target.includes(".cm-scroller")));
+      return !codeMirrorScrollerFalsePositive && (violation.impact === "critical" || violation.impact === "serious");
+    });
+    if (seriousAccessibilityIssues.length) {
+      throw new Error(`${name}: acessibilidade séria/crítica: ${seriousAccessibilityIssues.map((issue) => `${issue.id} (${issue.nodes.map((node) => `${node.target.join(" ")} ${node.html}`).join("; ")})`).join(", ")}`);
+    }
     await page.screenshot({ path: path.join(outputDir, `${name}.png`), fullPage: true });
 
     results.push({
       name,
       ...metrics,
       runButton: runButtonBox && { width: Math.round(runButtonBox.width), height: Math.round(runButtonBox.height) },
+      accessibilityViolations: accessibility.violations.length,
       pageErrors: errors,
     });
     await context.close();
@@ -145,25 +177,36 @@ try {
   await pythonPage.getByText("Ficha do Aluno", { exact: true }).waitFor({ timeout: 15_000 });
   await setEditorCode(pythonPage, "nome = 'Ana'\nidade = 20\nestudando = True\nprint(nome)\nprint(idade)\nprint(estudando)");
   const pythonStartedAt = Date.now();
-  await pythonPage.getByRole("button", { name: "Executar", exact: false }).click();
+  const pythonRunButton = pythonPage.getByRole("button", { name: "Executar", exact: false });
+  await pythonRunButton.click();
+  await pythonPage.getByRole("button", { name: "Interromper execução", exact: true }).waitFor({ state: "visible", timeout: 2_000 });
+  await pythonRunButton.waitFor({ state: "visible", timeout: 60_000 });
   const pythonConsole = pythonPage.locator('#practice-editor-panel [role="status"]');
-  await pythonPage.waitForTimeout(25_000);
   const firstPythonOutput = await pythonConsole.innerText();
+  const firstPythonRunMs = Date.now() - pythonStartedAt;
   const pythonAvailable = firstPythonOutput.split("\n").includes("True");
+  let secondPythonRunMs = null;
   if (!pythonAvailable && process.env.IDE_AUDIT_REQUIRE_PYTHON === "1") {
     throw new Error(`python-pixel-7: execução falhou. Console: ${firstPythonOutput}`);
   }
 
   if (pythonAvailable) {
     await setEditorCode(pythonPage, "if True:\nprint('erro')");
+    const secondPythonStartedAt = Date.now();
     await pythonPage.getByRole("button", { name: "Executar", exact: false }).click();
-    await pythonPage.getByText("IndentationError", { exact: false }).waitFor({ state: "attached", timeout: 30_000 });
+    try {
+      await pythonPage.getByText("IndentationError", { exact: false }).waitFor({ state: "attached", timeout: 30_000 });
+    } catch {
+      throw new Error(`python-pixel-7: erro de indentação não foi apresentado. Console: ${await pythonConsole.innerText()}`);
+    }
+    secondPythonRunMs = Date.now() - secondPythonStartedAt;
+    if (secondPythonRunMs > 5_000) throw new Error(`python-pixel-7: runtime não foi reaproveitado (${secondPythonRunMs} ms na segunda execução)`);
 
     await openEditorTab(pythonPage);
     await setEditorCode(pythonPage, "while True:\n    pass");
     await pythonPage.getByRole("button", { name: "Executar", exact: false }).click();
     const pythonStop = pythonPage.getByRole("button", { name: "Interromper execução", exact: true });
-    await pythonStop.waitFor({ state: "visible", timeout: 2_000 });
+    await pythonStop.waitFor({ state: "visible", timeout: 5_000 });
     await pythonStop.click();
     await pythonPage.getByText("Execução interrompida. Seu código continua salvo para você ajustar e tentar novamente.", { exact: true }).waitFor({ state: "attached" });
   }
@@ -171,7 +214,8 @@ try {
   results.push({
     name: "python-pixel-7",
     pythonAvailable,
-    firstPythonRunMs: Date.now() - pythonStartedAt,
+    firstPythonRunMs,
+    secondPythonRunMs,
     consoleText: (await pythonConsole.innerText()).slice(0, 200),
     pageErrors: pythonErrors,
     hasHorizontalOverflow: await pythonPage.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1),

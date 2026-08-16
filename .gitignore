@@ -15,6 +15,8 @@ node_modules/
 # Testing
 coverage/
 *.lcov
+apps/web/test-results/
+apps/web/public/vendor/pyodide/
 
 # Next.jsimage.png
 .next/
@@ -31,6 +33,7 @@ scripts/ec2-env.sh
 
 # Runbook / notas locais (não commitar)
 docs/local/
+IDE_ESTUDANTE_TRABALHO_LOCAL.md
 docs/local/SUPABASE_VERCEL_CHECKLIST.md
 CLAUDE.local.md
 .env.development.local

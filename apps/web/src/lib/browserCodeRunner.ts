@@ -176,56 +176,49 @@ export function runJavaScriptInWorker(code: string, timeoutMs = 2500, signal?: A
   });
 }
 
-const PYODIDE_VERSION = "0.27.7";
-const PYODIDE_BASE_URL = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`;
-const PYTHON_WORKER_SOURCE = `
-import { loadPyodide } from "${PYODIDE_BASE_URL}pyodide.mjs";
+type PythonWorkerMessage = BrowserCodeResult & { id: number; ready?: boolean };
+type PythonPendingRun = { finish: (result: BrowserCodeResult) => void };
 
-const pyodideReady = loadPyodide({ indexURL: "${PYODIDE_BASE_URL}" });
+let pythonWorker: Worker | null = null;
+let pythonRequestId = 0;
+let pythonRuntimeReady = false;
+const pythonPendingRuns = new Map<number, PythonPendingRun>();
 
-self.onmessage = async function (event) {
-  const logs = [];
-  let verificationLogs = [];
-  let outputLength = 0;
-  let truncated = false;
-  const capture = (message) => {
-    if (truncated) return;
-    const line = String(message);
-    if (logs.length >= ${MAX_OUTPUT_LINES} || outputLength + line.length > ${MAX_OUTPUT_LENGTH}) {
-      logs.push("[Saída truncada: limite do console atingido]");
-      truncated = true;
-      return;
-    }
-    logs.push(line);
-    outputLength += line.length + 1;
+function resetPythonWorker(fallback: BrowserCodeResult) {
+  pythonWorker?.terminate();
+  pythonWorker = null;
+  pythonRuntimeReady = false;
+  for (const pending of pythonPendingRuns.values()) pending.finish(fallback);
+  pythonPendingRuns.clear();
+}
+
+function getPythonWorker(): Worker {
+  if (pythonWorker) return pythonWorker;
+  const worker = new Worker("/workers/python-runner.mjs", { type: "module", name: "orbitamos-python" });
+  worker.onmessage = (event: MessageEvent<PythonWorkerMessage>) => {
+    pythonRuntimeReady = true;
+    const pending = pythonPendingRuns.get(event.data.id);
+    if (!pending) return;
+    pythonPendingRuns.delete(event.data.id);
+    pending.finish(event.data.ready ? { output: "", error: null, timedOut: false } : event.data);
   };
+  worker.onerror = () => resetPythonWorker({ output: "", error: "Não foi possível iniciar o Python. Verifique sua conexão e tente novamente.", timedOut: false });
+  pythonWorker = worker;
+  return worker;
+}
+
+/** Começa a baixar/inicializar o Python antes do primeiro clique em Executar. */
+export function warmPythonRuntime() {
+  if (typeof window === "undefined" || typeof Worker === "undefined") return;
   try {
-    const pyodide = await pyodideReady;
-    self.fetch = undefined;
-    self.XMLHttpRequest = undefined;
-    self.WebSocket = undefined;
-    self.EventSource = undefined;
-    pyodide.setStdout({ batched: capture });
-    pyodide.setStderr({ batched: capture });
-    await pyodide.runPythonAsync(event.data.code);
-    const visibleOutput = logs.join("\\n");
-    if (event.data.verificationCode) {
-      verificationLogs = [];
-      pyodide.setStdout({ batched: (message) => verificationLogs.push(String(message)) });
-      pyodide.setStderr({ batched: (message) => verificationLogs.push(String(message)) });
-      await pyodide.runPythonAsync(event.data.verificationCode);
-    }
-    self.postMessage({ output: visibleOutput, verificationOutput: verificationLogs.join("\\n"), error: null, timedOut: false, truncated });
-  } catch (error) {
-    self.postMessage({
-      output: logs.join("\\n"),
-      error: error && error.message ? error.message : String(error),
-      timedOut: false,
-      truncated: truncated
-    });
+    const worker = getPythonWorker();
+    const id = ++pythonRequestId;
+    pythonPendingRuns.set(id, { finish: () => undefined });
+    worker.postMessage({ id, warmup: true });
+  } catch {
+    // A execução mostrará a mensagem de compatibilidade caso o aquecimento falhe.
   }
-};
-`;
+}
 
 /**
  * Tracebacks do Pyodide são longos; extrai a última linha (ex.: "NameError: ...")
@@ -254,14 +247,10 @@ export function runPythonInWorker(code: string, timeoutMs = 20000, signal?: Abor
   }
 
   return new Promise((resolve) => {
-    let workerUrl = "";
     let worker: Worker;
     try {
-      const blob = new Blob([PYTHON_WORKER_SOURCE], { type: "text/javascript" });
-      workerUrl = URL.createObjectURL(blob);
-      worker = new Worker(workerUrl, { type: "module" });
+      worker = getPythonWorker();
     } catch {
-      if (workerUrl) URL.revokeObjectURL(workerUrl);
       resolve({
         output: "",
         error: "O navegador bloqueou a inicialização do Python. Recarregue a página ou use um navegador atualizado.",
@@ -271,44 +260,33 @@ export function runPythonInWorker(code: string, timeoutMs = 20000, signal?: Abor
     }
     const startedAt = performance.now();
     let settled = false;
+    const id = ++pythonRequestId;
 
     const finish = (result: BrowserCodeResult) => {
       if (settled) return;
       settled = true;
       window.clearTimeout(timer);
-      worker.terminate();
-      URL.revokeObjectURL(workerUrl);
+      pythonPendingRuns.delete(id);
       signal?.removeEventListener("abort", abortRun);
       resolve({ ...result, durationMs: Math.round(performance.now() - startedAt) });
     };
 
-    const abortRun = () => finish({
-      output: "",
-      error: "Execução interrompida pelo estudante.",
-      timedOut: false,
-      cancelled: true,
-    });
+    const abortRun = () => resetPythonWorker({ output: "", error: "Execução interrompida pelo estudante.", timedOut: false, cancelled: true });
 
+    const effectiveTimeoutMs = pythonRuntimeReady ? timeoutMs : Math.max(timeoutMs, 60000);
     const timer = window.setTimeout(() => {
-      finish({
+      resetPythonWorker({
         output: "",
         error: "O ambiente Python demorou demais ou encontrou um loop infinito. Tente novamente.",
         timedOut: true,
       });
-    }, timeoutMs);
+    }, effectiveTimeoutMs);
     signal?.addEventListener("abort", abortRun, { once: true });
+    pythonPendingRuns.set(id, { finish: (result) => {
+      const { message, line } = extractPythonError(result.error, code);
+      finish({ ...result, error: message, errorLine: line });
+    } });
     if (signal?.aborted) abortRun();
-
-    worker.onmessage = (event: MessageEvent<BrowserCodeResult>) => {
-      const { message, line } = extractPythonError(event.data.error, code);
-      finish({ ...event.data, error: message, errorLine: line });
-    };
-    worker.onerror = () =>
-      finish({
-        output: "",
-        error: "Não foi possível iniciar o Python. Verifique sua conexão e tente novamente.",
-        timedOut: false,
-      });
-    worker.postMessage({ code, verificationCode });
+    else worker.postMessage({ id, code, verificationCode });
   });
 }

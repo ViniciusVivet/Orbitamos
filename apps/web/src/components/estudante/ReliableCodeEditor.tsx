@@ -1,337 +1,189 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
-import type { Monaco } from "@monaco-editor/react";
-import type { editor as MonacoEditorNS, languages, Position } from "monaco-editor";
-import { AlertTriangle, Code2 } from "lucide-react";
+import { autocompletion, type CompletionContext, type CompletionResult } from "@codemirror/autocomplete";
+import { indentWithTab } from "@codemirror/commands";
+import { javascript } from "@codemirror/lang-javascript";
+import { python } from "@codemirror/lang-python";
+import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
+import { setDiagnostics, type Diagnostic } from "@codemirror/lint";
+import { EditorState } from "@codemirror/state";
+import { EditorView, keymap } from "@codemirror/view";
+import { oneDarkTheme } from "@codemirror/theme-one-dark";
+import { tags } from "@lezer/highlight";
+import { basicSetup } from "codemirror";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 
-const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
-  ssr: false,
-  loading: () => null,
-});
+type Language = "javascript" | "typescript" | "python";
+type SnippetSpec = { label: string; detail: string; apply: string; type: "keyword" | "function" };
 
-const PYTHON_KEYWORDS = [
-  "def", "return", "if", "elif", "else", "for", "while", "in", "not", "and", "or",
-  "import", "from", "as", "class", "try", "except", "finally", "with", "lambda",
-  "pass", "break", "continue", "global", "None", "True", "False",
+const PYTHON_COMPLETIONS: SnippetSpec[] = [
+  ...["def", "return", "if", "elif", "else", "for", "while", "in", "not", "and", "or", "import", "from", "class", "try", "except", "with", "pass", "break", "continue", "None", "True", "False"].map((label) => ({ label, detail: "palavra-chave", apply: label, type: "keyword" as const })),
+  ...["print", "len", "range", "str", "int", "float", "list", "dict", "sum", "min", "max", "round", "sorted", "enumerate", "zip"].map((label) => ({ label, detail: "função nativa", apply: `${label}()`, type: "function" as const })),
 ];
 
-const PYTHON_BUILTINS = [
-  "print", "len", "range", "input", "str", "int", "float", "bool", "list", "dict",
-  "set", "tuple", "sum", "min", "max", "abs", "round", "sorted", "reversed",
-  "enumerate", "zip", "map", "filter", "type", "isinstance",
+const JAVASCRIPT_COMPLETIONS: SnippetSpec[] = [
+  { label: "log", detail: "console.log()", apply: "console.log()", type: "function" },
+  { label: "function", detail: "declarar função", apply: "function nome() {\n  \n}", type: "keyword" },
+  { label: "for", detail: "laço for", apply: "for (let i = 0; i < 10; i++) {\n  \n}", type: "keyword" },
+  { label: "if", detail: "condicional", apply: "if (condicao) {\n  \n}", type: "keyword" },
 ];
 
-const PYTHON_METHODS = [
-  "append", "insert", "remove", "pop", "index", "count", "sort", "extend",
-  "lower", "upper", "title", "strip", "split", "join", "replace", "startswith", "endswith",
-  "keys", "values", "items", "get", "update", "add",
-];
+const COMMON_MOBILE_KEYS = ["Tab", "(", ")", "[", "]", "{", "}", '"', "'", "=", "_"];
 
-type SnippetSpec = { label: string; detail: string; insertText: string };
+const accessibleHighlightStyle = HighlightStyle.define([
+  { tag: [tags.keyword, tags.modifier, tags.controlKeyword], color: "#f59cf6" },
+  { tag: [tags.name, tags.variableName, tags.propertyName, tags.function(tags.variableName)], color: "#8cc8ff" },
+  { tag: [tags.string, tags.special(tags.string)], color: "#b6ddff" },
+  { tag: [tags.number, tags.bool, tags.null], color: "#ffb77c" },
+  { tag: [tags.operator, tags.punctuation], color: "#ff9b94" },
+  { tag: tags.comment, color: "#b8c0cc", fontStyle: "italic" },
+  { tag: [tags.typeName, tags.className], color: "#ffe08a" },
+]);
 
-const PYTHON_SNIPPETS: SnippetSpec[] = [
-  { label: "def", detail: "Definir função", insertText: "def ${1:nome}(${2:parametros}):\n    ${3:pass}" },
-  { label: "if", detail: "Condicional if", insertText: "if ${1:condicao}:\n    ${2:pass}" },
-  { label: "ifelse", detail: "if / else", insertText: "if ${1:condicao}:\n    ${2:pass}\nelse:\n    ${3:pass}" },
-  { label: "for", detail: "Laço for ... in", insertText: "for ${1:item} in ${2:colecao}:\n    ${3:pass}" },
-  { label: "forrange", detail: "for com range()", insertText: "for ${1:i} in range(${2:10}):\n    ${3:pass}" },
-  { label: "while", detail: "Laço while", insertText: "while ${1:condicao}:\n    ${2:pass}" },
-  { label: "tryexcept", detail: "try / except", insertText: "try:\n    ${1:pass}\nexcept ${2:Exception}:\n    ${3:pass}" },
-  { label: "class", detail: "Definir classe", insertText: "class ${1:Nome}:\n    def __init__(self${2}):\n        ${3:pass}" },
-  { label: "printf", detail: "print com f-string", insertText: 'print(f"${1:texto} {${2:valor}}")' },
-];
-
-const JAVASCRIPT_SNIPPETS: SnippetSpec[] = [
-  { label: "log", detail: "console.log()", insertText: "console.log(${1});" },
-  { label: "func", detail: "Declarar função", insertText: "function ${1:nome}(${2:parametros}) {\n  ${3}\n}" },
-  { label: "arrow", detail: "Arrow function", insertText: "const ${1:nome} = (${2:parametros}) => ${3:valor};" },
-  { label: "forof", detail: "Laço for ... of", insertText: "for (const ${1:item} of ${2:colecao}) {\n  ${3}\n}" },
-  { label: "fori", detail: "Laço for clássico", insertText: "for (let ${1:i} = 0; ${1:i} < ${2:10}; ${1:i}++) {\n  ${3}\n}" },
-  { label: "ifelse", detail: "if / else", insertText: "if (${1:condicao}) {\n  ${2}\n} else {\n  ${3}\n}" },
-];
-
-let providersRegistered = false;
-
-function registerCompletionProviders(monaco: Monaco) {
-  if (providersRegistered) return;
-  providersRegistered = true;
-
-  const buildRange = (model: MonacoEditorNS.ITextModel, position: Position) => {
-    const word = model.getWordUntilPosition(position);
-    return {
-      startLineNumber: position.lineNumber,
-      endLineNumber: position.lineNumber,
-      startColumn: word.startColumn,
-      endColumn: word.endColumn,
-    };
+function completionSource(language: Language) {
+  const options = language === "python" ? PYTHON_COMPLETIONS : JAVASCRIPT_COMPLETIONS;
+  return (context: CompletionContext): CompletionResult | null => {
+    const word = context.matchBefore(/[\w.]*/);
+    if (!word || (word.from === word.to && !context.explicit)) return null;
+    return { from: word.from, options, validFor: /^[\w.]*$/ };
   };
+}
 
-  monaco.languages.registerCompletionItemProvider("python", {
-    provideCompletionItems(model: MonacoEditorNS.ITextModel, position: Position) {
-      const range = buildRange(model, position);
-      const suggestions: languages.CompletionItem[] = [
-        ...PYTHON_KEYWORDS.map((keyword) => ({
-          label: keyword,
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: keyword,
-          range,
-        })),
-        ...PYTHON_BUILTINS.map((builtin) => ({
-          label: builtin,
-          kind: monaco.languages.CompletionItemKind.Function,
-          insertText: `${builtin}($1)`,
-          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-          detail: "função nativa",
-          range,
-        })),
-        ...PYTHON_METHODS.map((method) => ({
-          label: method,
-          kind: monaco.languages.CompletionItemKind.Method,
-          insertText: `${method}($1)`,
-          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-          detail: "método",
-          range,
-        })),
-        ...PYTHON_SNIPPETS.map((snippet) => ({
-          label: snippet.label,
-          kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: snippet.insertText,
-          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-          detail: snippet.detail,
-          range,
-        })),
-      ];
-      return { suggestions };
-    },
-  });
-
-  for (const language of ["javascript", "typescript"]) {
-    monaco.languages.registerCompletionItemProvider(language, {
-      provideCompletionItems(model: MonacoEditorNS.ITextModel, position: Position) {
-        const range = buildRange(model, position);
-        return {
-          suggestions: JAVASCRIPT_SNIPPETS.map((snippet) => ({
-            label: snippet.label,
-            kind: monaco.languages.CompletionItemKind.Snippet,
-            insertText: snippet.insertText,
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            detail: snippet.detail,
-            range,
-          })),
-        };
-      },
-    });
-  }
+function languageExtension(language: Language) {
+  if (language === "python") return python();
+  return javascript({ typescript: language === "typescript" });
 }
 
 export type ReliableCodeEditorHandle = {
   focus: () => void;
+  getValue: () => string;
   insertText: (text: string) => void;
 };
 
-const COMMON_MOBILE_KEYS = ["Tab", "(", ")", "[", "]", "{", "}", '"', "'", "=", "_"];
-
 const ReliableCodeEditor = forwardRef<ReliableCodeEditorHandle, {
   value: string;
-  language: "javascript" | "typescript" | "python";
+  language: Language;
   onChange: (value: string) => void;
   errorLine?: number | null;
   errorMessage?: string;
-}>(function ReliableCodeEditor({
-  value,
-  language,
-  onChange,
-  errorLine,
-  errorMessage,
-}, forwardedRef) {
-  const [ready, setReady] = useState(false);
-  const [fallback, setFallback] = useState(false);
-  const editorRef = useRef<MonacoEditorNS.IStandaloneCodeEditor | null>(null);
-  const monacoRef = useRef<Monaco | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+}>(function ReliableCodeEditor({ value, language, onChange, errorLine, errorMessage }, forwardedRef) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const editorRef = useRef<EditorView | null>(null);
+  const initialValueRef = useRef(value);
+
+  const extensions = useMemo(() => [
+    basicSetup,
+    oneDarkTheme,
+    syntaxHighlighting(accessibleHighlightStyle),
+    languageExtension(language),
+    autocompletion({ override: [completionSource(language)], activateOnTyping: true }),
+    keymap.of([indentWithTab]),
+    EditorState.tabSize.of(language === "python" ? 4 : 2),
+    EditorView.lineWrapping,
+    EditorView.contentAttributes.of({
+      "aria-label": "Editor de código",
+      "aria-description": "Digite sua solução. Use Control mais Enter para executar.",
+      autocapitalize: "off",
+      autocomplete: "off",
+      autocorrect: "off",
+      spellcheck: "false",
+    }),
+    EditorView.theme({
+      "&": { height: "100%", backgroundColor: "#0d1117", fontSize: "16px" },
+      ".cm-scroller": { overflow: "auto", fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" },
+      ".cm-content": { minHeight: "100%", padding: "12px 0", caretColor: "#a855f7" },
+      ".cm-line": { padding: "0 12px 0 6px" },
+      ".cm-gutters": { backgroundColor: "#0d1117", borderRight: "1px solid rgba(255,255,255,.06)" },
+      ".cm-activeLine, .cm-activeLineGutter": { backgroundColor: "rgba(255,255,255,.035)" },
+      ".cm-focused": { outline: "none" },
+      "@media (min-width: 768px)": { "&": { fontSize: "13px" } },
+    }),
+    EditorView.updateListener.of((update) => {
+      if (update.docChanged) onChange(update.state.doc.toString());
+    }),
+  ], [language, onChange]);
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+    const editor = new EditorView({
+      state: EditorState.create({ doc: initialValueRef.current, extensions }),
+      parent: host,
+    });
+    editorRef.current = editor;
+    return () => {
+      editor.destroy();
+      editorRef.current = null;
+    };
+  }, [extensions]);
+
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    const current = editor.state.doc.toString();
+    if (current === value) return;
+    editor.dispatch({ changes: { from: 0, to: current.length, insert: value } });
+  }, [value]);
+
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    const diagnostics: Diagnostic[] = [];
+    if (errorLine && errorLine >= 1 && errorLine <= editor.state.doc.lines) {
+      const line = editor.state.doc.line(errorLine);
+      diagnostics.push({ from: line.from, to: Math.max(line.from + 1, line.to), severity: "error", message: errorMessage || "O erro aconteceu nesta linha." });
+    }
+    editor.dispatch(setDiagnostics(editor.state, diagnostics));
+    if (diagnostics[0]) editor.dispatch({ selection: { anchor: diagnostics[0].from }, scrollIntoView: true });
+  }, [errorLine, errorMessage]);
 
   const insertText = (text: string) => {
-    const insertion = text === "Tab" ? (language === "python" ? "    " : "  ") : text;
     const editor = editorRef.current;
-    if (editor) {
-      const selection = editor.getSelection();
-      if (selection) {
-        editor.executeEdits("mobile-toolbar", [{ range: selection, text: insertion, forceMoveMarkers: true }]);
-        editor.focus();
-      }
-      return;
-    }
-
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    onChange(`${value.slice(0, start)}${insertion}${value.slice(end)}`);
-    requestAnimationFrame(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + insertion.length, start + insertion.length);
-    });
+    if (!editor) return;
+    const insertion = text === "Tab" ? (language === "python" ? "    " : "  ") : text;
+    const { from, to } = editor.state.selection.main;
+    editor.dispatch({ changes: { from, to, insert: insertion }, selection: { anchor: from + insertion.length }, scrollIntoView: true });
+    editor.focus();
   };
 
   useImperativeHandle(forwardedRef, () => ({
-    focus: () => (editorRef.current ? editorRef.current.focus() : textareaRef.current?.focus()),
+    focus: () => editorRef.current?.focus(),
+    getValue: () => editorRef.current?.state.doc.toString() ?? value,
     insertText,
   }));
 
-  const mobileToolbar = (
-    <div className="flex shrink-0 gap-1 overflow-x-auto border-t border-white/10 bg-[#161b22] px-2 py-1.5 md:hidden [scrollbar-width:none] pb-[max(.375rem,env(safe-area-inset-bottom))]">
-      {[...COMMON_MOBILE_KEYS, ...(language === "python" ? [":", "#"] : ["=>", ";"])].map((key, index) => (
-        <button
-          key={`${key}-${index}`}
-          type="button"
-          onPointerDown={(event) => event.preventDefault()}
-          onClick={() => insertText(key)}
-          className="min-h-9 min-w-9 shrink-0 rounded-md border border-white/10 bg-white/[0.04] px-2 font-mono text-sm font-semibold text-slate-200 active:bg-orbit-electric/20 active:text-orbit-electric"
-          aria-label={key === "Tab" ? "Inserir indentação" : `Inserir ${key}`}
-        >
-          {key}
-        </button>
-      ))}
-    </div>
-  );
-
-  const statusBar = (
-    <div className="flex h-6 shrink-0 items-center gap-3 border-t border-white/10 bg-[#111820] px-3 font-mono text-[9px] text-white/35">
-      <span className="font-bold uppercase text-orbit-electric/70">{language === "python" ? "Python" : language === "typescript" ? "TypeScript" : "JavaScript"}</span>
-      <span>{value.split("\n").length} linhas</span>
-      <span>{value.length.toLocaleString("pt-BR")} caracteres</span>
-      <span className="ml-auto hidden text-white/25 sm:inline">Ctrl/⌘ + Enter para executar</span>
-    </div>
-  );
-
-  useEffect(() => {
-    let active = true;
-    const mobile = window.matchMedia("(max-width: 767px), (pointer: coarse)").matches;
-
-    if (mobile) {
-      queueMicrotask(() => {
-        if (active) setFallback(true);
-      });
-      return () => {
-        active = false;
-      };
-    }
-
-    const timer = window.setTimeout(() => {
-      if (active && !ready) setFallback(true);
-    }, 8000);
-    return () => {
-      active = false;
-      window.clearTimeout(timer);
-    };
-  }, [ready]);
-
-  useEffect(() => {
-    const editor = editorRef.current;
-    const monaco = monacoRef.current;
-    if (!editor || !monaco || !ready) return;
-    const model = editor.getModel();
-    if (!model) return;
-
-    if (errorLine && errorLine >= 1 && errorLine <= model.getLineCount()) {
-      monaco.editor.setModelMarkers(model, "orbitamos-pratica", [
-        {
-          startLineNumber: errorLine,
-          endLineNumber: errorLine,
-          startColumn: 1,
-          endColumn: model.getLineMaxColumn(errorLine),
-          message: errorMessage || "O erro aconteceu nesta linha.",
-          severity: monaco.MarkerSeverity.Error,
-        },
-      ]);
-      editor.revealLineInCenterIfOutsideViewport(errorLine);
-    } else {
-      monaco.editor.setModelMarkers(model, "orbitamos-pratica", []);
-    }
-  }, [errorLine, errorMessage, ready]);
-
-  if (fallback) {
-    return (
-      <div className="flex h-full min-h-0 flex-col bg-[#0d1117]">
-        <div className="flex items-center gap-2 border-b border-white/10 px-3 py-2 text-[10px] text-white/35">
-          <AlertTriangle className="size-3 text-amber-300" />
-          Editor compatível ativado
-        </div>
-        <textarea
-          ref={textareaRef}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          spellCheck={false}
-          autoCapitalize="off"
-          autoCorrect="off"
-          aria-label="Editor de código"
-          className="min-h-0 flex-1 resize-none bg-[#0d1117] p-4 font-mono text-base leading-6 text-slate-100 outline-none sm:text-[13px]"
-        />
-        {statusBar}
-        {mobileToolbar}
-      </div>
-    );
-  }
-
   return (
-    <div className="relative flex h-full min-h-0 flex-col">
-      <div className="relative min-h-0 flex-1">
-      {!ready && (
-        <div className="absolute inset-0 z-10 grid place-items-center bg-[#0d1117]">
-          <div className="text-center">
-            <Code2 className="mx-auto size-6 text-orbit-electric/60" />
-            <p className="mt-3 text-xs font-semibold text-white/45">Preparando editor...</p>
-            <button type="button" onClick={() => setFallback(true)} className="mt-3 text-[10px] font-bold text-orbit-electric hover:underline">
-              Usar editor compatível
-            </button>
-          </div>
-        </div>
-      )}
-      <MonacoEditor
-        height="100%"
-        language={language}
-        theme="vs-dark"
-        value={value}
-        onMount={(editor, monaco) => {
-          editorRef.current = editor;
-          monacoRef.current = monaco;
-          registerCompletionProviders(monaco);
-          setReady(true);
-        }}
-        onChange={(nextValue) => onChange(nextValue ?? "")}
-        options={{
-          fontSize: 13,
-          minimap: { enabled: false },
-          scrollBeyondLastLine: false,
-          padding: { top: 12, bottom: 12 },
-          lineNumbers: "on",
-          automaticLayout: true,
-          tabSize: language === "python" ? 4 : 2,
-          wordWrap: "on",
-          lineDecorationsWidth: 0,
-          lineNumbersMinChars: 3,
-          quickSuggestions: { other: true, comments: false, strings: true },
-          quickSuggestionsDelay: 80,
-          suggestOnTriggerCharacters: true,
-          snippetSuggestions: "top",
-          tabCompletion: "on",
-          wordBasedSuggestions: "currentDocument",
-          parameterHints: { enabled: true },
-          autoClosingBrackets: "always",
-          autoClosingQuotes: "always",
-          bracketPairColorization: { enabled: true },
-          suggest: { preview: true, showWords: true },
-        }}
-      />
+    <div className="relative flex h-full min-h-0 min-w-0 flex-col overflow-hidden bg-[#0d1117]">
+      <div ref={hostRef} data-testid="code-editor" className="min-h-0 min-w-0 flex-1 overflow-hidden" />
+      <div className="flex h-7 min-w-0 shrink-0 items-center gap-2 overflow-hidden border-t border-white/10 bg-[#111820] px-3 font-mono text-[9px] text-white/60">
+        <span className="font-bold uppercase text-orbit-electric/70">{language === "python" ? "Python" : language === "typescript" ? "TypeScript" : "JavaScript"}</span>
+        <span className="shrink-0">{value.split("\n").length} linhas</span>
+        <span className="min-w-0 truncate">{value.length.toLocaleString("pt-BR")} caracteres</span>
+        <span className="ml-auto hidden text-white/60 sm:inline">Ctrl/⌘ + Enter para executar</span>
       </div>
-      {statusBar}
-      {mobileToolbar}
+      <div aria-label="Atalhos de símbolos" className="flex min-w-0 max-w-full shrink-0 gap-1 overflow-x-auto overscroll-x-contain border-t border-white/10 bg-[#161b22] px-2 py-1.5 md:hidden [scrollbar-width:none] pb-[max(.375rem,env(safe-area-inset-bottom))]">
+        {[...COMMON_MOBILE_KEYS, ...(language === "python" ? [":", "#"] : ["=>", ";"])].map((key, index) => (
+          <button
+            key={`${key}-${index}`}
+            type="button"
+            onPointerDown={(event) => {
+              event.preventDefault();
+              insertText(key);
+            }}
+            onClick={(event) => {
+              // Ativação por teclado não dispara pointerdown.
+              if (event.detail === 0) insertText(key);
+            }}
+            className="min-h-11 min-w-11 shrink-0 rounded-md border border-white/10 bg-white/[0.04] px-2 font-mono text-sm font-semibold text-slate-200 active:bg-orbit-electric/20 active:text-orbit-electric"
+            aria-label={key === "Tab" ? "Inserir indentação" : `Inserir ${key}`}
+          >
+            {key}
+          </button>
+        ))}
+      </div>
     </div>
   );
 });
 
 ReliableCodeEditor.displayName = "ReliableCodeEditor";
-
 export default ReliableCodeEditor;
