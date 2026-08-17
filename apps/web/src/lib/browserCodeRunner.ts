@@ -176,6 +176,36 @@ export function runJavaScriptInWorker(code: string, timeoutMs = 2500, signal?: A
   });
 }
 
+/**
+ * Executor educacional para o subconjunto de C# usado nas missões iniciais.
+ * Mantém tudo gratuito e isolado no navegador sem carregar o runtime .NET.
+ * Não pretende substituir Roslyn: rejeita recursos fora de variáveis, console,
+ * condicionais, arrays e laços básicos com uma mensagem clara para o aluno.
+ */
+export function runCSharpInWorker(code: string, timeoutMs = 2500, signal?: AbortSignal, verificationCode = ""): Promise<BrowserCodeResult> {
+  const unsupported = /\b(namespace|using|class|interface|record|struct|async|await|Task|LINQ|System\.IO|System\.Net)\b/;
+  if (unsupported.test(code)) {
+    return Promise.resolve({
+      output: "",
+      error: "Este laboratório C# inicial executa Console.WriteLine, variáveis, condições, arrays e laços. Recursos avançados serão liberados na trilha .NET.",
+      timedOut: false,
+    });
+  }
+
+  const transpile = (source: string) => source
+    .replace(/\/\/.*$/gm, (comment) => comment)
+    .replace(/\bConsole\.WriteLine\s*\(/g, "console.log(")
+    .replace(/\bforeach\s*\(\s*var\s+(\w+)\s+in\s+([^\)]+)\)/g, "for (const $1 of $2)")
+    .replace(/new\s+(?:int|string|double|decimal|bool)\s*\[\s*\]\s*{([^}]*)}/g, "[$1]")
+    .replace(/\bint\s+(\w+)\s*=\s*([^;\n]+?)\s*\/\s*([^;\n]+);/g, "let $1 = Math.trunc($2 / $3);")
+    .replace(/\b(?:int|string|double|decimal|bool|long|var)\s+(\w+)\s*=/g, "let $1 =")
+    .replace(/\b(?:int|string|double|decimal|bool|long)\s+(\w+)\s*;/g, "let $1;")
+    .replace(/\$"([^"\\]*(?:\\.[^"\\]*)*)"/g, (_, content: string) => `\`${content.replace(/{([^}]+)}/g, "\${$1}")}\``)
+    .replace(/\bMathF?\./g, "Math.");
+
+  return runJavaScriptInWorker(transpile(code), timeoutMs, signal, transpile(verificationCode));
+}
+
 type PythonWorkerMessage = BrowserCodeResult & { id: number; ready?: boolean };
 type PythonPendingRun = { finish: (result: BrowserCodeResult) => void };
 

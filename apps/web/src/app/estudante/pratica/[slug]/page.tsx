@@ -5,13 +5,13 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Play, Square, RotateCcw, ChevronRight, Lightbulb, CheckCircle2, XCircle, ArrowLeft, Code2, MessageSquare, Eye, EyeOff, Copy, Check, BookOpen, Trash2, Maximize2, Minimize2 } from "lucide-react";
 import Link from "next/link";
 import { getDesafio, getNextDesafio, type DesafioStep } from "@/lib/desafios";
-import { runJavaScriptInWorker, runPythonInWorker, warmPythonRuntime } from "@/lib/browserCodeRunner";
+import { runCSharpInWorker, runJavaScriptInWorker, runPythonInWorker, warmPythonRuntime } from "@/lib/browserCodeRunner";
 import { useAuth } from "@/contexts/AuthContext";
 import ReliableCodeEditor, { type ReliableCodeEditorHandle } from "@/components/estudante/ReliableCodeEditor";
 
 type MobileTab = "editor" | "guia";
 
-function explainRuntimeError(error: string, timedOut: boolean, language: "javascript" | "typescript" | "python") {
+function explainRuntimeError(error: string, timedOut: boolean, language: "javascript" | "typescript" | "python" | "csharp") {
   if (timedOut) return "A execução excedeu o limite de tempo. Procure um laço sem condição de saída ou uma tarefa que nunca termina.";
   if (/is not a function/i.test(error)) {
     return "Você chamou algo que não é uma função. Confira se o nome está certo e se não faltou declarar a função antes de usá-la.";
@@ -220,7 +220,9 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
     try {
     const result = desafio.linguagem === "python"
       ? await runPythonInWorker(codeToRun, 20000, controller.signal, desafio.testCode)
-      : await runJavaScriptInWorker(codeToRun, 2500, controller.signal, desafio.testCode);
+      : desafio.linguagem === "csharp"
+        ? await runCSharpInWorker(codeToRun, 2500, controller.signal, desafio.testCode)
+        : await runJavaScriptInWorker(codeToRun, 2500, controller.signal, desafio.testCode);
     const friendlyError = result.error
       ? explainRuntimeError(result.error, result.timedOut, desafio.linguagem)
       : "";

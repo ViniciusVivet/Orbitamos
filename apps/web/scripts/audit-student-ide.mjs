@@ -27,6 +27,7 @@ async function openEditorTab(page) {
 async function setEditorCode(page, code) {
   const editor = page.getByLabel("Editor de código", { exact: true });
   await editor.waitFor({ state: "visible", timeout: 12_000 });
+  await editor.press("Control+A");
   await editor.fill(code);
   // CodeMirror reconcilia edição contenteditable em uma microtarefa; aguarda o modelo interno.
   await page.waitForTimeout(150);
@@ -103,6 +104,23 @@ try {
 
     const runButton = page.getByRole("button", { name: "Executar", exact: false });
     const runButtonBox = await runButton.boundingBox();
+    if (name === "pixel-7" || name === "desktop") {
+      const completionEditor = page.locator(".cm-content");
+      await completionEditor.fill("con");
+      await page.waitForTimeout(150);
+      if (name === "pixel-7") await page.getByRole("button", { name: /Abrir sugest/ }).click();
+      else await completionEditor.press("Control+Space");
+      const selectedCompletion = page.locator('.cm-tooltip-autocomplete li[aria-selected="true"]');
+      await selectedCompletion.waitFor({ state: "visible", timeout: 3_000 });
+      const completionStyle = await selectedCompletion.evaluate((element) => ({
+        background: getComputedStyle(element).backgroundImage,
+        matchedColor: getComputedStyle(element.querySelector(".cm-completionMatchedText")).color,
+        iconColor: getComputedStyle(element.querySelector(".cm-completionIcon")).color,
+      }));
+      if (completionStyle.background === "none") throw new Error(`${name}: sugestao selecionada continua sem destaque`);
+      if (completionStyle.matchedColor === "rgb(171, 178, 191)") throw new Error(`${name}: autocomplete continua com o cinza padrao`);
+      await page.keyboard.press("Escape");
+    }
     const editor = page.getByLabel("Editor de código", { exact: true });
     const validCode = 'function precoFinal(preco, desconto) {\n  return preco - preco * (desconto / 100);\n}\n\nconsole.log(precoFinal(200, 15));';
     await setEditorCode(page, validCode);
@@ -124,7 +142,7 @@ try {
         await equalsKey.click();
         const editorTextAfterSymbol = await editor.innerText();
         if (!editorTextAfterSymbol.trimEnd().endsWith("=")) throw new Error(`${name}: barra de símbolos não inseriu no cursor. Conteúdo: ${JSON.stringify(editorTextAfterSymbol)}`);
-        await editor.fill(validCode);
+        await setEditorCode(page, validCode);
       }
     }
 
@@ -195,7 +213,7 @@ try {
     const secondPythonStartedAt = Date.now();
     await pythonPage.getByRole("button", { name: "Executar", exact: false }).click();
     try {
-      await pythonPage.getByText("IndentationError", { exact: false }).waitFor({ state: "attached", timeout: 30_000 });
+      await pythonPage.getByText(/(?:IndentationError|SyntaxError)/, { exact: false }).waitFor({ state: "attached", timeout: 30_000 });
     } catch {
       throw new Error(`python-pixel-7: erro de indentação não foi apresentado. Console: ${await pythonConsole.innerText()}`);
     }
@@ -221,6 +239,22 @@ try {
     hasHorizontalOverflow: await pythonPage.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1),
   });
   await pythonContext.close();
+
+  const csharpContext = await browser.newContext(devices["Pixel 7"]);
+  const csharpPage = await csharpContext.newPage();
+  const csharpErrors = [];
+  csharpPage.on("pageerror", (error) => csharpErrors.push(error.message));
+  await csharpPage.goto(`${baseURL}/dev/ide-preview/variaveis-csharp`, { waitUntil: "networkidle" });
+  await csharpPage.getByText("Primeiro Perfil em C#", { exact: true }).waitFor({ timeout: 15_000 });
+  await setEditorCode(csharpPage, 'string nome = "Ana";\nint idade = 20;\nConsole.WriteLine(nome);\nConsole.WriteLine(idade);');
+  await csharpPage.getByRole("button", { name: "Executar", exact: false }).click();
+  const csharpConsole = csharpPage.locator('#practice-editor-panel [role="status"]');
+  await csharpPage.getByText(/Boa! Esta etapa passou/, { exact: false }).waitFor({ timeout: 10_000 });
+  const csharpOutput = await csharpConsole.innerText();
+  if (!csharpOutput.includes("Ana") || !csharpOutput.includes("20")) throw new Error(`csharp-pixel-7: saida inesperada: ${csharpOutput}`);
+  await csharpPage.screenshot({ path: path.join(outputDir, "csharp-pixel-7.png"), fullPage: true });
+  results.push({ name: "csharp-pixel-7", consoleText: csharpOutput, pageErrors: csharpErrors, hasHorizontalOverflow: await csharpPage.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1) });
+  await csharpContext.close();
 } finally {
   await browser.close();
 }

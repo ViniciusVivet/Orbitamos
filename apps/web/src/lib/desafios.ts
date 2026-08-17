@@ -12,7 +12,7 @@ export type Desafio = {
   slug: string;
   titulo: string;
   descricao: string;
-  linguagem: "javascript" | "typescript" | "python";
+  linguagem: "javascript" | "typescript" | "python" | "csharp";
   dificuldade?: "iniciante" | "basico" | "intermediario";
   categoria?: string;
   habilidade?: string;
@@ -151,7 +151,7 @@ type ExerciseSpec = {
   slug: string;
   titulo: string;
   descricao: string;
-  linguagem: "javascript" | "python";
+  linguagem: "javascript" | "python" | "csharp";
   dificuldade: "iniciante" | "basico" | "intermediario";
   categoria: string;
   habilidade: string;
@@ -491,6 +491,102 @@ const desafiosExtras: Desafio[] = [
     solucao: "class Conta:\n    def __init__(self, saldo):\n        self.saldo = saldo\n\n    def depositar(self, valor):\n        self.saldo += valor",
     validar: (code, output) => code.includes("class Conta") && code.includes("self.saldo") && output.trim().startsWith("150"),
   }),
+  createExercise({
+    slug: "desestruturacao-js", titulo: "Desestruturação de Perfil", descricao: "Extraia dados de objetos com a sintaxe moderna do JavaScript.", linguagem: "javascript", dificuldade: "basico", categoria: "Objetos", habilidade: "Desestruturação", minutos: 9,
+    instrucao: "Extraia nome e cidade do objeto pessoa usando desestruturação e exiba 'Nina - Recife'.",
+    codigoInicial: "const pessoa = { nome: 'Nina', cidade: 'Recife', idade: 24 };\n\n// desestruture aqui\n",
+    exemplo: "Saída: Nina - Recife", casosTeste: ["Usa desestruturação", "Exibe nome", "Exibe cidade"], dicas: ["Use const { nome, cidade } = pessoa."],
+    solucao: "const { nome, cidade } = pessoa;\nconsole.log(`${nome} - ${cidade}`);",
+    validar: (code, output) => /const\s*{[^}]*nome[^}]*cidade[^}]*}/.test(code) && output.includes("Nina - Recife"),
+  }),
+  createExercise({
+    slug: "sets-js", titulo: "Remover Duplicados", descricao: "Use Set para produzir uma coleção com valores únicos.", linguagem: "javascript", dificuldade: "basico", categoria: "Coleções", habilidade: "Set e spread", minutos: 9,
+    instrucao: "Remova os valores duplicados e exiba [1,2,3,4].",
+    codigoInicial: "const numeros = [1, 2, 2, 3, 3, 4];\nconst unicos = []; // substitua\nconsole.log(unicos);\n",
+    exemplo: "Saída: [1,2,3,4]", casosTeste: ["Remove duplicados", "Mantém a ordem", "Usa Set"], dicas: ["Crie um Set e espalhe seus valores em um novo array."],
+    solucao: "const unicos = [...new Set(numeros)];\nconsole.log(unicos);",
+    validar: (code, output) => code.includes("new Set") && output.replaceAll(" ", "").includes("[1,2,3,4]"),
+  }),
+  createExercise({
+    slug: "validacao-js", titulo: "Validador de E-mail", descricao: "Combine strings e condições em uma validação prática.", linguagem: "javascript", dificuldade: "intermediario", categoria: "Validação", habilidade: "Strings e booleanos", minutos: 12,
+    instrucao: "Crie emailValido(email), retornando true quando houver @ e um ponto depois dele. Teste os dois exemplos.",
+    codigoInicial: "function emailValido(email) {\n  // valide aqui\n}\n\nconsole.log(emailValido('ana@email.com'));\nconsole.log(emailValido('email-invalido'));\n",
+    exemplo: "Saída: true, false", casosTeste: ["Aceita e-mail válido", "Recusa texto inválido"], dicas: ["Encontre as posições de @ e do último ponto."],
+    solucao: "function emailValido(email) {\n  const arroba = email.indexOf('@');\n  return arroba > 0 && email.lastIndexOf('.') > arroba + 1;\n}",
+    validar: (_, output) => output.includes("true") && output.includes("false"),
+  }),
+  createExercise({
+    slug: "recursao-js", titulo: "Fatorial Recursivo", descricao: "Resolva um problema chamando a própria função.", linguagem: "javascript", dificuldade: "intermediario", categoria: "Algoritmos", habilidade: "Recursão", minutos: 15,
+    instrucao: "Crie fatorial(n) de forma recursiva. Exiba fatorial(5), que deve resultar em 120.",
+    codigoInicial: "function fatorial(n) {\n  // caso base e chamada recursiva\n}\n\nconsole.log(fatorial(5));\n",
+    exemplo: "Entrada: 5\nSaída: 120", casosTeste: ["Possui caso base", "Chama a própria função", "Calcula 5!"], dicas: ["Para n <= 1, retorne 1."],
+    solucao: "function fatorial(n) {\n  if (n <= 1) return 1;\n  return n * fatorial(n - 1);\n}",
+    validar: (code, output) => /fatorial\s*\(n\s*-\s*1\)/.test(code) && output.trim().startsWith("120"),
+  }),
+  createExercise({
+    slug: "tuplas-python", titulo: "Coordenadas Imutáveis", descricao: "Pratique desempacotamento de tuplas.", linguagem: "python", dificuldade: "basico", categoria: "Tuplas", habilidade: "Tuplas e desempacotamento", minutos: 8,
+    instrucao: "Desempacote coordenada em x e y e exiba 'x=10, y=25'.",
+    codigoInicial: "coordenada = (10, 25)\n\n# desempacote aqui\n",
+    exemplo: "Saída: x=10, y=25", casosTeste: ["Desempacota a tupla", "Exibe os valores"], dicas: ["Use x, y = coordenada."],
+    solucao: "x, y = coordenada\nprint(f'x={x}, y={y}')",
+    validar: (code, output) => /x\s*,\s*y\s*=/.test(code) && output.includes("x=10, y=25"),
+  }),
+  createExercise({
+    slug: "sets-python", titulo: "Interseção de Turmas", descricao: "Encontre elementos presentes em dois conjuntos.", linguagem: "python", dificuldade: "basico", categoria: "Conjuntos", habilidade: "set e interseção", minutos: 9,
+    instrucao: "Encontre os nomes presentes nas duas turmas e exiba {'Bia', 'Caio'}.",
+    codigoInicial: "turma_a = {'Ana', 'Bia', 'Caio'}\nturma_b = {'Bia', 'Caio', 'Davi'}\n\ncomuns = set()\nprint(comuns)\n",
+    exemplo: "Saída: {'Bia', 'Caio'}", casosTeste: ["Usa conjuntos", "Calcula interseção"], dicas: ["O operador & calcula a interseção."],
+    solucao: "comuns = turma_a & turma_b\nprint(comuns)",
+    validar: (code, output) => (code.includes(" & ") || code.includes("intersection")) && output.includes("Bia") && output.includes("Caio"),
+  }),
+  createExercise({
+    slug: "ordenacao-python", titulo: "Ranking de Pontuações", descricao: "Ordene dados sem perder a lista original.", linguagem: "python", dificuldade: "basico", categoria: "Listas", habilidade: "sorted e reverse", minutos: 9,
+    instrucao: "Ordene as pontuações da maior para a menor e exiba [95, 88, 72, 60].",
+    codigoInicial: "pontos = [72, 95, 60, 88]\nranking = []\nprint(ranking)\n",
+    exemplo: "Saída: [95, 88, 72, 60]", casosTeste: ["Ordena valores", "Usa ordem decrescente"], dicas: ["Use sorted com reverse=True."],
+    solucao: "ranking = sorted(pontos, reverse=True)\nprint(ranking)",
+    validar: (code, output) => code.includes("sorted") && code.includes("reverse=True") && output.includes("[95, 88, 72, 60]"),
+  }),
+  createExercise({
+    slug: "recursao-python", titulo: "Fatorial Recursivo", descricao: "Use recursão e um caso base em Python.", linguagem: "python", dificuldade: "intermediario", categoria: "Algoritmos", habilidade: "Recursão", minutos: 15,
+    instrucao: "Crie fatorial(n) de forma recursiva e exiba fatorial(6), que deve resultar em 720.",
+    codigoInicial: "def fatorial(n):\n    # caso base e recursão\n    pass\n\nprint(fatorial(6))\n",
+    exemplo: "Entrada: 6\nSaída: 720", casosTeste: ["Possui caso base", "Faz chamada recursiva", "Calcula 6!"], dicas: ["Para n <= 1, retorne 1."],
+    solucao: "def fatorial(n):\n    if n <= 1:\n        return 1\n    return n * fatorial(n - 1)",
+    validar: (code, output) => /fatorial\s*\(n\s*-\s*1\)/.test(code) && output.trim().startsWith("720"),
+  }),
+  createExercise({
+    slug: "variaveis-csharp", titulo: "Primeiro Perfil em C#", descricao: "Declare valores tipados e use o console do C#.", linguagem: "csharp", dificuldade: "iniciante", categoria: "Fundamentos", habilidade: "Tipos e Console.WriteLine", minutos: 8,
+    instrucao: "Crie nome como string e idade como int. Exiba os dois valores, um por linha.",
+    codigoInicial: "// Laboratório C# inicial: fundamentos executados no navegador\nstring nome = \"Ana\";\nint idade = 20;\n\n// exiba os valores\n",
+    exemplo: "Saída: Ana\n20", casosTeste: ["Declara string", "Declara int", "Usa Console.WriteLine"], dicas: ["Use Console.WriteLine(nome)."],
+    solucao: "Console.WriteLine(nome);\nConsole.WriteLine(idade);",
+    validar: (code, output) => code.includes("string nome") && code.includes("int idade") && output.includes("Ana") && output.includes("20"),
+  }),
+  createExercise({
+    slug: "operadores-csharp", titulo: "Conversor de Minutos", descricao: "Pratique operadores e tipos numéricos em C#.", linguagem: "csharp", dificuldade: "iniciante", categoria: "Operadores", habilidade: "Divisão e módulo", minutos: 9,
+    instrucao: "Converta 135 minutos em horas e minutos e exiba 2 e 15 em linhas separadas.",
+    codigoInicial: "int totalMinutos = 135;\nint horas = 0;\nint minutos = 0;\n\nConsole.WriteLine(horas);\nConsole.WriteLine(minutos);\n",
+    exemplo: "Saída: 2\n15", casosTeste: ["Calcula divisão inteira", "Usa módulo"], dicas: ["Use / para horas e % para o restante."],
+    solucao: "int horas = totalMinutos / 60;\nint minutos = totalMinutos % 60;",
+    validar: (code, output) => code.includes("/ 60") && code.includes("% 60") && output.split("\n").includes("2") && output.split("\n").includes("15"),
+  }),
+  createExercise({
+    slug: "condicionais-csharp", titulo: "Faixa Etária", descricao: "Tome decisões com if e else em C#.", linguagem: "csharp", dificuldade: "basico", categoria: "Condicionais", habilidade: "if e else", minutos: 10,
+    instrucao: "Para idade 17, exiba 'menor'. Para 18 ou mais, o código deve exibir 'adulto'.",
+    codigoInicial: "int idade = 17;\n\nif (idade >= 18)\n{\n  // adulto\n}\nelse\n{\n  // menor\n}\n",
+    exemplo: "Saída: menor", casosTeste: ["Compara idade", "Possui else", "Exibe classificação"], dicas: ["Use Console.WriteLine dentro de cada bloco."],
+    solucao: "if (idade >= 18)\n{\n  Console.WriteLine(\"adulto\");\n}\nelse\n{\n  Console.WriteLine(\"menor\");\n}",
+    validar: (code, output) => code.includes("if") && code.includes("else") && output.includes("menor"),
+  }),
+  createExercise({
+    slug: "lacos-csharp", titulo: "Somando com For", descricao: "Use um laço C# para acumular números.", linguagem: "csharp", dificuldade: "basico", categoria: "Laços", habilidade: "for e acumulador", minutos: 12,
+    instrucao: "Some os números de 1 a 5 com for e exiba 15.",
+    codigoInicial: "int total = 0;\n\nfor (int numero = 1; numero <= 5; numero++)\n{\n  // acumule\n}\n\nConsole.WriteLine(total);\n",
+    exemplo: "Saída: 15", casosTeste: ["Usa for", "Atualiza acumulador", "Exibe 15"], dicas: ["Dentro do laço, use total += numero."],
+    solucao: "for (int numero = 1; numero <= 5; numero++)\n{\n  total += numero;\n}\nConsole.WriteLine(total);",
+    validar: (code, output) => code.includes("for (") && code.includes("total +=") && output.trim().startsWith("15"),
+  }),
 ];
 
 const desafiosBaseComMetadata = desafiosBase.map((desafio, index): Desafio => ({
@@ -516,6 +612,10 @@ const challengeSequence = [
   "strings-js",
   "metodos-array-js",
   "assincrono-js",
+  "desestruturacao-js",
+  "sets-js",
+  "validacao-js",
+  "recursao-js",
   "variaveis-python",
   "condicionais-python",
   "lacos-python",
@@ -526,6 +626,14 @@ const challengeSequence = [
   "comprehensions-python",
   "erros-python",
   "classes-python",
+  "tuplas-python",
+  "sets-python",
+  "ordenacao-python",
+  "recursao-python",
+  "variaveis-csharp",
+  "operadores-csharp",
+  "condicionais-csharp",
+  "lacos-csharp",
 ] as const;
 
 const challengeBySlug = new Map(

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { MAX_CODE_LENGTH, runJavaScriptInWorker, runPythonInWorker } from "./browserCodeRunner";
+import { MAX_CODE_LENGTH, runCSharpInWorker, runJavaScriptInWorker, runPythonInWorker } from "./browserCodeRunner";
 
 describe("browser code runner server fallbacks", () => {
   afterEach(() => vi.unstubAllGlobals());
@@ -28,6 +28,7 @@ describe("browser code runner server fallbacks", () => {
   it.each([
     ["JavaScript", runJavaScriptInWorker],
     ["Python", runPythonInWorker],
+    ["C#", runCSharpInWorker],
   ])("rejects oversized %s before creating a worker", async (_language, run) => {
     vi.stubGlobal("window", {});
     const worker = vi.fn();
@@ -36,5 +37,11 @@ describe("browser code runner server fallbacks", () => {
     expect(result.error).toContain("100 KB");
     expect(result.timedOut).toBe(false);
     expect(worker).not.toHaveBeenCalled();
+  });
+
+  it("explains the limits of the lightweight C# laboratory", async () => {
+    const result = await runCSharpInWorker("using System; class Programa {}");
+    expect(result.error).toContain("laboratório C# inicial");
+    expect(result.timedOut).toBe(false);
   });
 });

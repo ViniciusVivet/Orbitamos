@@ -78,13 +78,19 @@ describe("course catalog integrity", () => {
 
 describe("practice catalog integrity", () => {
   it("has unique challenges with valid lookup", () => {
-    expect(desafios.length).toBeGreaterThan(0);
+    expect(desafios.length).toBeGreaterThanOrEqual(32);
     expectUnique(desafios.map((desafio) => desafio.slug));
     for (const desafio of desafios) {
       expect(getDesafio(desafio.slug)).toBe(desafio);
       expect(desafio.titulo.trim()).not.toBe("");
       expect(desafio.steps.length).toBeGreaterThan(0);
     }
+  });
+
+  it("offers balanced JavaScript, Python and C# practice", () => {
+    expect(desafios.filter((item) => item.linguagem === "javascript").length).toBeGreaterThanOrEqual(14);
+    expect(desafios.filter((item) => item.linguagem === "python").length).toBeGreaterThanOrEqual(14);
+    expect(desafios.filter((item) => item.linguagem === "csharp").length).toBeGreaterThanOrEqual(4);
   });
 
   it("only advances to a challenge in the same language", () => {

@@ -18,7 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 type ChallengeState = "novo" | "andamento" | "concluido";
 type Filter = "todos" | ChallengeState;
-type LanguageFilter = "todas" | "javascript" | "python";
+type LanguageFilter = "todas" | "javascript" | "python" | "csharp";
 type DifficultyFilter = "todas" | "iniciante" | "basico" | "intermediario";
 
 function normalize(value: string) {
@@ -174,7 +174,7 @@ export default function PraticaIndex() {
           </div>
           <div className="mt-4 flex flex-col gap-3 border-t border-white/[.06] pt-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex gap-2">
-              {(["todas", "javascript", "python"] as const).map((value) => (
+              {(["todas", "javascript", "python", "csharp"] as const).map((value) => (
                 <button
                   key={value}
                   type="button"
@@ -184,7 +184,7 @@ export default function PraticaIndex() {
                     language === value ? "bg-orbit-electric/15 text-orbit-electric" : "text-white/35 hover:text-white"
                   }`}
                 >
-                  {value === "todas" ? "Todas linguagens" : value}
+                  {value === "todas" ? "Todas linguagens" : value === "csharp" ? "C#" : value}
                 </button>
               ))}
             </div>
