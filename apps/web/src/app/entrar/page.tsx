@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import RocketProgress from "@/components/RocketProgress";
@@ -29,11 +30,11 @@ import {
 const SpaceCanvas = dynamic(() => import("@/components/three/SpaceCanvas"), { ssr: false });
 
 const slides = [
-  { kind: "image" as const, src: "/case-destaque-multimarcas.png", alt: "Case Multimarcas" },
+  { kind: "image" as const, src: "/portal-comunidade.webp", alt: "Comunidade Orbitamos aprendendo e construindo projetos em conjunto" },
   { kind: "video" as const, src: "/hero.mp4", alt: "Orbitamos em acao" },
-  { kind: "image" as const, src: "/mockup-yume.png", alt: "Case Yume" },
+  { kind: "image" as const, src: "/portal-portfolio.webp", alt: "Estudante transformando aprendizado em portfolio" },
   { kind: "video" as const, src: "/cosmos.mp4", alt: "Cosmos Orbitamos" },
-  { kind: "image" as const, src: "/mockup-sabrina.png", alt: "Case Sabrina Lashes" },
+  { kind: "image" as const, src: "/portal-suporte.webp", alt: "Estudantes recebendo suporte e feedback da comunidade" },
 ];
 
 const SLIDE_INTERVAL = 5000;
@@ -51,6 +52,7 @@ export default function Entrar() {
   const [fakeProgress, setFakeProgress] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showCarousel, setShowCarousel] = useState(false);
   const [active, setActive] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -58,7 +60,10 @@ export default function Entrar() {
   const loginSetup = useLoginScene();
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
+    const check = () => {
+      setIsMobile(window.innerWidth < 768);
+      setShowCarousel(window.innerWidth >= 1024);
+    };
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
@@ -189,7 +194,8 @@ export default function Entrar() {
 
         {/* ══ LEFT — Carousel ══ */}
         <div className="hidden lg:block">
-          <div className="relative ml-0 h-full w-full overflow-hidden rounded-r-2xl rounded-tl-2xl">
+          {showCarousel && (
+          <div className="relative ml-0 h-full w-full overflow-hidden rounded-r-2xl rounded-tl-2xl bg-black">
             {/* Slides */}
             {slides.map((slide, i) => (
               <div
@@ -198,20 +204,29 @@ export default function Entrar() {
                 style={{ opacity: i === active ? 1 : 0, zIndex: i === active ? 1 : 0 }}
               >
                 {slide.kind === "image" ? (
-                  <img
+                  <Image
                     src={slide.src}
                     alt={slide.alt}
-                    className="h-full w-full object-cover"
+                    fill
+                    sizes="calc(100vw - 420px)"
+                    className="h-full w-full object-contain"
                     draggable={false}
+                    priority={i === 0}
                   />
                 ) : (
                   <video
+                    ref={(video) => {
+                      if (!video) return;
+                      if (i === active) video.play().catch(() => {});
+                      else video.pause();
+                    }}
                     src={slide.src}
                     className="h-full w-full object-cover"
-                    autoPlay
+                    autoPlay={i === active}
                     muted
                     loop
                     playsInline
+                    preload={i === active ? "auto" : "metadata"}
                   />
                 )}
                 {/* Subtle gradient overlay */}
@@ -254,6 +269,7 @@ export default function Entrar() {
               ))}
             </div>
           </div>
+          )}
         </div>
 
         {/* ══ RIGHT — Login Form ══ */}
