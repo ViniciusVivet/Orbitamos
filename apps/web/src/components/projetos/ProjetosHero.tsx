@@ -8,15 +8,16 @@ import ProjetosHeroParticles from "./ProjetosHeroParticles";
 import ScrollReveal from "@/components/ScrollReveal";
 import MagneticButton from "@/components/MagneticButton";
 import useProjetosHeroScene from "@/components/three/ProjetosHeroScene";
+import LazyVideo from "@/components/LazyVideo";
+import usePerformanceProfile from "@/hooks/usePerformanceProfile";
 
 const SpaceCanvas = dynamic(() => import("@/components/three/SpaceCanvas"), { ssr: false });
 
 export default function ProjetosHero() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
-  const [active, setActive] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const { constrained, reducedMotion } = usePerformanceProfile();
   const projetosSetup = useProjetosHeroScene();
 
   useEffect(() => {
@@ -26,20 +27,13 @@ export default function ProjetosHero() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = true;
-    v.play().catch(() => {});
-  }, []);
-
   const getRelative = useCallback((clientX: number, clientY: number) => {
     const rect = sectionRef.current?.getBoundingClientRect();
     if (!rect) return;
     const x = (clientX - rect.left) / rect.width - 0.5;
     const y = (clientY - rect.top) / rect.height - 0.5;
-    setMouse({ x, y });
-    setActive(true);
+    sectionRef.current?.style.setProperty("--projects-hero-x", `${x * -4}%`);
+    sectionRef.current?.style.setProperty("--projects-hero-y", `${y * -4}%`);
   }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLElement>) => {
@@ -52,8 +46,8 @@ export default function ProjetosHero() {
   }, [getRelative]);
 
   const handleLeave = useCallback(() => {
-    setActive(false);
-    setMouse({ x: 0, y: 0 });
+    sectionRef.current?.style.setProperty("--projects-hero-x", "0%");
+    sectionRef.current?.style.setProperty("--projects-hero-y", "0%");
   }, []);
 
   return (
@@ -66,31 +60,37 @@ export default function ProjetosHero() {
       className="relative overflow-hidden border-b border-white/10 min-h-[200px] md:min-h-[240px] bg-[#03050c]"
     >
       {/* 3D background on desktop */}
-      {!isMobile && (
+      {!isMobile && !constrained && (
         <div className="absolute inset-0 z-0">
           <SpaceCanvas dpr={1} setup={projetosSetup} />
         </div>
       )}
 
-      <video
-        ref={videoRef}
-        src="/hero-projetos.mp4"
-        autoPlay
-        loop
-        muted
-        playsInline
-        disablePictureInPicture
-        className="absolute inset-0 h-full w-full object-cover [&::-webkit-media-controls]:hidden"
-        aria-hidden
-        style={{
-          opacity: isMobile ? 0.5 : 0.2,
-          transform: `scale(1.1) translate(${mouse.x * -4}%, ${mouse.y * -4}%)`,
-          transition: active ? "transform 0.1s ease-out" : "transform 0.9s ease-out",
-          willChange: "transform",
-        }}
-      />
+      {reducedMotion ? (
+        <img src="/hero-projetos-poster.jpg" alt="" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40" aria-hidden />
+      ) : (
+        <LazyVideo
+          data-video-id="projects-hero"
+          ref={videoRef}
+          src="/hero-projetos.mp4"
+          mobileSrc="/hero-projetos-mobile.mp4"
+          poster="/hero-projetos-poster.jpg"
+          autoPlay
+          loop
+          muted
+          playsInline
+          disablePictureInPicture
+          className="absolute inset-0 h-full w-full object-cover [&::-webkit-media-controls]:hidden"
+          aria-hidden
+          style={{
+            opacity: isMobile ? 0.5 : 0.2,
+            transform: "scale(1.1) translate(var(--projects-hero-x, 0%), var(--projects-hero-y, 0%))",
+            transition: "transform 0.18s ease-out",
+          }}
+        />
+      )}
       <div className="absolute inset-0 z-[1] bg-black/50" aria-hidden />
-      <ProjetosHeroParticles />
+      {!constrained && <ProjetosHeroParticles />}
 
       <div className="container relative z-10 mx-auto px-4 py-7 md:py-10 text-center">
         <ScrollReveal from={{ opacity: 0, y: -15 }} to={{ duration: 0.5 }}>

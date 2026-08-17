@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useRef, useCallback } from "react";
 import ScrollReveal from "@/components/ScrollReveal";
 import TextReveal from "@/components/TextReveal";
 import LazyVideo from "@/components/LazyVideo";
@@ -231,26 +231,20 @@ const SERVICOS = [
 export default function WhatWeBuild() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
-  const [active, setActive] = useState(false);
-
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = true;
-    v.play().catch(() => {});
-  }, []);
 
   const getRelative = useCallback((clientX: number, clientY: number) => {
     const rect = sectionRef.current?.getBoundingClientRect();
     if (!rect) return;
-    setMouse({ x: (clientX - rect.left) / rect.width - 0.5, y: (clientY - rect.top) / rect.height - 0.5 });
-    setActive(true);
+    sectionRef.current?.style.setProperty("--build-x", `${((clientX - rect.left) / rect.width - 0.5) * -4}%`);
+    sectionRef.current?.style.setProperty("--build-y", `${((clientY - rect.top) / rect.height - 0.5) * -3}%`);
   }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLElement>) => getRelative(e.clientX, e.clientY), [getRelative]);
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLElement>) => { const t = e.touches[0]; if (t) getRelative(t.clientX, t.clientY); }, [getRelative]);
-  const handleLeave = useCallback(() => { setActive(false); setMouse({ x: 0, y: 0 }); }, []);
+  const handleLeave = useCallback(() => {
+    sectionRef.current?.style.setProperty("--build-x", "0%");
+    sectionRef.current?.style.setProperty("--build-y", "0%");
+  }, []);
 
   return (
     <section
@@ -264,8 +258,10 @@ export default function WhatWeBuild() {
     >
       {/* Vídeo de fundo — terra girando */}
       <LazyVideo
+        data-video-id="projects-build"
         ref={videoRef}
         src="/terra-real.mp4"
+        mobileSrc="/terra-real-mobile.mp4"
         autoPlay
         loop
         muted
@@ -274,9 +270,8 @@ export default function WhatWeBuild() {
         className="absolute inset-0 h-full w-full object-cover opacity-30 [&::-webkit-media-controls]:hidden"
         style={{
           objectPosition: "75% center",
-          transform: `scale(1.1) translate(${mouse.x * -4}%, ${mouse.y * -3}%)`,
-          transition: active ? "transform 0.1s ease-out" : "transform 0.9s ease-out",
-          willChange: "transform",
+          transform: "scale(1.1) translate(var(--build-x, 0%), var(--build-y, 0%))",
+          transition: "transform 0.18s ease-out",
         }}
       />
       {/* Overlay escuro para manter legibilidade */}
@@ -348,4 +343,3 @@ export default function WhatWeBuild() {
     </section>
   );
 }
-

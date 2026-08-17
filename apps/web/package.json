@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ide": "node scripts/audit-student-ide.mjs",
+    "test:videos": "node scripts/audit-background-videos.mjs",
     "test:contracts": "node --test scripts/test-collaborator.mjs scripts/test-supabase-local.mjs",
     "test:collaborator": "node --test scripts/test-collaborator.mjs",
     "test:supabase:contracts": "node --test scripts/test-supabase-local.mjs",

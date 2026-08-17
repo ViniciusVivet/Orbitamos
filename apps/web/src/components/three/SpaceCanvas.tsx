@@ -56,13 +56,17 @@ export default function SpaceCanvas({ className, style, dpr, setup }: SpaceCanva
 
     // Pause rendering when canvas is off-screen
     let isOnScreen = true;
+    let documentVisible = !document.hidden;
     const observer = new IntersectionObserver(
       ([entry]) => { isOnScreen = entry.isIntersecting; },
       { threshold: 0 }
     );
     observer.observe(container);
 
-    const cleanup = setup({ renderer, scene, camera, isVisible: () => isOnScreen });
+    const onVisibilityChange = () => { documentVisible = !document.hidden; };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    const cleanup = setup({ renderer, scene, camera, isVisible: () => isOnScreen && documentVisible });
 
     const onResize = () => {
       const w = container.clientWidth;
@@ -75,6 +79,7 @@ export default function SpaceCanvas({ className, style, dpr, setup }: SpaceCanva
 
     return () => {
       observer.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("resize", onResize);
       cleanup?.();
       renderer.dispose();

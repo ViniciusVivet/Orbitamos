@@ -28,6 +28,7 @@ import MagneticButton from "@/components/MagneticButton";
 import LazyVideo from "@/components/LazyVideo";
 import useTechOrbitScene from "@/components/three/TechOrbitScene";
 import useWarpCTAScene from "@/components/three/WarpCTAScene";
+import usePerformanceProfile from "@/hooks/usePerformanceProfile";
 import { projetos } from "@/data/projetos";
 
 const SpaceCanvas = dynamic(() => import("@/components/three/SpaceCanvas"), { ssr: false });
@@ -207,9 +208,8 @@ function OrbiMascot() {
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
-  const [active, setActive] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const { constrained, reducedMotion } = usePerformanceProfile();
 
   const techSetup = useTechOrbitScene();
   const warpSetup = useWarpCTAScene();
@@ -222,17 +222,22 @@ export default function Home() {
   }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
+    const container = containerRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setActive(true);
-    setMouse({ x, y });
+    container.style.setProperty("--hero-x", `${x * -8}%`);
+    container.style.setProperty("--hero-y", `${y * -6}%`);
+    container.style.setProperty("--hero-rotate-x", `${y * -3}deg`);
+    container.style.setProperty("--hero-rotate-y", `${x * 4}deg`);
   }, []);
 
   const handleMouseLeave = useCallback(() => {
-    setActive(false);
-    setMouse({ x: 0, y: 0 });
+    containerRef.current?.style.setProperty("--hero-x", "0%");
+    containerRef.current?.style.setProperty("--hero-y", "0%");
+    containerRef.current?.style.setProperty("--hero-rotate-x", "0deg");
+    containerRef.current?.style.setProperty("--hero-rotate-y", "0deg");
   }, []);
 
   return (
@@ -245,23 +250,27 @@ export default function Home() {
         className="relative min-h-[100svh] overflow-hidden lg:h-[100svh]"
       >
         {/* Video background */}
-        <video
-          src="/hero-globe.mp4"
-          poster="/hero-poster.jpg"
-          preload="auto"
-          autoPlay
-          loop
-          muted
-          playsInline
-          disablePictureInPicture
-          className="absolute inset-0 h-full w-full object-cover [&::-webkit-media-controls-start-playback-button]:hidden [&::-webkit-media-controls]:hidden"
-          style={{
-            opacity: isMobile ? 0.6 : 0.45,
-            transform: `scale(1.25) translate(${mouse.x * -8}%, ${mouse.y * -6}%)`,
-            transition: active ? "transform 0.12s ease-out" : "transform 0.9s ease-out",
-            willChange: "transform",
-          }}
-        />
+        {reducedMotion ? (
+          <img src="/hero-poster.jpg" alt="" className="absolute inset-0 h-full w-full scale-125 object-cover" aria-hidden />
+        ) : (
+          <LazyVideo
+            data-video-id="home-hero"
+            src="/hero-globe.mp4"
+            mobileSrc="/hero-globe-mobile.mp4"
+            poster="/hero-poster.jpg"
+            autoPlay
+            loop
+            muted
+            playsInline
+            disablePictureInPicture
+            className="absolute inset-0 h-full w-full object-cover [&::-webkit-media-controls-start-playback-button]:hidden [&::-webkit-media-controls]:hidden"
+            style={{
+              opacity: isMobile ? 0.6 : 0.45,
+              transform: "scale(1.25) translate(var(--hero-x, 0%), var(--hero-y, 0%))",
+              transition: "transform 0.18s ease-out",
+            }}
+          />
+        )}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_34%,rgba(0,212,255,0.22),transparent_34%),radial-gradient(circle_at_88%_56%,rgba(139,92,246,0.18),transparent_28%),linear-gradient(90deg,#03050a_0%,rgba(3,5,10,0.94)_38%,rgba(3,5,10,0.5)_100%)]" />
         <div className="orbit-aurora pointer-events-none absolute inset-0 opacity-40" />
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#03050a] to-transparent" />
@@ -329,9 +338,8 @@ export default function Home() {
           <div
             className="relative hidden h-full w-full lg:block"
             style={{
-              transform: `perspective(1200px) rotateX(${mouse.y * -3}deg) rotateY(${mouse.x * 4}deg)`,
-              transition: active ? "transform 0.1s ease-out" : "transform 0.8s ease-out",
-              willChange: "transform",
+              transform: "perspective(1200px) rotateX(var(--hero-rotate-x, 0deg)) rotateY(var(--hero-rotate-y, 0deg))",
+              transition: "transform 0.18s ease-out",
             }}
           >
             {/* Case cards */}
@@ -417,7 +425,9 @@ export default function Home() {
       {/* ═══ SERVICES ═══ */}
       <section className="relative overflow-hidden">
         <LazyVideo
+          data-video-id="services-bg"
           src="/services-bg.mp4"
+          mobileSrc="/services-bg-mobile.mp4"
           autoPlay
           loop
           muted
@@ -625,7 +635,7 @@ export default function Home() {
           {/* 3D Orbit Visualization */}
           <ScrollReveal from={{ opacity: 0, scale: 0.85 }} to={{ duration: 1, delay: 0.2 }}>
             <div className="relative min-h-[500px] overflow-hidden rounded-2xl border border-white/10 bg-black/35 shadow-[0_30px_100px_rgba(0,0,0,0.45)] sm:min-h-[440px]">
-              {!isMobile ? (
+              {!isMobile && !constrained ? (
                 <SpaceCanvas setup={techSetup} />
               ) : (
                 /* Mobile fallback: CSS orbit */
@@ -659,21 +669,24 @@ export default function Home() {
       {/* ═══ CTA HERO - WARP SPEED ═══ */}
       <section className="relative overflow-hidden">
         {/* 3D warp on desktop, video on mobile */}
-        {!isMobile && (
+        {!isMobile && !constrained ? (
           <div className="absolute inset-0 z-0">
             <SpaceCanvas setup={warpSetup} />
           </div>
-        )}
-        <LazyVideo
-          src="/cosmos.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          disablePictureInPicture
-          className="absolute inset-0 h-full w-full object-cover"
-          style={{ opacity: isMobile ? 0.45 : 0.15 }}
-        />
+        ) : !reducedMotion ? (
+          <LazyVideo
+            data-video-id="home-cta"
+            src="/cosmos.mp4"
+            mobileSrc="/cosmos-mobile.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            disablePictureInPicture
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ opacity: isMobile ? 0.45 : 0.22 }}
+          />
+        ) : null}
         <div className="absolute inset-0 bg-[#03050a]/65" />
 
         <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center px-5 py-24 text-center sm:px-8">

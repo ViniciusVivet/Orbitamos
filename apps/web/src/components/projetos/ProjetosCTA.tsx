@@ -9,6 +9,7 @@ import TextReveal from "@/components/TextReveal";
 import MagneticButton from "@/components/MagneticButton";
 import LazyVideo from "@/components/LazyVideo";
 import useWarpCTAScene from "@/components/three/WarpCTAScene";
+import usePerformanceProfile from "@/hooks/usePerformanceProfile";
 
 const SpaceCanvas = dynamic(() => import("@/components/three/SpaceCanvas"), { ssr: false });
 
@@ -21,6 +22,7 @@ interface ProjetosCTAProps {
 export default function ProjetosCTA({ variant = "section" }: ProjetosCTAProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const { constrained } = usePerformanceProfile();
   const warpSetup = useWarpCTAScene();
 
   useEffect(() => {
@@ -28,13 +30,6 @@ export default function ProjetosCTA({ variant = "section" }: ProjetosCTAProps) {
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
-  }, []);
-
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = true;
-    v.play().catch(() => {});
   }, []);
 
   if (variant === "inline") {
@@ -58,26 +53,28 @@ export default function ProjetosCTA({ variant = "section" }: ProjetosCTAProps) {
   return (
     <section className="relative overflow-hidden py-24 md:py-32">
       {/* 3D Warp on desktop */}
-      {!isMobile && (
+      {!isMobile && !constrained ? (
         <div className="absolute inset-0 z-0">
           <SpaceCanvas setup={warpSetup} />
         </div>
+      ) : (
+        <div className="absolute inset-0 z-0">
+          <LazyVideo
+            data-video-id="projects-cta"
+            ref={videoRef}
+            src="/cosmos.mp4"
+            mobileSrc="/cosmos-mobile.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            disablePictureInPicture
+            aria-hidden
+            className="absolute left-1/2 top-1/2 h-full min-h-full w-full min-w-full -translate-x-1/2 -translate-y-1/2 object-cover [&::-webkit-media-controls]:hidden"
+            style={{ opacity: isMobile ? 0.4 : 0.2 }}
+          />
+        </div>
       )}
-
-      <div className="absolute inset-0 z-0">
-        <LazyVideo
-          ref={videoRef}
-          src="/cosmos.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          disablePictureInPicture
-          aria-hidden
-          className="absolute left-1/2 top-1/2 h-full min-h-full w-full min-w-full -translate-x-1/2 -translate-y-1/2 object-cover [&::-webkit-media-controls]:hidden"
-          style={{ opacity: isMobile ? 0.4 : 0.12 }}
-        />
-      </div>
 
       <div
         className="pointer-events-none absolute inset-0 z-[1]"
