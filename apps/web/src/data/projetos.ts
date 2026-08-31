@@ -172,8 +172,8 @@ export const projetos: Projeto[] = [
     tags: ["Geolocalização", "Eventos", "Comunidade", "Mobile-first"],
     status: "publicado",
     link: "https://batalhai.vercel.app/",
-    thumbnail: "https://batalhai.vercel.app/opengraph-image?ea1a014aede2503f",
-    imagemPrincipal: "https://batalhai.vercel.app/opengraph-image?ea1a014aede2503f",
+    thumbnail: "/case-radar-da-rima.jpg",
+    imagemPrincipal: "/case-radar-da-rima.jpg",
     contexto:
       "As batalhas de rima movimentam uma cena cultural ampla, mas a descoberta de eventos, o reconhecimento dos MCs e a organização das edições ainda aconteciam de forma dispersa entre redes sociais e grupos locais.",
     problema:
@@ -209,8 +209,8 @@ export const projetos: Projeto[] = [
     status: "publicado",
     link: "https://orbicore-ruby.vercel.app/",
     github: "https://github.com/ViniciusVivet/OrbiCore",
-    thumbnail: "https://orbicore-ruby.vercel.app/og-image.png",
-    imagemPrincipal: "https://orbicore-ruby.vercel.app/og-image.png",
+    thumbnail: "/case-orbicore.jpg",
+    imagemPrincipal: "/case-orbicore.jpg",
     contexto:
       "Pequenos negócios costumam acompanhar contratos, vendas, estoque, folha e metas em planilhas isoladas, sem uma leitura consolidada da saúde da operação.",
     problema:
