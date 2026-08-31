@@ -103,9 +103,10 @@ export default async function ServicoPage({ params }: PageProps) {
           <aside className="relative border border-white/10 bg-white/[0.045] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.36)] backdrop-blur-2xl">
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orbit-electric to-orbit-purple" />
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/38">
-              Oferta sem enrolação
+              Produto Orbitamos
             </p>
             <h2 className="mt-3 text-2xl font-black text-white">{servico.nome}</h2>
+            <p className="mt-2 text-2xl font-black text-orbit-electric">{servico.preco}</p>
             <p className="mt-4 text-sm leading-7 text-white/58">{servico.promessa}</p>
             <div className="mt-6 grid gap-3">
               {servico.resultados.map((item) => (

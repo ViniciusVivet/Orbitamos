@@ -66,6 +66,16 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      { source: "/servicos/landing-page", destination: "/servicos/vender-pela-internet", permanent: true },
+      { source: "/servicos/site-institucional", destination: "/servicos/presenca-profissional", permanent: true },
+      { source: "/servicos/catalogo-digital", destination: "/servicos/vender-pela-internet", permanent: true },
+      { source: "/servicos/sistema-web", destination: "/servicos/organizar-a-empresa", permanent: true },
+      { source: "/servicos/automacoes", destination: "/servicos/automatizar-e-integrar", permanent: true },
+      { source: "/servicos/dashboard", destination: "/servicos/organizar-a-empresa", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

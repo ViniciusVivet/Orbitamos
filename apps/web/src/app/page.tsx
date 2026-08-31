@@ -72,46 +72,52 @@ const heroCases = [
 
 const services = [
   {
-    icon: BarChart3,
-    title: "Landing pages",
-    href: "/servicos/landing-page",
-    text: "Páginas rápidas para campanhas, captação de leads e vendas pelo WhatsApp.",
-    points: ["Copy orientada a conversão", "CTA e formulário", "SEO e performance"],
+    icon: ShieldCheck,
+    title: "Presença Profissional",
+    price: "R$ 1.497",
+    href: "/servicos/presenca-profissional",
+    text: "A base digital para sua empresa ser encontrada, entendida e levada a sério.",
+    points: ["Página profissional", "WhatsApp e formulário", "SEO e publicação"],
   },
   {
-    icon: ShieldCheck,
-    title: "Sites profissionais",
-    href: "/servicos/site-institucional",
-    text: "Presença digital profissional para negócios que precisam passar confiança.",
-    points: ["Identidade visual", "Serviços claros", "Credibilidade"],
+    icon: BarChart3,
+    title: "Vender pela Internet",
+    price: "R$ 1.997",
+    href: "/servicos/vender-pela-internet",
+    text: "Uma estrutura comercial para apresentar ofertas e transformar visitas em pedidos.",
+    points: ["Vitrine comercial", "Jornada de conversão", "WhatsApp direto"],
   },
   {
     icon: Layers3,
-    title: "Loja digital / E-commerce",
-    href: "/servicos/catalogo-digital",
-    text: "Vitrine ou catálogo digital para vender melhor e organizar produtos.",
-    points: ["Catálogo filtrável", "WhatsApp direto", "Experiência mobile"],
-  },
-  {
-    icon: Code2,
-    title: "Sistemas web e MVPs",
-    href: "/servicos/sistema-web",
-    text: "Produtos sob medida para organizar operações, usuários, dados e processos.",
-    points: ["Login e dashboards", "Banco de dados", "APIs"],
+    title: "Organizar a Empresa",
+    price: "R$ 2.497",
+    href: "/servicos/organizar-a-empresa",
+    text: "Um sistema inicial sob medida para centralizar processos, clientes e dados.",
+    points: ["Sistema web", "Dashboard operacional", "Dados centralizados"],
   },
   {
     icon: Bot,
-    title: "Automações, IA e integrações",
-    href: "/servicos/automacoes",
-    text: "Fluxos inteligentes para reduzir trabalho manual e conectar ferramentas.",
-    points: ["IA aplicada", "Integrações", "Processos automáticos"],
+    title: "Automatizar e Integrar",
+    price: "R$ 2.997",
+    href: "/servicos/automatizar-e-integrar",
+    text: "Integrações e automações para reduzir tarefas repetitivas e acelerar a operação.",
+    points: ["Mapeamento do fluxo", "Integrações", "Automação testada"],
   },
   {
     icon: Sparkles,
-    title: "Projetos especiais",
-    href: "/servicos/dashboard",
-    text: "Soluções digitais sob medida quando o projeto não cabe em uma caixinha.",
-    points: ["Discovery técnico", "Arquitetura", "Entrega incremental"],
+    title: "Projeto Especial",
+    price: "Sob orçamento",
+    href: "/servicos/projeto-especial",
+    text: "Aplicativos, plataformas, MVPs e soluções complexas desenhadas para seu desafio.",
+    points: ["Discovery técnico", "Arquitetura sob medida", "Entrega por etapas"],
+  },
+  {
+    icon: Code2,
+    title: "Manutenção e Evolução",
+    price: "R$ 497/mês",
+    href: "/servicos/manutencao-e-evolucao",
+    text: "Acompanhamento contínuo para manter sua solução segura, atualizada e evoluindo.",
+    points: ["Correções", "Atualizações", "Pequenas melhorias"],
   },
 ];
 
@@ -473,6 +479,7 @@ export default function Home() {
                     <span className="orbit-sweep absolute inset-y-0 -left-1/2 w-1/2 opacity-0 group-hover:opacity-100" />
                     <service.icon className="relative size-6 text-orbit-electric transition-transform duration-300 group-hover:scale-110" />
                     <h3 className="mt-5 text-xl font-black text-white">{service.title}</h3>
+                    <p className="mt-2 text-sm font-black text-orbit-electric">{service.price}</p>
                     <p className="mt-3 text-sm leading-6 text-white/50">{service.text}</p>
                     <div className="mt-5 space-y-2">
                       {service.points.map((point) => (

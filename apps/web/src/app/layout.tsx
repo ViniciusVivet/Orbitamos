@@ -26,9 +26,9 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.orbitamosbr.com"),
   title: "Orbitamos - Sites, Sistemas e Automações para Negócios",
   description:
-    "Criamos landing pages, sites profissionais, catálogos digitais, sistemas web e automações para negócios venderem, organizar e escalar.",
+    "Produtos digitais para sua empresa vender, organizar e escalar: presença profissional, vendas online, sistemas, automações e evolução contínua.",
   keywords:
-    "sites profissionais, landing pages, sistemas web, automações, agência digital, criação de sites, catálogo digital, e-commerce, Next.js, São Paulo",
+    "presença digital profissional, vender pela internet, sistema para empresa, automação de processos, integração de sistemas, manutenção de sites, São Paulo",
   authors: [{ name: "Douglas Vinicius Alves da Silva" }],
   creator: "Orbitamos",
   publisher: "Orbitamos",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Orbitamos - Sites, Sistemas e Automações para Negócios",
     description:
-      "Landing pages, sites profissionais, catálogos digitais, sistemas web e automações para negócios venderem, organizar e escalar.",
+      "Seis soluções claras para sua empresa vender, organizar e escalar com tecnologia.",
     url: "https://www.orbitamosbr.com",
     type: "website",
     locale: "pt_BR",
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Orbitamos - Sites, Sistemas e Automações para Negócios",
     description:
-      "Criamos landing pages, sites profissionais, catálogos digitais, sistemas web e automações para negócios venderem, organizar e escalar.",
+      "Presença profissional, vendas online, sistemas, automações e evolução contínua para empresas.",
   },
 };
 
