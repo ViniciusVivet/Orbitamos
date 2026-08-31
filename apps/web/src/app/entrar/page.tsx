@@ -31,9 +31,9 @@ const SpaceCanvas = dynamic(() => import("@/components/three/SpaceCanvas"), { ss
 
 const slides = [
   { kind: "image" as const, src: "/portal-comunidade.webp", alt: "Comunidade Orbitamos aprendendo e construindo projetos em conjunto" },
-  { kind: "video" as const, src: "/hero.mp4", alt: "Orbitamos em acao" },
+  { kind: "video" as const, src: "/portal-estudante-orbitamos.mp4", alt: "Estudante Orbitamos desenvolvendo um projeto" },
   { kind: "image" as const, src: "/portal-portfolio.webp", alt: "Estudante transformando aprendizado em portfolio" },
-  { kind: "video" as const, src: "/cosmos.mp4", alt: "Cosmos Orbitamos" },
+  { kind: "video" as const, src: "/portal-equipe-orbitamos.mp4", alt: "Equipe Orbitamos estudando e construindo em conjunto" },
   { kind: "image" as const, src: "/portal-suporte.webp", alt: "Estudantes recebendo suporte e feedback da comunidade" },
 ];
 
