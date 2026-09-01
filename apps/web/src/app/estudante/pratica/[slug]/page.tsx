@@ -92,7 +92,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
   const [code, setCode] = useState("");
   const [consoleRun, setConsoleRun] = useState<ConsoleRun | null>(null);
   const [errorMark, setErrorMark] = useState<{ line: number | null; message: string } | null>(null);
-  const [showReference, setShowReference] = useState(true);
+  const [showReference, setShowReference] = useState(false);
   const [referenceCopied, setReferenceCopied] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [stepStatus, setStepStatus] = useState<("pending" | "success" | "error")[]>([]);
@@ -105,6 +105,8 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
   const [draftRestored, setDraftRestored] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>("editor");
   const [consoleExpanded, setConsoleExpanded] = useState(false);
+  const [stepAttempts, setStepAttempts] = useState<number[]>([]);
+  const [reflection, setReflection] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<ReliableCodeEditorHandle>(null);
   const activeRunRef = useRef<AbortController | null>(null);
@@ -119,6 +121,8 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
       let restoredCode = "";
       let restoredStep = 0;
       let restoredStatus: ("pending" | "success" | "error")[] = desafio.steps.map(() => "pending");
+      let restoredAttempts = desafio.steps.map(() => 0);
+      let restoredReflection = "";
       if (storageKey) {
         try {
           const stored = localStorage.getItem(storageKey);
@@ -127,10 +131,14 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
               code?: string;
               currentStep?: number;
               stepStatus?: ("pending" | "success" | "error")[];
+              stepAttempts?: number[];
+              reflection?: string;
             };
             restoredCode = parsed.code ?? "";
             restoredStep = Math.min(Math.max(parsed.currentStep ?? 0, 0), desafio.steps.length - 1);
             if (parsed.stepStatus?.length === desafio.steps.length) restoredStatus = parsed.stepStatus;
+            if (parsed.stepAttempts?.length === desafio.steps.length) restoredAttempts = parsed.stepAttempts;
+            if (typeof parsed.reflection === "string") restoredReflection = parsed.reflection;
           }
         } catch {
           // ignore
@@ -141,6 +149,8 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
       setCode(initialCode);
       setCurrentStep(restoredStep);
       setStepStatus(restoredStatus);
+      setStepAttempts(restoredAttempts);
+      setReflection(restoredReflection);
       setCompleted(restoredStatus.every((status) => status === "success"));
       setDraftRestored(Boolean(restoredCode));
       setSaveStatus(restoredCode ? "saved" : "idle");
@@ -159,14 +169,14 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
     setSaveStatus("saving");
     const timer = window.setTimeout(() => {
       try {
-        localStorage.setItem(storageKey, JSON.stringify({ code, currentStep, stepStatus }));
+        localStorage.setItem(storageKey, JSON.stringify({ code, currentStep, stepStatus, stepAttempts, reflection }));
         setSaveStatus("saved");
       } catch {
         setSaveStatus("error");
       }
     }, 350);
     return () => window.clearTimeout(timer);
-  }, [code, currentStep, desafio, stepStatus, storageKey]);
+  }, [code, currentStep, desafio, reflection, stepAttempts, stepStatus, storageKey]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -178,7 +188,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
       if (!active) return;
       try {
         const stored = localStorage.getItem(REFERENCE_PREF_KEY);
-        if (stored === "0") setShowReference(false);
+        setShowReference(stored === "1");
       } catch {
         // ignore
       }
@@ -215,6 +225,8 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
     setShowDica(false);
     setShowSolution(false);
     setRunning(true);
+    const attemptNumber = (stepAttempts[currentStep] ?? 0) + 1;
+    setStepAttempts((current) => current.map((value, index) => index === currentStep ? value + 1 : value));
     const controller = new AbortController();
     activeRunRef.current = controller;
     try {
@@ -248,6 +260,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
       setStepStatus(newStatus);
       const lineNote = errorLine ? ` O editor marcou a linha ${errorLine} em vermelho.` : "";
       setChatMessages((previous) => [...previous, { tipo: "erro", texto: `${friendlyError}${lineNote}` }]);
+      if (attemptNumber >= 2) setShowDica(true);
       return;
     }
 
@@ -259,6 +272,8 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
         newStatus[currentStep] = "success";
         setStepStatus(newStatus);
         setChatMessages((prev) => [...prev, { tipo: "sucesso", texto: step.acerto }]);
+        setShowReference(false);
+        setShowDica(false);
         if (currentStep + 1 < desafio.steps.length) {
           const nextStep = currentStep + 1;
           setCurrentStep(nextStep);
@@ -275,6 +290,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
         newStatus[currentStep] = "error";
         setStepStatus(newStatus);
         setChatMessages((prev) => [...prev, { tipo: "erro", texto: step.erro }]);
+        if (attemptNumber >= 2) setShowDica(true);
       }
     }
     } catch {
@@ -288,7 +304,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
       if (activeRunRef.current === controller) activeRunRef.current = null;
       setRunning(false);
     }
-  }, [currentStep, desafio, running, stepStatus]);
+  }, [currentStep, desafio, running, stepAttempts, stepStatus]);
 
   const stopExecution = useCallback(() => {
     activeRunRef.current?.abort();
@@ -312,7 +328,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
         event.preventDefault();
         if (!storageKey) return;
         try {
-          localStorage.setItem(storageKey, JSON.stringify({ code: codeRef.current, currentStep, stepStatus }));
+          localStorage.setItem(storageKey, JSON.stringify({ code: codeRef.current, currentStep, stepStatus, stepAttempts, reflection }));
           setSaveStatus("saved");
         } catch {
           setSaveStatus("error");
@@ -321,7 +337,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
     };
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
-  }, [currentStep, executeCode, stepStatus, storageKey]);
+  }, [currentStep, executeCode, reflection, stepAttempts, stepStatus, storageKey]);
 
   const handleReset = () => {
     if (!desafio) return;
@@ -333,6 +349,8 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
     setErrorMark(null);
     setCurrentStep(0);
     setStepStatus(desafio.steps.map(() => "pending"));
+    setStepAttempts(desafio.steps.map(() => 0));
+    setReflection("");
     setShowDica(false);
     setCompleted(false);
     setDraftRestored(false);
@@ -370,6 +388,24 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
 
   const guiaContent = (
     <div className="flex flex-col h-full">
+      {!completed && desafio.steps[currentStep] && (
+        <div className="border-b border-white/10 bg-gradient-to-br from-orbit-electric/[.09] to-orbit-purple/[.06] p-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[10px] font-black uppercase tracking-[.18em] text-orbit-electric">Missão ativa · Passo {currentStep + 1}</p>
+            <span className="rounded-full bg-black/25 px-2 py-1 text-[9px] text-white/40">
+              {stepAttempts[currentStep] ?? 0} tentativa{(stepAttempts[currentStep] ?? 0) === 1 ? "" : "s"}
+            </span>
+          </div>
+          <p className="mt-2 text-sm font-semibold leading-6 text-white/85">{desafio.steps[currentStep].instrucao}</p>
+          <div className="mt-3 flex items-center gap-2 text-[10px] text-white/40">
+            <span className="rounded-full border border-white/10 px-2 py-1">1. Entenda</span>
+            <ChevronRight className="size-3" />
+            <span className="rounded-full border border-white/10 px-2 py-1">2. Escreva</span>
+            <ChevronRight className="size-3" />
+            <span className="rounded-full border border-white/10 px-2 py-1">3. Execute</span>
+          </div>
+        </div>
+      )}
       {/* Checklist */}
       <div className="border-b border-white/10 p-3">
         <div className="mb-2 flex items-center justify-between gap-2">
@@ -399,7 +435,8 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
                   <span className="text-[8px]">{i + 1}</span>
                 </span>
               )}
-              <span className="line-clamp-1 text-[11px]">{step.instrucao}</span>
+              <span className="min-w-0 flex-1 line-clamp-1 text-[11px]">{step.instrucao}</span>
+              {(stepAttempts[i] ?? 0) > 0 && <span className="shrink-0 text-[9px] text-white/25">{stepAttempts[i]}x</span>}
             </div>
           ))}
         </div>
@@ -525,9 +562,18 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
         </div>
       ) : (
         <div className="border-t border-white/10 p-3">
-          <div className="rounded-lg bg-gradient-to-r from-orbit-electric/20 to-orbit-purple/20 border border-orbit-electric/30 p-3 text-center">
-            <p className="text-sm font-bold text-white">Desafio Completo!</p>
-            <p className="mt-1 text-[11px] text-white/60">Todos os passos concluídos.</p>
+          <div className="rounded-xl bg-gradient-to-br from-orbit-electric/15 to-orbit-purple/15 border border-orbit-electric/30 p-3">
+            <p className="text-sm font-bold text-white">Desafio completo!</p>
+            <p className="mt-1 text-[11px] leading-5 text-white/55">Feche o ciclo: explique com suas palavras o que seu código fez. Isso ajuda a memória a durar.</p>
+            <label className="mt-3 block text-[9px] font-black uppercase tracking-wider text-orbit-electric" htmlFor="practice-reflection">Meu aprendizado</label>
+            <textarea
+              id="practice-reflection"
+              value={reflection}
+              onChange={(event) => setReflection(event.target.value)}
+              rows={3}
+              placeholder="Ex.: uma variável guarda um valor para eu reutilizar depois..."
+              className="mt-1.5 w-full resize-none rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-xs leading-5 text-white outline-none placeholder:text-white/25 focus:border-orbit-electric/50"
+            />
             <Link href={nextChallenge ? `/estudante/pratica/${nextChallenge.slug}` : "/estudante/pratica"} className="mt-2 inline-flex items-center gap-1 text-xs text-orbit-electric hover:underline">
               {nextChallenge ? `Próximo: ${nextChallenge.titulo}` : "Ver mais desafios"} <ChevronRight className="size-3" />
             </Link>
@@ -617,6 +663,20 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
       <div className="flex flex-1 overflow-hidden">
         {/* Editor + Console — full width mobile, 80% desktop */}
         <div id="practice-editor-panel" role="tabpanel" aria-labelledby="practice-code-tab" className={`min-w-0 flex-col overflow-hidden border-r border-white/10 ${mobileTab === "editor" ? "flex flex-1" : "hidden md:flex md:flex-1"}`}>
+          {!completed && desafio.steps[currentStep] && (
+            <div className="shrink-0 border-b border-orbit-electric/15 bg-orbit-electric/[.055] px-3 py-2.5 md:hidden">
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-lg bg-orbit-electric/15 text-[10px] font-black text-orbit-electric">{currentStep + 1}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="line-clamp-2 text-[11px] font-semibold leading-4 text-white/80">{desafio.steps[currentStep].instrucao}</p>
+                  <p className="mt-1 text-[9px] text-white/35">{stepAttempts[currentStep] ?? 0} tentativa{(stepAttempts[currentStep] ?? 0) === 1 ? "" : "s"} · execute para validar</p>
+                </div>
+                <button type="button" onClick={() => setMobileTab("guia")} className="min-h-9 shrink-0 rounded-lg border border-white/10 bg-white/[.04] px-2 text-[10px] font-bold text-orbit-electric">
+                  Ver guia
+                </button>
+              </div>
+            </div>
+          )}
           <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
             <ReliableCodeEditor
               ref={editorRef}

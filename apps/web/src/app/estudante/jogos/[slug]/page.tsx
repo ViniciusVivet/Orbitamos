@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
+  BrainCircuit,
   Check,
   ChevronDown,
   ChevronUp,
@@ -15,6 +16,7 @@ import {
   RotateCcw,
   Shuffle,
   Trophy,
+  SquareTerminal,
   X,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,13 +41,22 @@ function shuffle(ids: number[]): number[] {
   return result;
 }
 
-export default function MonteCodigoPage() {
+function outputOptions(expected: string): string[] {
+  const lines = expected.split("\n");
+  const reversed = lines.length > 1 ? [...lines].reverse().join("\n") : `${expected}!`;
+  const alternatives = [expected, reversed, expected === "10" || expected === "3" ? "5" : "undefined", "Erro de execução"];
+  return Array.from(new Set(alternatives))
+    .slice(0, 3)
+    .sort((a, b) => (a.length * 7 + a.charCodeAt(0)) % 11 - (b.length * 7 + b.charCodeAt(0)) % 11);
+}
+
+export function MonteCodigoWorkspace({ previewUserId }: { previewUserId?: string }) {
   const params = useParams();
   const slug = params.slug as string;
   const fase = getFaseMonteCodigo(slug);
   const proxima = getProximaFase(slug);
   const { user } = useAuth();
-  const userId = user?.id ? String(user.id) : undefined;
+  const userId = previewUserId ?? (user?.id ? String(user.id) : undefined);
 
   const [pool, setPool] = useState<number[]>([]);
   const [placed, setPlaced] = useState<number[]>([]);
@@ -53,6 +64,9 @@ export default function MonteCodigoPage() {
   const [attempts, setAttempts] = useState(0);
   const [won, setWon] = useState(false);
   const [showDica, setShowDica] = useState(false);
+  const [assembled, setAssembled] = useState(false);
+  const [selectedOutput, setSelectedOutput] = useState<string | null>(null);
+  const [predictionWrong, setPredictionWrong] = useState(false);
 
   const resetBoard = useCallback(() => {
     if (!fase) return;
@@ -61,6 +75,9 @@ export default function MonteCodigoPage() {
     setChecked(false);
     setWon(false);
     setShowDica(false);
+    setAssembled(false);
+    setSelectedOutput(null);
+    setPredictionWrong(false);
   }, [fase]);
 
   useEffect(() => {
@@ -105,15 +122,27 @@ export default function MonteCodigoPage() {
     setAttempts(nextAttempts);
     const acertou = placed.every((id, index) => id === index);
     if (acertou) {
-      setWon(true);
-      const anterior = lerProgressoFase(userId, fase.slug);
-      salvarProgressoFase(userId, fase.slug, {
-        concluido: true,
-        tentativas: anterior.concluido ? anterior.tentativas : nextAttempts,
-      });
+      setAssembled(true);
+      setChecked(false);
     } else {
       setChecked(true);
     }
+  };
+
+  const confirmOutput = (option: string) => {
+    if (!fase) return;
+    setSelectedOutput(option);
+    if (option !== fase.saidaEsperada) {
+      setPredictionWrong(true);
+      return;
+    }
+    setPredictionWrong(false);
+    setWon(true);
+    const anterior = lerProgressoFase(userId, fase.slug);
+    salvarProgressoFase(userId, fase.slug, {
+      concluido: true,
+      tentativas: anterior.concluido ? anterior.tentativas : attempts,
+    });
   };
 
   if (!fase) {
@@ -158,9 +187,15 @@ export default function MonteCodigoPage() {
       <section className="mt-5 rounded-2xl border border-white/10 bg-white/[0.035] p-4 sm:p-5">
         <p className="text-[10px] font-bold uppercase tracking-[.18em] text-white/35">Missão</p>
         <p className="mt-2 text-sm leading-6 text-white/75">{fase.descricao}</p>
-        <div className="mt-3 rounded-xl bg-black/45 p-3">
-          <p className="text-[9px] font-bold uppercase tracking-wider text-white/30">Saída esperada</p>
-          <pre className="mt-1.5 whitespace-pre-wrap font-mono text-xs leading-5 text-emerald-300/90">{fase.saidaEsperada}</pre>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <div className="rounded-xl border border-orbit-purple/15 bg-orbit-purple/[.06] p-3">
+            <p className="text-[9px] font-black uppercase tracking-wider text-orbit-purple">1 · Organize</p>
+            <p className="mt-1 text-xs leading-5 text-white/55">Descubra a ordem pelas dependências e pela indentação.</p>
+          </div>
+          <div className="rounded-xl border border-orbit-electric/15 bg-orbit-electric/[.05] p-3">
+            <p className="text-[9px] font-black uppercase tracking-wider text-orbit-electric">2 · Preveja</p>
+            <p className="mt-1 text-xs leading-5 text-white/55">Depois, leia o programa e antecipe a saída sem executar.</p>
+          </div>
         </div>
       </section>
 
@@ -211,6 +246,57 @@ export default function MonteCodigoPage() {
               Jogar de novo
             </button>
           </div>
+        </section>
+      ) : assembled ? (
+        <section className="mt-5 overflow-hidden rounded-3xl border border-orbit-electric/25 bg-gradient-to-br from-orbit-electric/[.09] via-[#090d14] to-orbit-purple/[.1] p-5 sm:p-7">
+          <div className="flex items-start gap-3">
+            <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-orbit-electric/15 text-orbit-electric">
+              <BrainCircuit className="size-5" />
+            </span>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[.18em] text-orbit-electric">Etapa 2 · Trace o programa</p>
+              <h2 className="mt-1 text-xl font-black text-white">Qual saída aparece no console?</h2>
+              <p className="mt-1 text-sm leading-6 text-white/55">Leia de cima para baixo e acompanhe mentalmente como cada variável muda. Não execute: primeiro faça sua previsão.</p>
+            </div>
+          </div>
+
+          <div className="mt-5 rounded-2xl border border-white/10 bg-black/35 p-3 sm:p-4">
+            {fase.linhas.map((linha, index) => (
+              <pre key={index} className="overflow-x-auto whitespace-pre font-mono text-xs leading-7 text-slate-100">
+                <span className="mr-3 inline-block w-4 text-right text-white/25">{index + 1}</span>
+                {linha}
+              </pre>
+            ))}
+          </div>
+
+          <div className="mt-5 grid gap-2" role="group" aria-label="Opções de saída do programa">
+            {outputOptions(fase.saidaEsperada).map((option) => {
+              const selected = selectedOutput === option;
+              const wrong = selected && predictionWrong;
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => confirmOutput(option)}
+                  className={`flex min-h-14 items-center gap-3 rounded-2xl border px-4 text-left transition touch-manipulation ${wrong ? "border-red-400/50 bg-red-400/[.08] text-red-100" : "border-white/10 bg-white/[.035] text-white/75 hover:border-orbit-electric/40 hover:bg-orbit-electric/[.06]"}`}
+                >
+                  <SquareTerminal className={`size-4 shrink-0 ${wrong ? "text-red-300" : "text-orbit-electric"}`} />
+                  <pre className="whitespace-pre-wrap font-mono text-xs leading-5">{option}</pre>
+                </button>
+              );
+            })}
+          </div>
+
+          {predictionWrong && (
+            <div className="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/[.07] p-4" role="status">
+              <p className="text-xs font-bold text-amber-200">Ainda não. Volte ao código e siga o valor de cada variável linha por linha.</p>
+              <p className="mt-1 text-xs leading-5 text-amber-100/65">Pergunta-guia: qual é o último valor entregue ao print ou console.log?</p>
+            </div>
+          )}
+
+          <button type="button" onClick={() => { setAssembled(false); setPredictionWrong(false); setSelectedOutput(null); }} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/12 bg-white/[.04] px-4 text-xs font-bold text-white/60 hover:bg-white/[.08] hover:text-white">
+            <ArrowLeft className="size-3.5" /> Voltar e revisar a ordem
+          </button>
         </section>
       ) : (
         <>
@@ -360,4 +446,8 @@ export default function MonteCodigoPage() {
       )}
     </div>
   );
+}
+
+export default function MonteCodigoPage() {
+  return <MonteCodigoWorkspace />;
 }

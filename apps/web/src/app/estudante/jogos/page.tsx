@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, CheckCircle2, Gamepad2, Play, Puzzle, Smartphone, Sparkles, Zap } from "lucide-react";
+import { ArrowRight, BrainCircuit, Bug, CheckCircle2, Code2, Gamepad2, Play, Puzzle, Smartphone, Sparkles, Zap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { fasesMonteCodigo, lerProgressoFase, type FaseProgresso } from "@/lib/jogoMonteCodigo";
 
@@ -65,6 +65,22 @@ export default function JogosIndex() {
       </section>
 
       <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-8 lg:px-10">
+        <section className="mb-7 grid gap-2 sm:grid-cols-3" aria-label="Como os jogos ensinam programação">
+          {[
+            { icon: BrainCircuit, step: "1 · Planeje", text: "Leia a missão e construa uma hipótese antes de agir.", color: "text-orbit-purple bg-orbit-purple/10" },
+            { icon: Code2, step: "2 · Execute", text: "Veja cada comando acontecer e acompanhe os valores.", color: "text-orbit-electric bg-orbit-electric/10" },
+            { icon: Bug, step: "3 · Depure", text: "Descubra onde a lógica quebrou, ajuste e tente de novo.", color: "text-amber-300 bg-amber-300/10" },
+          ].map(({ icon: Icon, step, text, color }) => (
+            <div key={step} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[.025] p-3.5">
+              <span className={`grid size-9 shrink-0 place-items-center rounded-xl ${color}`}><Icon className="size-4" /></span>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[.16em] text-white/75">{step}</p>
+                <p className="mt-1 text-xs leading-5 text-white/40">{text}</p>
+              </div>
+            </div>
+          ))}
+        </section>
+
         {/* Destaque: Guia o Orbi */}
         <Link
           href="/estudante/jogos/orbi"

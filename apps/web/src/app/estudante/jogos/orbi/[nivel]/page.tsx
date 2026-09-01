@@ -7,13 +7,17 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUp,
+  Crosshair,
   Eraser,
+  Gauge,
   Lightbulb,
   Play,
+  Route,
   RotateCcw,
   RotateCw,
   Star,
   Trophy,
+  Undo2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -77,13 +81,13 @@ type ViewState = {
   arrived: boolean;
 };
 
-export default function GuiaOrbiPage() {
+export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string }) {
   const params = useParams();
   const slugNivel = params.nivel as string;
   const nivel = getNivelGuiaOrbi(slugNivel);
   const proximo = getProximoNivel(slugNivel);
   const { user } = useAuth();
-  const userId = user?.id ? String(user.id) : undefined;
+  const userId = previewUserId ?? (user?.id ? String(user.id) : undefined);
 
   const [principal, setPrincipal] = useState<OrbiCmd[]>([]);
   const [funcao, setFuncao] = useState<OrbiCmd[]>([]);
@@ -95,6 +99,7 @@ export default function GuiaOrbiPage() {
   const [estrelas, setEstrelas] = useState<0 | 1 | 2 | 3>(0);
   const [tentativas, setTentativas] = useState(0);
   const [showDica, setShowDica] = useState(false);
+  const [showRoute, setShowRoute] = useState(false);
 
   const timeoutsRef = useRef<number[]>([]);
   const prevDirRef = useRef(0);
@@ -121,6 +126,7 @@ export default function GuiaOrbiPage() {
       setEstrelas(0);
       setTentativas(0);
       setShowDica(false);
+      setShowRoute(false);
       setActiveChip(null);
       resetView(nivel);
     });
@@ -159,6 +165,13 @@ export default function GuiaOrbiPage() {
     setFuncao([]);
     setResultado(null);
     resetView(nivel);
+  };
+
+  const desfazer = () => {
+    if (running) return;
+    if (activeTrack === "principal") setPrincipal((current) => current.slice(0, -1));
+    else setFuncao((current) => current.slice(0, -1));
+    setResultado(null);
   };
 
   const aplicarFrame = (frame: OrbiFrame) => {
@@ -238,14 +251,21 @@ export default function GuiaOrbiPage() {
       }
     : null;
 
+  const simulation = principal.length > 0 ? executarPrograma(nivel, principal, funcao) : null;
+  const routeFrames = simulation?.frames.filter((frame) => frame.evento === "passo" || frame.evento === "portal").slice(0, 18) ?? [];
+  const lastSimulationFrame = simulation?.frames.at(-1);
+  const failureCopy = resultado === "crash"
+    ? `A rota quebrou no comando ${(lastSimulationFrame?.index ?? 0) + 1} da ${lastSimulationFrame?.track === "funcao" ? "Função F" : "trilha principal"}. Volte um passo e confira para onde o Orbi estava olhando.`
+    : resultado === "perdido"
+      ? "O programa terminou antes do portal. Compare o último ponto da rota com o destino e descubra qual movimento ainda falta."
+      : resultado === "limite"
+        ? "A Função F entrou em repetição sem alcançar o portal. O padrão precisa avançar em direção ao destino antes de chamar F novamente."
+        : null;
+
   const renderTrack = (track: OrbiTrack, cmds: OrbiCmd[], slots: number) => (
     <div
-      role="button"
-      tabIndex={0}
-      onClick={() => setActiveTrack(track)}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") setActiveTrack(track);
-      }}
+      role="group"
+      aria-label={track === "principal" ? "Programa principal" : "Função F"}
       className={`rounded-2xl border p-3 transition ${
         activeTrack === track
           ? track === "principal"
@@ -255,9 +275,14 @@ export default function GuiaOrbiPage() {
       }`}
     >
       <div className="flex items-center justify-between gap-2">
-        <p className={`text-[10px] font-bold uppercase tracking-[.16em] ${track === "principal" ? "text-orbit-electric" : "text-orbit-purple"}`}>
+        <button
+          type="button"
+          onClick={() => setActiveTrack(track)}
+          aria-pressed={activeTrack === track}
+          className={`min-h-8 rounded-lg px-2 text-left text-[10px] font-bold uppercase tracking-[.16em] transition hover:bg-white/[.06] ${track === "principal" ? "text-orbit-electric" : "text-orbit-purple"}`}
+        >
           {track === "principal" ? "Programa principal" : "Função F"}
-        </p>
+        </button>
         <span className="text-[10px] text-white/30">{cmds.length}/{slots}</span>
       </div>
       <div className="mt-2 flex flex-wrap gap-1.5">
@@ -300,9 +325,10 @@ export default function GuiaOrbiPage() {
   );
 
   return (
-    <div className="mx-auto max-w-3xl pb-16">
-      {/* Cabeçalho */}
-      <div className="flex items-center gap-3">
+    <div className="mx-auto max-w-6xl pb-24 lg:pb-16">
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[.055] via-[#080b13] to-orbit-purple/[.08] p-4 sm:p-5">
+        <div className="pointer-events-none absolute -right-16 -top-20 size-56 rounded-full bg-orbit-electric/10 blur-3xl" />
+        <div className="relative flex items-center gap-3">
         <Link
           href="/estudante/jogos/orbi"
           className="grid size-10 shrink-0 place-items-center rounded-xl text-white/55 transition hover:bg-white/[0.06] hover:text-white"
@@ -316,15 +342,33 @@ export default function GuiaOrbiPage() {
           </p>
           <h1 className="mt-0.5 truncate text-lg font-black text-white sm:text-xl">{nivel.titulo}</h1>
         </div>
-        {tentativas > 0 && (
-          <span className="shrink-0 text-[10px] text-white/35">{tentativas} tentativa{tentativas === 1 ? "" : "s"}</span>
-        )}
+          <div className="hidden shrink-0 items-center gap-2 sm:flex">
+            <span className="rounded-full border border-white/10 bg-black/25 px-3 py-1.5 text-[10px] text-white/45">
+              {tentativas || 0} tentativa{tentativas === 1 ? "" : "s"}
+            </span>
+            <span className="flex items-center gap-1 rounded-full border border-amber-300/15 bg-amber-300/[.06] px-3 py-1.5 text-[10px] font-bold text-amber-200">
+              <Gauge className="size-3" /> meta: {nivel.par} comandos
+            </span>
+          </div>
+        </div>
+        <div className="relative mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[.18em] text-orbit-electric">Missão atual</p>
+            <p className="mt-1 text-sm leading-6 text-white/70">{nivel.descricao}</p>
+          </div>
+          <div className="flex items-center gap-2 text-[10px] text-white/40 sm:hidden">
+            <span>{tentativas || 0} tentativa{tentativas === 1 ? "" : "s"}</span>
+            <span>·</span>
+            <span>3 estrelas em até {nivel.par}</span>
+          </div>
+        </div>
       </div>
 
-      <p className="mt-3 text-sm leading-6 text-white/60">{nivel.descricao}</p>
+      <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1.12fr)_minmax(360px,.88fr)] lg:items-start">
+        <section aria-label="Simulador da rota" className="min-w-0">
 
       {/* ── Tabuleiro ── */}
-      <div className="relative mx-auto mt-5 w-full max-w-[420px]">
+      <div className="relative mx-auto w-full max-w-[540px]">
         <div
           className="relative aspect-square overflow-hidden rounded-3xl border border-white/15 shadow-[0_30px_80px_rgba(0,0,0,.5),inset_0_0_60px_rgba(0,212,255,.04)]"
           style={{
@@ -360,11 +404,30 @@ export default function GuiaOrbiPage() {
             }}
           />
 
+          <div className="pointer-events-none absolute left-3 top-3 z-20 flex items-center gap-2 rounded-full border border-white/10 bg-black/45 px-3 py-1.5 backdrop-blur-md">
+            <Crosshair className="size-3 text-orbit-electric" />
+            <span className="text-[9px] font-black uppercase tracking-[.15em] text-white/55">
+              {showRoute ? "Prévia da rota" : "Área de simulação"}
+            </span>
+          </div>
+
+          {showRoute && routeFrames.map((frame, index) => (
+            <span
+              key={`${frame.x}-${frame.y}-${index}`}
+              aria-hidden="true"
+              className={`absolute z-[5] grid size-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border text-[8px] font-black shadow-[0_0_14px_rgba(0,212,255,.35)] ${frame.evento === "portal" ? "border-emerald-300 bg-emerald-300 text-black" : "border-orbit-electric/70 bg-[#06141b]/90 text-orbit-electric"}`}
+              style={{ left: cellCenter(frame.x, nivel.cols), top: cellCenter(frame.y, nivel.rows) }}
+            >
+              {index + 1}
+            </span>
+          ))}
+
           {/* Asteroides */}
           {nivel.asteroides.map((asteroide) => (
             <span
               key={`${asteroide.x}-${asteroide.y}`}
-              className="absolute -translate-x-1/2 -translate-y-1/2 text-[7.5vw] drop-shadow-[0_0_12px_rgba(255,120,50,.25)] sm:text-3xl"
+              aria-label="Asteroide"
+              className="absolute grid size-[9%] min-h-7 min-w-7 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-[42%_58%_48%_52%] border border-orange-200/25 bg-[radial-gradient(circle_at_35%_30%,#fdba74_0%,#c2410c_34%,#431407_75%)] shadow-[0_0_18px_rgba(249,115,22,.25),inset_-4px_-5px_8px_rgba(0,0,0,.45)]"
               style={{
                 left: cellCenter(asteroide.x, nivel.cols),
                 top: cellCenter(asteroide.y, nivel.rows),
@@ -372,7 +435,7 @@ export default function GuiaOrbiPage() {
                 animationDelay: `${(asteroide.x + asteroide.y) * 0.3}s`,
               }}
             >
-              ☄️
+              <span className="size-[28%] rounded-full bg-black/25" />
             </span>
           ))}
 
@@ -391,11 +454,8 @@ export default function GuiaOrbiPage() {
               className="absolute left-1/2 top-1/2 size-12 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-orbit-purple/70"
               style={{ animation: "orbi-game-portal 1.8s ease-out infinite", animationDelay: "0.9s" }}
             />
-            <span
-              className="relative block text-[7.5vw] drop-shadow-[0_0_18px_rgba(0,212,255,.5)] sm:text-3xl"
-              style={{ animation: "orbi-game-hover 3s ease-in-out infinite" }}
-            >
-              🪐
+            <span className="relative block size-8 rounded-full border-2 border-white/70 bg-[radial-gradient(circle_at_35%_30%,#a5f3fc,#0891b2_38%,#312e81_72%)] shadow-[0_0_22px_rgba(0,212,255,.65)] sm:size-10" style={{ animation: "orbi-game-hover 3s ease-in-out infinite" }}>
+              <span className="absolute left-1/2 top-1/2 h-2 w-12 -translate-x-1/2 -translate-y-1/2 -rotate-12 rounded-full border border-orbit-purple/80" />
             </span>
           </div>
 
@@ -496,15 +556,32 @@ export default function GuiaOrbiPage() {
 
       {/* Mensagens de falha */}
       {resultado && resultado !== "portal" && (
-        <div className="mt-3 rounded-xl border border-red-400/25 bg-red-400/[.07] px-4 py-3 text-xs leading-5 text-red-200" role="status">
-          {resultado === "crash" && "💥 O Orbi bateu! Reveja a sequência: em que passo ele saiu da rota?"}
-          {resultado === "perdido" && "🛰️ O programa terminou, mas o Orbi não chegou ao portal. Faltou algum comando?"}
-          {resultado === "limite" && "♾️ Passos demais! Parece um loop sem fim — garanta que o caminho leva ao portal."}
+        <div className="mt-3 rounded-2xl border border-amber-300/25 bg-amber-300/[.07] p-4" role="status" aria-live="polite">
+          <p className="text-[10px] font-black uppercase tracking-[.16em] text-amber-300">Debug da tentativa</p>
+          <p className="mt-1 text-xs leading-5 text-amber-100">{failureCopy}</p>
+          <button type="button" onClick={() => setShowRoute(true)} className="mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-amber-300/10 px-3 text-[11px] font-bold text-amber-200 hover:bg-amber-300/15">
+            <Route className="size-3.5" /> Ver onde a rota parou
+          </button>
         </div>
       )}
 
+        </section>
+
+        <section aria-label="Monte o programa" className="min-w-0 rounded-3xl border border-white/10 bg-[#0a0d14]/90 p-4 shadow-[0_24px_70px_rgba(0,0,0,.22)] sm:p-5 lg:sticky lg:top-20">
+
       {/* ── Programa ── */}
-      <div className="mt-5 space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[.18em] text-orbit-purple">Plano de voo</p>
+          <h2 className="mt-1 text-lg font-black text-white">Programe, simule e ajuste</h2>
+          <p className="mt-1 text-xs leading-5 text-white/40">Monte uma hipótese antes de apertar executar.</p>
+        </div>
+        <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${comandosUsados <= nivel.par ? "bg-emerald-400/10 text-emerald-300" : "bg-amber-300/10 text-amber-200"}`}>
+          {comandosUsados}/{nivel.par}
+        </span>
+      </div>
+
+      <div className="mt-4 space-y-3">
         {renderTrack("principal", principal, nivel.slotsPrincipal)}
         {nivel.slotsFuncao ? renderTrack("funcao", funcao, nivel.slotsFuncao) : null}
         {nivel.slotsFuncao ? (
@@ -514,6 +591,25 @@ export default function GuiaOrbiPage() {
         ) : (
           <p className="text-[10px] leading-4 text-white/30">Toque em um comando posicionado para removê-lo.</p>
         )}
+      </div>
+
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => setShowRoute((value) => !value)}
+          disabled={principal.length === 0 || running}
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-orbit-electric/25 bg-orbit-electric/[.06] px-3 text-xs font-bold text-orbit-electric transition hover:bg-orbit-electric/[.1] disabled:opacity-35"
+        >
+          <Route className="size-4" /> {showRoute ? "Ocultar rota" : "Simular rota"}
+        </button>
+        <button
+          type="button"
+          onClick={desfazer}
+          disabled={running || (activeTrack === "principal" ? principal.length === 0 : funcao.length === 0)}
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/12 bg-white/[.04] px-3 text-xs font-bold text-white/65 transition hover:bg-white/[.08] disabled:opacity-35"
+        >
+          <Undo2 className="size-4" /> Desfazer
+        </button>
       </div>
 
       {/* ── Paleta ── */}
@@ -536,7 +632,7 @@ export default function GuiaOrbiPage() {
       </div>
 
       {/* ── Ações ── */}
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         <button
           type="button"
           onClick={executar}
@@ -572,6 +668,12 @@ export default function GuiaOrbiPage() {
           {nivel.dica}
         </div>
       )}
+        </section>
+      </div>
     </div>
   );
+}
+
+export default function GuiaOrbiPage() {
+  return <GuiaOrbiWorkspace />;
 }
