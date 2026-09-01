@@ -123,22 +123,31 @@ const services = [
 
 const featuredProjects = [
   {
-    name: "Radar da Rima",
-    category: "Cultura, comunidade e eventos",
-    href: "/projetos/radar-da-rima",
-    image: "https://batalhai.vercel.app/opengraph-image?ea1a014aede2503f",
+    name: "YUME",
+    category: "Marca autoral",
+    href: "/projetos/yume-moda-disruptiva",
+    image: "/case-yume.png",
     description:
-      "Mapa nacional de batalhas de rima com ranking de MCs e operação completa das edições para organizadores.",
-    outcomes: ["Mapa geolocalizado", "Ranking nacional", "Gestão de eventos"],
+      "Vitrine digital com identidade forte para apresentar coleções, editoriais e evoluir para vendas.",
+    outcomes: ["Catálogo visual", "Branding premium", "Mobile-first"],
   },
   {
-    name: "OrbiCore",
-    category: "Gestão para pequenos negócios",
-    href: "/projetos/orbicore-gestao",
-    image: "https://orbicore-ruby.vercel.app/og-image.png",
+    name: "Sensimilla Records",
+    category: "Música e entretenimento",
+    href: "/projetos/sensimilla-records",
+    image: "/case-sensimilla-records.png",
     description:
-      "Sistema que centraliza contratos, receita recorrente, pipeline, estoque, vendas, folha e metas.",
-    outcomes: ["MRR e contratos", "Estoque e vendas", "Indicadores integrados"],
+      "Hub oficial da gravadora para reunir artistas, lançamentos, agenda, merch e presença nas plataformas.",
+    outcomes: ["Identidade autoral", "Lançamentos", "Experiência imersiva"],
+  },
+  {
+    name: "MB Multimarcas Infantil",
+    category: "Moda infantil",
+    href: "/projetos/mb-multimarcas-infantil",
+    image: "/case-mb-multimarcas-infantil.png",
+    description:
+      "Catálogo digital com produtos filtráveis e atendimento direto pelo WhatsApp.",
+    outcomes: ["Catálogo filtrável", "WhatsApp direto", "Mobile-first"],
   },
   {
     name: "Sabrina Lashes",
@@ -150,22 +159,22 @@ const featuredProjects = [
     outcomes: ["WhatsApp direto", "Serviços organizados", "Presença profissional"],
   },
   {
-    name: "YUME",
-    category: "Marca autoral",
-    href: "/projetos/yume-moda-disruptiva",
-    image: "/case-yume.png",
+    name: "KitCerto",
+    category: "Catálogo e e-commerce",
+    href: "/projetos/kitcerto",
+    image: "/case-kitcerto.png",
     description:
-      "Vitrine digital com identidade forte para apresentar coleções, editoriais e evoluir para vendas.",
-    outcomes: ["Catálogo visual", "Branding premium", "Mobile-first"],
+      "Vitrine digital para organizar kits e produtos com uma experiência de compra clara no celular.",
+    outcomes: ["Kits organizados", "Vitrine comercial", "Mobile-first"],
   },
   {
-    name: "MB Multimarcas Infantil",
-    category: "Moda infantil",
-    href: "/projetos/mb-multimarcas-infantil",
-    image: "/case-mb-multimarcas-infantil.png",
+    name: "Radar da Rima",
+    category: "Cultura, comunidade e eventos",
+    href: "/projetos/radar-da-rima",
+    image: "/case-radar-da-rima.jpg",
     description:
-      "Catálogo digital com produtos filtráveis e atendimento direto pelo WhatsApp.",
-    outcomes: ["Catálogo filtrável", "WhatsApp direto", "Mobile-first"],
+      "Mapa nacional de batalhas de rima com ranking de MCs e operação completa das edições para organizadores.",
+    outcomes: ["Mapa geolocalizado", "Ranking nacional", "Gestão de eventos"],
   },
 ];
 
