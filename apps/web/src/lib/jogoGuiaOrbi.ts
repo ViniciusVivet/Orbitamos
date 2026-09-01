@@ -43,6 +43,21 @@ export type OrbiFrame = {
 
 export type OrbiResultado = "portal" | "crash" | "perdido" | "limite";
 
+/** Identifica o comando pelo endereço real no programa, sem confundir giros com passos. */
+export function rotuloFrameOrbi(frame: OrbiFrame): string | null {
+  if (!frame.track || frame.index === null) return null;
+  return `${frame.track === "funcao" ? "F" : "P"}${frame.index + 1}`;
+}
+
+export function comandoDoFrameOrbi(
+  frame: OrbiFrame,
+  principal: OrbiCmd[],
+  funcao: OrbiCmd[]
+): OrbiCmd | null {
+  if (!frame.track || frame.index === null) return null;
+  return (frame.track === "funcao" ? funcao : principal)[frame.index] ?? null;
+}
+
 const MAX_PASSOS = 60;
 
 export function executarPrograma(

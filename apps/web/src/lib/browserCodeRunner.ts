@@ -212,6 +212,7 @@ type PythonPendingRun = { finish: (result: BrowserCodeResult) => void };
 let pythonWorker: Worker | null = null;
 let pythonRequestId = 0;
 let pythonRuntimeReady = false;
+let pythonWarmupPromise: Promise<boolean> | null = null;
 const pythonPendingRuns = new Map<number, PythonPendingRun>();
 
 function resetPythonWorker(fallback: BrowserCodeResult) {
@@ -238,16 +239,25 @@ function getPythonWorker(): Worker {
 }
 
 /** Começa a baixar/inicializar o Python antes do primeiro clique em Executar. */
-export function warmPythonRuntime() {
-  if (typeof window === "undefined" || typeof Worker === "undefined") return;
-  try {
-    const worker = getPythonWorker();
-    const id = ++pythonRequestId;
-    pythonPendingRuns.set(id, { finish: () => undefined });
-    worker.postMessage({ id, warmup: true });
-  } catch {
-    // A execução mostrará a mensagem de compatibilidade caso o aquecimento falhe.
-  }
+export function warmPythonRuntime(): Promise<boolean> {
+  if (pythonRuntimeReady) return Promise.resolve(true);
+  if (pythonWarmupPromise) return pythonWarmupPromise;
+  if (typeof window === "undefined" || typeof Worker === "undefined") return Promise.resolve(false);
+  pythonWarmupPromise = new Promise<boolean>((resolve) => {
+    try {
+      const worker = getPythonWorker();
+      const id = ++pythonRequestId;
+      pythonPendingRuns.set(id, {
+        finish: (result) => resolve(!result.error),
+      });
+      worker.postMessage({ id, warmup: true });
+    } catch {
+      resolve(false);
+    }
+  }).finally(() => {
+    if (!pythonRuntimeReady) pythonWarmupPromise = null;
+  });
+  return pythonWarmupPromise;
 }
 
 /**

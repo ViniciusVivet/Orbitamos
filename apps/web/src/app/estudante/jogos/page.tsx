@@ -5,11 +5,13 @@ import { useEffect, useState } from "react";
 import { ArrowRight, BrainCircuit, Bug, CheckCircle2, Code2, Gamepad2, Play, Puzzle, Smartphone, Sparkles, Zap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { fasesMonteCodigo, lerProgressoFase, type FaseProgresso } from "@/lib/jogoMonteCodigo";
+import { lerProgressoNivel, niveisGuiaOrbi, type NivelProgresso } from "@/lib/jogoGuiaOrbi";
 
 export default function JogosIndex() {
   const { user } = useAuth();
   const userId = user?.id ? String(user.id) : undefined;
   const [progresso, setProgresso] = useState<Record<string, FaseProgresso>>({});
+  const [progressoOrbi, setProgressoOrbi] = useState<Record<string, NivelProgresso>>({});
 
   useEffect(() => {
     let active = true;
@@ -19,7 +21,12 @@ export default function JogosIndex() {
       fasesMonteCodigo.forEach((fase) => {
         next[fase.slug] = lerProgressoFase(userId, fase.slug);
       });
+      const nextOrbi: Record<string, NivelProgresso> = {};
+      niveisGuiaOrbi.forEach((nivel) => {
+        nextOrbi[nivel.slug] = lerProgressoNivel(userId, nivel.slug);
+      });
       setProgresso(next);
+      setProgressoOrbi(nextOrbi);
     });
     return () => {
       active = false;
@@ -30,6 +37,10 @@ export default function JogosIndex() {
   const proximaFase =
     fasesMonteCodigo.find((fase) => !progresso[fase.slug]?.concluido) ?? fasesMonteCodigo[0];
   const percent = Math.round((concluidas / fasesMonteCodigo.length) * 100);
+  const orbiConcluidos = niveisGuiaOrbi.filter((nivel) => progressoOrbi[nivel.slug]?.concluido).length;
+  const totalFases = fasesMonteCodigo.length + niveisGuiaOrbi.length;
+  const totalConcluidas = concluidas + orbiConcluidos;
+  const percentGeral = Math.round((totalConcluidas / totalFases) * 100);
 
   return (
     <div className="-mx-4 -mt-4 min-h-screen pb-14 sm:-mt-6 lg:-mx-6 lg:-mt-8">
@@ -52,10 +63,10 @@ export default function JogosIndex() {
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
             <div className="rounded-full border border-white/10 bg-black/30 px-3 py-1.5 text-[11px] text-white/60">
-              <strong className="text-white">2</strong> jogos · <strong className="text-white">{fasesMonteCodigo.length + 8}</strong> fases
+              <strong className="text-white">2</strong> jogos · <strong className="text-white">{totalFases}</strong> fases
             </div>
             <div className="rounded-full border border-emerald-400/20 bg-emerald-400/[.07] px-3 py-1.5 text-[11px] text-emerald-200">
-              <strong>{concluidas}</strong> concluídas
+              <strong>{totalConcluidas}</strong> concluídas · {percentGeral}%
             </div>
             <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/30 px-3 py-1.5 text-[11px] text-white/60">
               <Smartphone className="size-3.5" /> No celular
@@ -110,6 +121,15 @@ export default function JogosIndex() {
                 Programe o voo do mascote comando por comando e veja ele atravessar o campo de asteroides ao vivo.
                 8 níveis: da primeira sequência até funções e recursão.
               </p>
+              <div className="mt-3 max-w-md">
+                <div className="flex items-center justify-between text-[10px] text-white/40">
+                  <span>Progresso no Guia o Orbi</span>
+                  <span>{orbiConcluidos}/{niveisGuiaOrbi.length}</span>
+                </div>
+                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
+                  <div className="h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple transition-all duration-500" style={{ width: `${Math.round((orbiConcluidos / niveisGuiaOrbi.length) * 100)}%` }} />
+                </div>
+              </div>
             </div>
             <span className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 self-start rounded-xl bg-white px-5 text-sm font-black text-black transition group-hover:bg-orbit-electric sm:self-center">
               <Play className="size-4" /> Jogar agora

@@ -14,6 +14,7 @@ import {
   Timer,
 } from "lucide-react";
 import { desafios } from "@/lib/desafios";
+import { warmPythonRuntime } from "@/lib/browserCodeRunner";
 import { useAuth } from "@/contexts/AuthContext";
 
 type ChallengeState = "novo" | "andamento" | "concluido";
@@ -32,32 +33,39 @@ export default function PraticaIndex() {
   const [language, setLanguage] = useState<LanguageFilter>("todas");
   const [difficulty, setDifficulty] = useState<DifficultyFilter>("todas");
   const [states, setStates] = useState<Record<string, ChallengeState>>({});
+  const [reflections, setReflections] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     Promise.resolve().then(() => {
       const next: Record<string, ChallengeState> = {};
+      const nextReflections: Record<string, boolean> = {};
       desafios.forEach((challenge) => {
         if (!user?.id) {
           next[challenge.slug] = "novo";
+          nextReflections[challenge.slug] = false;
           return;
         }
         try {
           const raw = localStorage.getItem(`orbitamos-pratica-${user.id}-${challenge.slug}`);
           if (!raw) {
             next[challenge.slug] = "novo";
+            nextReflections[challenge.slug] = false;
             return;
           }
-          const parsed = JSON.parse(raw) as { stepStatus?: string[] };
+          const parsed = JSON.parse(raw) as { stepStatus?: string[]; reflection?: string };
           next[challenge.slug] =
             parsed.stepStatus?.length === challenge.steps.length &&
             parsed.stepStatus.every((status) => status === "success")
               ? "concluido"
               : "andamento";
+          nextReflections[challenge.slug] = Boolean(parsed.reflection?.trim());
         } catch {
           next[challenge.slug] = "novo";
+          nextReflections[challenge.slug] = false;
         }
       });
       setStates(next);
+      setReflections(nextReflections);
     });
   }, [user?.id]);
 
@@ -114,6 +122,8 @@ export default function PraticaIndex() {
         {recommended && (
           <Link
             href={`/estudante/pratica/${recommended.slug}`}
+            onPointerEnter={() => { if (recommended.linguagem === "python") void warmPythonRuntime(); }}
+            onFocus={() => { if (recommended.linguagem === "python") void warmPythonRuntime(); }}
             className="mb-6 flex flex-col gap-4 rounded-2xl bg-gradient-to-r from-orbit-electric/[.13] via-white/[.035] to-orbit-purple/[.13] p-4 transition hover:from-orbit-electric/[.18] hover:to-orbit-purple/[.18] sm:flex-row sm:items-center sm:justify-between sm:p-5"
           >
             <div className="flex min-w-0 items-center gap-4">
@@ -221,6 +231,8 @@ export default function PraticaIndex() {
                   <Link
                     key={challenge.slug}
                     href={`/estudante/pratica/${challenge.slug}`}
+                    onPointerEnter={() => { if (challenge.linguagem === "python") void warmPythonRuntime(); }}
+                    onFocus={() => { if (challenge.linguagem === "python") void warmPythonRuntime(); }}
                     className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#0d1117] transition duration-300 hover:-translate-y-1 hover:border-orbit-electric/40 hover:shadow-[0_18px_55px_rgba(0,212,255,.1)]"
                   >
                     <div className={`relative h-32 bg-gradient-to-br ${index % 3 === 0 ? "from-cyan-500/25 via-blue-950 to-black" : index % 3 === 1 ? "from-violet-500/25 via-purple-950 to-black" : "from-emerald-500/20 via-teal-950 to-black"}`}>
@@ -245,6 +257,7 @@ export default function PraticaIndex() {
                       <div className="mt-3 flex flex-wrap gap-2">
                         {challenge.dificuldade && <span className="rounded-full bg-white/[.05] px-2 py-1 text-[9px] font-bold uppercase text-white/40">{challenge.dificuldade}</span>}
                         {challenge.categoria && <span className="rounded-full bg-orbit-purple/10 px-2 py-1 text-[9px] font-bold uppercase text-orbit-purple">{challenge.categoria}</span>}
+                        {reflections[challenge.slug] && <span className="rounded-full bg-emerald-400/10 px-2 py-1 text-[9px] font-bold uppercase text-emerald-300">Reflexão salva</span>}
                       </div>
                       <div className="mt-5 flex items-center justify-between border-t border-white/8 pt-4">
                         <span className="flex items-center gap-1.5 text-xs text-white/40"><Target className="size-3.5" /> {challenge.steps.length} etapas</span>

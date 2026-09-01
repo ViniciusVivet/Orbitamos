@@ -7,6 +7,8 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUp,
+  ChevronLeft,
+  ChevronRight,
   Crosshair,
   Eraser,
   Gauge,
@@ -22,11 +24,13 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import {
   calcularEstrelas,
+  comandoDoFrameOrbi,
   executarPrograma,
   getNivelGuiaOrbi,
   getProximoNivel,
   lerProgressoNivel,
   niveisGuiaOrbi,
+  rotuloFrameOrbi,
   salvarProgressoNivel,
   type NivelGuiaOrbi,
   type OrbiCmd,
@@ -35,7 +39,7 @@ import {
   type OrbiTrack,
 } from "@/lib/jogoGuiaOrbi";
 
-const STEP_MS = 420;
+const DEFAULT_STEP_MS = 420;
 
 function seededRng(seed: number) {
   let s = seed;
@@ -94,12 +98,17 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
   const [activeTrack, setActiveTrack] = useState<OrbiTrack>("principal");
   const [running, setRunning] = useState(false);
   const [activeChip, setActiveChip] = useState<{ track: OrbiTrack; index: number } | null>(null);
+  const [selectedChip, setSelectedChip] = useState<{ track: OrbiTrack; index: number } | null>(null);
   const [view, setView] = useState<ViewState | null>(null);
   const [resultado, setResultado] = useState<OrbiResultado | null>(null);
   const [estrelas, setEstrelas] = useState<0 | 1 | 2 | 3>(0);
   const [tentativas, setTentativas] = useState(0);
   const [showDica, setShowDica] = useState(false);
   const [showRoute, setShowRoute] = useState(false);
+  const [stepMs, setStepMs] = useState(DEFAULT_STEP_MS);
+  const [manualFrames, setManualFrames] = useState<OrbiFrame[]>([]);
+  const [manualCursor, setManualCursor] = useState(0);
+  const [manualAttempt, setManualAttempt] = useState(0);
 
   const timeoutsRef = useRef<number[]>([]);
   const prevDirRef = useRef(0);
@@ -128,6 +137,10 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
       setShowDica(false);
       setShowRoute(false);
       setActiveChip(null);
+      setSelectedChip(null);
+      setManualFrames([]);
+      setManualCursor(0);
+      setManualAttempt(0);
       resetView(nivel);
     });
     return () => {
@@ -140,38 +153,71 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
     timeoutsRef.current.push(window.setTimeout(fn, delay));
   };
 
+  const invalidateExecution = () => {
+    if (!nivel) return;
+    setResultado(null);
+    setActiveChip(null);
+    setManualFrames([]);
+    setManualCursor(0);
+    setManualAttempt(0);
+    resetView(nivel);
+  };
+
   const addCmd = (cmd: OrbiCmd) => {
     if (!nivel || running) return;
     if (activeTrack === "principal") {
       if (principal.length >= nivel.slotsPrincipal) return;
-      setPrincipal((current) => [...current, cmd]);
+      const insertAt = selectedChip?.track === "principal" ? selectedChip.index + 1 : principal.length;
+      const next = [...principal];
+      next.splice(insertAt, 0, cmd);
+      setPrincipal(next);
+      setSelectedChip({ track: "principal", index: insertAt });
     } else {
       if (funcao.length >= (nivel.slotsFuncao ?? 0)) return;
-      setFuncao((current) => [...current, cmd]);
+      const insertAt = selectedChip?.track === "funcao" ? selectedChip.index + 1 : funcao.length;
+      const next = [...funcao];
+      next.splice(insertAt, 0, cmd);
+      setFuncao(next);
+      setSelectedChip({ track: "funcao", index: insertAt });
     }
-    setResultado(null);
+    invalidateExecution();
   };
 
   const removeCmd = (track: OrbiTrack, index: number) => {
     if (running) return;
     if (track === "principal") setPrincipal((current) => current.filter((_, i) => i !== index));
     else setFuncao((current) => current.filter((_, i) => i !== index));
-    setResultado(null);
+    setSelectedChip(null);
+    invalidateExecution();
+  };
+
+  const moveCmd = (track: OrbiTrack, index: number, direction: -1 | 1) => {
+    if (running) return;
+    const commands = track === "principal" ? principal : funcao;
+    const target = index + direction;
+    if (target < 0 || target >= commands.length) return;
+    const next = [...commands];
+    [next[index], next[target]] = [next[target], next[index]];
+    if (track === "principal") setPrincipal(next);
+    else setFuncao(next);
+    setSelectedChip({ track, index: target });
+    invalidateExecution();
   };
 
   const limpar = () => {
     if (running || !nivel) return;
     setPrincipal([]);
     setFuncao([]);
-    setResultado(null);
-    resetView(nivel);
+    setSelectedChip(null);
+    invalidateExecution();
   };
 
   const desfazer = () => {
     if (running) return;
     if (activeTrack === "principal") setPrincipal((current) => current.slice(0, -1));
     else setFuncao((current) => current.slice(0, -1));
-    setResultado(null);
+    setSelectedChip(null);
+    invalidateExecution();
   };
 
   const aplicarFrame = (frame: OrbiFrame) => {
@@ -193,11 +239,33 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
     );
   };
 
+  const finalizarTentativa = (fim: OrbiResultado, tentativa: number) => {
+    if (!nivel) return;
+    setRunning(false);
+    setActiveChip(null);
+    setResultado(fim);
+    if (fim === "portal") {
+      const usados = principal.length + funcao.length;
+      const novas = calcularEstrelas(nivel, usados);
+      setEstrelas(novas);
+      const anterior = lerProgressoNivel(userId, nivel.slug);
+      salvarProgressoNivel(userId, nivel.slug, {
+        concluido: true,
+        estrelas: Math.max(anterior.estrelas, novas) as 0 | 1 | 2 | 3,
+        tentativas: anterior.concluido ? anterior.tentativas : tentativa,
+      });
+    }
+  };
+
   const executar = () => {
     if (!nivel || running || principal.length === 0) return;
     clearTimeouts();
     setResultado(null);
     setShowDica(false);
+    setSelectedChip(null);
+    setManualFrames([]);
+    setManualCursor(0);
+    setManualAttempt(0);
     resetView(nivel);
     setRunning(true);
     const proximaTentativa = tentativas + 1;
@@ -205,24 +273,39 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
 
     const { frames, resultado: fim } = executarPrograma(nivel, principal, funcao);
     frames.forEach((frame, index) => {
-      schedule((index + 1) * STEP_MS, () => aplicarFrame(frame));
+      schedule((index + 1) * stepMs, () => aplicarFrame(frame));
     });
-    schedule((frames.length + 1) * STEP_MS, () => {
-      setRunning(false);
-      setActiveChip(null);
-      setResultado(fim);
-      if (fim === "portal") {
-        const usados = principal.length + funcao.length;
-        const novas = calcularEstrelas(nivel, usados);
-        setEstrelas(novas);
-        const anterior = lerProgressoNivel(userId, nivel.slug);
-        salvarProgressoNivel(userId, nivel.slug, {
-          concluido: true,
-          estrelas: Math.max(anterior.estrelas, novas) as 0 | 1 | 2 | 3,
-          tentativas: anterior.concluido ? anterior.tentativas : proximaTentativa,
-        });
-      }
-    });
+    schedule((frames.length + 1) * stepMs, () => finalizarTentativa(fim, proximaTentativa));
+  };
+
+  const executarPasso = () => {
+    if (!nivel || running || principal.length === 0) return;
+    let frames = manualFrames;
+    let cursor = manualCursor;
+    let tentativa = manualAttempt;
+    if (frames.length === 0 || cursor >= frames.length) {
+      const simulation = executarPrograma(nivel, principal, funcao);
+      frames = simulation.frames.filter((frame) => frame.evento !== "inicio");
+      cursor = 0;
+      tentativa = tentativas + 1;
+      setTentativas(tentativa);
+      setManualFrames(frames);
+      setManualAttempt(tentativa);
+      setResultado(null);
+      setShowDica(false);
+      setShowRoute(true);
+      setSelectedChip(null);
+      resetView(nivel);
+    }
+    const frame = frames[cursor];
+    if (!frame) return;
+    aplicarFrame(frame);
+    const nextCursor = cursor + 1;
+    setManualCursor(nextCursor);
+    if (nextCursor >= frames.length) {
+      const fim = executarPrograma(nivel, principal, funcao).resultado;
+      finalizarTentativa(fim, tentativa);
+    }
   };
 
   if (!nivel) {
@@ -252,7 +335,8 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
     : null;
 
   const simulation = principal.length > 0 ? executarPrograma(nivel, principal, funcao) : null;
-  const routeFrames = simulation?.frames.filter((frame) => frame.evento === "passo" || frame.evento === "portal").slice(0, 18) ?? [];
+  const routeFrames = simulation?.frames.filter((frame) => frame.evento === "passo" || frame.evento === "portal" || frame.evento === "crash").slice(0, 18) ?? [];
+  const traceFrames = simulation?.frames.filter((frame) => frame.evento !== "inicio").slice(0, 24) ?? [];
   const lastSimulationFrame = simulation?.frames.at(-1);
   const failureCopy = resultado === "crash"
     ? `A rota quebrou no comando ${(lastSimulationFrame?.index ?? 0) + 1} da ${lastSimulationFrame?.track === "funcao" ? "Função F" : "trilha principal"}. Volte um passo e confira para onde o Orbi estava olhando.`
@@ -303,17 +387,20 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
             <button
               key={index}
               type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                removeCmd(track, index);
+              onClick={() => {
+                setActiveTrack(track);
+                setSelectedChip((current) => current?.track === track && current.index === index ? null : { track, index });
               }}
-              aria-label={`Remover ${CMD_META[cmd].label}`}
+              aria-label={`Selecionar ${CMD_META[cmd].label}, posição ${index + 1}`}
+              aria-pressed={selectedChip?.track === track && selectedChip.index === index}
               className={`grid size-10 place-items-center rounded-xl border transition touch-manipulation ${
                 isActive
                   ? "scale-110 border-amber-300 bg-amber-300/20 text-amber-200 shadow-[0_0_18px_rgba(252,211,77,.35)]"
+                  : selectedChip?.track === track && selectedChip.index === index
+                    ? "border-orbit-electric bg-orbit-electric/15 text-orbit-electric ring-2 ring-orbit-electric/20"
                   : cmd === "funcao"
-                    ? "border-orbit-purple/40 bg-orbit-purple/15 text-orbit-purple hover:border-red-400/50"
-                    : "border-white/15 bg-white/[0.06] text-white/80 hover:border-red-400/50"
+                    ? "border-orbit-purple/40 bg-orbit-purple/15 text-orbit-purple hover:border-orbit-electric/50"
+                    : "border-white/15 bg-white/[0.06] text-white/80 hover:border-orbit-electric/50"
               }`}
             >
               <CmdIcon cmd={cmd} className="size-4" />
@@ -418,7 +505,7 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
               className={`absolute z-[5] grid size-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border text-[8px] font-black shadow-[0_0_14px_rgba(0,212,255,.35)] ${frame.evento === "portal" ? "border-emerald-300 bg-emerald-300 text-black" : "border-orbit-electric/70 bg-[#06141b]/90 text-orbit-electric"}`}
               style={{ left: cellCenter(frame.x, nivel.cols), top: cellCenter(frame.y, nivel.rows) }}
             >
-              {index + 1}
+              {rotuloFrameOrbi(frame)}
             </span>
           ))}
 
@@ -481,7 +568,7 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
                 left: cellCenter(view.x, nivel.cols),
                 top: cellCenter(view.y, nivel.rows),
                 transform: `translate(-50%, -50%) rotate(${view.rot}deg)`,
-                transition: `left ${STEP_MS - 60}ms ease-in-out, top ${STEP_MS - 60}ms ease-in-out, transform ${STEP_MS - 60}ms ease-in-out`,
+                transition: `left ${Math.max(stepMs - 60, 120)}ms ease-in-out, top ${Math.max(stepMs - 60, 120)}ms ease-in-out, transform ${Math.max(stepMs - 60, 120)}ms ease-in-out`,
                 filter: view.arrived
                   ? "drop-shadow(0 0 22px rgba(0,212,255,.9))"
                   : "drop-shadow(0 0 10px rgba(0,212,255,.35))",
@@ -554,6 +641,28 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
         </div>
       </div>
 
+      {showRoute && traceFrames.length > 0 && (
+        <div className="mx-auto mt-3 w-full max-w-[540px] rounded-2xl border border-orbit-electric/15 bg-orbit-electric/[.045] p-3">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[10px] font-black uppercase tracking-[.16em] text-orbit-electric">Rastro de execução</p>
+            <span className="text-[9px] text-white/30">P = principal · F = função</span>
+          </div>
+          <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1">
+            {traceFrames.map((frame, index) => {
+              const cmd = comandoDoFrameOrbi(frame, principal, funcao);
+              const current = activeChip?.track === frame.track && activeChip.index === frame.index;
+              return (
+                <span key={`${frame.track}-${frame.index}-${index}`} className={`flex shrink-0 items-center gap-1 rounded-lg border px-2 py-1.5 text-[9px] ${current ? "border-amber-300/60 bg-amber-300/10 text-amber-200" : "border-white/10 bg-black/25 text-white/50"}`}>
+                  <b className="text-white/80">{index + 1}</b>
+                  <span>{rotuloFrameOrbi(frame)}</span>
+                  <span className="text-white/30">{cmd ? CMD_META[cmd].label : frame.evento}</span>
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Mensagens de falha */}
       {resultado && resultado !== "portal" && (
         <div className="mt-3 rounded-2xl border border-amber-300/25 bg-amber-300/[.07] p-4" role="status" aria-live="polite">
@@ -584,13 +693,45 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
       <div className="mt-4 space-y-3">
         {renderTrack("principal", principal, nivel.slotsPrincipal)}
         {nivel.slotsFuncao ? renderTrack("funcao", funcao, nivel.slotsFuncao) : null}
+        {selectedChip && (() => {
+          const commands = selectedChip.track === "principal" ? principal : funcao;
+          const selectedCommand = commands[selectedChip.index];
+          if (!selectedCommand) return null;
+          return (
+            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-orbit-electric/20 bg-orbit-electric/[.05] p-2">
+              <span className="mr-auto text-[10px] text-white/55">
+                {selectedChip.track === "principal" ? "Principal" : "Função F"} {selectedChip.index + 1}: <b className="text-white">{CMD_META[selectedCommand].label}</b>
+              </span>
+              <button type="button" onClick={() => moveCmd(selectedChip.track, selectedChip.index, -1)} disabled={selectedChip.index === 0} aria-label="Mover comando para a esquerda" className="grid size-9 place-items-center rounded-lg border border-white/10 text-white/60 hover:bg-white/[.07] disabled:opacity-25">
+                <ChevronLeft className="size-4" />
+              </button>
+              <button type="button" onClick={() => moveCmd(selectedChip.track, selectedChip.index, 1)} disabled={selectedChip.index === commands.length - 1} aria-label="Mover comando para a direita" className="grid size-9 place-items-center rounded-lg border border-white/10 text-white/60 hover:bg-white/[.07] disabled:opacity-25">
+                <ChevronRight className="size-4" />
+              </button>
+              <button type="button" onClick={() => removeCmd(selectedChip.track, selectedChip.index)} className="min-h-9 rounded-lg border border-red-400/20 bg-red-400/[.06] px-3 text-[10px] font-bold text-red-200 hover:bg-red-400/10">
+                Remover
+              </button>
+            </div>
+          );
+        })()}
         {nivel.slotsFuncao ? (
           <p className="text-[10px] leading-4 text-white/30">
-            Toque em uma trilha para escolher onde os próximos comandos entram. Toque em um comando para removê-lo.
+            Selecione um bloco para mover, remover ou inserir o próximo comando logo depois dele.
           </p>
         ) : (
-          <p className="text-[10px] leading-4 text-white/30">Toque em um comando posicionado para removê-lo.</p>
+          <p className="text-[10px] leading-4 text-white/30">Selecione um bloco para mover, remover ou inserir o próximo comando logo depois dele.</p>
         )}
+      </div>
+
+      <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-white/35">Velocidade do voo</span>
+        <div className="flex gap-1" role="group" aria-label="Velocidade da animação">
+          {([{ label: "Lenta", value: 650 }, { label: "Normal", value: 420 }, { label: "Rápida", value: 220 }] as const).map((speed) => (
+            <button key={speed.value} type="button" onClick={() => setStepMs(speed.value)} aria-pressed={stepMs === speed.value} className={`min-h-8 rounded-lg px-2.5 text-[9px] font-bold transition ${stepMs === speed.value ? "bg-orbit-electric/15 text-orbit-electric" : "text-white/35 hover:bg-white/[.06] hover:text-white/60"}`}>
+              {speed.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2">
@@ -641,6 +782,15 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
         >
           <Play className="size-4" />
           {running ? "Orbi em voo..." : "Executar programa"}
+        </button>
+        <button
+          type="button"
+          onClick={executarPasso}
+          disabled={running || principal.length === 0}
+          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-orbit-electric/30 bg-orbit-electric/[.07] px-4 text-sm font-bold text-orbit-electric transition hover:bg-orbit-electric/[.12] disabled:opacity-40"
+        >
+          <ChevronRight className="size-4" />
+          {manualFrames.length > 0 && manualCursor < manualFrames.length ? `Próximo passo ${manualCursor + 1}/${manualFrames.length}` : "Passo a passo"}
         </button>
         <button
           type="button"

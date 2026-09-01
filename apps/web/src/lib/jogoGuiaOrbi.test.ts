@@ -1,11 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   calcularEstrelas,
+  comandoDoFrameOrbi,
   executarPrograma,
   getNivelGuiaOrbi,
   getProximoNivel,
   lerProgressoNivel,
   niveisGuiaOrbi,
+  rotuloFrameOrbi,
   salvarProgressoNivel,
   type NivelGuiaOrbi,
 } from "./jogoGuiaOrbi";
@@ -60,6 +62,21 @@ describe("Guia Orbi execution", () => {
     );
     expect(result.resultado).toBe("portal");
     expect(result.frames.at(-1)?.track).toBe("funcao");
+  });
+
+  it("labels trace frames by their real program address", () => {
+    const result = executarPrograma(
+      { ...nivelBase, portal: { x: 3, y: 2 } },
+      ["avancar", "direita", "avancar"],
+      []
+    );
+    const commandFrames = result.frames.filter((frame) => frame.track);
+    expect(commandFrames.map(rotuloFrameOrbi)).toEqual(["P1", "P2", "P3"]);
+    expect(commandFrames.map((frame) => comandoDoFrameOrbi(frame, ["avancar", "direita", "avancar"], []))).toEqual([
+      "avancar",
+      "direita",
+      "avancar",
+    ]);
   });
 
   it("stops recursive programs at the safety limit", () => {

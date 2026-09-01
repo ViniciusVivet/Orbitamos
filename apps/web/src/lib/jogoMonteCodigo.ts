@@ -23,6 +23,36 @@ export type FaseMonteCodigo = {
   explicacao: string;
 };
 
+export function criarOpcoesSaida(fase: Pick<FaseMonteCodigo, "saidaEsperada" | "linguagem">): string[] {
+  const expected = fase.saidaEsperada;
+  const lines = expected.split("\n");
+  const reversed = lines.length > 1 ? [...lines].reverse().join("\n") : `${expected}!`;
+  const numeric = Number(expected.replace(",", "."));
+  const plausibleNumber = Number.isFinite(numeric) ? String(numeric === 0 ? 1 : numeric - 1) : null;
+  const languageMistake = fase.linguagem === "python" ? "None" : "undefined";
+  const runtimeMistake = fase.linguagem === "python" ? "NameError" : "Erro de execução";
+  const alternatives = [expected, reversed, plausibleNumber, languageMistake, runtimeMistake].filter((value): value is string => Boolean(value));
+  return Array.from(new Set(alternatives))
+    .slice(0, 3)
+    .sort((a, b) => (a.length * 7 + a.charCodeAt(0)) % 11 - (b.length * 7 + b.charCodeAt(0)) % 11);
+}
+
+/** Explicação curta para o aluno percorrer o código sem revelar a resposta final. */
+export function explicarLinhaMonteCodigo(linha: string, linguagem: FaseMonteCodigo["linguagem"]): string {
+  const trimmed = linha.trim();
+  if (/^(const|let|var)\s+\w+\s*=/.test(trimmed) || (linguagem === "python" && /^\w+\s*=/.test(trimmed))) {
+    return "Cria ou atualiza uma variável. Guarde mentalmente o valor que ficou nela.";
+  }
+  if (/^(if|else if|elif)\b/.test(trimmed)) return "Testa uma condição. Siga apenas o caminho em que o teste é verdadeiro.";
+  if (/^else\b/.test(trimmed)) return "Este é o caminho alternativo, usado quando a condição anterior é falsa.";
+  if (/^(for|while)\b/.test(trimmed)) return "Inicia uma repetição. Acompanhe quantas voltas acontecem e o que muda em cada uma.";
+  if (/^(function|def)\b/.test(trimmed)) return "Define uma função. O corpo fica guardado até essa função ser chamada.";
+  if (/^return\b/.test(trimmed)) return "Encerra a função e devolve este valor para quem fez a chamada.";
+  if (/console\.log\s*\(|print\s*\(/.test(trimmed)) return "Envia o valor calculado para o console. Compare com a sua previsão.";
+  if (/\.(push|append)\s*\(/.test(trimmed)) return "Adiciona um item à coleção e altera o tamanho dela.";
+  return "Execute esta instrução mentalmente e observe quais valores ou estruturas ela altera.";
+}
+
 export const fasesMonteCodigo: FaseMonteCodigo[] = [
   {
     slug: "ola-orbi-js",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { Play, Square, RotateCcw, ChevronRight, Lightbulb, CheckCircle2, XCircle, ArrowLeft, Code2, MessageSquare, Eye, EyeOff, Copy, Check, BookOpen, Trash2, Maximize2, Minimize2 } from "lucide-react";
 import Link from "next/link";
 import { getDesafio, getNextDesafio, type DesafioStep } from "@/lib/desafios";
@@ -10,6 +10,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import ReliableCodeEditor, { type ReliableCodeEditorHandle } from "@/components/estudante/ReliableCodeEditor";
 
 type MobileTab = "editor" | "guia";
+type ChatMessage = { tipo: "sistema" | "sucesso" | "erro" | "dica"; texto: string };
+
+function appendPedagogicalMessage(previous: ChatMessage[], message: ChatMessage): ChatMessage[] {
+  const withoutStaleErrors = message.tipo === "erro" || message.tipo === "sucesso"
+    ? previous.filter((item) => item.tipo !== "erro")
+    : previous;
+  const last = withoutStaleErrors.at(-1);
+  if (last?.tipo === message.tipo && last.texto === message.texto) return withoutStaleErrors;
+  return [...withoutStaleErrors, message].slice(-8);
+}
 
 function explainRuntimeError(error: string, timedOut: boolean, language: "javascript" | "typescript" | "python" | "csharp") {
   if (timedOut) return "A execução excedeu o limite de tempo. Procure um laço sem condição de saída ou uma tarefa que nunca termina.";
@@ -70,6 +80,14 @@ function getStepReferenceCode(step: DesafioStep | undefined): string | null {
   return match ? match[1] : null;
 }
 
+function getConceptualHint(step: DesafioStep | undefined): string {
+  if (!step) return "Volte à missão e identifique qual valor precisa existir antes da próxima instrução.";
+  if (/^Tente:\s*/i.test(step.dica)) {
+    return "Quebre a missão em uma ação por linha: primeiro crie o valor necessário, depois use ou mostre esse valor. Escreva uma versão sua antes de revelar a referência.";
+  }
+  return step.dica;
+}
+
 const REFERENCE_PREF_KEY = "orbitamos-pratica-mostrar-referencia";
 
 type ConsoleRun = {
@@ -96,7 +114,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
   const [referenceCopied, setReferenceCopied] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [stepStatus, setStepStatus] = useState<("pending" | "success" | "error")[]>([]);
-  const [chatMessages, setChatMessages] = useState<{ tipo: "sistema" | "sucesso" | "erro" | "dica"; texto: string }[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [showDica, setShowDica] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [completed, setCompleted] = useState(false);
@@ -107,6 +125,9 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
   const [consoleExpanded, setConsoleExpanded] = useState(false);
   const [stepAttempts, setStepAttempts] = useState<number[]>([]);
   const [reflection, setReflection] = useState("");
+  const [pythonRuntimeStatus, setPythonRuntimeStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [guideWidth, setGuideWidth] = useState(320);
+  const [consoleHeight, setConsoleHeight] = useState(156);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<ReliableCodeEditorHandle>(null);
   const activeRunRef = useRef<AbortController | null>(null);
@@ -248,7 +269,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
     });
 
     if (result.cancelled) {
-      setChatMessages((previous) => [...previous, { tipo: "sistema", texto: "Execução interrompida. Seu código continua salvo para você ajustar e tentar novamente." }]);
+      setChatMessages((previous) => appendPedagogicalMessage(previous, { tipo: "sistema", texto: "Execução interrompida. Seu código continua salvo para você ajustar e tentar novamente." }));
       return;
     }
 
@@ -259,7 +280,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
       newStatus[currentStep] = "error";
       setStepStatus(newStatus);
       const lineNote = errorLine ? ` O editor marcou a linha ${errorLine} em vermelho.` : "";
-      setChatMessages((previous) => [...previous, { tipo: "erro", texto: `${friendlyError}${lineNote}` }]);
+      setChatMessages((previous) => appendPedagogicalMessage(previous, { tipo: "erro", texto: `${friendlyError}${lineNote}` }));
       if (attemptNumber >= 2) setShowDica(true);
       return;
     }
@@ -271,25 +292,25 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
         setConsoleRun((previous) => previous ? { ...previous, outcome: "success" } : previous);
         newStatus[currentStep] = "success";
         setStepStatus(newStatus);
-        setChatMessages((prev) => [...prev, { tipo: "sucesso", texto: step.acerto }]);
+        setChatMessages((prev) => appendPedagogicalMessage(prev, { tipo: "sucesso", texto: step.acerto }));
         setShowReference(false);
         setShowDica(false);
         if (currentStep + 1 < desafio.steps.length) {
           const nextStep = currentStep + 1;
           setCurrentStep(nextStep);
           setTimeout(() => {
-            setChatMessages((prev) => [...prev, { tipo: "sistema", texto: desafio.steps[nextStep].instrucao }]);
+            setChatMessages((prev) => appendPedagogicalMessage(prev, { tipo: "sistema", texto: desafio.steps[nextStep].instrucao }));
           }, 1000);
         } else {
           setCompleted(true);
           setTimeout(() => {
-            setChatMessages((prev) => [...prev, { tipo: "sucesso", texto: "Parabéns! Você completou o desafio inteiro!" }]);
+            setChatMessages((prev) => appendPedagogicalMessage(prev, { tipo: "sucesso", texto: "Parabéns! Você completou o desafio inteiro!" }));
           }, 800);
         }
       } else {
         newStatus[currentStep] = "error";
         setStepStatus(newStatus);
-        setChatMessages((prev) => [...prev, { tipo: "erro", texto: step.erro }]);
+        setChatMessages((prev) => appendPedagogicalMessage(prev, { tipo: "erro", texto: step.erro }));
         if (attemptNumber >= 2) setShowDica(true);
       }
     }
@@ -311,7 +332,18 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
   }, []);
 
   useEffect(() => {
-    if (desafio?.linguagem === "python") warmPythonRuntime();
+    if (desafio?.linguagem !== "python") {
+      setPythonRuntimeStatus("idle");
+      return;
+    }
+    let active = true;
+    setPythonRuntimeStatus("loading");
+    void warmPythonRuntime().then((ready) => {
+      if (active) setPythonRuntimeStatus(ready ? "ready" : "error");
+    });
+    return () => {
+      active = false;
+    };
   }, [desafio?.linguagem]);
 
   useEffect(() => {
@@ -372,6 +404,42 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
       // ignore
     }
   }, [referenceCode]);
+
+  const startGuideResize = useCallback((event: ReactPointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    const startX = event.clientX;
+    const startWidth = guideWidth;
+    const previousUserSelect = document.body.style.userSelect;
+    document.body.style.userSelect = "none";
+    const move = (moveEvent: PointerEvent) => {
+      setGuideWidth(Math.min(440, Math.max(280, startWidth + startX - moveEvent.clientX)));
+    };
+    const stop = () => {
+      document.body.style.userSelect = previousUserSelect;
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", stop);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", stop, { once: true });
+  }, [guideWidth]);
+
+  const startConsoleResize = useCallback((event: ReactPointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    const startY = event.clientY;
+    const startHeight = consoleHeight;
+    const previousUserSelect = document.body.style.userSelect;
+    document.body.style.userSelect = "none";
+    const move = (moveEvent: PointerEvent) => {
+      setConsoleHeight(Math.min(320, Math.max(112, startHeight + startY - moveEvent.clientY)));
+    };
+    const stop = () => {
+      document.body.style.userSelect = previousUserSelect;
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", stop);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", stop, { once: true });
+  }, [consoleHeight]);
 
   if (!desafio) {
     return (
@@ -539,14 +607,17 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
             <div className="space-y-2">
               <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2.5 text-xs text-amber-300">
                 <Lightbulb className="inline size-3 mr-1" />
-                {desafio.steps[currentStep]?.dica}
+                {getConceptualHint(desafio.steps[currentStep])}
               </div>
-              {desafio.solucao && (
+              {desafio.solucao && (stepAttempts[currentStep] ?? 0) >= 3 && (
                 <button type="button" onClick={() => setShowSolution((value) => !value)} className="w-full text-center text-[10px] font-bold text-white/35 hover:text-white/60">
                   {showSolution ? "Ocultar solução de referência" : "Ainda estou travado — ver solução"}
                 </button>
               )}
-              {showSolution && desafio.solucao && (
+              {desafio.solucao && (stepAttempts[currentStep] ?? 0) < 3 && (
+                <p className="text-center text-[10px] leading-4 text-white/30">Faça mais uma tentativa com essa pista; a solução completa será liberada na terceira.</p>
+              )}
+              {showSolution && desafio.solucao && (stepAttempts[currentStep] ?? 0) >= 3 && (
                 <pre className="max-h-40 overflow-auto rounded-lg bg-black/40 p-3 text-[10px] leading-5 text-white/55 whitespace-pre-wrap">{desafio.solucao}</pre>
               )}
             </div>
@@ -599,6 +670,12 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
         <span className="hidden sm:inline rounded-full bg-orbit-electric/15 px-2 py-0.5 text-[10px] font-bold uppercase text-orbit-electric">
           {desafio.linguagem}
         </span>
+        {desafio.linguagem === "python" && (
+          <span className={`hidden lg:inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[9px] font-bold ${pythonRuntimeStatus === "ready" ? "bg-emerald-400/10 text-emerald-300" : pythonRuntimeStatus === "error" ? "bg-red-400/10 text-red-300" : "bg-amber-300/10 text-amber-200"}`}>
+            <span className={`size-1.5 rounded-full ${pythonRuntimeStatus === "ready" ? "bg-emerald-400" : pythonRuntimeStatus === "error" ? "bg-red-400" : "animate-pulse bg-amber-300"}`} />
+            {pythonRuntimeStatus === "ready" ? "Python pronto" : pythonRuntimeStatus === "error" ? "Python indisponível" : "Preparando Python"}
+          </span>
+        )}
 
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
           <button
@@ -613,12 +690,12 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
           {running ? (
             <button type="button" onClick={stopExecution} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-red-500/90 px-3 py-2 text-xs font-bold text-white transition hover:bg-red-400 touch-manipulation" aria-label="Interromper execução">
               <Square className="size-3.5 fill-current" />
-              <span className="hidden xs:inline">Parar</span>
+              <span className="hidden sm:inline">Parar</span>
             </button>
           ) : (
             <button type="button" onClick={executeCode} title="Executar (Ctrl/⌘ + Enter)" className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-emerald-500/90 px-3 py-2 text-xs font-bold text-black transition hover:bg-emerald-400 touch-manipulation">
               <Play className="size-3.5" />
-              <span className="hidden xs:inline">Executar</span>
+              <span className="hidden sm:inline">Executar</span>
             </button>
           )}
         </div>
@@ -662,7 +739,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Editor + Console — full width mobile, 80% desktop */}
-        <div id="practice-editor-panel" role="tabpanel" aria-labelledby="practice-code-tab" className={`min-w-0 flex-col overflow-hidden border-r border-white/10 ${mobileTab === "editor" ? "flex flex-1" : "hidden md:flex md:flex-1"}`}>
+        <div id="practice-editor-panel" role="tabpanel" aria-labelledby="practice-code-tab" className={`min-w-0 flex-col overflow-hidden ${mobileTab === "editor" ? "flex flex-1" : "hidden md:flex md:flex-1"}`}>
           {!completed && desafio.steps[currentStep] && (
             <div className="shrink-0 border-b border-orbit-electric/15 bg-orbit-electric/[.055] px-3 py-2.5 md:hidden">
               <div className="flex items-start gap-2">
@@ -689,7 +766,18 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
           </div>
 
           {/* Console output */}
-          <div className="relative z-10 border-t border-white/10 bg-[#0d1117]">
+          <div
+            className="relative z-10 border-t border-white/10 bg-[#0d1117] md:h-[var(--console-height)] md:shrink-0"
+            style={{ "--console-height": `${consoleHeight}px` } as CSSProperties}
+          >
+            <button
+              type="button"
+              onPointerDown={startConsoleResize}
+              onDoubleClick={() => setConsoleHeight(156)}
+              aria-label="Redimensionar console"
+              title="Arraste para redimensionar · duplo clique para restaurar"
+              className="absolute -top-1 left-1/2 z-20 hidden h-2 w-16 -translate-x-1/2 cursor-row-resize rounded-full bg-white/0 transition hover:bg-orbit-electric/40 md:block"
+            />
             <div className="flex items-center gap-2 border-b border-white/5 px-3 py-1.5">
               <span className="text-[10px] font-bold uppercase tracking-wider text-white/60">Console</span>
               {running && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orbit-electric" />}
@@ -721,7 +809,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
                 </span>
               )}
             </div>
-            <div role="status" aria-live="polite" className={`${consoleExpanded ? "h-64" : "h-28"} min-w-0 overflow-y-auto overflow-x-hidden px-3 py-2 font-mono text-xs transition-[height] sm:h-32`}>
+            <div role="status" aria-live="polite" className={`${consoleExpanded ? "h-64" : "h-28"} min-w-0 overflow-y-auto overflow-x-hidden px-3 py-2 font-mono text-xs transition-[height] sm:h-32 md:h-[calc(100%_-_32px)]`}>
               {running && (
                 <div className="flex items-center gap-2 font-sans text-orbit-electric/80">
                   <span className="size-3 animate-spin rounded-full border border-orbit-electric/30 border-t-orbit-electric" />
@@ -776,8 +864,25 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
           </div>
         </div>
 
+        <button
+          type="button"
+          onPointerDown={startGuideResize}
+          onDoubleClick={() => setGuideWidth(320)}
+          aria-label="Redimensionar painel do guia"
+          title="Arraste para redimensionar · duplo clique para restaurar"
+          className="group relative hidden w-1 shrink-0 cursor-col-resize border-x border-white/[.04] bg-white/[.025] transition hover:bg-orbit-electric/20 md:block"
+        >
+          <span className="absolute left-1/2 top-1/2 h-10 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/15 transition group-hover:bg-orbit-electric" />
+        </button>
+
         {/* Guide panel — full width mobile, sidebar desktop */}
-        <div id="practice-guide-panel" role="tabpanel" aria-labelledby="practice-guide-tab" className={`flex flex-col bg-[#0d1117] ${mobileTab === "guia" ? "flex-1" : "hidden md:flex md:w-72 md:min-w-[260px] md:max-w-[320px]"}`}>
+        <div
+          id="practice-guide-panel"
+          role="tabpanel"
+          aria-labelledby="practice-guide-tab"
+          style={{ "--guide-width": `${guideWidth}px` } as CSSProperties}
+          className={`flex flex-col bg-[#0d1117] ${mobileTab === "guia" ? "flex-1" : "hidden md:flex md:w-[var(--guide-width)] md:min-w-[280px] md:max-w-[440px] md:flex-none"}`}
+        >
           {guiaContent}
         </div>
       </div>

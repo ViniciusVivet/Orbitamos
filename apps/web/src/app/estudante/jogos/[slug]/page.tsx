@@ -22,6 +22,8 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import {
   fasesMonteCodigo,
+  criarOpcoesSaida,
+  explicarLinhaMonteCodigo,
   getFaseMonteCodigo,
   getProximaFase,
   lerProgressoFase,
@@ -41,15 +43,6 @@ function shuffle(ids: number[]): number[] {
   return result;
 }
 
-function outputOptions(expected: string): string[] {
-  const lines = expected.split("\n");
-  const reversed = lines.length > 1 ? [...lines].reverse().join("\n") : `${expected}!`;
-  const alternatives = [expected, reversed, expected === "10" || expected === "3" ? "5" : "undefined", "Erro de execução"];
-  return Array.from(new Set(alternatives))
-    .slice(0, 3)
-    .sort((a, b) => (a.length * 7 + a.charCodeAt(0)) % 11 - (b.length * 7 + b.charCodeAt(0)) % 11);
-}
-
 export function MonteCodigoWorkspace({ previewUserId }: { previewUserId?: string }) {
   const params = useParams();
   const slug = params.slug as string;
@@ -67,6 +60,7 @@ export function MonteCodigoWorkspace({ previewUserId }: { previewUserId?: string
   const [assembled, setAssembled] = useState(false);
   const [selectedOutput, setSelectedOutput] = useState<string | null>(null);
   const [predictionWrong, setPredictionWrong] = useState(false);
+  const [traceIndex, setTraceIndex] = useState(0);
 
   const resetBoard = useCallback(() => {
     if (!fase) return;
@@ -78,6 +72,7 @@ export function MonteCodigoWorkspace({ previewUserId }: { previewUserId?: string
     setAssembled(false);
     setSelectedOutput(null);
     setPredictionWrong(false);
+    setTraceIndex(0);
   }, [fase]);
 
   useEffect(() => {
@@ -123,6 +118,7 @@ export function MonteCodigoWorkspace({ previewUserId }: { previewUserId?: string
     const acertou = placed.every((id, index) => id === index);
     if (acertou) {
       setAssembled(true);
+      setTraceIndex(0);
       setChecked(false);
     } else {
       setChecked(true);
@@ -262,15 +258,38 @@ export function MonteCodigoWorkspace({ previewUserId }: { previewUserId?: string
 
           <div className="mt-5 rounded-2xl border border-white/10 bg-black/35 p-3 sm:p-4">
             {fase.linhas.map((linha, index) => (
-              <pre key={index} className="overflow-x-auto whitespace-pre font-mono text-xs leading-7 text-slate-100">
-                <span className="mr-3 inline-block w-4 text-right text-white/25">{index + 1}</span>
-                {linha}
-              </pre>
+              <button
+                key={index}
+                type="button"
+                onClick={() => setTraceIndex(index)}
+                aria-pressed={traceIndex === index}
+                className={`block w-full overflow-x-auto rounded-lg px-2 text-left transition ${traceIndex === index ? "bg-orbit-electric/10 ring-1 ring-orbit-electric/30" : "hover:bg-white/[.04]"}`}
+              >
+                <pre className={`whitespace-pre font-mono text-xs leading-7 ${traceIndex === index ? "text-orbit-electric" : "text-slate-100"}`}>
+                  <span className="mr-3 inline-block w-4 text-right text-white/25">{index + 1}</span>
+                  {linha}
+                </pre>
+              </button>
             ))}
           </div>
 
+          <div className="mt-3 rounded-2xl border border-orbit-purple/20 bg-orbit-purple/[.06] p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[10px] font-black uppercase tracking-[.16em] text-orbit-purple">Rastro mental · linha {traceIndex + 1}/{fase.linhas.length}</p>
+              <button
+                type="button"
+                onClick={() => setTraceIndex((current) => Math.min(current + 1, fase.linhas.length - 1))}
+                disabled={traceIndex === fase.linhas.length - 1}
+                className="inline-flex min-h-9 items-center gap-1 rounded-lg bg-orbit-purple/15 px-3 text-[10px] font-bold text-orbit-purple transition hover:bg-orbit-purple/25 disabled:opacity-35"
+              >
+                Próxima linha <ArrowRight className="size-3" />
+              </button>
+            </div>
+            <p className="mt-2 text-xs leading-5 text-white/65">{explicarLinhaMonteCodigo(fase.linhas[traceIndex], fase.linguagem)}</p>
+          </div>
+
           <div className="mt-5 grid gap-2" role="group" aria-label="Opções de saída do programa">
-            {outputOptions(fase.saidaEsperada).map((option) => {
+            {criarOpcoesSaida(fase).map((option) => {
               const selected = selectedOutput === option;
               const wrong = selected && predictionWrong;
               return (
