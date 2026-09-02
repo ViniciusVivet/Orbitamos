@@ -6,7 +6,7 @@ Este documento define o que Douglas quer dizer quando pede uma experiência "ime
 
 Imersão é quando **a página deixa de parecer uma sequência de seções e passa a se comportar como uma cena contínua**. O scroll atua como direção e montagem: move a câmera, transforma o ambiente, revela informação e conduz a narrativa sem o usuário perceber blocos independentes sendo empilhados.
 
-O trabalho atual dos cases é uma boa fundação visual, mas ainda representa cerca de **4/10** desse objetivo. O elemento principal ganha movimento; a tela inteira ainda não participa de modo suficiente da transformação.
+O trabalho atual dos cases é uma fundação inicial, mas ainda representa apenas **2/10** desse objetivo. O elemento principal ganha movimento; a tela inteira ainda não participa de modo suficiente da transformação.
 
 ## O alvo 10/10
 
@@ -34,7 +34,7 @@ Uma execução de nível 10 deve combinar, quando fizer sentido:
 - Excesso de glow, blur, gradientes ou partículas para simular sofisticação.
 - Uma experiência bonita em desktop que vira lista comum ou quebra no celular.
 
-Esses recursos podem participar da solução, mas isoladamente representam no máximo a fundação — aproximadamente 4/10, não o resultado final.
+Esses recursos podem participar da solução, mas isoladamente representam apenas o começo — aproximadamente 2/10, não o resultado final.
 
 ## Tecnologias possíveis
 
