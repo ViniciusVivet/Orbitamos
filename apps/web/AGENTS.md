@@ -14,4 +14,4 @@ Quando o usuário pedir **imersão**, **efeito Apple**, **scroll imersivo** ou l
 
 O objetivo é a **página inteira se tornar uma cena contínua dirigida pelo scroll**: viewport, cenário, luz, cor, profundidade, escala, câmera, tipografia, mídia e narrativa devem evoluir juntos. O usuário considera o padrão anterior — um elemento central avançando enquanto o restante continua com aparência de site — aproximadamente **2/10**. Toda nova execução deve mirar **10/10** segundo os critérios em `../../docs/DIRECAO_IMERSIVA.md`.
 
-Antes de implementar uma experiência desse tipo, leia `../../docs/DIRECAO_IMERSIVA.md`. Use seus critérios como requisito de produto e checklist de validação visual em desktop e mobile.
+Antes de implementar uma experiência desse tipo, leia `../../docs/DIRECAO_IMERSIVA.md` e `../../docs/METODO_ORBITA_IMERSIVA.md`. Use seus critérios como requisito de produto e checklist de validação visual em desktop e mobile. Registre no segundo documento as decisões, pontuações e aprendizados relevantes de cada nova iteração.
