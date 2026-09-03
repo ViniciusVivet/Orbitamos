@@ -75,7 +75,12 @@ Tecnologia escolhida para o protótipo: GSAP ScrollTrigger para direção e sinc
 | --- | ---: | --- | --- |
 | Base anterior | 2/10 | Mockup com zoom/parallax e capítulos laterais | Fundação visual, ainda reconhecível como site animado |
 | 1 | 7/10 | Portal full-viewport, câmera contínua, ambiente reativo, shader e capítulos espaciais | A travessia funcionou, mas navegação/WhatsApp vazavam no pouso, o HUD ainda não acompanhava perfeitamente a narrativa e o texto de impacto mais longo encostava no progresso no mobile |
-| 2 | 10/10 | Saída controlada pelo limite real da cena, HUD sincronizado, reenquadramento mobile, correção do impacto e fundo com estrutura compatível com `next/image` | Os dez critérios da matriz foram demonstrados no navegador real; a experiência ocupa a viewport, preserva a continuidade e devolve a interface global somente depois do pouso |
+| 2 | 7,5/10 | Saída controlada pelo limite real da cena, HUD sincronizado, reenquadramento mobile, correção do impacto e fundo com estrutura compatível com `next/image` | A arquitetura de imersão passou a funcionar, mas uma auditoria mais exigente revelou pouso curto, área morta na saída, excesso de camadas, vídeo genérico e falta de uma rota explícita para pular a experiência |
+| 3 | 9/10 | Pouso persistente até a saída física, transição-cortina para a entrega, remoção do vídeo genérico, direção por categoria, botão de pular, narrativa acessível e orçamento de renderização | A jornada ficou mais clara, leve e contínua em nove cases e quatro viewports. O próximo ponto necessário para 10/10 é mídia ou composição de movimento específica para a identidade de cada projeto, não mais efeitos globais |
+
+### Correção de avaliação
+
+A nota 10/10 registrada na iteração 2 foi otimista demais. Ela confirmava a presença dos dez mecanismos, mas não avaliava com rigor suficiente a qualidade da direção de arte, a duração do pouso, o custo das camadas e a diferença entre os projetos. O Método Órbita separa, a partir da iteração 3, **cobertura técnica** de **excelência percebida**: implementar todos os mecanismos não garante nota máxima.
 
 ### Anatomia técnica validada
 
@@ -83,9 +88,11 @@ Tecnologia escolhida para o protótipo: GSAP ScrollTrigger para direção e sinc
 2. **Uma timeline soberana:** ScrollTrigger controla portal, câmera, ambiente, capítulos, HUD e interface global. Nenhuma camada possui uma narrativa concorrente.
 3. **Estado compartilhado com o shader:** o progresso normalizado é lido pelo canvas; zoom, foco, warp, aberração, luz, saturação, scanline e grão respondem ao mesmo scroll.
 4. **Profundidade híbrida:** shader para transformação contínua; CSS para perspectiva, máscaras, anéis, grid, luz, ruído e fatias 2.5D.
-5. **Interface global com entrada e saída semânticas:** menu e CTA desaparecem na travessia. O palco sobe de camada durante toda a experiência e só libera a interface no `onLeave`; ao voltar, `onEnterBack` restaura a imersão.
+5. **Interface global com entrada e saída semânticas:** o WhatsApp desaparece desde a abertura e o menu durante a travessia. Um gatilho dedicado ao limite físico da cena libera ambos somente depois que o palco sai da viewport; ao voltar, a imersão é restaurada.
 6. **Mobile dirigido, não encolhido:** enquadramento, duração do palco, posição dos capítulos, escala da câmera e densidade de pixels têm valores próprios.
-7. **Fallback honesto:** sem WebGL permanece a imagem estática; com movimento reduzido, a cena vira uma leitura vertical clara e dispensa canvas, cortes e animações.
+7. **Fallback honesto:** sem WebGL permanece a imagem estática; com movimento reduzido ou economia de dados, a cena dispensa o canvas. A narrativa textual existe separada das camadas animadas para leitores de tela.
+8. **Saída como cena, não como sobra:** o pouso permanece legível enquanto o palco inteiro sobe e revela a entrega seguinte. Isso elimina tela vazia e transforma o final em uma transição física.
+9. **Performance proporcional ao dispositivo:** DPR limitado, 30 fps no mobile, 40 fps no desktop e pausa fora da viewport. Vídeo genérico não participa da cena apenas para adicionar movimento.
 
 ### Roteiro de validação obrigatório
 
@@ -98,11 +105,12 @@ Tecnologia escolhida para o protótipo: GSAP ScrollTrigger para direção e sinc
 
 ### Evidência da primeira aplicação
 
-- Viewports verificadas: desktop `1280 × 720` e mobile `390 × 844`.
-- YUME validada no início e nos sete estados; Radar da Rima validado nos quatro capítulos, pouso e fronteira de saída.
-- Os nove cases foram percorridos no estado de impacto no mobile; todos ficaram dentro da viewport, sem overflow horizontal e com canvas pronto.
-- Radar da Rima, o texto mais longo, terminou acima do HUD após o reenquadramento.
-- Uma aba nova do Radar foi carregada sem erros ou avisos do navegador.
+- Viewports verificadas na iteração 3: `1440 × 900`, `1280 × 600`, `390 × 844` e `360 × 800`.
+- Os nove cases foram medidos no estado de impacto em `390 × 844`; todos terminaram 85 px antes do HUD e sem overflow horizontal.
+- Radar da Rima foi validado no cenário crítico de notebook baixo; o capítulo da solução terminou 199 px antes do HUD.
+- O pouso da YUME foi validado durante a saída física: permanece visível até a seção de entrega subir, sem reaparecimento antecipado do menu ou WhatsApp.
+- Em `360 × 800`, a categoria longa permanece em uma linha, o resumo cabe em quatro linhas, o CTA não colide e o WhatsApp continua oculto.
+- O botão “Pular experiência” foi validado até o primeiro pixel depois da cena, onde a navegação global volta a ficar disponível.
 
 ### Aprendizados para reutilização
 
@@ -111,7 +119,9 @@ Tecnologia escolhida para o protótipo: GSAP ScrollTrigger para direção e sinc
 - O frame de abertura precisa ser legível antes de ser espetacular; título, CTA e mockup funcionam como orientação para a travessia.
 - Texto longo deve ser validado como parte da direção de arte. Colisão com HUD é falha de composição, não detalhe de conteúdo.
 - Um canvas sofisticado não compensa uma narrativa espacial repetitiva. Cada capítulo deve mudar posição, ritmo, foco, luz e comportamento da imagem.
-- O `10/10` do método significa que todos os critérios observáveis passaram na tela real; não significa que a técnica deixa de evoluir.
+- Presença de vídeo não significa direção de arte. Uma mídia genérica pode reduzir a identidade do case e ainda aumentar download, composição e distração.
+- O estado inicial aplicado duas vezes — uma base comum e outra entrada da cena — pode somar transformações e deslocar texto no mobile. Cada transformação deve ter uma única fonte de verdade.
+- O `10/10` do método exige que os critérios observáveis passem e que a mídia, o ritmo e a composição sejam específicos para o projeto. Uma engine reutilizável pode chegar muito perto, mas não deve fingir singularidade apenas trocando cor e imagem.
 
 ## Regra de encerramento
 

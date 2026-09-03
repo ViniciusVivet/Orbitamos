@@ -73,10 +73,10 @@ const fragmentShader = /* glsl */ `
     float distanceToCenter = length(centered);
     vec2 direction = centered / max(distanceToCenter, 0.001);
     float radialWave = sin(distanceToCenter * 38.0 - p * 24.0 + uTime * 0.22);
-    uv += direction * radialWave * (0.002 + tension * 0.012);
-    uv.x += sin((uv.y + p) * 20.0) * tension * 0.006;
+    uv += direction * radialWave * (0.0016 + tension * 0.0065);
+    uv.x += sin((uv.y + p) * 20.0) * tension * 0.004;
 
-    float split = 0.0012 + tension * 0.009 + landing * 0.0015;
+    float split = 0.001 + tension * 0.0055 + landing * 0.001;
     vec2 chromaDirection = direction * split;
     float red = texture2D(uTexture, uv + chromaDirection).r;
     float green = texture2D(uTexture, uv).g;
@@ -85,7 +85,7 @@ const fragmentShader = /* glsl */ `
 
     float luminance = dot(color, vec3(0.299, 0.587, 0.114));
     color = mix(vec3(luminance), color, 0.78 + resolve * 0.32);
-    color = mix(color, color * uAccent * 1.65, 0.05 + tension * 0.11);
+    color = mix(color, color * uAccent * 1.65, 0.045 + tension * 0.075);
     color += uSecond * tension * pow(max(0.0, 1.0 - distanceToCenter * 1.7), 3.0) * 0.09;
 
     vec2 lightPosition = vec2(0.22 + p * 0.58, 0.18 + sin(p * 6.283) * 0.2);
@@ -96,11 +96,11 @@ const fragmentShader = /* glsl */ `
     color *= mix(0.965, 1.0, scan);
 
     float vignette = 1.0 - smoothstep(0.24, 0.92, distanceToCenter);
-    color *= mix(0.42, 1.0, vignette);
+    color *= mix(0.54, 1.0, vignette);
     color *= 0.72 + entry * 0.18 + resolve * 0.1;
 
     float grain = hash21(gl_FragCoord.xy + fract(uTime) * 731.0) - 0.5;
-    color += grain * 0.035;
+    color += grain * 0.022;
 
     vec3 fallback = mix(vec3(0.006, 0.009, 0.018), uAccent * 0.16, movingLight);
     color = mix(fallback, color, uTextureReady);
@@ -127,10 +127,17 @@ export default function ImmersiveSceneCanvas({
     const parent = canvas?.parentElement;
     if (!canvas || !parent) return;
 
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || connection?.saveData) {
+      canvas.dataset.unavailable = "true";
+      return;
+    }
+
     let renderer: THREE.WebGLRenderer | null = null;
     let frame = 0;
     let isVisible = true;
     let disposed = false;
+    let lastRenderTime = 0;
     let texture: THREE.Texture | null = null;
 
     const scene = new THREE.Scene();
@@ -161,10 +168,10 @@ export default function ImmersiveSceneCanvas({
         canvas,
         alpha: false,
         antialias: false,
-        powerPreference: "high-performance",
+        powerPreference: "default",
       });
       renderer.outputColorSpace = THREE.SRGBColorSpace;
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 700 ? 1.15 : 1.5));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 700 ? 1 : 1.35));
     } catch {
       canvas.dataset.unavailable = "true";
       return;
@@ -218,15 +225,20 @@ export default function ImmersiveSceneCanvas({
     visibilityObserver.observe(canvas);
 
     const clock = new THREE.Clock();
-    const render = () => {
+    const frameInterval = 1000 / (window.innerWidth < 700 ? 30 : 40);
+    const render = (time: number) => {
       if (disposed) return;
       frame = window.requestAnimationFrame(render);
       if (!renderer || !isVisible || document.hidden) return;
-      uniforms.uProgress.value += (progressRef.current - uniforms.uProgress.value) * 0.085;
+      const elapsed = time - lastRenderTime;
+      if (elapsed < frameInterval) return;
+      lastRenderTime = time;
+      const progressEase = 1 - Math.pow(0.915, Math.min(elapsed, 50) / 16.667);
+      uniforms.uProgress.value += (progressRef.current - uniforms.uProgress.value) * progressEase;
       uniforms.uTime.value = clock.getElapsedTime();
       renderer.render(scene, camera);
     };
-    render();
+    frame = window.requestAnimationFrame(render);
 
     return () => {
       disposed = true;

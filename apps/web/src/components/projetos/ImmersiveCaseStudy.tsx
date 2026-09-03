@@ -12,8 +12,8 @@ import {
   Check,
   ExternalLink,
   Github,
+  SkipForward,
 } from "lucide-react";
-import LazyVideo from "@/components/LazyVideo";
 import type { Projeto } from "@/types/projeto";
 import { CATEGORIAS, STATUS_LABELS } from "@/types/projeto";
 import ImmersiveSceneCanvas from "./ImmersiveSceneCanvas";
@@ -141,9 +141,9 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
 
         const chapterElements = Array.from(root.querySelectorAll<HTMLElement>("[data-scene-chapter]"));
         const sliceElements = Array.from(root.querySelectorAll<HTMLElement>("[data-depth-slice]"));
-        const setImmersiveDocumentState = (active: boolean) => {
-          if (active) {
-            document.documentElement.dataset.orbitaImmersive = "active";
+        const setImmersiveDocumentState = (state: "intro" | "active" | null) => {
+          if (state) {
+            document.documentElement.dataset.orbitaImmersive = state;
           } else {
             delete document.documentElement.dataset.orbitaImmersive;
           }
@@ -153,10 +153,11 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
         const backdrop = backdropRef.current;
         const isMobile = conditions.mobile;
 
+        setImmersiveDocumentState("intro");
+
         const animation = gsap.context(() => {
           gsap.set(chapterElements, {
             autoAlpha: 0,
-            yPercent: isMobile ? 24 : 30,
             filter: "blur(16px)",
             clipPath: "inset(0 0 100% 0)",
           });
@@ -169,26 +170,32 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
               : "inset(17% 4.5% 16% 47% round 26px)",
           });
 
+          const releaseTrigger = ScrollTrigger.create({
+            trigger: scene,
+            start: "top top",
+            end: "bottom top",
+            onLeave: () => setImmersiveDocumentState(null),
+            onEnterBack: () => setImmersiveDocumentState("active"),
+            onLeaveBack: () => setImmersiveDocumentState("intro"),
+          });
+
           const timeline = gsap.timeline({
             defaults: { ease: "none" },
             scrollTrigger: {
               trigger: scene,
               start: "top top",
               end: "bottom bottom",
-              scrub: isMobile ? 0.62 : 0.82,
+              scrub: isMobile ? 0.2 : 0.34,
               invalidateOnRefresh: true,
-              onLeave: () => {
-                setImmersiveDocumentState(false);
-              },
               onEnterBack: () => {
-                setImmersiveDocumentState(true);
+                setImmersiveDocumentState("active");
               },
               onLeaveBack: () => {
-                setImmersiveDocumentState(false);
+                setImmersiveDocumentState("intro");
               },
               onUpdate: (self) => {
                 sceneProgressRef.current = self.progress;
-                setImmersiveDocumentState(self.isActive && self.progress > 0.055);
+                setImmersiveDocumentState(self.progress > 0.055 ? "active" : "intro");
                 stage.style.setProperty("--scene-progress", String(self.progress));
                 if (progressBarRef.current) {
                   progressBarRef.current.style.transform = `scaleX(${self.progress})`;
@@ -215,7 +222,7 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
             .to(crossing, { autoAlpha: 0, scale: 1.32, filter: "blur(12px)", duration: 0.36 }, 1.05)
             .fromTo(
               chapterElements[0],
-              { autoAlpha: 0, yPercent: 30, filter: "blur(16px)", clipPath: "inset(0 0 100% 0)" },
+              { autoAlpha: 0, yPercent: isMobile ? 14 : 30, filter: "blur(16px)", clipPath: "inset(0 0 100% 0)" },
               { autoAlpha: 1, yPercent: 0, filter: "blur(0px)", clipPath: "inset(0 0 0% 0)", duration: 0.44 },
               1.18,
             )
@@ -224,16 +231,16 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
             .to(chapterElements[0], { autoAlpha: 0, yPercent: -24, filter: "blur(14px)", clipPath: "inset(100% 0 0 0)", duration: 0.34 }, 2.0)
             .fromTo(
               chapterElements[1],
-              { autoAlpha: 0, xPercent: isMobile ? 0 : 18, yPercent: 18, filter: "blur(18px)", clipPath: "inset(0 0 100% 0)" },
+              { autoAlpha: 0, xPercent: isMobile ? 0 : 18, yPercent: isMobile ? 10 : 18, filter: "blur(18px)", clipPath: "inset(0 0 100% 0)" },
               { autoAlpha: 1, xPercent: 0, yPercent: 0, filter: "blur(0px)", clipPath: "inset(0 0 0% 0)", duration: 0.44 },
               2.16,
             )
             .to(portal, { scale: isMobile ? 1.28 : 1.2, xPercent: isMobile ? 7 : 4, yPercent: isMobile ? 1 : 4, rotate: isMobile ? 0 : -0.8, duration: 1.0 }, 2.1)
-            .to(stage, { "--scene-veil": 0.55, "--grid-opacity": 0.5, "--scene-focus-x": "74%", "--scene-focus-y": "22%", duration: 0.95 }, 2.12)
-            .to(sliceElements, { autoAlpha: 0.42, stagger: 0.04, duration: 0.2 }, 2.32)
-            .to(sliceElements[0], { xPercent: -3.5, duration: 0.5 }, 2.36)
-            .to(sliceElements[1], { xPercent: 4.5, duration: 0.5 }, 2.36)
-            .to(sliceElements[2], { xPercent: -2, duration: 0.5 }, 2.36)
+            .to(stage, { "--scene-veil": 0.52, "--grid-opacity": 0.32, "--scene-focus-x": "74%", "--scene-focus-y": "22%", duration: 0.95 }, 2.12)
+            .to(sliceElements, { autoAlpha: 0.24, stagger: 0.04, duration: 0.2 }, 2.32)
+            .to(sliceElements[0], { xPercent: -2.2, duration: 0.5 }, 2.36)
+            .to(sliceElements[1], { xPercent: 2.8, duration: 0.5 }, 2.36)
+            .to(sliceElements[2], { xPercent: -1.4, duration: 0.5 }, 2.36)
             .to(chapterElements[1], { autoAlpha: 0, xPercent: -12, filter: "blur(16px)", clipPath: "inset(100% 0 0 0)", duration: 0.34 }, 3.03)
             .to(sliceElements, { xPercent: 0, autoAlpha: 0, duration: 0.36 }, 3.05)
             .fromTo(
@@ -247,28 +254,29 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
             .to(chapterElements[2], { autoAlpha: 0, scale: 1.13, filter: "blur(14px)", clipPath: "inset(50% 0 50% 0)", duration: 0.34 }, 4.12)
             .fromTo(
               chapterElements[3],
-              { autoAlpha: 0, yPercent: 22, scale: 0.9, filter: "blur(16px)", clipPath: "inset(0 0 100% 0)" },
+              { autoAlpha: 0, yPercent: isMobile ? 12 : 22, scale: 0.9, filter: "blur(16px)", clipPath: "inset(0 0 100% 0)" },
               { autoAlpha: 1, yPercent: 0, scale: 1, filter: "blur(0px)", clipPath: "inset(0 0 0% 0)", duration: 0.5 },
               4.32,
             )
             .to(portal, { scale: isMobile ? 0.98 : 0.94, xPercent: 0, yPercent: 0, opacity: 0.72, duration: 1.05 }, 4.26)
             .to(stage, { "--scene-veil": 0.68, "--grid-opacity": 0.08, "--orbit-opacity": 1, duration: 1.05 }, 4.26)
-            .to(chapterElements[3], { autoAlpha: 0, yPercent: -18, scale: 1.08, filter: "blur(14px)", duration: 0.36 }, 5.28)
-            .to(portal, { scale: 0.72, opacity: 0.28, filter: "blur(7px)", duration: 0.86 }, 5.3)
-            .to(stage, { "--scene-veil": 0.82, "--orbit-opacity": 0.26, duration: 0.8 }, 5.32)
+            .to(chapterElements[3], { autoAlpha: 0, yPercent: -16, scale: 1.06, filter: "blur(12px)", duration: 0.34 }, 5.12)
+            .to(portal, { scale: 0.76, opacity: 0.34, filter: "blur(4px)", duration: 0.62 }, 5.14)
+            .to(stage, { "--scene-veil": 0.8, "--orbit-opacity": 0.34, duration: 0.62 }, 5.16)
             .fromTo(
               "[data-landing]",
-              { autoAlpha: 0, yPercent: 30, scale: 0.82, filter: "blur(20px)" },
-              { autoAlpha: 1, yPercent: 0, scale: 1, filter: "blur(0px)", duration: 0.54 },
-              5.54,
+              { autoAlpha: 0, yPercent: 22, scale: 0.86, filter: "blur(16px)" },
+              { autoAlpha: 1, yPercent: 0, scale: 1, filter: "blur(0px)", duration: 0.46 },
+              5.22,
             )
-            .to("[data-landing]", { autoAlpha: 0, yPercent: -16, scale: 1.1, filter: "blur(12px)", duration: 0.38 }, 6.38)
-            .to(portal, { scale: 1.03, opacity: 0, filter: "blur(18px)", duration: 0.52 }, 6.42);
+            .to("[data-landing]", { autoAlpha: 1, duration: 1.2 }, 5.68);
+
+          return () => releaseTrigger.kill();
         }, root);
 
         return () => {
           sceneProgressRef.current = 0;
-          setImmersiveDocumentState(false);
+          setImmersiveDocumentState(null);
           animation.revert();
         };
       },
@@ -277,8 +285,23 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
     return () => media.revert();
   }, [projeto.slug]);
 
+  const skipExperience = () => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+    const sceneTop = scene.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({
+      top: sceneTop + scene.offsetHeight + 2,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    });
+  };
+
   return (
-    <div ref={rootRef} className={styles.experience} style={themeStyle}>
+    <div
+      ref={rootRef}
+      className={styles.experience}
+      style={themeStyle}
+      data-case-category={projeto.categoria}
+    >
       <section ref={sceneRef} className={styles.scene} aria-label={"Experiência do projeto " + projeto.nome}>
         <div ref={stageRef} className={styles.sceneStage}>
           <div className={styles.introBackdropWrap} aria-hidden="true">
@@ -306,19 +329,17 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
             <div className={styles.depthSlices}>
               {["top", "middle", "bottom"].map((slice) => (
                 <div key={slice} data-depth-slice className={styles.depthSlice} data-slice={slice}>
-                  <Image src={projeto.imagemPrincipal} alt="" fill className={styles.depthImage} sizes="100vw" />
+                  <Image
+                    src={projeto.imagemPrincipal}
+                    alt=""
+                    fill
+                    loading="eager"
+                    className={styles.depthImage}
+                    sizes="100vw"
+                  />
                 </div>
               ))}
             </div>
-            <LazyVideo
-              src="/hero-projetos.mp4"
-              mobileSrc="/hero-projetos-mobile.mp4"
-              autoPlay
-              loop
-              muted
-              playsInline
-              className={styles.portalVideo}
-            />
           </div>
 
           <div className={styles.sceneVeil} aria-hidden="true" />
@@ -385,7 +406,17 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
             <strong>Entre.</strong>
           </div>
 
-          <div className={styles.chapters}>
+          <div className={styles.srNarrative}>
+            <h2>História do projeto {projeto.nome}</h2>
+            {chapters.map((chapter) => (
+              <section key={"narrative-" + chapter.number}>
+                <h3>{chapter.label}: {chapter.title}</h3>
+                <p>{chapter.body}</p>
+              </section>
+            ))}
+          </div>
+
+          <div className={styles.chapters} aria-hidden="true">
             {chapters.map((chapter, index) => (
               <article
                 key={chapter.number}
@@ -401,11 +432,16 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
             ))}
           </div>
 
-          <div data-landing className={styles.landing}>
+          <div data-landing className={styles.landing} aria-hidden="true">
             <p>Do atrito ao produto</p>
             <strong>{projeto.nome}</strong>
             <span>Uma experiência Orbitamos em operação.</span>
           </div>
+
+          <button type="button" className={styles.skipExperience} onClick={skipExperience}>
+            Pular experiência
+            <SkipForward size={14} aria-hidden="true" />
+          </button>
 
           <div className={styles.sceneHud} aria-hidden="true">
             <div className={styles.sceneProgress}><span ref={progressBarRef} /></div>
