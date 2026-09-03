@@ -244,10 +244,8 @@ export const projetos: Projeto[] = [
       "Plataforma proprietária da Orbitamos com autenticação, área do estudante, comunidade, mentorias e produtos digitais.",
     tags: ["Plataforma web", "Auth", "Dashboard", "Comunidade"],
     status: "em-evolucao",
-    thumbnail:
-      "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800&q=80&auto=format&fit=crop",
-    imagemPrincipal:
-      "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?w=1400&q=80&auto=format&fit=crop",
+    thumbnail: "/portal-comunidade.webp",
+    imagemPrincipal: "/portal-comunidade.webp",
     contexto:
       "A Orbitamos precisava transformar o movimento em produto digital próprio, centralizando jornadas de estudo, mentorias e comunidade.",
     problema:

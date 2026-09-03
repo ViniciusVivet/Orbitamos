@@ -241,6 +241,229 @@
   border-style: dashed;
 }
 
+.caseMotif {
+  position: absolute;
+  z-index: 2;
+  inset: 8%;
+  opacity: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 0 28px rgb(var(--case-accent-rgb) / 0.12));
+  mix-blend-mode: screen;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.caseMotif i {
+  position: absolute;
+  display: block;
+  opacity: 0.56;
+}
+
+/* Moda autoral: fitas editoriais atravessam a composição como tecido em movimento. */
+.experience[data-case-slug="yume-moda-disruptiva"] .caseMotif {
+  inset: 4% -14%;
+}
+
+.experience[data-case-slug="yume-moda-disruptiva"] .caseMotif i {
+  left: -8%;
+  width: 72%;
+  height: clamp(2.5rem, 7vh, 5.5rem);
+  border: 1px solid rgb(var(--case-accent-rgb) / 0.2);
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgb(var(--case-accent-rgb) / 0.09), transparent 74%);
+  transform: rotate(-13deg);
+}
+
+.experience[data-case-slug="yume-moda-disruptiva"] .caseMotif i:nth-child(1) { top: 9%; left: -18%; }
+.experience[data-case-slug="yume-moda-disruptiva"] .caseMotif i:nth-child(2) { top: 31%; left: 3%; width: 82%; }
+.experience[data-case-slug="yume-moda-disruptiva"] .caseMotif i:nth-child(3) { top: 56%; left: 28%; width: 68%; }
+.experience[data-case-slug="yume-moda-disruptiva"] .caseMotif i:nth-child(4) { top: 79%; left: 50%; width: 54%; }
+.experience[data-case-slug="yume-moda-disruptiva"] .caseMotif i:nth-child(n + 5) { display: none; }
+
+/* Gravadora: um equalizador assimétrico cria pulso sem recorrer a vídeo genérico. */
+.experience[data-case-slug="sensimilla-records"] .caseMotif {
+  top: 12%;
+  right: 8%;
+  bottom: 16%;
+  left: 67%;
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(0.35rem, 0.8vw, 0.8rem);
+}
+
+.experience[data-case-slug="sensimilla-records"] .caseMotif i {
+  position: relative;
+  flex: 1;
+  height: 34%;
+  border-radius: 999px 999px 0 0;
+  background: linear-gradient(180deg, var(--case-accent), transparent);
+  opacity: 0.22;
+}
+
+.experience[data-case-slug="sensimilla-records"] .caseMotif i:nth-child(2) { height: 68%; }
+.experience[data-case-slug="sensimilla-records"] .caseMotif i:nth-child(3) { height: 46%; }
+.experience[data-case-slug="sensimilla-records"] .caseMotif i:nth-child(4) { height: 88%; }
+.experience[data-case-slug="sensimilla-records"] .caseMotif i:nth-child(5) { height: 57%; }
+.experience[data-case-slug="sensimilla-records"] .caseMotif i:nth-child(6) { height: 76%; }
+.experience[data-case-slug="sensimilla-records"] .caseMotif i:nth-child(7) { height: 40%; }
+.experience[data-case-slug="sensimilla-records"] .caseMotif i:nth-child(8) { height: 62%; }
+
+/* Moda infantil: bolhas suaves e irregulares preservam leveza e movimento. */
+.experience[data-case-slug="mb-multimarcas-infantil"] .caseMotif i {
+  width: clamp(3rem, 8vw, 8rem);
+  aspect-ratio: 1;
+  border: 1px solid rgb(var(--case-accent-rgb) / 0.28);
+  border-radius: 42% 58% 67% 33% / 58% 39% 61% 42%;
+  background: radial-gradient(circle at 34% 27%, rgb(255 255 255 / 0.16), rgb(var(--case-accent-rgb) / 0.04) 46%, transparent 72%);
+}
+
+.experience[data-case-slug="mb-multimarcas-infantil"] .caseMotif i:nth-child(1) { top: 6%; left: 8%; }
+.experience[data-case-slug="mb-multimarcas-infantil"] .caseMotif i:nth-child(2) { top: 18%; right: 14%; width: clamp(5rem, 13vw, 12rem); transform: rotate(38deg); }
+.experience[data-case-slug="mb-multimarcas-infantil"] .caseMotif i:nth-child(3) { top: 49%; left: 28%; width: clamp(2rem, 5vw, 5rem); transform: rotate(72deg); }
+.experience[data-case-slug="mb-multimarcas-infantil"] .caseMotif i:nth-child(4) { right: 3%; bottom: 8%; transform: rotate(112deg); }
+.experience[data-case-slug="mb-multimarcas-infantil"] .caseMotif i:nth-child(5) { bottom: 2%; left: 5%; width: clamp(4rem, 10vw, 9rem); transform: rotate(148deg); }
+.experience[data-case-slug="mb-multimarcas-infantil"] .caseMotif i:nth-child(n + 6) { display: none; }
+
+/* Beleza: curvas finas lembram cílios e o gesto preciso do trabalho manual. */
+.experience[data-case-slug="sabrina-lashes"] .caseMotif i {
+  top: 50%;
+  left: 50%;
+  width: clamp(14rem, 36vw, 34rem);
+  height: clamp(6rem, 18vw, 17rem);
+  border-top: 1px solid rgb(var(--case-accent-rgb) / 0.38);
+  border-radius: 50%;
+  transform-origin: center bottom;
+}
+
+.experience[data-case-slug="sabrina-lashes"] .caseMotif i:nth-child(1) { transform: translate(-84%, -110%) rotate(-18deg); }
+.experience[data-case-slug="sabrina-lashes"] .caseMotif i:nth-child(2) { transform: translate(-63%, -92%) rotate(-9deg) scale(0.86); }
+.experience[data-case-slug="sabrina-lashes"] .caseMotif i:nth-child(3) { transform: translate(-38%, -74%) rotate(2deg) scale(0.72); }
+.experience[data-case-slug="sabrina-lashes"] .caseMotif i:nth-child(4) { transform: translate(-13%, -56%) rotate(13deg) scale(0.58); }
+.experience[data-case-slug="sabrina-lashes"] .caseMotif i:nth-child(n + 5) { display: none; }
+
+/* Kits: módulos encaixados materializam organização e combinação. */
+.experience[data-case-slug="kitcerto"] .caseMotif {
+  top: 15%;
+  right: 7%;
+  bottom: 15%;
+  left: 61%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-content: center;
+  gap: clamp(0.55rem, 1.4vw, 1.4rem);
+}
+
+.experience[data-case-slug="kitcerto"] .caseMotif i {
+  position: relative;
+  aspect-ratio: 1;
+  border: 1px solid rgb(var(--case-accent-rgb) / 0.24);
+  border-radius: clamp(0.65rem, 1.2vw, 1.25rem);
+  background: linear-gradient(145deg, rgb(var(--case-accent-rgb) / 0.1), transparent 66%);
+}
+
+.experience[data-case-slug="kitcerto"] .caseMotif i:nth-child(2),
+.experience[data-case-slug="kitcerto"] .caseMotif i:nth-child(6) {
+  translate: 0 -32%;
+}
+
+/* Automotivo: linhas de velocidade e pista avançam no mesmo eixo. */
+.experience[data-case-slug="destaque-multimarcas"] .caseMotif {
+  inset: 4% -10%;
+}
+
+.experience[data-case-slug="destaque-multimarcas"] .caseMotif i {
+  right: -4%;
+  width: 76%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(var(--case-accent-rgb) / 0.48));
+  transform: rotate(-9deg);
+}
+
+.experience[data-case-slug="destaque-multimarcas"] .caseMotif i:nth-child(1) { top: 14%; width: 48%; }
+.experience[data-case-slug="destaque-multimarcas"] .caseMotif i:nth-child(2) { top: 24%; }
+.experience[data-case-slug="destaque-multimarcas"] .caseMotif i:nth-child(3) { top: 39%; width: 62%; }
+.experience[data-case-slug="destaque-multimarcas"] .caseMotif i:nth-child(4) { top: 56%; width: 88%; }
+.experience[data-case-slug="destaque-multimarcas"] .caseMotif i:nth-child(5) { top: 71%; width: 54%; }
+.experience[data-case-slug="destaque-multimarcas"] .caseMotif i:nth-child(6) { top: 84%; width: 70%; }
+.experience[data-case-slug="destaque-multimarcas"] .caseMotif i:nth-child(n + 7) { display: none; }
+
+/* Radar: círculos de alcance independentes do anel global da experiência. */
+.experience[data-case-slug="radar-da-rima"] .caseMotif {
+  top: 8%;
+  right: 4%;
+  bottom: 8%;
+  left: 48%;
+}
+
+.experience[data-case-slug="radar-da-rima"] .caseMotif i {
+  top: 50%;
+  left: 50%;
+  aspect-ratio: 1;
+  border: 1px solid rgb(var(--case-accent-rgb) / 0.23);
+  border-radius: 50%;
+  translate: -50% -50%;
+}
+
+.experience[data-case-slug="radar-da-rima"] .caseMotif i:nth-child(1) { width: 18%; }
+.experience[data-case-slug="radar-da-rima"] .caseMotif i:nth-child(2) { width: 34%; }
+.experience[data-case-slug="radar-da-rima"] .caseMotif i:nth-child(3) { width: 50%; }
+.experience[data-case-slug="radar-da-rima"] .caseMotif i:nth-child(4) { width: 66%; }
+.experience[data-case-slug="radar-da-rima"] .caseMotif i:nth-child(5) { width: 82%; }
+.experience[data-case-slug="radar-da-rima"] .caseMotif i:nth-child(6) { width: 100%; }
+.experience[data-case-slug="radar-da-rima"] .caseMotif i:nth-child(n + 7) { display: none; }
+
+/* Gestão: barras de leitura operacional crescem como um painel vivo. */
+.experience[data-case-slug="orbicore-gestao"] .caseMotif {
+  top: 16%;
+  right: 6%;
+  bottom: 16%;
+  left: 66%;
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(0.35rem, 0.75vw, 0.8rem);
+}
+
+.experience[data-case-slug="orbicore-gestao"] .caseMotif i {
+  position: relative;
+  flex: 1;
+  height: 42%;
+  border: 1px solid rgb(var(--case-accent-rgb) / 0.2);
+  border-bottom: 0;
+  background: linear-gradient(180deg, rgb(var(--case-accent-rgb) / 0.16), transparent);
+}
+
+.experience[data-case-slug="orbicore-gestao"] .caseMotif i:nth-child(2) { height: 58%; }
+.experience[data-case-slug="orbicore-gestao"] .caseMotif i:nth-child(3) { height: 36%; }
+.experience[data-case-slug="orbicore-gestao"] .caseMotif i:nth-child(4) { height: 76%; }
+.experience[data-case-slug="orbicore-gestao"] .caseMotif i:nth-child(5) { height: 68%; }
+.experience[data-case-slug="orbicore-gestao"] .caseMotif i:nth-child(6) { height: 88%; }
+.experience[data-case-slug="orbicore-gestao"] .caseMotif i:nth-child(7) { height: 72%; }
+.experience[data-case-slug="orbicore-gestao"] .caseMotif i:nth-child(8) { height: 96%; }
+
+/* Portal: nós conectados representam produto, estudo e comunidade no mesmo sistema. */
+.experience[data-case-slug="orbitamos-portal-tech"] .caseMotif {
+  background:
+    linear-gradient(31deg, transparent 49.8%, rgb(var(--case-accent-rgb) / 0.1) 50%, transparent 50.2%),
+    linear-gradient(148deg, transparent 49.8%, rgb(var(--case-accent-rgb) / 0.08) 50%, transparent 50.2%);
+}
+
+.experience[data-case-slug="orbitamos-portal-tech"] .caseMotif i {
+  width: clamp(0.4rem, 0.75vw, 0.75rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--case-accent);
+  box-shadow: 0 0 24px rgb(var(--case-accent-rgb) / 0.76);
+}
+
+.experience[data-case-slug="orbitamos-portal-tech"] .caseMotif i:nth-child(1) { top: 9%; left: 16%; }
+.experience[data-case-slug="orbitamos-portal-tech"] .caseMotif i:nth-child(2) { top: 22%; right: 17%; }
+.experience[data-case-slug="orbitamos-portal-tech"] .caseMotif i:nth-child(3) { top: 43%; left: 39%; }
+.experience[data-case-slug="orbitamos-portal-tech"] .caseMotif i:nth-child(4) { top: 61%; right: 7%; }
+.experience[data-case-slug="orbitamos-portal-tech"] .caseMotif i:nth-child(5) { bottom: 8%; left: 20%; }
+.experience[data-case-slug="orbitamos-portal-tech"] .caseMotif i:nth-child(6) { bottom: 23%; left: 57%; }
+.experience[data-case-slug="orbitamos-portal-tech"] .caseMotif i:nth-child(7) { top: 14%; left: 52%; }
+.experience[data-case-slug="orbitamos-portal-tech"] .caseMotif i:nth-child(8) { bottom: 5%; right: 12%; }
+
 .orbitRing::before,
 .orbitRing::after,
 .orbitRing i {
@@ -1129,6 +1352,10 @@
 }
 
 @media (max-width: 899px) {
+  .caseMotif i {
+    opacity: 0.38;
+  }
+
   .scene {
     height: 650svh;
   }
@@ -1561,6 +1788,7 @@
 
   .sceneCanvas,
   .depthSlices,
+  .caseMotif,
   .crossing,
   .landing,
   .sceneHud,

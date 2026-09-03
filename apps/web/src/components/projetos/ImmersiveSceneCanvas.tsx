@@ -7,6 +7,7 @@ interface ImmersiveSceneCanvasProps {
   image: string;
   accent: string;
   second: string;
+  motion: readonly [number, number, number, number];
   progressRef: MutableRefObject<number>;
   className?: string;
 }
@@ -28,6 +29,7 @@ const fragmentShader = /* glsl */ `
   uniform vec2 uImageResolution;
   uniform vec3 uAccent;
   uniform vec3 uSecond;
+  uniform vec4 uMotion;
   uniform float uProgress;
   uniform float uTime;
   uniform float uTextureReady;
@@ -62,22 +64,27 @@ const fragmentShader = /* glsl */ `
     float resolve = smoothstep(0.60, 0.83, p);
     float landing = smoothstep(0.82, 1.0, p);
 
+    float motionPhase = uMotion.x * 6.2831853;
+    float flowAngle = uMotion.w * 6.2831853;
+    vec2 flowAxis = vec2(cos(flowAngle), sin(flowAngle));
+    vec2 flowNormal = vec2(-flowAxis.y, flowAxis.x);
     vec2 cameraTarget = vec2(
-      0.5 + sin(p * 8.2) * 0.035 + tension * 0.035,
-      0.5 + cos(p * 5.7) * 0.022 - resolve * 0.018
+      0.5 + sin(p * (6.4 + uMotion.y * 4.2) + motionPhase) * (0.018 + uMotion.z * 0.024) + tension * (uMotion.x - 0.5) * 0.06,
+      0.5 + cos(p * (4.8 + uMotion.x * 3.2) + motionPhase) * (0.014 + uMotion.y * 0.016) - resolve * (uMotion.y - 0.35) * 0.035
     );
-    float zoom = 1.0 + entry * 0.16 + tension * 0.12 - landing * 0.08;
+    float zoom = 1.0 + entry * (0.12 + uMotion.z * 0.07) + tension * (0.08 + uMotion.y * 0.07) - landing * 0.08;
     vec2 uv = cameraTarget + (baseUv - cameraTarget) / zoom;
 
     vec2 centered = vUv - 0.5;
     float distanceToCenter = length(centered);
     vec2 direction = centered / max(distanceToCenter, 0.001);
-    float radialWave = sin(distanceToCenter * 38.0 - p * 24.0 + uTime * 0.22);
-    uv += direction * radialWave * (0.0016 + tension * 0.0065);
-    uv.x += sin((uv.y + p) * 20.0) * tension * 0.004;
+    float radialWave = sin(distanceToCenter * (30.0 + uMotion.z * 18.0) - p * (18.0 + uMotion.x * 15.0) + uTime * 0.22);
+    float directionalWave = sin(dot(centered, flowNormal) * (14.0 + uMotion.y * 24.0) - p * (14.0 + uMotion.z * 16.0) + uTime * 0.16);
+    uv += direction * radialWave * (0.0012 + tension * (0.0035 + uMotion.x * 0.003));
+    uv += flowAxis * directionalWave * tension * (0.0014 + uMotion.z * 0.0038);
 
     float split = 0.001 + tension * 0.0055 + landing * 0.001;
-    vec2 chromaDirection = direction * split;
+    vec2 chromaDirection = normalize(mix(direction, flowAxis, 0.18 + uMotion.y * 0.32)) * split;
     float red = texture2D(uTexture, uv + chromaDirection).r;
     float green = texture2D(uTexture, uv).g;
     float blue = texture2D(uTexture, uv - chromaDirection).b;
@@ -88,11 +95,15 @@ const fragmentShader = /* glsl */ `
     color = mix(color, color * uAccent * 1.65, 0.045 + tension * 0.075);
     color += uSecond * tension * pow(max(0.0, 1.0 - distanceToCenter * 1.7), 3.0) * 0.09;
 
-    vec2 lightPosition = vec2(0.22 + p * 0.58, 0.18 + sin(p * 6.283) * 0.2);
+    vec2 lightPosition = vec2(
+      mix(0.16, 0.78, uMotion.x) + sin(p * 5.4 + motionPhase) * 0.12,
+      mix(0.18, 0.72, uMotion.y) + cos(p * 6.283 + motionPhase) * 0.16
+    );
     float movingLight = pow(max(0.0, 1.0 - distance(vUv, lightPosition)), 5.0);
     color += uAccent * movingLight * (0.07 + resolve * 0.09);
 
-    float scan = smoothstep(0.0, 0.035, abs(fract(vUv.y * 120.0 - p * 7.0) - 0.5));
+    float scanCoordinate = dot(vUv, normalize(flowNormal + vec2(0.001)));
+    float scan = smoothstep(0.0, 0.035, abs(fract(scanCoordinate * (88.0 + uMotion.z * 54.0) - p * 7.0) - 0.5));
     color *= mix(0.965, 1.0, scan);
 
     float vignette = 1.0 - smoothstep(0.24, 0.92, distanceToCenter);
@@ -117,6 +128,7 @@ export default function ImmersiveSceneCanvas({
   image,
   accent,
   second,
+  motion,
   progressRef,
   className,
 }: ImmersiveSceneCanvasProps) {
@@ -149,6 +161,7 @@ export default function ImmersiveSceneCanvas({
       uImageResolution: { value: new THREE.Vector2(16, 9) },
       uAccent: { value: colorToVector(accent) },
       uSecond: { value: colorToVector(second) },
+      uMotion: { value: new THREE.Vector4(...motion) },
       uProgress: { value: 0 },
       uTime: { value: 0 },
       uTextureReady: { value: 0 },
@@ -250,7 +263,7 @@ export default function ImmersiveSceneCanvas({
       material.dispose();
       renderer?.dispose();
     };
-  }, [accent, image, progressRef, second]);
+  }, [accent, image, motion, progressRef, second]);
 
   return <canvas ref={canvasRef} className={className} aria-hidden="true" />;
 }

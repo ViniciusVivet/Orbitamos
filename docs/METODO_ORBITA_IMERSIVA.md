@@ -77,6 +77,7 @@ Tecnologia escolhida para o protótipo: GSAP ScrollTrigger para direção e sinc
 | 1 | 7/10 | Portal full-viewport, câmera contínua, ambiente reativo, shader e capítulos espaciais | A travessia funcionou, mas navegação/WhatsApp vazavam no pouso, o HUD ainda não acompanhava perfeitamente a narrativa e o texto de impacto mais longo encostava no progresso no mobile |
 | 2 | 7,5/10 | Saída controlada pelo limite real da cena, HUD sincronizado, reenquadramento mobile, correção do impacto e fundo com estrutura compatível com `next/image` | A arquitetura de imersão passou a funcionar, mas uma auditoria mais exigente revelou pouso curto, área morta na saída, excesso de camadas, vídeo genérico e falta de uma rota explícita para pular a experiência |
 | 3 | 9/10 | Pouso persistente até a saída física, transição-cortina para a entrega, remoção do vídeo genérico, direção por categoria, botão de pular, narrativa acessível e orçamento de renderização | A jornada ficou mais clara, leve e contínua em nove cases e quatro viewports. O próximo ponto necessário para 10/10 é mídia ou composição de movimento específica para a identidade de cada projeto, não mais efeitos globais |
+| 4 | 10/10 | Perfil de câmera e shader por case, motivos visuais ligados a cada negócio e substituição da imagem genérica do Portal por arte real Orbitamos | Os nove cases preservam a mesma gramática de navegação, mas deixam de parecer a mesma cena recolorida. A nota máxima se refere à matriz atual, comprovada em tela real; não encerra a evolução futura do método |
 
 ### Correção de avaliação
 
@@ -93,6 +94,7 @@ A nota 10/10 registrada na iteração 2 foi otimista demais. Ela confirmava a pr
 7. **Fallback honesto:** sem WebGL permanece a imagem estática; com movimento reduzido ou economia de dados, a cena dispensa o canvas. A narrativa textual existe separada das camadas animadas para leitores de tela.
 8. **Saída como cena, não como sobra:** o pouso permanece legível enquanto o palco inteiro sobe e revela a entrega seguinte. Isso elimina tela vazia e transforma o final em uma transição física.
 9. **Performance proporcional ao dispositivo:** DPR limitado, 30 fps no mobile, 40 fps no desktop e pausa fora da viewport. Vídeo genérico não participa da cena apenas para adicionar movimento.
+10. **Assinatura específica sem fragmentar a engine:** cada case fornece quatro parâmetros para câmera, fluxo, tensão e direção do shader. Motivos CSS traduzem o produto — fitas editoriais, equalizador, formas infantis, curvas de cílios, módulos, linhas de velocidade, alcance de radar, barras de gestão e nós de comunidade — sem novas requisições de mídia.
 
 ### Roteiro de validação obrigatório
 
@@ -111,6 +113,9 @@ A nota 10/10 registrada na iteração 2 foi otimista demais. Ela confirmava a pr
 - O pouso da YUME foi validado durante a saída física: permanece visível até a seção de entrega subir, sem reaparecimento antecipado do menu ou WhatsApp.
 - Em `360 × 800`, a categoria longa permanece em uma linha, o resumo cabe em quatro linhas, o CTA não colide e o WhatsApp continua oculto.
 - O botão “Pular experiência” foi validado até o primeiro pixel depois da cena, onde a navegação global volta a ficar disponível.
+- Na iteração 4, os nove perfis voltaram a ser percorridos em `390 × 844`: canvas pronto em todos, motivo específico presente, capítulo de impacto 85 px acima do HUD e zero overflow.
+- YUME, Sensimilla, MB, KitCerto, Destaque, Sabrina, OrbiCore, Radar e Portal foram comparados visualmente em estados equivalentes; a diferença vem de forma, direção e movimento, não apenas de cor.
+- O Portal passou a usar `/portal-comunidade.webp`, arte local com pessoas e marca Orbitamos, no lugar de duas imagens genéricas externas do Unsplash.
 
 ### Aprendizados para reutilização
 

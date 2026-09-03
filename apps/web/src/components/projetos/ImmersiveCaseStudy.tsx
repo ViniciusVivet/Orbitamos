@@ -28,16 +28,18 @@ interface ImmersiveCaseStudyProps {
   nextProjeto: Projeto;
 }
 
-const CASE_THEMES: Record<string, { accent: string; accentSoft: string; second: string }> = {
-  "yume-moda-disruptiva": { accent: "#29f5c6", accentSoft: "41 245 198", second: "#8b5cf6" },
-  "sensimilla-records": { accent: "#d9ff57", accentSoft: "217 255 87", second: "#8b5cf6" },
-  "mb-multimarcas-infantil": { accent: "#ff79b7", accentSoft: "255 121 183", second: "#70d6ff" },
-  "sabrina-lashes": { accent: "#ff9ecb", accentSoft: "255 158 203", second: "#c4a1ff" },
-  kitcerto: { accent: "#ffbd2e", accentSoft: "255 189 46", second: "#fb7185" },
-  "destaque-multimarcas": { accent: "#ff4d55", accentSoft: "255 77 85", second: "#ffb020" },
-  "radar-da-rima": { accent: "#ff5a1f", accentSoft: "255 90 31", second: "#ffc42e" },
-  "orbicore-gestao": { accent: "#51e5ff", accentSoft: "81 229 255", second: "#8b5cf6" },
-  "orbitamos-portal-tech": { accent: "#00d4ff", accentSoft: "0 212 255", second: "#8b5cf6" },
+type MotionProfile = readonly [cameraPhase: number, flow: number, tension: number, angle: number];
+
+const CASE_THEMES: Record<string, { accent: string; accentSoft: string; second: string; motion: MotionProfile }> = {
+  "yume-moda-disruptiva": { accent: "#29f5c6", accentSoft: "41 245 198", second: "#8b5cf6", motion: [0.18, 0.84, 0.28, 0.12] },
+  "sensimilla-records": { accent: "#d9ff57", accentSoft: "217 255 87", second: "#8b5cf6", motion: [0.76, 0.42, 0.88, 0.34] },
+  "mb-multimarcas-infantil": { accent: "#ff79b7", accentSoft: "255 121 183", second: "#70d6ff", motion: [0.42, 0.68, 0.38, 0.74] },
+  "sabrina-lashes": { accent: "#ff9ecb", accentSoft: "255 158 203", second: "#c4a1ff", motion: [0.12, 0.36, 0.54, 0.9] },
+  kitcerto: { accent: "#ffbd2e", accentSoft: "255 189 46", second: "#fb7185", motion: [0.58, 0.2, 0.7, 0.48] },
+  "destaque-multimarcas": { accent: "#ff4d55", accentSoft: "255 77 85", second: "#ffb020", motion: [0.94, 0.16, 0.32, 0.08] },
+  "radar-da-rima": { accent: "#ff5a1f", accentSoft: "255 90 31", second: "#ffc42e", motion: [0.82, 0.76, 0.94, 0.62] },
+  "orbicore-gestao": { accent: "#51e5ff", accentSoft: "81 229 255", second: "#8b5cf6", motion: [0.34, 0.1, 0.62, 0.8] },
+  "orbitamos-portal-tech": { accent: "#00d4ff", accentSoft: "0 212 255", second: "#8b5cf6", motion: [0.52, 0.56, 0.48, 0.54] },
 };
 
 const SCENE_NAMES = ["Aproximação", "Travessia", "Contexto", "Atrito", "Solução", "Impacto", "Pouso"];
@@ -98,6 +100,7 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
   const introCopyRef = useRef<HTMLDivElement>(null);
   const introDeviceRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
+  const motifRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLImageElement>(null);
   const crossingRef = useRef<HTMLDivElement>(null);
   const progressBarRef = useRef<HTMLSpanElement>(null);
@@ -125,8 +128,9 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
     const scene = sceneRef.current;
     const stage = stageRef.current;
     const portal = portalRef.current;
+    const motif = motifRef.current;
     const crossing = crossingRef.current;
-    if (!root || !scene || !stage || !portal || !crossing) return;
+    if (!root || !scene || !stage || !portal || !motif || !crossing) return;
 
     const media = gsap.matchMedia();
     media.add(
@@ -162,6 +166,7 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
             clipPath: "inset(0 0 100% 0)",
           });
           gsap.set(crossing, { autoAlpha: 0, scale: 0.72, filter: "blur(18px)" });
+          gsap.set(motif, { autoAlpha: 0, scale: 0.92, xPercent: 0, yPercent: 0, rotate: 0 });
           gsap.set(sliceElements, { autoAlpha: 0 });
           gsap.set(portal, {
             autoAlpha: 0,
@@ -235,14 +240,29 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
               { autoAlpha: 1, xPercent: 0, yPercent: 0, filter: "blur(0px)", clipPath: "inset(0 0 0% 0)", duration: 0.44 },
               2.16,
             )
-            .to(portal, { scale: isMobile ? 1.28 : 1.2, xPercent: isMobile ? 7 : 4, yPercent: isMobile ? 1 : 4, rotate: isMobile ? 0 : -0.8, duration: 1.0 }, 2.1)
+            .to(portal, {
+              scale: isMobile ? 1.28 : 1.2,
+              xPercent: (theme.motion[0] - 0.5) * (isMobile ? 10 : 8),
+              yPercent: (theme.motion[1] - 0.5) * (isMobile ? 4 : 7),
+              rotate: isMobile ? 0 : (theme.motion[3] - 0.5) * 2.2,
+              duration: 1.0,
+            }, 2.1)
             .to(stage, { "--scene-veil": 0.52, "--grid-opacity": 0.32, "--scene-focus-x": "74%", "--scene-focus-y": "22%", duration: 0.95 }, 2.12)
+            .to(motif, {
+              autoAlpha: 0.62,
+              scale: 1,
+              xPercent: (theme.motion[0] - 0.5) * 12,
+              yPercent: (theme.motion[1] - 0.5) * 9,
+              rotate: (theme.motion[3] - 0.5) * 8,
+              duration: 0.72,
+            }, 2.14)
             .to(sliceElements, { autoAlpha: 0.24, stagger: 0.04, duration: 0.2 }, 2.32)
             .to(sliceElements[0], { xPercent: -2.2, duration: 0.5 }, 2.36)
             .to(sliceElements[1], { xPercent: 2.8, duration: 0.5 }, 2.36)
             .to(sliceElements[2], { xPercent: -1.4, duration: 0.5 }, 2.36)
             .to(chapterElements[1], { autoAlpha: 0, xPercent: -12, filter: "blur(16px)", clipPath: "inset(100% 0 0 0)", duration: 0.34 }, 3.03)
             .to(sliceElements, { xPercent: 0, autoAlpha: 0, duration: 0.36 }, 3.05)
+            .to(motif, { autoAlpha: 0.18, scale: 1.12, rotate: 0, duration: 0.42 }, 3.05)
             .fromTo(
               chapterElements[2],
               { autoAlpha: 0, scale: 0.84, filter: "blur(18px)", clipPath: "inset(0 50% 0 50%)" },
@@ -251,6 +271,14 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
             )
             .to(portal, { scale: isMobile ? 1.08 : 1.04, xPercent: isMobile ? -6 : -3, yPercent: 0, rotate: 0, duration: 1.0 }, 3.16)
             .to(stage, { "--scene-veil": 0.24, "--grid-opacity": 0.16, "--scene-focus-x": "48%", "--scene-focus-y": "48%", "--orbit-opacity": 0.72, duration: 1.0 }, 3.16)
+            .to(motif, {
+              autoAlpha: 0.5,
+              scale: 0.96,
+              xPercent: (0.5 - theme.motion[0]) * 8,
+              yPercent: (0.5 - theme.motion[1]) * 7,
+              rotate: (0.5 - theme.motion[3]) * 6,
+              duration: 0.78,
+            }, 3.38)
             .to(chapterElements[2], { autoAlpha: 0, scale: 1.13, filter: "blur(14px)", clipPath: "inset(50% 0 50% 0)", duration: 0.34 }, 4.12)
             .fromTo(
               chapterElements[3],
@@ -260,9 +288,11 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
             )
             .to(portal, { scale: isMobile ? 0.98 : 0.94, xPercent: 0, yPercent: 0, opacity: 0.72, duration: 1.05 }, 4.26)
             .to(stage, { "--scene-veil": 0.68, "--grid-opacity": 0.08, "--orbit-opacity": 1, duration: 1.05 }, 4.26)
+            .to(motif, { autoAlpha: 0.28, scale: 1.18, xPercent: 0, yPercent: 0, rotate: 0, duration: 0.86 }, 4.3)
             .to(chapterElements[3], { autoAlpha: 0, yPercent: -16, scale: 1.06, filter: "blur(12px)", duration: 0.34 }, 5.12)
             .to(portal, { scale: 0.76, opacity: 0.34, filter: "blur(4px)", duration: 0.62 }, 5.14)
             .to(stage, { "--scene-veil": 0.8, "--orbit-opacity": 0.34, duration: 0.62 }, 5.16)
+            .to(motif, { autoAlpha: 0.08, scale: 1.3, duration: 0.58 }, 5.14)
             .fromTo(
               "[data-landing]",
               { autoAlpha: 0, yPercent: 22, scale: 0.86, filter: "blur(16px)" },
@@ -283,7 +313,7 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
     );
 
     return () => media.revert();
-  }, [projeto.slug]);
+  }, [projeto.slug, theme.motion]);
 
   const skipExperience = () => {
     const scene = sceneRef.current;
@@ -301,6 +331,7 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
       className={styles.experience}
       style={themeStyle}
       data-case-category={projeto.categoria}
+      data-case-slug={projeto.slug}
     >
       <section ref={sceneRef} className={styles.scene} aria-label={"Experiência do projeto " + projeto.nome}>
         <div ref={stageRef} className={styles.sceneStage}>
@@ -323,6 +354,7 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
               image={projeto.imagemPrincipal}
               accent={theme.accent}
               second={theme.second}
+              motion={theme.motion}
               progressRef={sceneProgressRef}
               className={styles.sceneCanvas}
             />
@@ -346,6 +378,9 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
           <div className={styles.sceneGrid} aria-hidden="true" />
           <div className={styles.sceneHalo} aria-hidden="true" />
           <div className={styles.orbitRing} aria-hidden="true"><i /><i /><i /></div>
+          <div ref={motifRef} className={styles.caseMotif} aria-hidden="true">
+            {Array.from({ length: 8 }, (_, index) => <i key={index} />)}
+          </div>
           <div className={styles.noise} aria-hidden="true" />
 
           <div className={styles.introLayer}>
