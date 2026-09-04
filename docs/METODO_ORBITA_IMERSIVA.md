@@ -78,6 +78,7 @@ Tecnologia escolhida para o protótipo: GSAP ScrollTrigger para direção e sinc
 | 2 | 7,5/10 | Saída controlada pelo limite real da cena, HUD sincronizado, reenquadramento mobile, correção do impacto e fundo com estrutura compatível com `next/image` | A arquitetura de imersão passou a funcionar, mas uma auditoria mais exigente revelou pouso curto, área morta na saída, excesso de camadas, vídeo genérico e falta de uma rota explícita para pular a experiência |
 | 3 | 9/10 | Pouso persistente até a saída física, transição-cortina para a entrega, remoção do vídeo genérico, direção por categoria, botão de pular, narrativa acessível e orçamento de renderização | A jornada ficou mais clara, leve e contínua em nove cases e quatro viewports. O próximo ponto necessário para 10/10 é mídia ou composição de movimento específica para a identidade de cada projeto, não mais efeitos globais |
 | 4 | 10/10 | Perfil de câmera e shader por case, motivos visuais ligados a cada negócio e substituição da imagem genérica do Portal por arte real Orbitamos | Os nove cases preservam a mesma gramática de navegação, mas deixam de parecer a mesma cena recolorida. A nota máxima se refere à matriz atual, comprovada em tela real; não encerra a evolução futura do método |
+| 5 | 10/10 | Percurso físico ampliado, inércia sincronizada e coda de prova com painéis sticky feitos da mídia real do projeto | A experiência passou a sobreviver à rolagem comum: cada estado ganhou tempo de leitura e a página não perde energia depois do pouso. O empilhamento das decisões funciona como resolução narrativa, não como uma lista convencional |
 
 ### Correção de avaliação
 
@@ -95,6 +96,9 @@ A nota 10/10 registrada na iteração 2 foi otimista demais. Ela confirmava a pr
 8. **Saída como cena, não como sobra:** o pouso permanece legível enquanto o palco inteiro sobe e revela a entrega seguinte. Isso elimina tela vazia e transforma o final em uma transição física.
 9. **Performance proporcional ao dispositivo:** DPR limitado, 30 fps no mobile, 40 fps no desktop e pausa fora da viewport. Vídeo genérico não participa da cena apenas para adicionar movimento.
 10. **Assinatura específica sem fragmentar a engine:** cada case fornece quatro parâmetros para câmera, fluxo, tensão e direção do shader. Motivos CSS traduzem o produto — fitas editoriais, equalizador, formas infantis, curvas de cílios, módulos, linhas de velocidade, alcance de radar, barras de gestão e nós de comunidade — sem novas requisições de mídia.
+11. **Ritmo nasce da distância, não de delays artificiais:** em uma narrativa dirigida por scroll, aumentar segundos de transição não resolve sozinho uma rodinha rápida. Sete estados precisam de aproximadamente 8,5 a 10 viewports úteis de percurso; nesta aplicação, `1080svh` no desktop gera 9,8 viewports úteis em `1280 × 600`, e `960svh` gera 8,6 no mobile. Uma inércia curta suaviza o input, mas não substitui espaço físico.
+12. **Uma única noção de progresso visual:** quando o scrub possui inércia, o progresso bruto do ScrollTrigger fica à frente da imagem. Shader, HUD, barra, tipografia e nomes de cena devem ler o progresso atual da animação, não a posição instantânea do scroll.
+13. **O pós-clímax também faz parte da imersão:** depois do pouso, não voltar abruptamente para uma grade ou lista tímida. Usar uma coda de prova que reutilize matéria visual real, escala tipográfica e continuidade de scroll. Nos cases, cada decisão ocupa um painel de viewport, ganha uma pausa legível e só então é coberta pela próxima.
 
 ### Roteiro de validação obrigatório
 
@@ -116,6 +120,8 @@ A nota 10/10 registrada na iteração 2 foi otimista demais. Ela confirmava a pr
 - Na iteração 4, os nove perfis voltaram a ser percorridos em `390 × 844`: canvas pronto em todos, motivo específico presente, capítulo de impacto 85 px acima do HUD e zero overflow.
 - YUME, Sensimilla, MB, KitCerto, Destaque, Sabrina, OrbiCore, Radar e Portal foram comparados visualmente em estados equivalentes; a diferença vem de forma, direção e movimento, não apenas de cor.
 - O Portal passou a usar `/portal-comunidade.webp`, arte local com pessoas e marca Orbitamos, no lugar de duas imagens genéricas externas do Unsplash.
+- Na iteração 5, uma rolagem de viewport inteira ainda preservou aproximação e travessia antes do primeiro capítulo; a versão anterior comprimia sete estados em cerca de 6,2 telas úteis.
+- A coda de prova da YUME foi validada em `1280 × 600`, `390 × 844` e `360 × 800`: cada painel fica integralmente legível antes do próximo entrar, as imagens reais permanecem enquadradas e o overflow horizontal medido foi zero.
 
 ### Aprendizados para reutilização
 
@@ -127,6 +133,8 @@ A nota 10/10 registrada na iteração 2 foi otimista demais. Ela confirmava a pr
 - Presença de vídeo não significa direção de arte. Uma mídia genérica pode reduzir a identidade do case e ainda aumentar download, composição e distração.
 - O estado inicial aplicado duas vezes — uma base comum e outra entrada da cena — pode somar transformações e deslocar texto no mobile. Cada transformação deve ter uma única fonte de verdade.
 - O `10/10` do método exige que os critérios observáveis passem e que a mídia, o ritmo e a composição sejam específicos para o projeto. Uma engine reutilizável pode chegar muito perto, mas não deve fingir singularidade apenas trocando cor e imagem.
+- Uma animação excelente pode parecer ruim quando o espaço de scroll é curto. O usuário não deve precisar descobrir que precisa mover a rodinha devagar; o ritmo correto precisa funcionar com comportamento comum.
+- Encerrar a cena e voltar para uma lista comum cria uma queda perceptiva maior quanto melhor for o clímax. A resolução precisa carregar pelo menos três sinais da cena anterior: mídia, escala e comportamento espacial.
 
 ## Regra de encerramento
 

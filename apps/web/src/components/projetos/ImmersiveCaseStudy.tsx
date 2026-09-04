@@ -190,7 +190,9 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
               trigger: scene,
               start: "top top",
               end: "bottom bottom",
-              scrub: isMobile ? 0.2 : 0.34,
+              // A small follow-through keeps normal wheel/touch input cinematic instead of
+              // mapping every abrupt input delta directly to the camera.
+              scrub: isMobile ? 0.28 : 0.52,
               invalidateOnRefresh: true,
               onEnterBack: () => {
                 setImmersiveDocumentState("active");
@@ -199,15 +201,18 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
                 setImmersiveDocumentState("intro");
               },
               onUpdate: (self) => {
-                sceneProgressRef.current = self.progress;
+                // With scrub smoothing, ScrollTrigger's raw progress leads the camera.
+                // Read the animation itself so shader, HUD and typography stay on one frame.
+                const visualProgress = self.animation?.progress() ?? self.progress;
+                sceneProgressRef.current = visualProgress;
                 setImmersiveDocumentState(self.progress > 0.055 ? "active" : "intro");
-                stage.style.setProperty("--scene-progress", String(self.progress));
+                stage.style.setProperty("--scene-progress", String(visualProgress));
                 if (progressBarRef.current) {
-                  progressBarRef.current.style.transform = `scaleX(${self.progress})`;
+                  progressBarRef.current.style.transform = `scaleX(${visualProgress})`;
                 }
                 const thresholds = [0, 0.1, 0.2, 0.32, 0.47, 0.62, 0.8];
                 const sceneIndex = thresholds.reduce(
-                  (activeIndex, threshold, index) => (self.progress >= threshold ? index : activeIndex),
+                  (activeIndex, threshold, index) => (visualProgress >= threshold ? index : activeIndex),
                   0,
                 );
                 if (progressNameRef.current) progressNameRef.current.textContent = SCENE_NAMES[sceneIndex];
@@ -487,19 +492,55 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
       </section>
 
       <section className={styles.delivery}>
+        <div className={styles.deliveryAura} aria-hidden="true" />
         <div className={styles.deliveryInner}>
-          <div className={styles.deliveryIntro}>
-            <p>Decisões que sustentam a experiência</p>
-            <h2>O que ficou<br />de pé.</h2>
-            <span>{projeto.destaques.length} decisões de produto transformadas em experiência real.</span>
-          </div>
+          <header className={styles.deliveryIntro}>
+            <div>
+              <p>Decisões que sustentam a experiência</p>
+              <h2>O produto<br />ficou de pé.</h2>
+            </div>
+            <div className={styles.deliverySummary}>
+              <span>{projeto.destaques.length} decisões de produto transformadas em experiência real.</span>
+              <div className={styles.deliveryCounter} aria-hidden="true">
+                <span>01</span>
+                <i />
+                <span>{String(projeto.destaques.length).padStart(2, "0")}</span>
+              </div>
+            </div>
+          </header>
 
           <ol className={styles.featureList}>
             {projeto.destaques.map((item, index) => (
-              <li key={item}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <p>{item}</p>
-                <Check size={18} aria-hidden="true" />
+              <li
+                key={item}
+                style={{
+                  top: `${6.75 + Math.min(index, 5) * 1.05}rem`,
+                  zIndex: index + 1,
+                }}
+              >
+                <div className={styles.featureMedia} aria-hidden="true">
+                  <Image
+                    src={projeto.imagemPrincipal}
+                    alt=""
+                    fill
+                    className={styles.featureImage}
+                    sizes="(max-width: 899px) 100vw, 86rem"
+                  />
+                  <div className={styles.featureMediaShade} />
+                </div>
+                <div className={styles.featureTopline}>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <p>Decisão confirmada</p>
+                  <Check size={18} aria-hidden="true" />
+                </div>
+                <div className={styles.featureCopy}>
+                  <span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+                  <p>{item}</p>
+                </div>
+                <div className={styles.featureMeta} aria-hidden="true">
+                  <span><i /> Em operação</span>
+                  <span>{host}</span>
+                </div>
               </li>
             ))}
           </ol>
