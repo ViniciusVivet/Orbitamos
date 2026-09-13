@@ -1,8 +1,9 @@
 "use client";
 
+import s from "@/components/portal/PortalExperience.module.css";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ColaboradorSidebar from "@/components/colaborador/ColaboradorSidebar";
 import NotificacoesPanel, { NotificacaoBadge } from "@/components/colaborador/NotificacoesPanel";
 import { listNotifications, type NotificationItem } from "@/lib/workspace";
@@ -16,6 +17,7 @@ export default function ColaboradorLayout({
   const firstName = user?.name?.trim().split(" ")[0] ?? "";
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const loadNotifications = () => listNotifications().then(setNotifications).catch(() => setNotifications([]));
@@ -49,18 +51,19 @@ export default function ColaboradorLayout({
     );
   }
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white">
+    <div className={s.workspace + " min-h-screen text-white"}>
       <ColaboradorSidebar
         mobileOpen={mobileMenuOpen}
-        onCloseMobile={() => setMobileMenuOpen(false)}
+        onCloseMobile={closeMobileMenu}
       />
-      <main className="min-h-screen pl-0 lg:pl-56">
-        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-white/[0.06] bg-[#05070d]/70 px-4 py-2.5 backdrop-blur-xl lg:px-6">
+      <div className="min-h-screen pl-0 lg:pl-56">
+        <header className={s.workspaceHeader + " sticky z-30 flex items-center gap-3 border-b border-white/[0.06] px-4 py-2.5 backdrop-blur-xl lg:px-6"}>
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
             className="lg:hidden flex h-10 min-w-[40px] shrink-0 items-center justify-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white touch-manipulation"
             aria-label="Abrir menu"
+            aria-expanded={mobileMenuOpen}
           >
             <span className="text-xl">&#9776;</span>
           </button>
@@ -79,7 +82,7 @@ export default function ColaboradorLayout({
         <div className="container mx-auto px-4 py-4 sm:py-6 lg:px-6 lg:py-8 max-w-full">
           {children}
         </div>
-      </main>
+      </div>
 
       <NotificacoesPanel open={notifOpen} onClose={() => setNotifOpen(false)} items={notifications} onChange={loadNotifications} />
     </div>
