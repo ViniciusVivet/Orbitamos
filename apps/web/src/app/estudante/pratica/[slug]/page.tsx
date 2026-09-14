@@ -8,6 +8,7 @@ import { getDesafio, getNextDesafio, type DesafioStep } from "@/lib/desafios";
 import { runCSharpInWorker, runJavaScriptInWorker, runPythonInWorker, warmPythonRuntime } from "@/lib/browserCodeRunner";
 import { useAuth } from "@/contexts/AuthContext";
 import ReliableCodeEditor, { type ReliableCodeEditorHandle } from "@/components/estudante/ReliableCodeEditor";
+import lab from "@/components/estudante/Laboratory.module.css";
 
 type MobileTab = "editor" | "guia";
 type ChatMessage = { tipo: "sistema" | "sucesso" | "erro" | "dica"; texto: string };
@@ -455,30 +456,30 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
   }
 
   const guiaContent = (
-    <div className="flex flex-col h-full">
+    <div className="flex min-h-full flex-col">
       {!completed && desafio.steps[currentStep] && (
-        <div className="border-b border-white/10 bg-gradient-to-br from-orbit-electric/[.09] to-orbit-purple/[.06] p-4">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-[10px] font-black uppercase tracking-[.18em] text-orbit-electric">Missão ativa · Passo {currentStep + 1}</p>
-            <span className="rounded-full bg-black/25 px-2 py-1 text-[9px] text-white/40">
+        <section className={lab.activeInstruction}>
+          <div className={lab.instructionMeta}>
+            <p>Missão ativa · Passo {currentStep + 1} de {desafio.steps.length}</p>
+            <span>
               {stepAttempts[currentStep] ?? 0} tentativa{(stepAttempts[currentStep] ?? 0) === 1 ? "" : "s"}
             </span>
           </div>
-          <p className="mt-2 text-sm font-semibold leading-6 text-white/85">{desafio.steps[currentStep].instrucao}</p>
-          <div className="mt-3 flex items-center gap-2 text-[10px] text-white/40">
-            <span className="rounded-full border border-white/10 px-2 py-1">1. Entenda</span>
+          <h2>{desafio.steps[currentStep].instrucao}</h2>
+          <div className={lab.instructionMethod}>
+            <span>1. Entenda</span>
             <ChevronRight className="size-3" />
-            <span className="rounded-full border border-white/10 px-2 py-1">2. Escreva</span>
+            <span>2. Escreva</span>
             <ChevronRight className="size-3" />
-            <span className="rounded-full border border-white/10 px-2 py-1">3. Execute</span>
+            <span>3. Execute</span>
           </div>
-        </div>
+        </section>
       )}
       {/* Checklist */}
       <div className="border-b border-white/10 p-3">
         <div className="mb-2 flex items-center justify-between gap-2">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-white/40">Progresso</p>
-          <span className={`text-[10px] ${saveStatus === "error" ? "text-red-300" : "text-white/30"}`}>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Progresso</p>
+          <span className={`text-[10px] ${saveStatus === "error" ? "text-red-300" : "text-slate-400"}`}>
             {saveStatus === "saving" ? "Salvando..." : saveStatus === "saved" ? (draftRestored ? "Rascunho restaurado · salvo" : "Salvo neste dispositivo") : saveStatus === "error" ? "Não foi possível salvar" : "Auto-save"}
           </span>
         </div>
@@ -489,7 +490,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
               className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs transition-colors ${
                 i === currentStep && !completed
                   ? "bg-orbit-electric/10 text-orbit-electric"
-                  : stepStatus[i] === "success" ? "text-emerald-400" : "text-white/40"
+                  : stepStatus[i] === "success" ? "text-emerald-400" : "text-slate-400"
               }`}
             >
               {stepStatus[i] === "success" ? (
@@ -504,14 +505,14 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
                 </span>
               )}
               <span className="min-w-0 flex-1 line-clamp-1 text-[11px]">{step.instrucao}</span>
-              {(stepAttempts[i] ?? 0) > 0 && <span className="shrink-0 text-[9px] text-white/25">{stepAttempts[i]}x</span>}
+              {(stepAttempts[i] ?? 0) > 0 && <span className="shrink-0 text-[9px] text-slate-400">{stepAttempts[i]}x</span>}
             </div>
           ))}
         </div>
         <div className="mt-3 flex flex-wrap gap-1.5">
-          {desafio.dificuldade && <span className="rounded-full bg-white/[.05] px-2 py-1 text-[9px] font-bold uppercase text-white/40">{desafio.dificuldade}</span>}
-          {desafio.categoria && <span className="rounded-full bg-orbit-purple/10 px-2 py-1 text-[9px] font-bold uppercase text-orbit-purple">{desafio.categoria}</span>}
-          {desafio.minutos && <span className="rounded-full bg-white/[.05] px-2 py-1 text-[9px] text-white/35">~{desafio.minutos} min</span>}
+          {desafio.dificuldade && <span className="rounded-full bg-white/[.05] px-2 py-1 text-[9px] font-bold uppercase text-slate-400">{desafio.dificuldade}</span>}
+          {desafio.categoria && <span className="rounded-full bg-orbit-purple/10 px-2 py-1 text-[10px] font-bold uppercase text-violet-300">{desafio.categoria}</span>}
+          {desafio.minutos && <span className="rounded-full bg-white/[.05] px-2 py-1 text-[9px] text-slate-400">~{desafio.minutos} min</span>}
         </div>
         {(desafio.exemplo || desafio.casosTeste?.length) && (
           <details className="mt-3 rounded-xl bg-black/20 px-3 py-2">
@@ -543,7 +544,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
       {referenceCode && !completed && (
         <div className="border-b border-white/10 p-3">
           <div className="flex items-center justify-between gap-2">
-            <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">
+            <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
               <BookOpen className="size-3 text-orbit-electric/70" />
               Código de referência
             </p>
@@ -569,12 +570,12 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
                   {referenceCopied ? <Check className="size-3 text-emerald-400" /> : <Copy className="size-3" />}
                 </button>
               </div>
-              <p className="mt-1.5 text-[10px] leading-4 text-white/30">
+              <p className="mt-1.5 text-[10px] leading-4 text-slate-400">
                 Digite o código observando cada parte. Quando pegar o jeito, oculte e tente de cabeça.
               </p>
             </div>
           ) : (
-            <p className="mt-2 text-[10px] leading-4 text-white/35">
+            <p className="mt-2 text-[10px] leading-4 text-slate-400">
               Modo desafio: escreva de memória. Se travar, é só mostrar de novo — faz parte do aprendizado.
             </p>
           )}
@@ -582,7 +583,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
       )}
 
       {/* Chat messages */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+      <div className="flex-1 p-4 space-y-3">
         {chatMessages.map((msg, i) => (
           <div
             key={i}
@@ -610,12 +611,12 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
                 {getConceptualHint(desafio.steps[currentStep])}
               </div>
               {desafio.solucao && (stepAttempts[currentStep] ?? 0) >= 3 && (
-                <button type="button" onClick={() => setShowSolution((value) => !value)} className="w-full text-center text-[10px] font-bold text-white/35 hover:text-white/60">
+                <button type="button" onClick={() => setShowSolution((value) => !value)} className="w-full text-center text-[10px] font-bold text-slate-400 hover:text-white/60">
                   {showSolution ? "Ocultar solução de referência" : "Ainda estou travado — ver solução"}
                 </button>
               )}
               {desafio.solucao && (stepAttempts[currentStep] ?? 0) < 3 && (
-                <p className="text-center text-[10px] leading-4 text-white/30">Faça mais uma tentativa com essa pista; a solução completa será liberada na terceira.</p>
+                <p className="text-center text-[10px] leading-4 text-slate-400">Faça mais uma tentativa com essa pista; a solução completa será liberada na terceira.</p>
               )}
               {showSolution && desafio.solucao && (stepAttempts[currentStep] ?? 0) >= 3 && (
                 <pre className="max-h-40 overflow-auto rounded-lg bg-black/40 p-3 text-[10px] leading-5 text-white/55 whitespace-pre-wrap">{desafio.solucao}</pre>
@@ -643,7 +644,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
               onChange={(event) => setReflection(event.target.value)}
               rows={3}
               placeholder="Ex.: uma variável guarda um valor para eu reutilizar depois..."
-              className="mt-1.5 w-full resize-none rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-xs leading-5 text-white outline-none placeholder:text-white/25 focus:border-orbit-electric/50"
+              className="mt-1.5 w-full resize-none rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-xs leading-5 text-white outline-none placeholder:text-slate-400 focus:border-orbit-electric/50"
             />
             <Link href={nextChallenge ? `/estudante/pratica/${nextChallenge.slug}` : "/estudante/pratica"} className="mt-2 inline-flex items-center gap-1 text-xs text-orbit-electric hover:underline">
               {nextChallenge ? `Próximo: ${nextChallenge.titulo}` : "Ver mais desafios"} <ChevronRight className="size-3" />
@@ -655,10 +656,11 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
   );
 
   return (
-    <div className="flex h-[calc(100dvh-8rem)] flex-col overflow-hidden rounded-xl border border-white/10 bg-[#0d1117]">
+    <div className={lab.workspace} data-lab-workspace>
       {/* Top bar — compacto no mobile */}
-      <div className="flex items-center gap-2 border-b border-white/10 bg-[#161b22] px-3 py-2 sm:px-4">
+      <div className={lab.editorToolbar}>
         <button
+          aria-label="Voltar para o laboratório"
           onClick={() => router.back()}
           className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1 text-xs text-white/50 transition-colors hover:text-white touch-manipulation sm:justify-start sm:min-w-0 md:min-h-9"
         >
@@ -666,7 +668,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
           <span className="hidden sm:inline">Voltar</span>
         </button>
         <div className="h-4 w-px bg-white/10 hidden sm:block" />
-        <span className="truncate text-xs sm:text-sm font-semibold text-white">{desafio.titulo}</span>
+        <h1 className={lab.editorTitle}>{desafio.titulo}</h1>
         <span className="hidden sm:inline rounded-full bg-orbit-electric/15 px-2 py-0.5 text-[10px] font-bold uppercase text-orbit-electric">
           {desafio.linguagem}
         </span>
@@ -688,12 +690,12 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
             <span className="hidden sm:inline">Reiniciar</span>
           </button>
           {running ? (
-            <button type="button" onClick={stopExecution} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-red-500/90 px-3 py-2 text-xs font-bold text-white transition hover:bg-red-400 touch-manipulation" aria-label="Interromper execução">
+            <button type="button" onClick={stopExecution} className={lab.stopButton} aria-label="Interromper execução">
               <Square className="size-3.5 fill-current" />
               <span className="hidden sm:inline">Parar</span>
             </button>
           ) : (
-            <button type="button" onClick={executeCode} title="Executar (Ctrl/⌘ + Enter)" className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-emerald-500/90 px-3 py-2 text-xs font-bold text-black transition hover:bg-emerald-400 touch-manipulation">
+            <button type="button" onClick={executeCode} aria-label="Executar" title="Executar (Ctrl/⌘ + Enter)" className={lab.runButton}>
               <Play className="size-3.5" />
               <span className="hidden sm:inline">Executar</span>
             </button>
@@ -711,7 +713,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
           aria-selected={mobileTab === "editor"}
           aria-controls="practice-editor-panel"
           className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-bold transition touch-manipulation ${
-            mobileTab === "editor" ? "text-orbit-electric border-b-2 border-orbit-electric bg-orbit-electric/5" : "text-white/40"
+            mobileTab === "editor" ? "text-orbit-electric border-b-2 border-orbit-electric bg-orbit-electric/5" : "text-slate-400"
           }`}
         >
           <Code2 className="size-3.5" />
@@ -725,7 +727,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
           aria-selected={mobileTab === "guia"}
           aria-controls="practice-guide-panel"
           className={`relative flex min-h-11 flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-bold transition touch-manipulation ${
-            mobileTab === "guia" ? "text-orbit-purple border-b-2 border-orbit-purple bg-orbit-purple/5" : "text-white/40"
+            mobileTab === "guia" ? "text-violet-300 border-b-2 border-violet-300 bg-orbit-purple/5" : "text-slate-400"
           }`}
         >
           <MessageSquare className="size-3.5" />
@@ -740,13 +742,17 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
       <div className="flex flex-1 overflow-hidden">
         {/* Editor + Console — full width mobile, 80% desktop */}
         <div id="practice-editor-panel" role="tabpanel" aria-labelledby="practice-code-tab" className={`min-w-0 flex-col overflow-hidden ${mobileTab === "editor" ? "flex flex-1" : "hidden md:flex md:flex-1"}`}>
+          <div className={lab.fileBar}>
+            <span className={lab.fileTab}><Code2 size={13}/>rascunho.{{ javascript: "js", typescript: "ts", python: "py", csharp: "cs" }[desafio.linguagem]}</span>
+            <span className={lab.editorSave} data-error={saveStatus === "error"}>{saveStatus === "saving" ? "Salvando…" : saveStatus === "saved" ? "Salvo neste navegador" : saveStatus === "error" ? "Falha ao salvar" : "Rascunho local"}</span>
+          </div>
           {!completed && desafio.steps[currentStep] && (
             <div className="shrink-0 border-b border-orbit-electric/15 bg-orbit-electric/[.055] px-3 py-2.5 md:hidden">
               <div className="flex items-start gap-2">
                 <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-lg bg-orbit-electric/15 text-[10px] font-black text-orbit-electric">{currentStep + 1}</span>
                 <div className="min-w-0 flex-1">
                   <p className="line-clamp-2 text-[11px] font-semibold leading-4 text-white/80">{desafio.steps[currentStep].instrucao}</p>
-                  <p className="mt-1 text-[9px] text-white/35">{stepAttempts[currentStep] ?? 0} tentativa{(stepAttempts[currentStep] ?? 0) === 1 ? "" : "s"} · execute para validar</p>
+                  <p className="mt-1 text-[9px] text-slate-400">{stepAttempts[currentStep] ?? 0} tentativa{(stepAttempts[currentStep] ?? 0) === 1 ? "" : "s"} · execute para validar</p>
                 </div>
                 <button type="button" onClick={() => setMobileTab("guia")} className="min-h-9 shrink-0 rounded-lg border border-white/10 bg-white/[.04] px-2 text-[10px] font-bold text-orbit-electric">
                   Ver guia
@@ -767,7 +773,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
 
           {/* Console output */}
           <div
-            className="relative z-10 border-t border-white/10 bg-[#0d1117] md:h-[var(--console-height)] md:shrink-0"
+            className={`${lab.consoleSection} relative z-10 border-t md:h-[var(--console-height)] md:shrink-0`}
             style={{ "--console-height": `${consoleHeight}px` } as CSSProperties}
           >
             <button
@@ -778,7 +784,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
               title="Arraste para redimensionar · duplo clique para restaurar"
               className="absolute -top-1 left-1/2 z-20 hidden h-2 w-16 -translate-x-1/2 cursor-row-resize rounded-full bg-white/0 transition hover:bg-orbit-electric/40 md:block"
             />
-            <div className="flex items-center gap-2 border-b border-white/5 px-3 py-1.5">
+            <div className={`${lab.consoleToolbar} flex items-center gap-2 border-b border-white/5 px-3 py-1.5`}>
               <span className="text-[10px] font-bold uppercase tracking-wider text-white/60">Console</span>
               {running && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orbit-electric" />}
               {consoleRun?.outcome === "success" && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
@@ -809,7 +815,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
                 </span>
               )}
             </div>
-            <div role="status" aria-live="polite" className={`${consoleExpanded ? "h-64" : "h-28"} min-w-0 overflow-y-auto overflow-x-hidden px-3 py-2 font-mono text-xs transition-[height] sm:h-32 md:h-[calc(100%_-_32px)]`}>
+            <div role="status" aria-live="polite" className={`${consoleExpanded ? "h-64" : "h-28 sm:h-32"} min-w-0 overflow-y-auto overflow-x-hidden px-3 py-2 font-mono text-xs transition-[height] md:h-[calc(100%_-_32px)]`}>
               {running && (
                 <div className="flex items-center gap-2 font-sans text-orbit-electric/80">
                   <span className="size-3 animate-spin rounded-full border border-orbit-electric/30 border-t-orbit-electric" />
@@ -881,7 +887,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
           role="tabpanel"
           aria-labelledby="practice-guide-tab"
           style={{ "--guide-width": `${guideWidth}px` } as CSSProperties}
-          className={`flex flex-col bg-[#0d1117] ${mobileTab === "guia" ? "flex-1" : "hidden md:flex md:w-[var(--guide-width)] md:min-w-[280px] md:max-w-[440px] md:flex-none"}`}
+          className={`${lab.guidePane} flex min-h-0 flex-col overflow-y-auto ${mobileTab === "guia" ? "flex-1" : "hidden md:flex md:w-[var(--guide-width)] md:min-w-[280px] md:max-w-[440px] md:flex-none"}`}
         >
           {guiaContent}
         </div>

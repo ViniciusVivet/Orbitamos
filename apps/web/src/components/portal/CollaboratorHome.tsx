@@ -1,4 +1,5 @@
 import Link from "next/link";
+import OrbitPhoto from "@/components/brand/OrbitPhoto";
 import { ArrowRight, ArrowUpRight, Briefcase, FolderOpen, Layers, MessageSquare, UserRound, Users } from "lucide-react";
 import type { Project, Job, JobApplication } from "@/lib/api";
 import { EmptyState, LoadingRows, SectionHead } from "./PortalPrimitives";
@@ -47,7 +48,7 @@ export default function CollaboratorHome({ name, projects, jobs, applications, l
         <div className={s.indexHeading}><span className={s.eyebrow}>Arquivo de trabalho</span><span>{projectsAvailable ? `${projects.length - active.length} concluídos` : "Sincronizando"}</span></div>
         <h2>Na bancada.</h2>
         {loading ? <LoadingRows/> : failed.includes("projetos") ? <p className={s.muted}>O arquivo volta a aparecer quando a sincronização terminar.</p> : remaining.length ? <div className={s.indexRows}>{remaining.slice(0, 3).map(project => <Link href="/colaborador/projetos" key={project.id}><span className={s.indexId}>P—{String(project.id).padStart(3, "0")}</span><h3>{project.title}</h3><span className={s.indexStatus}>{projectStatusLabel(project.status)}<ArrowUpRight size={16}/></span></Link>)}</div> : <div className={s.indexEmpty}><Layers size={36} strokeWidth={1}/><p>{featured ? "Este é o seu projeto em destaque. Outros trabalhos aparecem neste arquivo." : "Dos exercícios aos trabalhos para clientes: seu portfólio pode mostrar como você resolve problemas."}</p></div>}
-        <Link href="/colaborador/portfolio" className={s.portfolioLink}><span><small>SUA APRESENTAÇÃO</small>Organizar portfólio</span><ArrowUpRight size={22}/></Link>
+        <Link href="/colaborador/portfolio" className={`${s.portfolioLink} ${s.portfolioPhotoLink}`}><OrbitPhoto kind="criacao" className={s.portfolioThumbnail} sizes="120px"/><span><small>SUA APRESENTAÇÃO</small>Organizar portfólio</span><ArrowUpRight size={22}/></Link>
       </div>
     </section>
 

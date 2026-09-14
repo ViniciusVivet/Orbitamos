@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import OrbitPhoto from "@/components/brand/OrbitPhoto";
+import { coursePhotoKind } from "@/components/brand/orbitamosPhotography";
 import { useEffect, useMemo, useState } from "react";
 import { Check, ListFilter, Search, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,14 +21,6 @@ import {
 
 const STORAGE_KEY = "orbitacademy-progress";
 
-const courseVisuals = [
-  "from-cyan-500/35 via-blue-950 to-black",
-  "from-violet-500/35 via-fuchsia-950 to-black",
-  "from-emerald-500/30 via-teal-950 to-black",
-  "from-amber-500/30 via-orange-950 to-black",
-  "from-sky-500/35 via-indigo-950 to-black",
-  "from-rose-500/30 via-purple-950 to-black",
-];
 
 function normalizeSearch(value: string) {
   return value
@@ -193,7 +187,7 @@ export default function EstudanteAulas() {
     [matchingCourses, allowedSlugs]
   );
 
-  function courseCard(curso: Curso, index: number, compact = false) {
+  function courseCard(curso: Curso, compact = false) {
     const total = totalAulas(curso);
     const completed = progressByCourse.get(curso.slug) ?? 0;
     const percent = total ? Math.round((completed / total) * 100) : 0;
@@ -205,10 +199,9 @@ export default function EstudanteAulas() {
         className={`group block shrink-0 snap-start ${compact ? "w-[230px] sm:w-[260px]" : "w-[260px] sm:w-[300px]"}`}
       >
         <article className="overflow-hidden rounded-2xl border border-white/10 bg-[#0b0d12] transition duration-300 hover:-translate-y-1 hover:border-orbit-electric/45 hover:shadow-[0_18px_55px_rgba(0,212,255,.14)]">
-          <div className={`relative aspect-[16/9] overflow-hidden bg-gradient-to-br ${courseVisuals[index % courseVisuals.length]}`}>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_20%,rgba(255,255,255,.22),transparent_30%)]" />
-            <div className="absolute -right-8 -top-10 size-36 rounded-full border border-white/15" />
-            <div className="absolute -right-2 top-2 size-24 rounded-full border border-white/10" />
+          <div className="relative aspect-[4/3] overflow-hidden">
+            <OrbitPhoto kind={coursePhotoKind(curso.slug)} fill sizes="300px"/>
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
             <div className="absolute inset-x-4 bottom-4">
               <span className="rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.18em] text-white/75 backdrop-blur">
                 OrbitAcademy
@@ -339,14 +332,15 @@ export default function EstudanteAulas() {
 
             {filteredSearchResults.length > 0 ? (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {filteredSearchResults.map(({ aula, curso, modulo, completed }, index) => (
+                {filteredSearchResults.map(({ aula, curso, modulo, completed }) => (
                   <Link
                     key={`${curso.id}-${aula.id}`}
                     href={`/estudante/cursos/${curso.slug}`}
                     className="group flex min-h-40 overflow-hidden rounded-2xl border border-white/10 bg-white/[.035] transition hover:border-orbit-electric/40 hover:bg-white/[.07]"
                   >
-                    <div className={`w-28 shrink-0 bg-gradient-to-br ${courseVisuals[index % courseVisuals.length]} sm:w-36`}>
-                      <div className="grid h-full place-items-center text-3xl opacity-75">{completed ? "✓" : "▶"}</div>
+                    <div className="relative w-24 shrink-0 sm:w-36">
+                      <OrbitPhoto kind={coursePhotoKind(curso.slug)} fill sizes="144px"/>
+                      <div className="absolute inset-0 grid place-items-center bg-black/40 text-3xl text-white" aria-hidden="true">{completed ? "✓" : "▶"}</div>
                     </div>
                     <div className="flex min-w-0 flex-1 flex-col p-4">
                       <span className="text-[10px] font-bold uppercase tracking-[.16em] text-orbit-electric">{curso.titulo}</span>
@@ -358,7 +352,7 @@ export default function EstudanteAulas() {
                 ))}
               </div>
             ) : filteredMatchingCourses.length > 0 ? (
-              <CourseRow className="flex snap-x gap-4 overflow-x-auto pb-4">{filteredMatchingCourses.map((curso, index) => courseCard(curso, index))}</CourseRow>
+              <CourseRow className="flex snap-x gap-4 overflow-x-auto pb-4">{filteredMatchingCourses.map(curso => courseCard(curso))}</CourseRow>
             ) : (
               <div className="rounded-3xl border border-dashed border-white/15 bg-white/[.025] px-6 py-14 text-center">
                 <Search className="mx-auto size-8 text-white/25" />
@@ -377,8 +371,8 @@ export default function EstudanteAulas() {
                   <p className="text-xs font-bold uppercase tracking-[.2em] text-orbit-purple">Escolha da OrbitAcademy</p>
                   <h2 className="mt-1 text-2xl font-black text-white">Continue de onde parou</h2>
                 </div>
-                <div className="relative overflow-hidden rounded-3xl border border-orbit-purple/25 bg-gradient-to-r from-violet-950 via-[#11152a] to-cyan-950 p-6 sm:p-8">
-                  <div className="absolute -right-16 -top-24 size-72 rounded-full border border-white/10" />
+                <div className="relative grid items-center gap-6 overflow-hidden rounded-3xl border border-white/15 bg-[#101922] p-6 sm:p-8 lg:grid-cols-[1.1fr_.9fr]">
+                  <OrbitPhoto kind={coursePhotoKind(suggested.slug)} className="order-2 rounded-xl" sizes="(max-width: 1023px) 90vw, 35vw"/>
                   <div className="relative max-w-2xl">
                     <span className="text-xs font-bold uppercase tracking-[.16em] text-orbit-electric">Sua próxima missão</span>
                     <h3 className="mt-3 text-3xl font-black text-white">{suggested.titulo}</h3>
@@ -401,12 +395,12 @@ export default function EstudanteAulas() {
                 <h2 className="text-2xl font-black text-white">Explore todos os cursos</h2>
                 <p className="mt-1 text-sm text-white/45">Deslize para encontrar sua próxima habilidade.</p>
                 <CourseRow className="mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5">
-                  {cursos.map((curso, index) => courseCard(curso, index))}
+                  {cursos.map(curso => courseCard(curso))}
                 </CourseRow>
               </section>
             )}
 
-            {visibleTracks.map((track, trackIndex) => (
+            {visibleTracks.map(track => (
               <section key={track.id}>
                 <div className="mb-4 flex items-end justify-between gap-4">
                   <div>
@@ -418,7 +412,7 @@ export default function EstudanteAulas() {
                   <span className="hidden text-xs text-white/35 sm:block">{track.cursos.length} cursos</span>
                 </div>
                 <CourseRow className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5">
-                  {track.cursos.map((curso, index) => courseCard(curso, index + trackIndex, true))}
+                  {track.cursos.map(curso => courseCard(curso, true))}
                 </CourseRow>
               </section>
             ))}

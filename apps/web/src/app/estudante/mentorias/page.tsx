@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { OrbitScene } from "@/components/brand/OrbitPhoto";
 import {
   ArrowRight,
   BookOpenCheck,
@@ -70,24 +71,29 @@ export default function EstudanteMentorias() {
       </section>
 
       <div className="mx-auto max-w-7xl space-y-9 px-4 pt-8 sm:px-8 lg:px-10">
-        <section>
+        <section className="grid items-center gap-7 xl:grid-cols-[.85fr_1.15fr]">
+          <OrbitScene kind="mentoria" className="rounded-[3px_28px_3px_3px]" sizes="(max-width: 1279px) 100vw, 40vw"/>
+          <div>
           <div className="mb-5">
             <p className="text-xs font-bold uppercase tracking-[.2em] text-orbit-electric">Comece pelo seu objetivo</p>
             <h2 className="mt-1 text-2xl font-black text-white">Em que ponto você precisa de ajuda?</h2>
           </div>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-1">
             {mentoringGoals.map((goal) => {
               const Icon = goal.icon;
               return (
-                <article key={goal.title} className="rounded-2xl border border-white/10 bg-white/[.035] p-5">
-                  <div className="grid size-11 place-items-center rounded-xl border border-cyan-400/20 bg-cyan-400/[.08] text-cyan-300">
+                <article key={goal.title} className="flex items-start gap-4 rounded-2xl border border-white/10 bg-white/[.035] p-5 md:flex-col xl:flex-row">
+                  <div className="grid size-11 shrink-0 place-items-center rounded-xl border border-cyan-400/20 bg-cyan-400/[.08] text-cyan-300">
                     <Icon className="size-5" />
                   </div>
-                  <h3 className="mt-5 text-lg font-black text-white">{goal.title}</h3>
+                  <div>
+                  <h3 className="text-lg font-black text-white">{goal.title}</h3>
                   <p className="mt-2 text-sm leading-5 text-white/50">{goal.description}</p>
+                  </div>
                 </article>
               );
             })}
+          </div>
           </div>
         </section>
 

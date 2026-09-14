@@ -156,3 +156,15 @@
   .notice{align-items:flex-start;flex-direction:column}.portalFooter{font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){.home,.skeleton{animation:none}.home *,.sidebar{transition:none!important}.courseBook:hover .bookCover{transform:none}}
+
+/* Photographic editions retain the shelf's compact, swipeable reading layout. */
+.bookCover.photographicBook{overflow:hidden;color:#fff;background:#101a23;min-height:340px;isolation:isolate}
+.photographicBook::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,#04101977 0%,transparent 30%,#041019b8 60%,#041019 100%)}
+.photographicBook>[data-orbit-photo]{z-index:-2}
+.photographicBook .bookImprint{text-shadow:0 1px 8px #000;margin-bottom:130px}
+.photographicBook h3{position:relative;margin-top:auto;color:#fff;text-wrap:balance}
+.photographicBook .bookField{margin-top:0;color:#d4e6e7}
+.portfolioPhotoLink{padding:0 18px 0 0;overflow:hidden}
+.portfolioPhotoLink .portfolioThumbnail{width:96px;min-height:110px;align-self:stretch;flex-shrink:0;aspect-ratio:auto}
+.portfolioPhotoLink>span{flex:1}
+@media(max-width:400px){.portfolioPhotoLink{gap:12px;font-size:15px}.portfolioPhotoLink .portfolioThumbnail{width:76px}.bookCover.photographicBook{min-height:320px}}

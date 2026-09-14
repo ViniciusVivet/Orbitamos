@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OrbitScene } from "@/components/brand/OrbitPhoto";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
@@ -12,14 +13,18 @@ export default function Mentorias() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orbit-black via-gray-900 to-orbit-black">
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-7xl font-bold mb-8">
+      <section className="relative overflow-hidden py-12 sm:py-20">
+        <div className="container mx-auto grid items-center gap-10 px-4 lg:grid-cols-2 lg:gap-16">
+          <div>
+          <p className="mb-6 font-mono text-xs uppercase tracking-[.22em] text-cyan-300">Orbitamos / Orientação e prática</p>
+          <h1 className="font-display text-5xl md:text-7xl font-semibold tracking-tight mb-6">
             <span className="gradient-text">Do Subemprego à T.I.</span>
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <p className="text-xl leading-8 text-gray-300 max-w-lg">
             Trilhas estruturadas para sua transformação profissional
           </p>
+          </div>
+          <OrbitScene kind="mentoria" className="rounded-[4px_48px_4px_4px]" sizes="(max-width: 1023px) 100vw, 50vw"/>
         </div>
       </section>
 

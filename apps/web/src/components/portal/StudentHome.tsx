@@ -1,4 +1,6 @@
 import Link from "next/link";
+import OrbitPhoto from "@/components/brand/OrbitPhoto";
+import { coursePhotoKind } from "@/components/brand/orbitamosPhotography";
 import { ArrowRight, ArrowUpRight, BookOpen, Check, Circle, Code2, Gamepad2, GraduationCap, Play } from "lucide-react";
 import type { DashboardProgress, DashboardSummary } from "@/lib/api";
 import { totalAulas, type Curso } from "@/lib/cursos";
@@ -61,7 +63,7 @@ export default function StudentHome({ name, progress, progressLoading, courses, 
       {loading ? <LoadingRows/> : recommended.length ? <div className={s.courseShelf} data-course-shelf>{recommended.map(course => {
         const edition = courseEdition(course);
         return <Link href={`/estudante/cursos/${course.slug}`} className={s.courseBook} key={course.id}>
-          <div className={`${s.bookCover} ${s[edition.tone]}`}><div className={s.bookImprint}><span>ORBITAMOS<br/>ACADEMY</span><ArrowUpRight size={20}/></div><span className={s.bookMark} aria-hidden="true">{edition.mark}</span><h3>{course.titulo}</h3><span className={s.bookField}>{edition.field}</span></div>
+          <div className={`${s.bookCover} ${s.photographicBook}`}><OrbitPhoto kind={coursePhotoKind(course.slug)} fill sizes="(max-width: 640px) 85vw, (max-width: 1024px) 40vw, 25vw"/><div className={s.bookImprint}><span>ORBITAMOS<br/>ACADEMY</span><ArrowUpRight size={20}/></div><h3>{course.titulo}</h3><span className={s.bookField}>{edition.field}</span></div>
           <div className={s.bookCaption}><span>{totalAulas(course)} {totalAulas(course) === 1 ? "aula" : "aulas"} · {course.modulos.length} {course.modulos.length === 1 ? "módulo" : "módulos"}</span><span>{allDone ? "Revisitar" : course.id === nextLesson?.curso.id ? "Em estudo" : "Explorar"}<ArrowRight size={14}/></span></div>
         </Link>;
       })}</div> : <EmptyState icon={BookOpen} title={error ? "A biblioteca não carregou." : "A sua estante ainda está aberta."} href="/estudante/aulas" action="Abrir catálogo">{error ? "Tente atualizar a página ou consulte o catálogo de aulas." : "Explore os assuntos disponíveis e encontre uma trilha para começar."}</EmptyState>}

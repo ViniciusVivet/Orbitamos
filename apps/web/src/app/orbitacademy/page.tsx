@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { OrbitScene } from "@/components/brand/OrbitPhoto";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Tilt from "@/components/Tilt";
@@ -463,7 +464,9 @@ export default function Home() {
       {/* Final CTA — glass com glow sobre universo */}
       <section className="py-24">
         <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-3xl rounded-2xl border border-white/10 bg-black/40 p-10 shadow-[0_0_60px_rgba(0,212,255,0.15)] backdrop-blur-xl md:p-14">
+          <div className="mx-auto grid max-w-6xl items-center gap-8 border-y border-white/10 bg-black/40 py-8 backdrop-blur-xl lg:grid-cols-2 lg:gap-12">
+            <OrbitScene kind="estudo" className="rounded-[4px_40px_4px_4px]" sizes="(max-width: 1023px) 100vw, 45vw"/>
+            <div>
             <h2 className="text-4xl font-bold text-center text-white mb-6">
               Pronto para <span className="gradient-text">orbitar</span>?
             </h2>
@@ -477,9 +480,10 @@ export default function Home() {
                   size="lg"
                   className="bg-gradient-to-r from-orbit-electric to-orbit-purple text-black hover:from-orbit-purple hover:to-orbit-electric font-bold px-12 py-6 text-xl shadow-[0_0_30px_rgba(0,212,255,0.4)] hover:shadow-[0_0_40px_rgba(0,212,255,0.5)] transform-gpu transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0.5"
                 >
-                  🚀 Começar Minha Jornada
+                  Começar Minha Jornada
                 </Button>
               </Link>
+            </div>
             </div>
           </div>
         </div>

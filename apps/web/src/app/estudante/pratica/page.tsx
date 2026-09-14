@@ -1,21 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import {
-  ArrowRight,
-  CheckCircle2,
-  Code2,
-  Play,
-  Search,
-  Sparkles,
-  Target,
-  TerminalSquare,
-  Timer,
-} from "lucide-react";
+import { ArrowRight, ArrowUpRight, CheckCircle2, HardDrive, Play, Search, X } from "lucide-react";
 import { desafios } from "@/lib/desafios";
 import { warmPythonRuntime } from "@/lib/browserCodeRunner";
 import { useAuth } from "@/contexts/AuthContext";
+
+import s from "@/components/estudante/Laboratory.module.css";
+import { getLaboratoryCover } from "@/components/estudante/laboratoryCovers";
+
+const languageNames: Record<string, string> = { javascript: "JavaScript", typescript: "TypeScript", python: "Python", csharp: "C#" };
+const languageCodes: Record<string, string> = { javascript: "JS", typescript: "TS", python: "Py", csharp: "C#" };
+const difficultyNames: Record<string, string> = { iniciante: "Iniciante", basico: "Básico", intermediario: "Intermediário" };
 
 type ChallengeState = "novo" | "andamento" | "concluido";
 type Filter = "todos" | ChallengeState;
@@ -26,8 +24,7 @@ function normalize(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
-export default function PraticaIndex() {
-  const { user } = useAuth();
+export function PraticaCatalog({ userId = null }: { userId?: string | number | null }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("todos");
   const [language, setLanguage] = useState<LanguageFilter>("todas");
@@ -40,13 +37,13 @@ export default function PraticaIndex() {
       const next: Record<string, ChallengeState> = {};
       const nextReflections: Record<string, boolean> = {};
       desafios.forEach((challenge) => {
-        if (!user?.id) {
+        if (!userId) {
           next[challenge.slug] = "novo";
           nextReflections[challenge.slug] = false;
           return;
         }
         try {
-          const raw = localStorage.getItem(`orbitamos-pratica-${user.id}-${challenge.slug}`);
+          const raw = localStorage.getItem(`orbitamos-pratica-${userId}-${challenge.slug}`);
           if (!raw) {
             next[challenge.slug] = "novo";
             nextReflections[challenge.slug] = false;
@@ -67,7 +64,7 @@ export default function PraticaIndex() {
       setStates(next);
       setReflections(nextReflections);
     });
-  }, [user?.id]);
+  }, [userId]);
 
   const filteredChallenges = useMemo(() => {
     const normalizedQuery = normalize(query.trim());
@@ -87,228 +84,79 @@ export default function PraticaIndex() {
     desafios.find((challenge) => states[challenge.slug] === "andamento") ??
     desafios.find((challenge) => states[challenge.slug] !== "concluido");
 
-  return (
-    <div className="-mx-4 -mt-4 min-h-screen overflow-hidden pb-14 sm:-mt-6 lg:-mx-6 lg:-mt-8">
-      <section className="relative isolate overflow-hidden border-b border-white/10 px-4 py-5 sm:px-8 sm:py-6 lg:px-10">
-        <div className="absolute inset-0 -z-20 bg-[#03050a]" />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_120%_at_90%_0%,rgba(0,212,255,.16),transparent_60%),radial-gradient(ellipse_50%_100%_at_0%_100%,rgba(139,92,246,.14),transparent_68%)]" />
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[.22em] text-orbit-electric">
-              <TerminalSquare className="size-3.5" /> Laboratório Orbitamos
-            </div>
-            <h1 className="mt-1.5 text-xl font-black tracking-tight text-white sm:text-2xl lg:text-3xl">
-              Aprender código exige <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">escrever código.</span>
-            </h1>
-            <p className="mt-1.5 max-w-xl text-xs leading-5 text-white/50 sm:text-sm">
-              Missões curtas, execução segura no navegador e ajuda por etapas — sem entregar a resposta de primeira.
-            </p>
-          </div>
-          <div className="flex shrink-0 flex-wrap gap-2">
-            <div className="rounded-full border border-white/10 bg-black/30 px-3 py-1.5 text-[11px] text-white/60">
-              <strong className="text-white">{desafios.length}</strong> desafios
-            </div>
-            <div className="rounded-full border border-emerald-400/20 bg-emerald-400/[.07] px-3 py-1.5 text-[11px] text-emerald-200">
-              <strong>{completed}</strong> concluídos
-            </div>
-            <div className="rounded-full border border-amber-400/20 bg-amber-400/[.07] px-3 py-1.5 text-[11px] text-amber-200">
-              <strong>{inProgress}</strong> em andamento
-            </div>
-          </div>
+return (
+    <div className={s.catalog} data-lab-catalog>
+      <header className={s.catalogHeader}>
+        <div><span className={s.eyebrow}>OrbitAcademy / Aprender fazendo</span><h1>Laboratório<br/>de código<span>.</span></h1><p>Escolha um experimento. Escreva sua solução. Veja o resultado.</p></div>
+        <div className={s.catalogStats} aria-label="Resumo dos desafios">
+          <div><strong>{String(desafios.length).padStart(2, "0")}</strong><span>Experimentos</span></div>
+          <div><strong>{String(inProgress).padStart(2, "0")}</strong><span>Em andamento</span></div>
+          <div><strong>{String(completed).padStart(2, "0")}</strong><span>Concluídos aqui</span></div>
         </div>
+      </header>
+
+      {recommended && <Link
+        href={`/estudante/pratica/${recommended.slug}`}
+        onPointerEnter={() => { if (recommended.linguagem === "python") void warmPythonRuntime(); }}
+        onFocus={() => { if (recommended.linguagem === "python") void warmPythonRuntime(); }}
+        className={s.resumeExperiment}
+      >
+        <div className={s.resumeMain}>
+          <span className={s.eyebrow}>{states[recommended.slug] === "andamento" ? "Retomar experimento" : "Um bom ponto de partida"}</span>
+          <h2>{recommended.titulo}</h2><p>{recommended.descricao}</p>
+          <div className={s.resumeFoot}><span>{languageNames[recommended.linguagem]} · {recommended.minutos ? `~${recommended.minutos} min` : "No seu ritmo"}</span><span className={s.resumeAction}>{states[recommended.slug] === "andamento" ? "Continuar" : "Abrir experimento"}<ArrowUpRight size={19}/></span></div>
+        </div>
+        <div className={s.resumeOutline}><span className={s.outlineLabel}>DENTRO DESTE EXPERIMENTO</span><ol>{recommended.steps.slice(0, 2).map((step, index) => <li key={index}><span>{String(index + 1).padStart(2, "0")}</span><p>{step.instrucao}</p></li>)}</ol><span className={s.outlineTotal}>{recommended.steps.length} etapa{recommended.steps.length === 1 ? "" : "s"} com orientação<ArrowRight size={15}/></span></div>
+      </Link>}
+
+      <section id="experimentos" className={s.experimentLibrary} aria-label="Biblioteca de experimentos">
+        <div className={s.libraryTitle}><div><span className={s.eyebrow}>Sua bancada de prática</span><h2>Encontre um desafio.</h2></div><Link href="/estudante/aulas">Revisar as aulas<ArrowUpRight size={15}/></Link></div>
+        <div className={s.searchRow}>
+          <label className={s.searchField}><Search size={18}/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Tema, habilidade ou linguagem" aria-label="Buscar desafios"/>{query && <button type="button" onClick={() => setQuery("")} aria-label="Limpar busca"><X size={17}/></button>}</label>
+          <label className={s.difficultyField}><span>Dificuldade</span><select value={difficulty} onChange={event => setDifficulty(event.target.value as DifficultyFilter)} aria-label="Filtrar por dificuldade"><option value="todas">Todos os níveis</option><option value="iniciante">Iniciante</option><option value="basico">Básico</option><option value="intermediario">Intermediário</option></select></label>
+        </div>
+        <div className={s.languageTabs} aria-label="Linguagens">{(["todas", "javascript", "python", "csharp"] as const).map(value => <button key={value} type="button" aria-pressed={language === value} onClick={() => setLanguage(value)}>{value === "todas" ? "Todas as linguagens" : languageNames[value]}</button>)}</div>
+        <div className={s.statusRow}><div className={s.statusFilters} aria-label="Status do desafio">{([["todos", "Todos"], ["novo", "Novos"], ["andamento", "Em andamento"], ["concluido", "Concluídos"]] as const).map(([value, label]) => <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)}>{label}</button>)}</div><p aria-live="polite">{filteredChallenges.length} de {desafios.length} experimentos</p></div>
+
+        {filteredChallenges.length ? <div className={s.experimentGrid}>{filteredChallenges.map(challenge => {
+          const state = states[challenge.slug] ?? "novo";
+          const cover = getLaboratoryCover(challenge.categoria);
+          return <Link key={challenge.slug} className={s.experiment} data-language={challenge.linguagem} href={`/estudante/pratica/${challenge.slug}`}
+            onPointerEnter={() => { if (challenge.linguagem === "python") void warmPythonRuntime(); }}
+            onFocus={() => { if (challenge.linguagem === "python") void warmPythonRuntime(); }}>
+            <div className={s.experimentVisual}>
+              <Image
+                src={cover.image}
+                alt=""
+                fill
+                placeholder="blur"
+                loading="lazy"
+                sizes="(max-width: 479px) calc(100vw - 32px), (max-width: 1023px) calc((100vw - 48px) / 2), (max-width: 1532px) calc((100vw - 288px) / 2), 622px"
+                style={{ objectPosition: cover.position }}
+                data-lab-cover={cover.key}
+              />
+              <span className={s.experimentIndex}>E—{String(desafios.findIndex(item => item.slug === challenge.slug) + 1).padStart(2, "0")}</span>
+              <span className={s.languageMark}>{languageCodes[challenge.linguagem]}</span>
+            </div>
+            <div className={s.experimentBody}>
+              <span className={s.experimentCategory}>{challenge.categoria || languageNames[challenge.linguagem]}</span>
+              <div className={s.experimentHeading}><h3>{challenge.titulo}</h3><ArrowUpRight size={20}/></div>
+              <p className={s.experimentDescription}>{challenge.descricao}</p>
+              {challenge.habilidade && <p className={s.experimentSkill}>{challenge.habilidade}</p>}
+              <div className={s.experimentMeta}><span>{difficultyNames[challenge.dificuldade || "iniciante"]}</span><span>{challenge.steps.length} etapa{challenge.steps.length === 1 ? "" : "s"}</span>{challenge.minutos && <span>~{challenge.minutos} min</span>}</div>
+              <div className={s.experimentBottom}><span data-state={state}>{state === "concluido" ? <CheckCircle2 size={14}/> : state === "andamento" ? <Play size={13}/> : <span className={s.statusDot}/>} {state === "concluido" ? "Concluído" : state === "andamento" ? "Continuar rascunho" : "Não iniciado"}</span>{reflections[challenge.slug] && <span>Reflexão salva</span>}</div>
+            </div>
+          </Link>;
+        })}</div> : <div className={s.noResults}><Search size={30}/><h3>Nenhum experimento por aqui.</h3><p>Tente outro tema ou remova os filtros para explorar a bancada.</p><button type="button" onClick={() => { setQuery(""); setFilter("todos"); setLanguage("todas"); setDifficulty("todas"); }}>Mostrar todos os experimentos<ArrowRight size={16}/></button></div>}
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-8 lg:px-10">
-        {recommended && (
-          <Link
-            href={`/estudante/pratica/${recommended.slug}`}
-            onPointerEnter={() => { if (recommended.linguagem === "python") void warmPythonRuntime(); }}
-            onFocus={() => { if (recommended.linguagem === "python") void warmPythonRuntime(); }}
-            className="mb-6 flex flex-col gap-4 rounded-2xl bg-gradient-to-r from-orbit-electric/[.13] via-white/[.035] to-orbit-purple/[.13] p-4 transition hover:from-orbit-electric/[.18] hover:to-orbit-purple/[.18] sm:flex-row sm:items-center sm:justify-between sm:p-5"
-          >
-            <div className="flex min-w-0 items-center gap-4">
-              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-orbit-electric/15 text-orbit-electric">
-                <Play className="size-5" />
-              </span>
-              <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-[.18em] text-orbit-electric">
-                  {states[recommended.slug] === "andamento" ? "Continue de onde parou" : "Próximo passo recomendado"}
-                </p>
-                <h2 className="mt-1 truncate text-base font-black text-white">{recommended.titulo}</h2>
-                <p className="mt-1 text-xs text-white/45">
-                  {recommended.linguagem} · {recommended.dificuldade} · cerca de {recommended.minutos} minutos
-                </p>
-              </div>
-            </div>
-            <span className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-4 text-xs font-black text-black">
-              {states[recommended.slug] === "andamento" ? "Continuar missão" : "Começar missão"}
-              <ArrowRight className="size-3.5" />
-            </span>
-          </Link>
-        )}
-
-        <section className="rounded-3xl border border-white/10 bg-[#080a0f] p-4 sm:p-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="relative w-full max-w-xl">
-              <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-white/35" />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Busque por tema ou linguagem..."
-                aria-label="Buscar desafios"
-                className="h-12 w-full rounded-xl border border-white/10 bg-black/35 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-orbit-electric/50 focus:ring-4 focus:ring-orbit-electric/10"
-              />
-            </div>
-            <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {([
-                ["todos", "Todos"],
-                ["novo", "Novos"],
-                ["andamento", "Em andamento"],
-                ["concluido", "Concluídos"],
-              ] as const).map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setFilter(value)}
-                  aria-pressed={filter === value}
-                  className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition touch-manipulation min-h-[36px] ${
-                    filter === value
-                      ? "bg-white text-black"
-                      : "border border-white/10 bg-white/[.035] text-white/55 hover:bg-white/[.07] hover:text-white"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="mt-4 flex flex-col gap-3 border-t border-white/[.06] pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex gap-2">
-              {(["todas", "javascript", "python", "csharp"] as const).map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setLanguage(value)}
-                  aria-pressed={language === value}
-                  className={`rounded-lg px-3 py-2 text-[11px] font-bold uppercase transition ${
-                    language === value ? "bg-orbit-electric/15 text-orbit-electric" : "text-white/35 hover:text-white"
-                  }`}
-                >
-                  {value === "todas" ? "Todas linguagens" : value === "csharp" ? "C#" : value}
-                </button>
-              ))}
-            </div>
-            <select
-              value={difficulty}
-              onChange={(event) => setDifficulty(event.target.value as DifficultyFilter)}
-              className="h-10 rounded-xl border border-white/10 bg-black/35 px-3 text-xs font-bold text-white/60 outline-none focus:border-orbit-electric/40"
-              aria-label="Filtrar por dificuldade"
-            >
-              <option value="todas">Todas as dificuldades</option>
-              <option value="iniciante">Iniciante</option>
-              <option value="basico">Básico</option>
-              <option value="intermediario">Intermediário</option>
-            </select>
-          </div>
-        </section>
-
-        <section className="mt-7">
-          <div className="mb-5 flex items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[.18em] text-violet-300">Missões disponíveis</p>
-              <h2 className="mt-1 text-2xl font-black text-white">{filteredChallenges.length} resultado{filteredChallenges.length === 1 ? "" : "s"}</h2>
-            </div>
-            <Link href="/estudante/aulas" className="hidden items-center gap-1 text-xs font-bold text-white/45 hover:text-orbit-electric sm:flex">
-              Revisar conteúdo <ArrowRight className="size-3.5" />
-            </Link>
-          </div>
-
-          {filteredChallenges.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {filteredChallenges.map((challenge, index) => {
-                const state = states[challenge.slug] ?? "novo";
-                return (
-                  <Link
-                    key={challenge.slug}
-                    href={`/estudante/pratica/${challenge.slug}`}
-                    onPointerEnter={() => { if (challenge.linguagem === "python") void warmPythonRuntime(); }}
-                    onFocus={() => { if (challenge.linguagem === "python") void warmPythonRuntime(); }}
-                    className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#0d1117] transition duration-300 hover:-translate-y-1 hover:border-orbit-electric/40 hover:shadow-[0_18px_55px_rgba(0,212,255,.1)]"
-                  >
-                    <div className={`relative h-32 bg-gradient-to-br ${index % 3 === 0 ? "from-cyan-500/25 via-blue-950 to-black" : index % 3 === 1 ? "from-violet-500/25 via-purple-950 to-black" : "from-emerald-500/20 via-teal-950 to-black"}`}>
-                      <div className="absolute -right-8 -top-10 size-32 rounded-full border border-white/10" />
-                      <Code2 className="absolute bottom-4 left-5 size-8 text-white/70" />
-                      <span className="absolute right-4 top-4 rounded-full border border-white/15 bg-black/35 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white/65">
-                        {challenge.linguagem}
-                      </span>
-                    </div>
-                    <div className="p-5">
-                      <div className="flex items-center justify-between gap-3">
-                        <span className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider ${
-                          state === "concluido" ? "text-emerald-300" : state === "andamento" ? "text-amber-300" : "text-orbit-electric"
-                        }`}>
-                          {state === "concluido" ? <CheckCircle2 className="size-3.5" /> : state === "andamento" ? <Play className="size-3.5" /> : <Sparkles className="size-3.5" />}
-                          {state === "concluido" ? "Concluído" : state === "andamento" ? "Continuar" : "Nova missão"}
-                        </span>
-                        <span className="flex items-center gap-1 text-[10px] text-white/30"><Timer className="size-3" /> ~{challenge.minutos ?? 5} min</span>
-                      </div>
-                      <h3 className="mt-3 text-lg font-black text-white group-hover:text-orbit-electric">{challenge.titulo}</h3>
-                      <p className="mt-2 min-h-10 text-sm leading-5 text-white/45">{challenge.descricao}</p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {challenge.dificuldade && <span className="rounded-full bg-white/[.05] px-2 py-1 text-[9px] font-bold uppercase text-white/40">{challenge.dificuldade}</span>}
-                        {challenge.categoria && <span className="rounded-full bg-orbit-purple/10 px-2 py-1 text-[9px] font-bold uppercase text-orbit-purple">{challenge.categoria}</span>}
-                        {reflections[challenge.slug] && <span className="rounded-full bg-emerald-400/10 px-2 py-1 text-[9px] font-bold uppercase text-emerald-300">Reflexão salva</span>}
-                      </div>
-                      <div className="mt-5 flex items-center justify-between border-t border-white/8 pt-4">
-                        <span className="flex items-center gap-1.5 text-xs text-white/40"><Target className="size-3.5" /> {challenge.steps.length} etapas</span>
-                        <ArrowRight className="size-4 text-white/25 transition group-hover:translate-x-1 group-hover:text-orbit-electric" />
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="rounded-3xl border border-dashed border-white/15 bg-white/[.025] px-6 py-14 text-center">
-              <Search className="mx-auto size-8 text-white/20" />
-              <h3 className="mt-4 font-black text-white">Nenhuma missão encontrada</h3>
-              <p className="mt-2 text-sm text-white/40">Limpe a busca ou escolha outro status para ver os desafios.</p>
-              <button type="button" onClick={() => { setQuery(""); setFilter("todos"); setLanguage("todas"); setDifficulty("todas"); }} className="mt-4 text-xs font-bold text-orbit-electric">
-                Mostrar todas
-              </button>
-            </div>
-          )}
-        </section>
-
-        <section className="mt-9 rounded-3xl border border-orbit-purple/20 bg-orbit-purple/[.06] p-5 sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[.18em] text-orbit-purple">Prefere começar jogando?</p>
-              <h2 className="mt-2 text-xl font-black text-white">Monte o Código: organize blocos embaralhados.</h2>
-              <p className="mt-1 max-w-2xl text-sm leading-5 text-white/45">
-                Sem digitar nada: toque nos blocos e monte o programa na ordem certa. Ótimo no celular e para treinar a lógica antes de escrever código.
-              </p>
-            </div>
-            <Link
-              href="/estudante/jogos"
-              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-4 text-xs font-black text-black transition hover:bg-orbit-purple hover:text-white"
-            >
-              Jogar agora
-              <ArrowRight className="size-3.5" />
-            </Link>
-          </div>
-        </section>
-
-        <section className="mt-6 rounded-3xl border border-amber-400/15 bg-amber-400/[.045] p-5 sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[.18em] text-amber-300">Como funciona</p>
-              <h2 className="mt-2 text-xl font-black text-white">Seu código fica salvo neste dispositivo.</h2>
-              <p className="mt-1 max-w-2xl text-sm leading-5 text-white/45">A execução acontece em um ambiente temporário no navegador, com limite de tempo. Use “Reiniciar” somente quando quiser apagar o rascunho da missão.</p>
-            </div>
-          </div>
-        </section>
-      </div>
+      <Link className={s.blocksAlternative} href="/estudante/jogos"><span className={s.blockMotif} aria-hidden="true"><i/><i/><i/></span><div><span className={s.eyebrow}>Outro jeito de praticar</span><h2>Prefere começar pelos blocos?</h2><p>Monte o Código: organize o programa antes de partir para o teclado.</p></div><ArrowUpRight size={24}/></Link>
+      <p className={s.storageNote}><HardDrive size={17}/>Seus rascunhos ficam salvos neste navegador. A execução é temporária; “Reiniciar” apaga o rascunho da missão.</p>
     </div>
   );
+}
+
+export default function PraticaIndex() {
+  const { user } = useAuth();
+  return <PraticaCatalog userId={user?.id}/>;
 }

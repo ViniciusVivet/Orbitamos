@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { OrbitScene } from "@/components/brand/OrbitPhoto";
 import Image from "next/image";
 import {
   ArrowUpRight,
@@ -1034,7 +1035,8 @@ export default function ForumPage() {
               </div>
 
               <div className="overflow-hidden rounded-3xl border border-orbit-electric/15 bg-gradient-to-br from-orbit-electric/[0.07] to-orbit-purple/[0.07] p-5">
-                <BookOpen className="h-5 w-5 text-orbit-electric" />
+                <OrbitScene kind="equipe" className="mb-2 rounded-xl" sizes="300px"/>
+                <BookOpen className="mt-4 h-5 w-5 text-orbit-electric" />
                 <h2 className="mt-3 font-display text-sm font-semibold">Uma boa publicação</h2>
                 <ul className="mt-3 space-y-2 text-xs leading-5 text-white/45">
                   <li className="flex gap-2"><span className="text-orbit-electric">01</span> Use um título específico.</li>

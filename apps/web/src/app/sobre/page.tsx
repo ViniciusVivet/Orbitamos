@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OrbitScene } from "@/components/brand/OrbitPhoto";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Parallax from "@/components/Parallax";
@@ -15,14 +16,18 @@ export default function Sobre() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orbit-black via-gray-900 to-orbit-black">
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-7xl font-bold mb-8">
+      <section className="relative overflow-hidden py-12 sm:py-20">
+        <div className="container mx-auto grid items-center gap-10 px-4 lg:grid-cols-[.85fr_1.15fr] lg:gap-16">
+          <div>
+          <p className="mb-6 font-mono text-xs uppercase tracking-[.22em] text-cyan-300">Educação / Comunidade / Cultura</p>
+          <h1 className="font-display text-5xl md:text-7xl font-semibold tracking-tight mb-6">
             <span className="gradient-text">Nosso Propósito</span>
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <p className="text-xl leading-8 text-gray-300 max-w-sm">
             Se a gente vai longe, é porque sobe junto.
           </p>
+          </div>
+          <OrbitScene kind="equipe" className="rounded-[4px_48px_4px_4px]" sizes="(max-width: 1023px) 100vw, 55vw"/>
         </div>
       </section>
 
