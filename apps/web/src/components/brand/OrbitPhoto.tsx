@@ -18,6 +18,5 @@ export default function OrbitPhoto({ kind, className = "", sizes = "(max-width: 
 export function OrbitScene(props: Omit<Props, "fill">) {
   return <figure className="min-w-0">
     <OrbitPhoto {...props} />
-    <figcaption className="mt-2 text-[10px] leading-4 tracking-wide text-slate-400">Universo Orbitamos · cena ilustrativa criada com IA</figcaption>
   </figure>;
 }

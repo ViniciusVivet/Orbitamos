@@ -4,7 +4,7 @@
 
 Fotografia editorial de estudo e trabalho: pessoas adultas, materiais tangíveis, luz natural e detalhes ciano/azul. ORBITAMOS impresso fisicamente em roupas e objetos. Manter títulos, preços, progresso e botões em HTML, nunca gravados nas fotos.
 
-Estas cenas foram **geradas com IA**, não são fotografias documentais de alunos, equipe ou clientes. Cenas de pessoas em contextos editoriais usam legenda visível. Capas e miniaturas são decorativas (alt vazio, com título adjacente). Nunca usar como avatar, depoimento, resultado comprovado ou capa fictícia de um case real.
+Estas cenas foram **geradas com IA**, não são fotografias documentais de alunos, equipe ou clientes. Por solicitação do usuário em 16/09/2026, as legendas de geração foram removidas da interface; a origem permanece registrada nesta documentação interna. Capas e miniaturas são decorativas (alt vazio, com título adjacente). Nunca usar como avatar, depoimento, resultado comprovado ou capa fictícia de um case real.
 
 ## Aplicação e limites
 

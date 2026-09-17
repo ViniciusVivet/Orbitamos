@@ -32,7 +32,6 @@ export default function HomeProcess({ contactHref }: { contactHref: string }) {
             {active === index && <Image src={studioPhotos[step.photo]} alt="" fill placeholder="blur" sizes="(max-width: 800px) 100vw, 60vw" className={s.photo}/>}
             <span className={s.photoEdition} aria-hidden="true">ORBITAMOS / PROCESSO — 0{index + 1}</span>
           </div>
-          <figcaption>Cena ilustrativa criada com IA · Universo Orbitamos</figcaption>
         </figure>
         <div className={s.processCopy}>
           <span className={s.eyebrow}>Etapa 0{index + 1} / {step.name}</span>

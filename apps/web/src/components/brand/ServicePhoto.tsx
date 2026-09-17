@@ -9,6 +9,5 @@ export default function ServicePhoto({ slug }: { slug: string }) {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#03050a]/65 to-transparent"/>
       <span className="absolute bottom-4 left-5 font-mono text-[10px] uppercase tracking-[.14em] text-white">Orbitamos / Da ideia à operação</span>
     </div>
-    <figcaption className="px-5 pt-2 text-[10px] leading-4 text-slate-400">Cena ilustrativa criada com IA · Universo Orbitamos</figcaption>
   </figure>;
 }
