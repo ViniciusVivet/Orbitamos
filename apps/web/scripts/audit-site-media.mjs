@@ -29,20 +29,20 @@ try{
  for(const slug of slugs)for(const width of [390,1440]){
   const page=await browser.newPage({viewport:{width,height:900},reducedMotion:"reduce"});
   await page.goto(base+"/servicos/"+slug,{waitUntil:"domcontentloaded",timeout:120000});
-  const photo=page.locator("[data-service-photo]");
+  const photo=page.locator("[data-service-proof]");
   await photo.waitFor();
   await photo.locator("img").scrollIntoViewIfNeeded();
   await photo.locator("img").evaluate(img=>img.decode());
   assert.ok(await photo.locator("img").evaluate(img=>img.naturalWidth>0));
-  assert.equal(await photo.locator("img").getAttribute("alt"),"");
+  assert.ok(await photo.locator("img").getAttribute("alt"));
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),slug+" overflow "+width);
   assert.equal(await page.getByRole("heading",{level:1}).count(),1);
   const imageUrl=await photo.locator("img").evaluate(img=>img.currentSrc);
   const response=await page.request.get(imageUrl,{headers:{Accept:"image/webp"}});
   assert.equal(response.status(),200);
   const bytes=(await response.body()).length;
-  services.push({slug,width,photo:await photo.getAttribute("data-service-photo"),bytes,format:response.headers()["content-type"]});
-  if(slug==="presenca-profissional")await page.locator("main>section").first().screenshot({path:path.join(output,"service-"+width+".jpg"),type:"jpeg",quality:75});
+  services.push({slug,width,case:await photo.getAttribute("href"),bytes,format:response.headers()["content-type"]});
+  if(slug==="presenca-profissional")await page.locator("[data-sales-page]>section").first().screenshot({path:path.join(output,"service-"+width+".jpg"),type:"jpeg",quality:75});
   console.log("PASS service",slug,width,bytes,"bytes");
   await page.close();
  }

@@ -21,7 +21,7 @@ Estas cenas foram **geradas com IA**, não são fotografias documentais de aluno
 | Portfólio e squad | Fotos no estado inicial; nunca preencher cases ou integrantes reais com conteúdo inventado. |
 | OrbitAcademy (/orbitacademy, acesso protegido) | Foto de estudo no convite final, preservando planeta e experiências existentes. Preview isolado para teste sem conta. |
 | Início | Vídeo e cases reais preservados; processo editorial em quatro etapas com fotos. Engenharia ilustrada em HTML/CSS, sem fotografia ornamental. |
-| Serviços | Capas editoriais nos seis serviços; preços, condições e provas reais preservados. |
+| Serviços | Na rodada comercial de 16/09, as capas editoriais deram lugar a capturas reais dos cases e diagramas HTML específicos por solução. Preços e condições preservados; acervo fotográfico continua disponível, sem geração adicional. |
 | Projetos e contato | Preservar capturas reais e mídias próprias; não gerar projetos fictícios. |
 | Login | Carrossel existente preservado, referência de marca para este acervo. |
 | Cursos/aula aberta, IDE, jogos e jornada | Manter vídeo didático, editor, arte dos jogos e visualização de progresso; não adicionar fotos que tomem espaço de uso. |

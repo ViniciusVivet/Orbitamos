@@ -150,6 +150,14 @@ Aprendizados reutilizáveis:
 
 Evidência: 15 resultados de auditoria de home em seis viewports, teclado/Axe dos novos blocos, quatro estados por seção, três pontos de scroll nos perfis animados e versão reduced-motion. Plano, sete quadros prévios, prompt e evidências complementares em INICIO_PROCESSO_ENGENHARIA.md.
 
+## Aplicação comercial — seis serviços (16/09/2026)
+
+Uma página comercial não precisa repetir a travessia cinematográfica dos cases. Nesta rodada, a prioridade foi permitir decisão informada: headline curta, preço visível, demonstrações específicas, prova real, limites e CTA com contexto. Seis universos visuais (marca, vitrine, gestão, fluxo, produto e continuidade) compartilham estrutura sem repetir o argumento.
+
+O contraste de superfície na seção de case estabelece uma pausa visual e dá protagonismo à execução real. As capturas não substituem o escopo comercial e não comprovam métricas de venda. Diagramas nativos explicam capacidades sem simular dashboards de clientes ou integrações ativas.
+
+Evidências: 25 cenários comerciais, 12 de mídia, 173 testes unitários, lint e build; teclado, reduced-motion, ausência de overflow e Axe nos novos blocos. Planejamento de sete quadros, referências de pesquisa e limites de medição em PAGINAS_COMERCIAIS.md. Não há nota de conversão ou 10/10 imersivo atribuída a esta intervenção.
+
 ## Regra de encerramento
 
 Não concluir uma iteração porque o código está sofisticado. Concluir somente depois de capturar e avaliar começo, pontos intermediários, transições e fim em desktop e mobile. Se o efeito só for impressionante em movimento rápido ou depender de explicação, ainda não está pronto.
