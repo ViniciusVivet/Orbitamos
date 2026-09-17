@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import ServicePhoto from "@/components/brand/ServicePhoto";
 import {
   ArrowRight,
   CheckCircle2,
@@ -101,6 +102,7 @@ export default async function ServicoPage({ params }: PageProps) {
           </div>
 
           <aside className="relative border border-white/10 bg-white/[0.045] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.36)] backdrop-blur-2xl">
+            <ServicePhoto slug={servico.slug}/>
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orbit-electric to-orbit-purple" />
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/38">
               Produto Orbitamos

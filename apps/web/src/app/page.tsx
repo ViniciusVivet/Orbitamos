@@ -26,7 +26,8 @@ import TextReveal from "@/components/TextReveal";
 import CountUp from "@/components/CountUp";
 import MagneticButton from "@/components/MagneticButton";
 import LazyVideo from "@/components/LazyVideo";
-import useTechOrbitScene from "@/components/three/TechOrbitScene";
+import HomeProcess from "@/components/home/HomeProcess";
+import HomeEngineering from "@/components/home/HomeEngineering";
 import useWarpCTAScene from "@/components/three/WarpCTAScene";
 import usePerformanceProfile from "@/hooks/usePerformanceProfile";
 import { projetos } from "@/data/projetos";
@@ -178,14 +179,6 @@ const featuredProjects = [
   },
 ];
 
-const processSteps = [
-  { title: "Diagnóstico", image: "/card-diagnostico.png" },
-  { title: "Arquitetura", image: "/card-arquitetura.png" },
-  { title: "Construção", image: "/card-construcao.png" },
-  { title: "Lançamento", image: "/card-lancamento.png" },
-];
-
-const stackTags = ["Next.js", "TypeScript", "APIs", "PostgreSQL", "Supabase", "Cloudinary", "IA", "Automações"];
 
 function OrbiMascot() {
   const ref = useRef<HTMLDivElement>(null);
@@ -226,7 +219,6 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false);
   const { constrained, reducedMotion } = usePerformanceProfile();
 
-  const techSetup = useTechOrbitScene();
   const warpSetup = useWarpCTAScene();
 
   useEffect(() => {
@@ -587,100 +579,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ PROCESS ═══ */}
-      <section className="mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[0.78fr_1.22fr] lg:px-10">
-        <div>
-          <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.7 }}>
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-orbit-electric/80">
-              Como funciona
-            </p>
-          </ScrollReveal>
-          <TextReveal
-            as="h2"
-            className="mt-4 text-4xl font-black leading-tight text-white sm:text-5xl"
-          >
-            Um processo direto para sair da ideia e ir para o ar.
-          </TextReveal>
-          <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.6, delay: 0.3 }}>
-            <p className="mt-5 text-base leading-7 text-white/50">
-              Você acompanha as decisões importantes sem precisar entender de código, hospedagem ou
-              stack técnica.
-            </p>
-          </ScrollReveal>
-        </div>
-
-        <ScrollReveal selectChildren stagger={0.12} from={{ opacity: 0, y: 50, scale: 0.9 }}>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {processSteps.map((step) => (
-              <article key={step.title} className="group overflow-hidden rounded-2xl transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_0_30px_rgba(0,212,255,0.15)]">
-                <img
-                  src={step.image}
-                  alt={step.title}
-                  className="w-full h-auto rounded-2xl"
-                  loading="lazy"
-                />
-              </article>
-            ))}
-          </div>
-        </ScrollReveal>
-      </section>
-
-      {/* ═══ TECH STACK - 3D ═══ */}
-      <section className="relative overflow-hidden border-y border-white/[0.08] bg-[#070a12]">
-        <div className="orbit-aurora pointer-events-none absolute inset-0 opacity-40" />
-        <div className="relative mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[0.78fr_1.22fr] lg:px-10">
-          <div className="max-w-xl">
-            <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.7 }}>
-              <p className="text-xs font-bold uppercase tracking-[0.24em] text-orbit-electric/80">
-                Engenharia por trás
-              </p>
-            </ScrollReveal>
-            <TextReveal
-              as="h2"
-              className="mt-4 text-3xl font-black leading-tight text-white sm:text-4xl"
-            >
-              Tecnologia moderna por trás. Simples para o cliente usar.
-            </TextReveal>
-            <ScrollReveal from={{ opacity: 0, y: 20 }} to={{ duration: 0.6, delay: 0.3 }}>
-              <p className="mt-5 text-base leading-7 text-white/55">
-                A estrutura combina interface, autenticação, banco de dados e integrações para o cliente operar sem precisar entender a complexidade técnica por baixo.
-              </p>
-            </ScrollReveal>
-          </div>
-
-          {/* 3D Orbit Visualization */}
-          <ScrollReveal from={{ opacity: 0, scale: 0.85 }} to={{ duration: 1, delay: 0.2 }}>
-            <div className="relative min-h-[500px] overflow-hidden rounded-2xl border border-white/10 bg-black/35 shadow-[0_30px_100px_rgba(0,0,0,0.45)] sm:min-h-[440px]">
-              {!isMobile && !constrained ? (
-                <SpaceCanvas setup={techSetup} />
-              ) : (
-                /* Mobile fallback: CSS orbit */
-                <div className="relative h-full w-full p-5">
-                  <div className="absolute left-1/2 top-1/2 h-52 w-52 -translate-x-1/2 -translate-y-1/2 rounded-full border border-orbit-electric/20 bg-orbit-electric/[0.025] animate-orbit-pulse" />
-                  <div className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full border border-orbit-purple/15 animate-orbit-pulse [animation-delay:1.2s]" />
-                  <div className="absolute left-1/2 top-1/2 h-[22rem] w-[22rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.06] animate-orbit-pulse [animation-delay:2.1s]" />
-                  <div className="absolute left-1/2 top-1/2 z-10 flex h-36 w-36 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-white/15 bg-[#080b14]/90 text-center shadow-[0_0_70px_rgba(0,212,255,0.16)] backdrop-blur-xl">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-orbit-electric/80">Orbitamos</span>
-                    <span className="mt-1 text-lg font-black text-white">Core</span>
-                    <span className="mt-1 text-[11px] text-white/45">design + código</span>
-                  </div>
-                </div>
-              )}
-
-              <div className="absolute bottom-5 left-5 right-5 z-30 flex flex-wrap gap-2">
-                {stackTags.map((item) => (
-                  <span
-                    key={item}
-                    className="rounded-full border border-white/[0.09] bg-black/35 px-3 py-1.5 text-xs font-semibold text-white/62 backdrop-blur-xl"
-                  >
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
+      <HomeProcess contactHref={WHATSAPP_URL}/>
+      <HomeEngineering reducedMotion={reducedMotion}/>
 
       {/* ═══ CTA HERO - WARP SPEED ═══ */}
       <section className="relative overflow-hidden">

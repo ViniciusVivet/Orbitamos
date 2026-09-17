@@ -136,6 +136,20 @@ A nota 10/10 registrada na iteração 2 foi otimista demais. Ela confirmava a pr
 - Uma animação excelente pode parecer ruim quando o espaço de scroll é curto. O usuário não deve precisar descobrir que precisa mover a rodinha devagar; o ritmo correto precisa funcionar com comportamento comum.
 - Encerrar a cena e voltar para uma lista comum cria uma queda perceptiva maior quanto melhor for o clímax. A resolução precisa carregar pelo menos três sinais da cena anterior: mídia, escala e comportamento espacial.
 
+## Aplicação editorial na home — 15/09/2026
+
+Processo e engenharia receberam uma composição editorial interativa: quatro etapas com fotografia e conteúdo HTML; arquitetura em quatro planos com perspectiva CSS e câmera suave ligada à rolagem. Não é uma nova travessia cinematográfica full-viewport, portanto não recebe nota 10/10 pela mera presença de profundidade. A avaliação estética final continua aberta ao usuário.
+
+Aprendizados reutilizáveis:
+
+- Ilustrações absolutas precisam de altura efetivamente definida no palco. min-height no pai com h-full no filho pode não fornecer referência percentual e recortar a cena.
+- Geometria em perspectiva precisa ser medida após as transições terminarem. Validar todos os planos selecionáveis em notebook baixo e 320 px; escalar a montagem e ajustar a câmera por breakpoint, não esconder o problema com overflow.
+- Um controlador de visibilidade pode ficar defasado durante saltos de scroll e trocas de estado. Nesta seção leve, eventos passivos com uma leitura geométrica, atualização apenas quando necessária e nenhuma animação contínua foram mais robustos.
+- Fotografias devem dar matéria e identidade; instruções, títulos e etapas ficam em HTML. Não gravar a interface em miniaturas, nem tratar cenas geradas como prova de clientes/equipe reais.
+- Uma etapa comercial pode ser melhor com exploração explícita, sem autoplay nem scroll aprisionado. Direção de arte não exige impor uma narrativa longa em toda seção.
+
+Evidência: 15 resultados de auditoria de home em seis viewports, teclado/Axe dos novos blocos, quatro estados por seção, três pontos de scroll nos perfis animados e versão reduced-motion. Plano, sete quadros prévios, prompt e evidências complementares em INICIO_PROCESSO_ENGENHARIA.md.
+
 ## Regra de encerramento
 
 Não concluir uma iteração porque o código está sofisticado. Concluir somente depois de capturar e avaliar começo, pontos intermediários, transições e fim em desktop e mobile. Se o efeito só for impressionante em movimento rápido ou depender de explicação, ainda não está pronto.

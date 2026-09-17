@@ -20,7 +20,9 @@ Estas cenas foram **geradas com IA**, não são fotografias documentais de aluno
 | Painel colaborador | Miniatura de criação no acesso ao portfólio, sem associar a trabalhos de clientes. |
 | Portfólio e squad | Fotos no estado inicial; nunca preencher cases ou integrantes reais com conteúdo inventado. |
 | OrbitAcademy (/orbitacademy, acesso protegido) | Foto de estudo no convite final, preservando planeta e experiências existentes. Preview isolado para teste sem conta. |
-| Início, serviços, projetos e contato | Preservar vídeos, imagens de processo, visualizações de serviço e capturas reais de projetos. |
+| Início | Vídeo e cases reais preservados; processo editorial em quatro etapas com fotos. Engenharia ilustrada em HTML/CSS, sem fotografia ornamental. |
+| Serviços | Capas editoriais nos seis serviços; preços, condições e provas reais preservados. |
+| Projetos e contato | Preservar capturas reais e mídias próprias; não gerar projetos fictícios. |
 | Login | Carrossel existente preservado, referência de marca para este acervo. |
 | Cursos/aula aberta, IDE, jogos e jornada | Manter vídeo didático, editor, arte dos jogos e visualização de progresso; não adicionar fotos que tomem espaço de uso. |
 | Vagas, candidaturas e projetos internos | Priorizar dados reais, filtros e execução; não inventar imagem de empresa/projeto. |
@@ -47,7 +49,13 @@ Estas cenas foram **geradas com IA**, não são fotografias documentais de aluno
 - Lint sem erros; dois avisos preexistentes de img em avatares/cases do colaborador, preservados para não alterar fontes externas reais.
 - Previews de fotos (incluindo Academy), laboratório e portal retornaram 404 no servidor local de produção.
 - Capturas em test-results/photography e test-results/portal-experience. Inspeção visual de comunidade, catálogo, estante, mentoria e laboratório em desktop/mobile.
-- Sem commit, push ou publicação nesta rodada.
+- Esta rodada foi posteriormente publicada na main em 0c35886, após autorização explícita do usuário.
+
+## Continuação — home e serviços (15/09/2026)
+
+Uma nova cena de revisão mobile, lancamento-v1.png, completa as etapas do processo. O módulo studioPhotography reaproveita o acervo para a home e as seis capas de serviço, sem alterar o catálogo-base de seis fotografias dos portais. Prompt completo, origem, destino, decisões e evidências em docs/INICIO_PROCESSO_ENGENHARIA.md na raiz do repositório.
+
+Validação desta continuação: 165 testes, build e lint sem erros; 15 resultados da auditoria da home e 12 cenários de serviços aprovados. Esta continuação permanece local, separada do commit 0c35886.
 
 ## Geração e prompts
 
