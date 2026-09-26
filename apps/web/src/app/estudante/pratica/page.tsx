@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, ArrowUpRight, CheckCircle2, HardDrive, Play, Search, X } from "lucide-react";
 import { desafios } from "@/lib/desafios";
+import { guidedStorageKey, readGuidedDraft } from "@/lib/guidedPractice";
 import { warmPythonRuntime } from "@/lib/browserCodeRunner";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -44,6 +45,15 @@ export function PraticaCatalog({ userId = null }: { userId?: string | number | n
         }
         try {
           const raw = localStorage.getItem(`orbitamos-pratica-${userId}-${challenge.slug}`);
+          const guided = readGuidedDraft(localStorage.getItem(guidedStorageKey(userId, challenge.slug)), challenge);
+          if (guided.started) {
+            let freeDraft: { stepStatus?: string[]; reflection?: string } | null = null;
+            try { freeDraft = raw ? JSON.parse(raw) : null; } catch { /* A damaged legacy draft must not hide guided progress. */ }
+            const freeDone = freeDraft?.stepStatus?.length === challenge.steps.length && freeDraft.stepStatus.every(status => status === "success");
+            next[challenge.slug] = guided.passed.length === challenge.steps.length || freeDone ? "concluido" : "andamento";
+            nextReflections[challenge.slug] = Boolean(freeDraft?.reflection?.trim());
+            return;
+          }
           if (!raw) {
             next[challenge.slug] = "novo";
             nextReflections[challenge.slug] = false;
@@ -87,13 +97,15 @@ export function PraticaCatalog({ userId = null }: { userId?: string | number | n
 return (
     <div className={s.catalog} data-lab-catalog>
       <header className={s.catalogHeader}>
-        <div><span className={s.eyebrow}>OrbitAcademy / Aprender fazendo</span><h1>Laboratório<br/>de código<span>.</span></h1><p>Escolha um experimento. Escreva sua solução. Veja o resultado.</p></div>
+        <div><span className={s.eyebrow}>OrbitAcademy / Aprender fazendo</span><h1>Laboratório<br/>de código<span>.</span></h1><p>Programe pelo celular. Leia uma etapa, escreva código real e execute para descobrir o resultado.</p></div>
         <div className={s.catalogStats} aria-label="Resumo dos desafios">
           <div><strong>{String(desafios.length).padStart(2, "0")}</strong><span>Experimentos</span></div>
           <div><strong>{String(inProgress).padStart(2, "0")}</strong><span>Em andamento</span></div>
           <div><strong>{String(completed).padStart(2, "0")}</strong><span>Concluídos aqui</span></div>
         </div>
       </header>
+
+      <section className={s.learningPath} aria-label="Como começar no laboratório"><div><span className={s.eyebrow}>NUNCA PROGRAMOU?</span><h2>Uma linha de cada vez.</h2><p>Comece com orientação, depois experimente sem o guia. Você não precisa instalar nada para treinar.</p><Link href="/estudante/pratica/variaveis-js">Minha primeira linha em JavaScript <ArrowRight size={16}/></Link><Link href="/estudante/pratica/variaveis-python">Prefiro começar por Python <ArrowRight size={16}/></Link></div><ol><li><strong>01 / Entenda</strong><span>O que escrever e por que funciona.</span></li><li><strong>02 / Escreva e teste</strong><span>Editor vazio, etapas curtas e execução real.</span></li><li><strong>03 / Ganhe autonomia</strong><span>Modo livre, funções, coleções e desafios intermediários.</span></li></ol></section>
 
       {recommended && <Link
         href={`/estudante/pratica/${recommended.slug}`}

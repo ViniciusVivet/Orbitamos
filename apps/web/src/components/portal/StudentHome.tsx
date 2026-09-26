@@ -31,6 +31,26 @@ export default function StudentHome({ name, progress, progressLoading, courses, 
     </header>
     {error && <div className={s.notice} role="alert"><span>{error}</span><button onClick={retry}>Tentar novamente</button></div>}
 
+    <section className={s.mobileCoding} aria-label="Programe pelo celular">
+      <div>
+        <span className={s.eyebrow}>SEU PRÓXIMO PASSO CABE NUMA PAUSA</span>
+        <h2>Programe pelo celular.<br/><em>Uma linha de cada vez.</em></h2>
+        <p>Do primeiro comando ao código funcionando: um guia ao lado, um editor de verdade e espaço para errar e tentar de novo.</p>
+        <Link className={s.primary} href="/estudante/pratica">Abrir laboratório<ArrowRight size={17}/></Link>
+        <Link className={s.textLink} href="/estudante/pratica/variaveis-js">Nunca programei. Começar do zero<ArrowUpRight size={15}/></Link>
+      </div>
+      <div className={s.codingSample} aria-hidden="true">
+        <span>ORBITAMOS / LAB</span><small>01 — Guarde uma ideia</small>
+        <pre><span>let</span> nome = <i>&quot;Orbitante&quot;</i>;</pre>
+        <small>02 — Veja acontecer</small><pre>console.log(nome);</pre>
+        <p><Check size={15}/> Orbitante</p><footer>LER → ESCREVER → EXECUTAR</footer>
+      </div>
+    </section>
+
+    <Link href="/estudante/trilhas/csharp" className={s.benchAction}>
+      <Code2 size={25}/><div><h2>Nova jornada C# & .NET</h2><p>Conheça a profissão, veja seu caminho e escreva seu primeiro programa. Piloto disponível.</p></div><ArrowUpRight/>
+    </Link>
+
     <section className={s.academyStage} aria-label="Seu próximo estudo">
       <div className={s.lessonLead}>
         <div className={s.lessonLabel}><span className={s.liveDot}/>{loading ? "Preparando seu caderno" : allDone ? "Ciclo de aulas concluído" : nextLesson ? "Sua próxima aula" : "Primeira página"}</div>

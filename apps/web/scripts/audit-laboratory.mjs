@@ -85,6 +85,7 @@ try {
     const context = await browser.newContext({ viewport: { width, height } });
     const page = await context.newPage();
     await page.goto(base + "/dev/ide-preview/operadores-js", { waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "Modo livre", exact: true }).click();
     await page.getByLabel("Editor de código", { exact: true }).waitFor();
     await page.screenshot({ path: output + "/editor-" + width + ".png", fullPage: true });
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "IDE horizontal overflow " + width);

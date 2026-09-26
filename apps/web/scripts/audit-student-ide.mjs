@@ -79,6 +79,7 @@ try {
     page.on("pageerror", (error) => errors.push(error.message));
 
     await page.goto(`${baseURL}/dev/ide-preview/operadores-js`, { waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "Modo livre", exact: true }).click();
     const challengeTitle = page.getByText("Calculadora de Desconto", { exact: true });
     try {
       await challengeTitle.waitFor({ timeout: 15_000 });
@@ -192,6 +193,7 @@ try {
   const pythonErrors = [];
   pythonPage.on("pageerror", (error) => pythonErrors.push(error.message));
   await pythonPage.goto(`${baseURL}/dev/ide-preview/variaveis-python`, { waitUntil: "networkidle" });
+  await pythonPage.getByRole("button", { name: "Modo livre", exact: true }).click();
   await pythonPage.getByText("Ficha do Aluno", { exact: true }).waitFor({ timeout: 15_000 });
   await setEditorCode(pythonPage, "nome = 'Ana'\nidade = 20\nestudando = True\nprint(nome)\nprint(idade)\nprint(estudando)");
   const pythonStartedAt = Date.now();
@@ -245,6 +247,7 @@ try {
   const csharpErrors = [];
   csharpPage.on("pageerror", (error) => csharpErrors.push(error.message));
   await csharpPage.goto(`${baseURL}/dev/ide-preview/variaveis-csharp`, { waitUntil: "networkidle" });
+  await csharpPage.getByRole("button", { name: "Modo livre", exact: true }).click();
   await csharpPage.getByText("Primeiro Perfil em C#", { exact: true }).waitFor({ timeout: 15_000 });
   await setEditorCode(csharpPage, 'string nome = "Ana";\nint idade = 20;\nConsole.WriteLine(nome);\nConsole.WriteLine(idade);');
   await csharpPage.getByRole("button", { name: "Executar", exact: false }).click();

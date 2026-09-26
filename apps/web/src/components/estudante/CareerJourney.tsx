@@ -140,6 +140,9 @@ function CareerPicker({
         </p>
       </div>
 
+      <Link href="/estudante/trilhas/csharp" className="mb-5 flex min-h-16 items-center justify-between gap-4 rounded-xl border border-emerald-300/30 bg-emerald-300/5 p-5 text-emerald-200">
+        <span><strong className="block">Experimente a nova jornada C# & .NET</strong><span className="mt-1 block text-sm text-slate-300">Profissão, roadmap e sua primeira missão com código. Edição piloto.</span></span><ArrowRight className="size-5 shrink-0"/>
+      </Link>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {roadmaps.map((roadmap) => {
           const selected = roadmap.slug === selectedSlug;

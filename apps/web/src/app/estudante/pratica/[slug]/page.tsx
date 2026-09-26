@@ -9,6 +9,7 @@ import { runCSharpInWorker, runJavaScriptInWorker, runPythonInWorker, warmPython
 import { useAuth } from "@/contexts/AuthContext";
 import ReliableCodeEditor, { type ReliableCodeEditorHandle } from "@/components/estudante/ReliableCodeEditor";
 import lab from "@/components/estudante/Laboratory.module.css";
+import GuidedPractice from "@/components/estudante/GuidedPractice";
 
 type MobileTab = "editor" | "guia";
 type ChatMessage = { tipo: "sistema" | "sucesso" | "erro" | "dica"; texto: string };
@@ -103,6 +104,27 @@ type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 export function PraticaWorkspace({ userId = null }: { userId?: string | number | null }) {
   const params = useParams();
+  const challenge = getDesafio(params.slug as string);
+  const [free, setFree] = useState<boolean | null>(null);
+  const modeKey = `orbitamos-practice-mode-${userId}-${params.slug}`;
+  useEffect(() => {
+    queueMicrotask(() => {
+      try { setFree(localStorage.getItem(modeKey) === "free"); }
+      catch { setFree(false); }
+    });
+  }, [modeKey]);
+  const chooseMode = (value: boolean) => {
+    try { localStorage.setItem(modeKey, value ? "free" : "guided"); } catch { /* Keep the in-memory choice if storage is unavailable. */ }
+    setFree(value);
+  };
+  if (!challenge) return <p>Desafio não encontrado. <Link href="/estudante/pratica">Voltar ao laboratório</Link></p>;
+  if (free === null) return <p role="status">Abrindo seu laboratório…</p>;
+  if (!free) return <GuidedPractice key={`${userId}-${challenge.slug}`} challenge={challenge} userId={userId} onFreeMode={() => chooseMode(true)}/>;
+  return <><div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-300"><p>Modo livre · seu rascunho anterior continua aqui.</p><button className="min-h-11 rounded-lg border border-emerald-200/30 px-4 text-emerald-200" onClick={() => chooseMode(false)}>Voltar ao passo a passo</button></div><FreePracticeWorkspace key={`${userId}-${challenge.slug}`} userId={userId}/></>;
+}
+
+function FreePracticeWorkspace({ userId = null }: { userId?: string | number | null }) {
+  const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
   const desafio = getDesafio(slug);
@@ -140,7 +162,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
     let active = true;
     queueMicrotask(() => {
       if (!active) return;
-      let restoredCode = "";
+      let restoredCode: string | undefined;
       let restoredStep = 0;
       let restoredStatus: ("pending" | "success" | "error")[] = desafio.steps.map(() => "pending");
       let restoredAttempts = desafio.steps.map(() => 0);
@@ -156,7 +178,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
               stepAttempts?: number[];
               reflection?: string;
             };
-            restoredCode = parsed.code ?? "";
+            restoredCode = typeof parsed.code === "string" ? parsed.code : undefined;
             restoredStep = Math.min(Math.max(parsed.currentStep ?? 0, 0), desafio.steps.length - 1);
             if (parsed.stepStatus?.length === desafio.steps.length) restoredStatus = parsed.stepStatus;
             if (parsed.stepAttempts?.length === desafio.steps.length) restoredAttempts = parsed.stepAttempts;
@@ -166,7 +188,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
           // ignore
         }
       }
-      const initialCode = restoredCode || desafio.codigoInicial;
+      const initialCode = restoredCode ?? desafio.codigoInicial;
       codeRef.current = initialCode;
       setCode(initialCode);
       setCurrentStep(restoredStep);
@@ -187,7 +209,7 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
   }, [desafio, storageKey]);
 
   useEffect(() => {
-    if (!storageKey || !desafio || !code) return;
+    if (!storageKey || !desafio) return;
     setSaveStatus("saving");
     const timer = window.setTimeout(() => {
       try {
@@ -199,10 +221,6 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
     }, 350);
     return () => window.clearTimeout(timer);
   }, [code, currentStep, desafio, reflection, stepAttempts, stepStatus, storageKey]);
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatMessages]);
 
   useEffect(() => {
     let active = true;
