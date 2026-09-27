@@ -270,3 +270,22 @@ Arquivos do módulo: `csharpVariables.ts`, `csharpVariables.test.ts`, `CSharpVar
 Limite pedagógico/técnico mantido: checagens didáticas e executor simplificado não são um compilador C# completo, uma avaliação de empregabilidade nem uma proteção antifraude. As práticas precisam de observação com alunos reais, principalmente no teclado físico do iPhone.
 
 Validação da revisão: 213 testes unitários aprovados; TypeScript e lint aprovados. Auditoria das dez atividades aprovada em Chromium desktop, WebKit/iPhone 13 e Chromium 320 px, incluindo restauração de rascunhos, retorno do mapa e zero violações de acessibilidade automatizada no componente. O teclado físico do Safari continua dependendo de teste manual.
+
+## 14. Publicação de variáveis e continuidade com condições
+
+A rodada anterior foi commitada e enviada à `main` em `c46ce57` (26/09/2026), sem incluir `CLAUDE.md`. O status de commit do GitHub confirmou `Vercel: success / Deployment has completed`.
+
+Continuidade local, posterior a esse push:
+
+- Módulo Condições: 7 práticas de código e 3 questões. Começa por if, evolui para else, comparação no limite, bool, && e ||, corrige um bug lógico e termina com um programa que combina variáveis, cálculo e if/else if/else.
+- Seletor Variáveis/Condições, avanço entre módulos e mapa com as duas ofertas disponíveis. Laços, métodos e estações posteriores continuam em preparação.
+- Estado separado em `orbitamos-csharp-conditions-v1-{userId}`. Alternar os módulos não mistura respostas, código ou conclusão. A seleção do módulo também é guardada localmente.
+- Feedback específico para int/bool entre aspas, = no lugar de ==, ponto e vírgula ausente, chave sem par e diferenças de maiúscula/minúscula nos nomes. São diagnósticos didáticos do subconjunto aceito, não uma implementação completa do compilador C#.
+- Práticas independentes de condições executam casos adicionais em workers novos, alterando entradas declaradas: zero, limites, pagamento e disponibilidade. A saída inicial correta não basta para concluir. O aluno vê qual caso falhou e compara saída esperada/obtida.
+- Na entrega final, o programa deve decidir entre tudo entregue, trabalho permitido e pagamento pendente. Casos combinados verificam a prioridade das regras.
+
+Arquivos: `csharpConditions.ts`, `csharpFeedback.ts`, `csharpConditions.test.ts`; a interface de práticas foi reutilizada sem copiar outra página inteira. Auditoria: `node scripts/audit-csharp-conditions.mjs`. `audit-csharp-track.mjs` continua cobrindo regressões de variáveis.
+
+Os 226 testes unitários passaram nesta rodada. Não tratar estas alterações posteriores como publicadas só porque o commit anterior já foi enviado. Para o próximo agente: conferir `git status` e os relatórios em `test-results/csharp-conditions/` antes de informar publicação ou resultados da auditoria final.
+
+Fechamento da rodada: auditoria de condições aprovada em desktop, WebKit/iPhone 13 e Chromium 320 px, com zero violações automatizadas de acessibilidade; regressão completa de variáveis aprovada em desktop. Build de produção e lint aprovados (permanece o aviso preexistente de rastreamento em `api/course-materials`). Condições e feedback continuam locais, posteriores a `c46ce57`, aguardando avaliação antes de um novo push.

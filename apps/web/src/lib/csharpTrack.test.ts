@@ -3,7 +3,7 @@ import { csharpPilot, csharpProgressKey, csharpStages, newCSharpProgress, pilotE
 
 describe("C# career pilot", () => {
   it("does not present planned lessons as available", () => {
-    expect(csharpStages.filter(stage => stage.available).map(stage => stage.id)).toEqual(["start"]);
+    expect(csharpStages.filter(stage => stage.available).map(stage => stage.id)).toEqual(["start", "logic"]);
     expect(csharpPilot.codigoInicial).toBe("");
     expect(newCSharpProgress().guided).toBe(false);
   });

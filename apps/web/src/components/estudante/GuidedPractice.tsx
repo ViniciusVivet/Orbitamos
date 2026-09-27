@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, Check, Play, RotateCcw, Square, Undo2 } from "lu
 import { getNextDesafio, type Desafio } from "@/lib/desafios";
 import { emptyGuidedDraft, guidedLines, guidedProgram, guidedStorageKey, readGuidedDraft, writingMatches, type GuidedDraft } from "@/lib/guidedPractice";
 import { runCSharpInWorker, runJavaScriptInWorker, runPythonInWorker, type BrowserCodeResult } from "@/lib/browserCodeRunner";
+import { diagnoseCSharp } from "@/lib/csharpFeedback";
 import ReliableCodeEditor from "./ReliableCodeEditor";
 import s from "./GuidedPractice.module.css";
 
@@ -99,7 +100,8 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
     const source = latest.current.code;
     try {
       const runner = challenge.linguagem === "python" ? runPythonInWorker : challenge.linguagem === "csharp" ? runCSharpInWorker : runJavaScriptInWorker;
-      const output = await runner(source, challenge.linguagem === "python" ? 30000 : 2500, controller.signal, challenge.testCode);
+      const diagnostic = challenge.linguagem === "csharp" ? diagnoseCSharp(source) : null;
+      const output: BrowserCodeResult = diagnostic ? { output: "", error: diagnostic, timedOut: false } : await runner(source, challenge.linguagem === "python" ? 30000 : 2500, controller.signal, challenge.testCode);
       if (activeRun.current !== controller) return;
       setResult(output);
       if (!output.error && !output.cancelled && challenge.steps.slice(0, draft.mission + 1).every(step => step.validacao(source, output.output, output.verificationOutput))) {

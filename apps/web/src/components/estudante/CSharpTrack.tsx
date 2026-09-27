@@ -13,6 +13,7 @@ const views: { id: TrackView; title: string }[] = [{ id: "welcome", title: "Sua 
 export default function CSharpTrack({ userId }: { userId: string | number | null }) {
   const [progress, setProgress] = useState<CSharpTrackProgress>(newCSharpProgress);
   const [ready, setReady] = useState(false);
+  const [moduleKind, setModuleKind] = useState<"variables" | "conditions">("variables");
   const [storageError, setStorageError] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
   const latest = useRef(progress);
@@ -23,7 +24,7 @@ export default function CSharpTrack({ userId }: { userId: string | number | null
     let active = true;
     queueMicrotask(() => {
       if (!active) return;
-      try { const restored = readCSharpProgress(key ? localStorage.getItem(key) : null); latest.current = restored; setProgress(restored); }
+      try { const restored = readCSharpProgress(key ? localStorage.getItem(key) : null); latest.current = restored; setProgress(restored); setModuleKind(key && localStorage.getItem(`${key}-module`) === "conditions" ? "conditions" : "variables"); }
       catch { setStorageError(true); }
       setReady(true);
     });
@@ -41,6 +42,11 @@ export default function CSharpTrack({ userId }: { userId: string | number | null
     update({ view });
     requestAnimationFrame(() => { heading.current?.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: "instant" }); });
   }
+  function openModule(module: "variables" | "conditions") {
+    setModuleKind(module);
+    try { if (key) localStorage.setItem(`${key}-module`, module); } catch { setStorageError(true); }
+    navigate("pilot");
+  }
   if (!ready) return <p role="status">Preparando sua jornada C#…</p>;
 
   return <div className={s.track} data-csharp-track>
@@ -50,10 +56,10 @@ export default function CSharpTrack({ userId }: { userId: string | number | null
 
     {progress.view === "welcome" && <>
       <section className={s.hero}>
-        <div className={s.heroCopy}><span className={s.kicker}>UM NOVO CAMINHO. UMA LINHA POR VEZ.</span><h1 ref={heading} tabIndex={-1}>Seu próximo<br/>capítulo pode<br/>ser em <em>C#.</em></h1><p>Aprenda C# escrevendo: comece agora com 7 práticas de código e 3 questões rápidas sobre variáveis. O mapa mostra onde você está e o que vem depois — inclusive pelo celular.</p><div className={s.actions}><button className={s.primary} onClick={() => navigate("pilot")}>Começar a codar · variáveis<ArrowRight size={18}/></button><button className={s.textButton} onClick={() => navigate("market")}>Antes, conhecer a profissão<ArrowUpRight size={16}/></button></div><div className={s.heroFacts}><span><Smartphone size={16}/>Comece no celular</span><span><Code2 size={16}/>Código de verdade</span><span><GitPullRequest size={16}/>Aprenda a entregar</span></div></div>
+        <div className={s.heroCopy}><span className={s.kicker}>UM NOVO CAMINHO. UMA LINHA POR VEZ.</span><h1 ref={heading} tabIndex={-1}>Seu próximo<br/>capítulo pode<br/>ser em <em>C#.</em></h1><p>Aprenda C# escrevendo: comece agora com 7 práticas de código e 3 questões rápidas sobre variáveis. O mapa mostra onde você está e o que vem depois — inclusive pelo celular.</p><div className={s.actions}><button className={s.primary} onClick={() => openModule("variables")}>Começar a codar · variáveis<ArrowRight size={18}/></button><button className={s.textButton} onClick={() => navigate("market")}>Antes, conhecer a profissão<ArrowUpRight size={16}/></button></div><div className={s.heroFacts}><span><Smartphone size={16}/>Comece no celular</span><span><Code2 size={16}/>Código de verdade</span><span><GitPullRequest size={16}/>Aprenda a entregar</span></div></div>
         <div className={s.heroVisual}><Image src={cover.image} alt="" fill sizes="(max-width: 767px) 100vw, 45vw" placeholder="blur" className={s.heroPhoto}/><div className={s.projectSheet}><div className={s.sheetTop}><span>SEU PROJETO DE JORNADA</span><span>01 / 08</span></div><h2>OrbiServiços<span>Do primeiro comando<br/>a um sistema de negócio.</span></h2><div className={s.sheetCode}><span>Program.cs</span><pre><b>int</b> servicosPendentes = <i>3</i>;{"\n"}Console.WriteLine(servicosPendentes);</pre><p><Terminal size={14}/>3</p></div><div className={s.sheetFoot}><span>AGORA<br/><strong>Primeiras linhas</strong></span><ArrowRight size={18}/><span>NO CAMINHO<br/><strong>API, dados e testes</strong></span></div></div><span className={s.photoCaption}>Uma ideia simples. Espaço para crescer.</span></div>
       </section>
-      <section className={s.letter}><span className={s.kicker}>ANTES DE COMEÇAR</span><h2>Você não precisa chegar<br/>sabendo todos os nomes.</h2><div><p>Você vai construir o OrbiServiços: um projeto fictício para organizar clientes, serviços e entregas. Primeiro, um programa pequeno. Depois, regras, dados e uma API.</p><p>O objetivo é conseguir fazer, testar e explicar — não decorar uma receita. Não existe promessa de vaga ou salário. Existe um caminho de prática, com o próximo passo bem explicado.</p><p className={s.small}>Nesta edição, a introdução e o módulo de variáveis estão disponíveis. Os demais módulos do mapa estão planejados. O conteúdo inicial já pode ser estudado em texto; não depende de um vídeo.</p></div></section>
+      <section className={s.letter}><span className={s.kicker}>ANTES DE COMEÇAR</span><h2>Você não precisa chegar<br/>sabendo todos os nomes.</h2><div><p>Você vai construir o OrbiServiços: um projeto fictício para organizar clientes, serviços e entregas. Primeiro, um programa pequeno. Depois, regras, dados e uma API.</p><p>O objetivo é conseguir fazer, testar e explicar — não decorar uma receita. Não existe promessa de vaga ou salário. Existe um caminho de prática, com o próximo passo bem explicado.</p><p className={s.small}>Nesta edição, a introdução, variáveis e condições estão disponíveis. Os demais módulos do mapa estão planejados. O conteúdo inicial já pode ser estudado em texto; não depende de um vídeo.</p></div></section>
       <section className={s.preferences} aria-label="Seu jeito de estudar"><div><span className={s.kicker}>A JORNADA CABE NA SUA ROTINA</span><h2>Como você vai começar?</h2><p>Sem cadastro extra. Você pode mudar isso quando quiser.</p></div><div><fieldset><legend>Seu ambiente agora</legend><button aria-pressed={progress.device === "phone"} onClick={() => update({ device: "phone" })}><Smartphone size={18}/>Pelo celular</button><button aria-pressed={progress.device === "computer"} onClick={() => update({ device: "computer" })}><Monitor size={18}/>No computador</button></fieldset><fieldset><legend>Seu ritmo preferido</legend><button aria-pressed={progress.pace === "short"} onClick={() => update({ pace: "short" })}>Uma pausa curta</button><button aria-pressed={progress.pace === "long"} onClick={() => update({ pace: "long" })}>Um bloco de estudo</button></fieldset><p className={s.plan}>{progress.pace === "short" ? "Hoje: leia a missão e escreva as primeiras linhas. Seu rascunho permite continuar depois." : "Hoje: faça a missão guiada, tente a variação e termine corrigindo um erro."} {progress.device === "phone" ? "Use as teclas de símbolos junto do editor." : "Use o editor e teste também a execução com o teclado."}</p></div></section>
     </>}
 
@@ -66,12 +72,12 @@ export default function CSharpTrack({ userId }: { userId: string | number | null
     </>}
 
     {progress.view === "map" && <>
-      <div className={s.pageHeading}><span className={s.kicker}>UM PROJETO. OITO ESTAÇÕES.</span><h1 ref={heading} tabIndex={-1}>Saiba onde está.<br/><em>Enxergue o próximo passo.</em></h1><p>Este mapa mostra a direção do produto. Você começa em Fundamentos → Variáveis: 7 práticas de código e 3 questões. As próximas estações ainda não são aulas disponíveis.</p></div>
-      <div className={s.roadmap}>{csharpStages.map((stage, index) => <article key={stage.id} data-available={stage.available}><span className={s.stationNumber}>{String(index + 1).padStart(2, "0")}</span><div><div className={s.stageStatus}>{stage.available ? "VOCÊ ESTÁ AQUI · VARIÁVEIS DISPONÍVEL" : "PLANEJADO"}</div><h2>{stage.title}</h2><p>{stage.skill}</p><details><summary>O que você vai entregar</summary><p>{stage.delivery}</p><small>{stage.tools}</small></details></div>{stage.available ? <button className={s.primary} onClick={() => navigate("pilot")}>Abrir módulo de variáveis<ArrowRight size={16}/></button> : <span className={s.planned}>Em preparação</span>}</article>)}</div>
+      <div className={s.pageHeading}><span className={s.kicker}>UM PROJETO. OITO ESTAÇÕES.</span><h1 ref={heading} tabIndex={-1}>Saiba onde está.<br/><em>Enxergue o próximo passo.</em></h1><p>Este mapa mostra a direção do produto. Variáveis e condições estão disponíveis: 14 práticas de código e 6 questões. Laços, métodos e as próximas estações ainda estão em preparação.</p></div>
+      <div className={s.roadmap}>{csharpStages.map((stage, index) => <article key={stage.id} data-available={stage.available}><span className={s.stationNumber}>{String(index + 1).padStart(2, "0")}</span><div><div className={s.stageStatus}>{stage.available ? stage.id === "start" ? "VARIÁVEIS DISPONÍVEL" : "CONDIÇÕES DISPONÍVEL" : "PLANEJADO"}</div><h2>{stage.title}</h2><p>{stage.skill}</p><details><summary>O que você vai entregar</summary><p>{stage.delivery}</p><small>{stage.tools}</small></details></div>{stage.available ? <button className={s.primary} onClick={() => openModule(stage.id === "start" ? "variables" : "conditions")}>Abrir módulo de {stage.id === "start" ? "variáveis" : "condições"}<ArrowRight size={16}/></button> : <span className={s.planned}>Em preparação</span>}</article>)}</div>
       <section className={s.environment}><Smartphone size={30}/><div><h2>Começar no celular. Evoluir para o .NET real.</h2><p>O piloto roda um subconjunto didático de C# no navegador. Não é o compilador .NET completo. Projetos com APIs, banco e testes precisarão do SDK .NET em um computador ou de um ambiente remoto adequado.</p><p>Vamos orientar essa transição antes dos módulos que precisam dela. Nenhum serviço pago é ativado ao usar este piloto.</p><Link href="/estudante/cursos/csharp-fundamentos">Consultar o curso C# já existente<ArrowUpRight size={16}/></Link></div></section>
     </>}
 
-    {progress.view === "pilot" && <CSharpVariables userId={userId} onFullMap={() => navigate("map")}/>}
+    {progress.view === "pilot" && <><nav className={s.moduleTabs} aria-label="Módulos disponíveis"><button aria-current={moduleKind === "variables" ? "page" : undefined} onClick={() => openModule("variables")}>01 · Variáveis</button><button aria-current={moduleKind === "conditions" ? "page" : undefined} onClick={() => openModule("conditions")}>02 · Condições</button></nav><CSharpVariables key={`${userId}-${moduleKind}`} userId={userId} moduleKind={moduleKind} onModuleChange={openModule} onFullMap={() => navigate("map")}/></>}
     <footer className={s.footer}><span>ORBITAMOS / UMA ETAPA DE CADA VEZ</span><p>{key ? "Preferências, código e progresso deste piloto ficam neste navegador, separados do histórico das aulas. Não sincronizam entre aparelhos." : "Entre na sua conta para guardar seu progresso neste navegador."}</p></footer>
   </div>;
 }

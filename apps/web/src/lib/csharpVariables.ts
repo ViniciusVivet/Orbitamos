@@ -1,7 +1,7 @@
 import { csharpPilot, csharpProgressKey, readCSharpProgress } from "./csharpTrack";
 
 type ActivityBase = { id: string; title: string; topic: string; goal: string };
-export type VariableCode = ActivityBase & { kind: "code"; lesson: string; brief: string; hint: string; starter: string; expected: string; verification: string; required: RegExp[]; solution: string };
+export type VariableCode = ActivityBase & { kind: "code"; lesson: string; brief: string; hint: string; starter: string; expected: string; verification: string; required: RegExp[]; solution: string; cases?: { label: string; values: Record<string, string>; expected: string }[] };
 export type VariableQuiz = ActivityBase & { kind: "quiz"; prompt: string; code?: string; options: string[]; answer: number; feedback: string[] };
 export type VariableActivity = VariableCode | VariableQuiz | (ActivityBase & { kind: "guided" });
 
@@ -31,14 +31,14 @@ export function variableCodePassed(activity: VariableCode, code: string, output:
 export type VariablesProgress = { version: 1; active: string; drafts: Record<string, string>; done: string[]; answers: Record<string, number> };
 export const variablesKey = (userId: string | number) => `orbitamos-csharp-variables-v1-${userId}`;
 export const newVariablesProgress = (): VariablesProgress => ({ version: 1, active: "guided", drafts: {}, done: [], answers: {} });
-export function readVariablesProgress(raw: string | null, legacyRaw: string | null = null): VariablesProgress {
+export function readVariablesProgress(raw: string | null, legacyRaw: string | null = null, activities: VariableActivity[] = variableActivities, migrate = true): VariablesProgress {
   const base = newVariablesProgress();
   try {
     const value = JSON.parse(raw || "null");
     if (value?.version === 1) {
-      const ids = variableActivities.map(a => a.id);
+      const ids = activities.map(a => a.id);
       base.active = ids.includes(value.active) ? value.active : "guided";
-      for (const a of variableActivities) {
+      for (const a of activities) {
         if (a.kind === "code" && typeof value.drafts?.[a.id] === "string") base.drafts[a.id] = value.drafts[a.id].slice(0, 100000);
         if (a.kind === "quiz" && Number.isInteger(value.answers?.[a.id]) && value.answers[a.id] >= 0 && value.answers[a.id] < a.options.length) base.answers[a.id] = value.answers[a.id];
         if (Array.isArray(value.done) && value.done.includes(a.id) && (a.kind !== "quiz" || base.answers[a.id] === a.answer)) base.done.push(a.id);
@@ -46,6 +46,7 @@ export function readVariablesProgress(raw: string | null, legacyRaw: string | nu
       return base;
     }
   } catch { /* Recover with the older pilot when available. */ }
+  if (!migrate) return base;
   const legacy = readCSharpProgress(legacyRaw);
   base.done = ["guided", "transfer", "debug"].filter(id => legacy[id as "guided" | "transfer" | "debug"]);
   base.drafts = { ...legacy.drafts };

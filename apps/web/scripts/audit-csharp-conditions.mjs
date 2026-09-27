@@ -4,7 +4,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import ts from "typescript";
 const base = process.env.IDE_AUDIT_URL || "http://localhost:3015";
-const dir = "test-results/csharp-track";
+const dir = "test-results/csharp-conditions";
 await mkdir(dir, { recursive: true });
 const sourceCache = {};
 async function compile(file) {
@@ -14,8 +14,8 @@ async function compile(file) {
   return exports;
 }
 sourceCache["./csharpTrack"] = await compile("src/lib/csharpTrack.ts");
-const { variableActivities } = await compile("src/lib/csharpVariables.ts");
-const { csharpPilot } = sourceCache["./csharpTrack"];
+sourceCache["./csharpVariables"] = await compile("src/lib/csharpVariables.ts");
+const { conditionsActivities: variableActivities, conditionsPilot: csharpPilot } = await compile("src/lib/csharpConditions.ts");
 const results = [];
 const profiles = [["desktop", chromium, { viewport: { width: 1440, height: 1000 } }], ["iphone-webkit", webkit, devices["iPhone 13"]], ["small-phone", chromium, { viewport: { width: 320, height: 740 }, isMobile: true, hasTouch: true }]];
 for (const [name, engine, options] of profiles.filter(([name]) => !process.env.CSHARP_PROFILE || process.env.CSHARP_PROFILE === name)) {
@@ -36,8 +36,9 @@ for (const [name, engine, options] of profiles.filter(([name]) => !process.env.C
       expect(axe.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => n.target) })), name + "/" + view + " accessibility").toEqual([]);
     }
     await page.getByRole("button", { name: "Começar a codar · variáveis", exact: true }).click();
+    await page.getByRole("navigation", { name: "Módulos disponíveis" }).getByRole("button", { name: "02 · Condições", exact: true }).click();
     await page.locator("#guided-code").waitFor();
-    await expect(page.getByText("Você está aprendendo: Variáveis", { exact: true })).toBeVisible();
+    await expect(page.getByText("Você está aprendendo: Condições", { exact: true })).toBeVisible();
     await check("guided-start");
     for (const activity of variableActivities) {
       await expect(page.getByRole("heading", { name: activity.title, exact: true, level: 1 })).toBeVisible();
@@ -54,24 +55,24 @@ for (const [name, engine, options] of profiles.filter(([name]) => !process.env.C
         await expect(page.getByText(activity.feedback[(activity.answer + 1) % activity.options.length], { exact: true })).toBeVisible();
         await expect(page.getByRole("button", { name: "Continuar para a próxima", exact: true })).toHaveCount(0);
         await page.getByRole("radio", { name: activity.options[activity.answer], exact: true }).check();
-        if (activity.id === "quiz-values") await check("quiz");
+        if (activity.id === "quiz-branch") await check("quiz");
       } else {
         const editor = page.locator("#variables-code");
         await expect(editor).toHaveValue(activity.starter);
         expect(await editor.evaluate(element => parseFloat(getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(16);
-        if (activity.id === "transfer") {
-          await editor.fill("int servicosPendentes = 5;\nConsole.WriteLine(5);");
+        if (activity.id === "threshold") {
+          await editor.fill(activity.solution.replace(">= 100", ">= 99"));
           await page.getByRole("button", { name: "Executar e verificar", exact: true }).click();
-          await page.getByText("Ainda não passou.", { exact: false }).waitFor();
+          await page.getByText("entrada inicial funcionou", { exact: false }).waitFor();
         }
-        if (activity.id === "debug") {
+        if (activity.id === "debug-limit") {
           await page.getByRole("button", { name: "Executar e verificar", exact: true }).click();
-          await page.getByText("Você escreveu servicospendentes", { exact: false }).waitFor();
+          await page.getByText("saída é diferente", { exact: false }).waitFor();
         }
         await editor.fill(activity.solution);
         await page.getByRole("button", { name: "Executar e verificar", exact: true }).click();
         await page.getByText("Código validado!", { exact: false }).waitFor();
-        if (activity.id === "client") {
+        if (activity.id === "branches") {
           await check("code");
           await page.getByRole("button", { name: "Reiniciar", exact: true }).click();
           await page.getByRole("button", { name: "Continuar editando", exact: true }).click();
@@ -87,19 +88,24 @@ for (const [name, engine, options] of profiles.filter(([name]) => !process.env.C
       }
       if (activity.id !== "delivery") await page.getByRole("button", { name: activity.kind === "quiz" ? "Continuar para a próxima" : "Próxima atividade", exact: true }).click();
     }
-    await expect(page.getByRole("heading", { name: "Variáveis: primeiras práticas concluídas.", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Condições: primeiras práticas concluídas.", exact: true })).toBeVisible();
     await page.waitForTimeout(300);
     await page.reload();
-    await expect(page.getByRole("heading", { name: "Variáveis: primeiras práticas concluídas.", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Condições: primeiras práticas concluídas.", exact: true })).toBeVisible();
     await expect(page.locator("#variables-code")).toHaveValue(variableActivities.at(-1).solution);
     await check("complete");
+    await page.getByRole("navigation", { name: "Módulos disponíveis" }).getByRole("button", { name: "01 · Variáveis", exact: true }).click();
+    await expect(page.getByText("Você está aprendendo: Variáveis", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Condições: primeiras práticas concluídas.", exact: true })).toHaveCount(0);
+    await page.getByRole("navigation", { name: "Módulos disponíveis" }).getByRole("button", { name: "02 · Condições", exact: true }).click();
+    await expect(page.locator("#variables-code")).toHaveValue(variableActivities.at(-1).solution);
     await page.getByRole("button", { name: "Mapa completo", exact: true }).click();
-    await expect(page.getByText("VARIÁVEIS DISPONÍVEL", { exact: true })).toBeVisible();
+    await expect(page.getByText("CONDIÇÕES DISPONÍVEL", { exact: true })).toBeVisible();
     await expect(page.getByText("PLANEJADO", { exact: true })).toHaveCount(6);
-    await page.getByRole("button", { name: "Abrir módulo de variáveis", exact: true }).click();
+    await page.getByRole("button", { name: "Abrir módulo de condições", exact: true }).click();
     await expect(page.getByRole("heading", { name: variableActivities.at(-1).title, exact: true, level: 1 })).toBeVisible();
     await page.locator("#variables-code").fill("");
-    await expect(page.getByRole("heading", { name: "Variáveis: primeiras práticas concluídas.", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Condições: primeiras práticas concluídas.", exact: true })).toHaveCount(0);
     await page.waitForTimeout(300);
     await page.reload();
     await expect(page.locator("#variables-code")).toHaveValue("");

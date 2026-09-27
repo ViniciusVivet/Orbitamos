@@ -3,7 +3,7 @@ import type { Desafio } from "./desafios";
 export const csharpMarketCheckedAt = "25/09/2026";
 export const csharpStages = [
   { id: "start", title: "Fundamentos: variáveis e console", skill: "Texto, números, reatribuição, cálculo e leitura de erros", delivery: "7 práticas de código e 3 questões. Da primeira variável a um resumo de serviços escrito por você.", available: true, tools: "C# · laboratório guiado e prática independente" },
-  { id: "logic", title: "Da linha à regra de negócio", skill: "Condições, laços, métodos e depuração", delivery: "Um programa que organiza serviços e recusa dados inválidos.", available: false, tools: "C# · Git · debugger" },
+  { id: "logic", title: "Condições: seu programa decide", skill: "bool, comparações, if/else e operadores lógicos. Laços e métodos ainda em preparação.", delivery: "7 práticas e 3 questões, incluindo um desafio que combina variáveis e decisões com testes de entradas diferentes.", available: true, tools: "C# · condições · leitura de casos de teste" },
   { id: "objects", title: "Um programa que cresce", skill: "Objetos, interfaces, coleções e LINQ", delivery: "Clientes e serviços organizados num projeto console.", available: false, tools: ".NET 10 · orientação a objetos" },
   { id: "data", title: "Dados que não se perdem", skill: "Modelagem, SQL, joins e relacionamentos", delivery: "Um banco e consultas que respondem perguntas do negócio.", available: false, tools: "SQL Server · SQL · EF Core" },
   { id: "api", title: "Seu sistema conversa com o mundo", skill: "HTTP, APIs, validação e async/await", delivery: "Uma API documentada para cadastrar e consultar serviços.", available: false, tools: "ASP.NET Core · OpenAPI · EF Core" },
