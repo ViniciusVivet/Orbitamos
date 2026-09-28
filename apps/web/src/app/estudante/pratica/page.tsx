@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, ArrowUpRight, CheckCircle2, HardDrive, Play, Search, X } from "lucide-react";
 import { desafios } from "@/lib/desafios";
 import { guidedStorageKey, readGuidedDraft } from "@/lib/guidedPractice";
+import { practicePath, practicePaths, type PracticePath } from "@/lib/practiceNarrative";
 import { warmPythonRuntime } from "@/lib/browserCodeRunner";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -30,6 +31,7 @@ export function PraticaCatalog({ userId = null }: { userId?: string | number | n
   const [filter, setFilter] = useState<Filter>("todos");
   const [language, setLanguage] = useState<LanguageFilter>("todas");
   const [difficulty, setDifficulty] = useState<DifficultyFilter>("todas");
+  const [purpose, setPurpose] = useState<PracticePath | "all">("all");
   const [states, setStates] = useState<Record<string, ChallengeState>>({});
   const [reflections, setReflections] = useState<Record<string, boolean>>({});
 
@@ -84,15 +86,16 @@ export function PraticaCatalog({ userId = null }: { userId?: string | number | n
       const matchesLanguage = language === "todas" || challenge.linguagem === language;
       const matchesDifficulty = difficulty === "todas" || challenge.dificuldade === difficulty;
       const haystack = normalize(`${challenge.titulo} ${challenge.descricao} ${challenge.linguagem} ${challenge.categoria ?? ""} ${challenge.habilidade ?? ""}`);
-      return matchesFilter && matchesLanguage && matchesDifficulty && (!normalizedQuery || haystack.includes(normalizedQuery));
+      return matchesFilter && matchesLanguage && matchesDifficulty && (purpose === "all" || practicePath(challenge) === purpose) && (!normalizedQuery || haystack.includes(normalizedQuery));
     });
-  }, [difficulty, filter, language, query, states]);
+  }, [difficulty, filter, language, purpose, query, states]);
 
   const completed = Object.values(states).filter((state) => state === "concluido").length;
   const inProgress = Object.values(states).filter((state) => state === "andamento").length;
+  const scopedChallenges = desafios.filter(challenge => (language === "todas" || challenge.linguagem === language) && (purpose === "all" || practicePath(challenge) === purpose));
   const recommended =
-    desafios.find((challenge) => states[challenge.slug] === "andamento") ??
-    desafios.find((challenge) => states[challenge.slug] !== "concluido");
+    scopedChallenges.find((challenge) => states[challenge.slug] === "andamento") ??
+    scopedChallenges.find((challenge) => states[challenge.slug] !== "concluido");
 
 return (
     <div className={s.catalog} data-lab-catalog>
@@ -128,6 +131,12 @@ return (
           <label className={s.difficultyField}><span>Dificuldade</span><select value={difficulty} onChange={event => setDifficulty(event.target.value as DifficultyFilter)} aria-label="Filtrar por dificuldade"><option value="todas">Todos os níveis</option><option value="iniciante">Iniciante</option><option value="basico">Básico</option><option value="intermediario">Intermediário</option></select></label>
         </div>
         <div className={s.languageTabs} aria-label="Linguagens">{(["todas", "javascript", "python", "csharp"] as const).map(value => <button key={value} type="button" aria-pressed={language === value} onClick={() => setLanguage(value)}>{value === "todas" ? "Todas as linguagens" : languageNames[value]}</button>)}</div>
+        <section className={s.practiceRoutes} aria-label="Caminhos de aprendizagem">
+          <div><span className={s.eyebrow}>{language === "todas" ? "ESCOLHA UMA LINGUAGEM E UM FOCO" : `SEU CAMINHO EM ${languageNames[language].toUpperCase()}`}</span><h3>O que você quer praticar agora?</h3><p>Uma sequência sugerida, sem bloquear quem já sabe. Estes são exercícios de fundamentos, não projetos completos.</p></div>
+          <div className={s.routeButtons} role="group" aria-label="Filtrar por objetivo"><button type="button" aria-pressed={purpose === "all"} onClick={() => setPurpose("all")}><strong>Explorar tudo</strong><span>Todos os fundamentos disponíveis</span></button>{practicePaths.map((path, index) => <button key={path.id} type="button" aria-pressed={purpose === path.id} onClick={() => setPurpose(path.id)}><strong>{index + 1}. {path.label}</strong><span>{path.description}</span><small>{desafios.filter(item => (language === "todas" || item.linguagem === language) && practicePath(item) === path.id).length} desafios</small></button>)}</div>
+          {(language === "todas" || language === "csharp") && <Link className={s.trackEntry} href="/estudante/trilhas/csharp"><div><strong>Quer um caminho acompanhado? Trilha C# &amp; .NET</strong><span>Mapa da jornada, práticas de código e perguntas para conferir o entendimento. Comece pelos fundamentos disponíveis.</span></div><ArrowUpRight size={22}/></Link>}
+          <details className={s.projectRoadmap}><summary>Depois dos fundamentos: projetos profissionais <span>Em preparação</span></summary><p>O próximo caminho será construir uma aplicação por partes. Ainda não são aulas disponíveis: hoje você pode praticar os fundamentos acima{language === "csharp" ? " e seguir a trilha C# & .NET" : ""}.</p><ol><li><strong>CRUD com contexto</strong><span>Cadastrar, consultar, editar e excluir dados de um projeto.</span></li><li><strong>Persistência em banco SQL</strong><span>{language === "csharp" ? "A trilha C# prevê SQL Server e EF Core. PostgreSQL pode ser uma prática complementar." : "Guardar os dados, modelar tabelas e trabalhar com consultas; PostgreSQL é um exemplo de laboratório futuro."}</span></li><li><strong>API, validação e testes</strong><span>Comunicar as partes da aplicação e conferir seu comportamento.</span></li><li><strong>Entrega com Docker</strong><span>Entender containers quando houver uma aplicação para executar e distribuir.</span></li></ol></details>
+        </section>
         <div className={s.statusRow}><div className={s.statusFilters} aria-label="Status do desafio">{([["todos", "Todos"], ["novo", "Novos"], ["andamento", "Em andamento"], ["concluido", "Concluídos"]] as const).map(([value, label]) => <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)}>{label}</button>)}</div><p aria-live="polite">{filteredChallenges.length} de {desafios.length} experimentos</p></div>
 
         {filteredChallenges.length ? <div className={s.experimentGrid}>{filteredChallenges.map(challenge => {
@@ -151,7 +160,7 @@ return (
               <span className={s.languageMark}>{languageCodes[challenge.linguagem]}</span>
             </div>
             <div className={s.experimentBody}>
-              <span className={s.experimentCategory}>{challenge.categoria || languageNames[challenge.linguagem]}</span>
+              <span className={s.experimentCategory}>{practicePaths.find(path => path.id === practicePath(challenge))?.label} · {challenge.categoria || languageNames[challenge.linguagem]}</span>
               <div className={s.experimentHeading}><h3>{challenge.titulo}</h3><ArrowUpRight size={20}/></div>
               <p className={s.experimentDescription}>{challenge.descricao}</p>
               {challenge.habilidade && <p className={s.experimentSkill}>{challenge.habilidade}</p>}
@@ -159,11 +168,11 @@ return (
               <div className={s.experimentBottom}><span data-state={state}>{state === "concluido" ? <CheckCircle2 size={14}/> : state === "andamento" ? <Play size={13}/> : <span className={s.statusDot}/>} {state === "concluido" ? "Concluído" : state === "andamento" ? "Continuar rascunho" : "Não iniciado"}</span>{reflections[challenge.slug] && <span>Reflexão salva</span>}</div>
             </div>
           </Link>;
-        })}</div> : <div className={s.noResults}><Search size={30}/><h3>Nenhum experimento por aqui.</h3><p>Tente outro tema ou remova os filtros para explorar a bancada.</p><button type="button" onClick={() => { setQuery(""); setFilter("todos"); setLanguage("todas"); setDifficulty("todas"); }}>Mostrar todos os experimentos<ArrowRight size={16}/></button></div>}
+        })}</div> : <div className={s.noResults}><Search size={30}/><h3>Nenhum experimento por aqui.</h3><p>{purpose === "building" && language === "csharp" ? "Os desafios avulsos de funções e dados em C# ainda estão em preparação. Explore os fundamentos disponíveis ou abra o mapa da trilha." : "Tente outro tema ou remova os filtros para explorar a bancada."}</p><button type="button" onClick={() => { setQuery(""); setFilter("todos"); setLanguage("todas"); setDifficulty("todas"); setPurpose("all"); }}>Mostrar todos os experimentos<ArrowRight size={16}/></button></div>}
       </section>
 
       <Link className={s.blocksAlternative} href="/estudante/jogos"><span className={s.blockMotif} aria-hidden="true"><i/><i/><i/></span><div><span className={s.eyebrow}>Outro jeito de praticar</span><h2>Prefere começar pelos blocos?</h2><p>Monte o Código: organize o programa antes de partir para o teclado.</p></div><ArrowUpRight size={24}/></Link>
-      <p className={s.storageNote}><HardDrive size={17}/>Seus rascunhos ficam salvos neste navegador. A execução é temporária; “Reiniciar” apaga o rascunho da missão.</p>
+      <p className={s.storageNote}><HardDrive size={17}/>Seus rascunhos ficam neste navegador, sem sincronização entre aparelhos. No modo guiado, você pode recuperar o código anterior ao reinício enquanto permanecer na página.</p>
     </div>
   );
 }

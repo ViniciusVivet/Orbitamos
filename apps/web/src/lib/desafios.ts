@@ -374,7 +374,7 @@ const desafiosExtras: Desafio[] = [
   }),
   createExercise({
     slug: "listas-python",
-    titulo: "Notas Acima da Média",
+    titulo: "Notas que Atingem a Meta",
     descricao: "Filtre valores de uma lista usando Python.",
     linguagem: "python",
     dificuldade: "basico",

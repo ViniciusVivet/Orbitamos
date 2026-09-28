@@ -49,7 +49,7 @@ As prévias usam armazenamento de teste e não validam permissões ou dados de u
 
 ## Contrato pedagógico
 
-- A entrada padrão dos 32 desafios é o modo **passo a passo**. O aluno começa com um editor vazio, escreve código real cumulativo e avança com um botão explícito.
+- A entrada padrão dos 32 desafios é o modo **passo a passo**. O aluno começa com um editor vazio e escreve código real cumulativo. A revisão de 28/09 abaixo acrescenta introdução e avanço automático opcional; o botão explícito continua disponível.
 - `src/lib/guidedPractice.ts` reúne referências completas, explicações de sintaxe e microetapas. Referências antigas incompletas receberam dados de entrada e chamadas explícitas; não montamos programas usando o rascunho do aluno.
 - A soma Python 1–100 tem orientação própria sobre variável, limite exclusivo do `range`, acumulador, indentação e saída fora do laço.
 - Verde durante a escrita significa **correspondência com o exemplo**, não prova de correção semântica. A missão só passa após execução nos workers existentes e aprovação dos critérios de todas as missões anteriores. Equivalências mais amplas e soluções autorais pertencem ao modo livre.
@@ -81,3 +81,51 @@ O novo audit usa **WebKit/iPhone**, Chromium 320px e desktop, com execução Pyt
 **Limite da simulação:** viewport reduzido não reproduz o teclado virtual físico do iPhone. Checklist manual final: abrir Safari → entrar como estudante → laboratório → Soma de 1 a 100 → tocar em Escrever esta etapa → usar Recuo e aspas → alternar apps → voltar → executar 5050 → reiniciar/cancelar/recuperar. Conferir seleção, caret, barra do Safari e rotação do aparelho.
 
 ---
+
+## Contexto antes da sintaxe — revisão de 28/09/2026
+
+### Direção pedagógica
+
+- O aluno precisa saber **qual problema está resolvendo, o que recebe, o que transforma e o que entrega**, antes de ver o editor. `PracticeBrief` mostra uma história curta, foto de contexto reutilizada e o fluxo entrada → ação → saída. Não embutir explicações em imagens.
+- Os 32 desafios do catálogo têm histórias próprias em `practiceNarrative.ts`. Conferir cada narrativa contra a referência executável, não só contra o título. Exemplo: Python retorna os textos `sim`/`não` em Pode Dirigir; Notas que Atingem a Meta filtra `>= 7`, não calcula a média. O slug desse desafio continua `listas-python` para preservar links e rascunhos.
+- Após começar, uma faixa compacta mantém linguagem e objetivo, com opção de rever a história sem perder código. Rascunhos iniciados retomam o editor diretamente. Os módulos C# já contextualizados usam a versão embutida, sem repetir a tela introdutória.
+- A explicação do passo acompanha o editor. Calculadora de descontos, classificador de notas e comparação de idade têm explicações específicas de parâmetros, chamadas, retorno, regras e recuos. Perfis explicam cada variável e a diferença entre nome e valor. Não dizer que uma função é executada quando apenas declarada.
+- A foto é contextual; o conteúdo instrucional permanece texto selecionável, responsivo e acessível. Sem scroll preso, animação comercial ou vídeo obrigatório.
+
+### Contrato do avanço automático
+
+- Padrão ligado, com checkbox visível para desligar. Após uma edição que corresponde ao prefixo esperado e **950 ms sem outra edição**, avança **uma microetapa**. Não preenche, executa ou aprova uma missão sozinho.
+- Não roubar foco, mover o cursor ou abrir/fechar o teclado. Respeitar composição de texto, guia em revisão, documento oculto, foco fora do editor, reinício e execução pendente. Um programa colado não dispara uma cascata de etapas.
+- Rever etapa, desfazer, reiniciar, recuperar, recarregar e ligar o toggle não armam o avanço: exige uma nova edição. O botão manual permanece disponível, inclusive abaixo do editor no celular.
+- Correspondência de escrita não é teste semântico. `Executar código` fica disponível quando o programa de referência da missão está montado; quem quiser experimentar código parcial pode habilitar explicitamente o teste exploratório. A execução e os critérios originais continuam decidindo se a missão passou.
+- Rascunhos e schema v1 preservados, sem migração destrutiva. Modo livre mantém armazenamento separado. Não prometer persistência de preferências entre dispositivos, sincronização ou .NET completo.
+
+### Organização do catálogo
+
+- Linguagem + objetivo: **Primeiros passos**, **Lógica e decisões**, **Funções e dados**, além de explorar tudo. Combinam com busca, dificuldade e estado. A recomendação acompanha linguagem e objetivo selecionados.
+- Entrada explícita na trilha C# & .NET quando C# ou todas as linguagens estão selecionadas.
+- CRUD → banco SQL → API/validação/testes → Docker é um caminho **em preparação**, fechado por padrão e sem links para aulas inexistentes. PostgreSQL aparece como exemplo; a trilha C# mantém seu planejamento de SQL Server/EF Core, sem trocar silenciosamente o currículo. Introduzir ferramentas quando o projeto precisar delas, não como exercícios aleatórios ou promessa de conteúdo pronto.
+
+### Verificação desta revisão
+
+```powershell
+npm test -- --maxWorkers=2
+node node_modules/typescript/bin/tsc --noEmit
+node scripts/audit-practice-onboarding.mjs
+$env:GUIDED_PROFILE='desktop'
+node scripts/audit-guided-practice.mjs
+npm run build
+```
+
+`audit-practice-onboarding.mjs` verifica desktop, WebKit/iPhone 13 e 320 px: introdução antes do editor, foco, auto/manual, composição, ausência de cascata ao colar, revisão, persistência, recuperação, execução parcial consciente, modo livre, filtros/roadmap e módulo C# embutido. Checa axe, overflow e fonte do editor, com capturas em `test-results/practice-onboarding/`. `PRACTICE_PROFILE` permite selecionar `desktop`, `iphone-webkit` ou `small-phone`.
+
+O audit antigo mantém navegação manual intencionalmente (desliga o toggle) e executa as referências dos 32 desafios. O novo teste não certifica teclado virtual físico: ainda conferir no iPhone/Safari real o foco, seleção, retorno de outro app e leitura da instrução com teclado aberto.
+
+### Resultados e observações
+
+- 248 testes unitários aprovados em 27 arquivos; lint dos arquivos alterados sem erros.
+- Referências dos 32 desafios executadas e validadas no navegador, com Python real no worker e o subconjunto C# existente.
+- Introdução, escrita, recuperação e organização verificadas em desktop, WebKit/iPhone e 320 px, sem violações axe ou overflow horizontal nos estados auditados.
+- Módulo de variáveis C# completo verificado em WebKit: 7 práticas e 3 questões, persistência e retorno pelo mapa. A auditoria revelou que `Can't find variable: ...` do Safari não recebia a mesma tradução pedagógica de `... is not defined` do Chromium. `csharpFeedback.ts` agora trata os dois, com quatro regressões unitárias.
+- Build final de produção aprovado, incluindo TypeScript e geração das páginas. O aviso antigo de tracing em `api/course-materials/[...path]` permanece e é independente desta revisão. As capturas são evidência de emulação, não de teclado físico do iPhone.
+- Esta rodada foi preparada localmente. Publicação não é implícita na revisão pedagógica; confirmar a solicitação atual antes de fazer commit/push.

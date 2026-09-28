@@ -42,10 +42,11 @@ for (const [name, engine, options] of profiles.filter(([name]) => !process.env.C
     for (const activity of variableActivities) {
       await expect(page.getByRole("heading", { name: activity.title, exact: true, level: 1 })).toBeVisible();
       if (activity.kind === "guided") {
+        await page.getByRole("checkbox", { name: "Avanço automático", exact: true }).uncheck();
         const lines = csharpPilot.steps[0].codigoExemplo.split("\n");
         for (let i = 0; i < lines.length; i++) {
           await page.locator("#guided-code").fill(lines.slice(0, i + 1).join("\n"));
-          if (i < lines.length - 1) await page.getByRole("button", { name: "Próxima etapa", exact: true }).click();
+          if (i < lines.length - 1) await page.getByRole("button", { name: "Continuar para próxima etapa", exact: true }).click();
         }
         await page.getByRole("button", { name: "Executar código", exact: true }).click();
         await page.getByRole("heading", { name: "Você escreveu. E fez funcionar.", exact: true }).waitFor({ timeout: 15000 });
@@ -106,6 +107,10 @@ for (const [name, engine, options] of profiles.filter(([name]) => !process.env.C
     expect(errors).toEqual([]);
     results.push({ profile: name, passed: true, codePractices: 7, quizzes: 3, accessibilityViolations: 0, checks: "guided line-by-line, all runtime solutions, wrong answers and feedback, reset recovery, progress and draft persistence, full map and return, changed draft invalidates completion", limitation: "WebKit emulation does not test physical iOS keyboard" });
     console.log(name + ": passed");
+  } catch (error) {
+    await page.screenshot({ path: path.join(dir, name + "-failure.jpg"), fullPage: true }).catch(() => {});
+    await writeFile(path.join(dir, name + "-failure.txt"), await page.locator("body").innerText());
+    throw error;
   } finally { await browser.close(); }
 }
 await writeFile(path.join(dir, "report-v2.json"), JSON.stringify(results, null, 2));

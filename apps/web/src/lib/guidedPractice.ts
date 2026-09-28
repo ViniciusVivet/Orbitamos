@@ -1,4 +1,5 @@
 import type { Desafio } from "./desafios";
+import { contextualLine } from "./practiceNarrative";
 
 export type GuidedLine = { code: string; title: string; why: string };
 export type GuidedDraft = { version: 1; code: string; mission: number; line: number; passed: number[]; started: boolean };
@@ -89,7 +90,20 @@ function explainLine(code: string, python: boolean): GuidedLine {
 
 export function guidedLines(challenge: Desafio, mission: number): GuidedLine[] {
   if (challenge.slug === "lacos-python") return loopPython;
-  return guidedProgram(challenge, mission).split("\n").filter(line => line.trim()).map(line => explainLine(line, challenge.linguagem === "python"));
+  return guidedProgram(challenge, mission).split("\n").filter(line => line.trim()).map(line => ({ ...explainLine(line, challenge.linguagem === "python"), ...contextualLine(challenge, line) }));
+}
+
+export function guidedMissionProgram(challenge: Desafio, mission: number): string {
+  return challenge.steps.slice(0, mission + 1).map((_, index) => guidedProgram(challenge, index)).join("\n");
+}
+
+// Only advances the writing guide by one line, never runs code or completes a mission.
+export function nextGuidedLine(draft: GuidedDraft, challenge: Desafio): number | null {
+  const lines = guidedLines(challenge, draft.mission);
+  if (draft.passed.includes(draft.mission) || draft.line >= lines.length - 1) return null;
+  const before = challenge.steps.slice(0, draft.mission).map((_, index) => guidedProgram(challenge, index));
+  const expected = [...before, ...lines.slice(0, draft.line + 1).map(line => line.code)].filter(Boolean).join("\n");
+  return writingMatches(draft.code, expected, challenge.linguagem === "python") ? draft.line + 1 : null;
 }
 
 // A writing check, NOT a semantic grader. Ignore cosmetic spacing outside

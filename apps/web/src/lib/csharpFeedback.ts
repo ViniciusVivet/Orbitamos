@@ -27,7 +27,10 @@ export function explainCSharpFailure(activity: VariableCode, code: string, resul
   if (result.timedOut) return "O programa levou tempo demais e foi interrompido. No while, confira se a variável da condição muda dentro do bloco. No for, confira a atualização e o limite. Seu código foi preservado.";
   const diagnostic = diagnoseCSharp(code);
   if (diagnostic) return diagnostic;
-  const missing = result.error?.match(/(?:ReferenceError:\s*)?([\p{L}\w]+) is not defined/u)?.[1];
+  // The educational executor uses JS workers: WebKit and Chromium phrase this
+  // same error differently. Keep the learning feedback consistent on iPhone.
+  const missing = result.error?.match(/(?:ReferenceError:\s*)?([\p{L}\w]+) is not defined/u)?.[1]
+    ?? result.error?.match(/Can't find variable:\s*([\p{L}\w]+)/u)?.[1];
   if (missing) {
     const names = Array.from(codeStructure(code).matchAll(/\b(?:int|string|bool)\s+(\w+)\s*=/g), match => match[1]);
     const similar = names.find(name => name.toLowerCase() === missing.toLowerCase());

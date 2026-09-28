@@ -8,20 +8,29 @@ const base = process.env.IDE_AUDIT_URL || "http://localhost:3015";
 const dir = path.resolve("test-results/guided-practice");
 await mkdir(dir, { recursive: true });
 const report = [];
+const sourceCache = {};
 async function sourceExports(file) {
   const code = ts.transpileModule(await readFile(file, "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const exports = {};
-  new Function("exports", code)(exports);
+  new Function("require", "exports", code)(name => sourceCache[name], exports);
   return exports;
 }
 const { desafios } = await sourceExports("src/lib/desafios.ts");
+sourceCache["./practiceNarrative"] = await sourceExports("src/lib/practiceNarrative.ts");
 const { guidedProgram } = await sourceExports("src/lib/guidedPractice.ts");
 const assert = (condition, message) => { if (!condition) throw Error(message); };
 async function open(page, slug) {
   await page.goto(`${base}/dev/ide-preview/${slug}`, { waitUntil: "domcontentloaded", timeout: 120000 });
   await page.locator("[data-guided-lab]").waitFor({ timeout: 120000 });
+  const start = page.getByRole("button", { name: "Entendi, vamos construir" });
+  if (await start.isVisible()) await start.click();
+  // This legacy suite exercises manual navigation. Automatic progression has its own audit.
+  await page.getByRole("checkbox", { name: "Avanço automático", exact: true }).uncheck();
 }
 async function execute(page) {
+  if (await page.getByRole("button", { name: "Executar código", exact: true }).isDisabled()) {
+    await page.getByRole("button", { name: "Quero testar meu código mesmo assim", exact: true }).click();
+  }
   await page.getByRole("button", { name: "Executar código", exact: true }).click();
   await page.getByRole("button", { name: "Executar código", exact: true }).waitFor({ timeout: 65000 });
 }
@@ -42,7 +51,7 @@ for (const [name, engine, profile] of [["safari-iphone", webkit, devices["iPhone
     await page.screenshot({ path: path.join(dir, `${name}-start.jpg`), type: "jpeg", quality: 75 });
     const initialA11y = await new AxeBuilder({ page }).include("[data-guided-lab]").analyze();
     assert(!initialA11y.violations.length, `${name}: initial accessibility: ${initialA11y.violations.map(v => v.id).join(", ")}`);
-    const next = page.getByRole("button", { name: "Próxima etapa", exact: true, includeHidden: true });
+    const next = page.getByRole("button", { name: "Continuar para próxima etapa", exact: true });
     assert(await next.isDisabled(), `${name}: empty code passed`);
     await editor.fill("# total = 0");
     assert(await next.isDisabled(), `${name}: commented solution passed`);
@@ -96,6 +105,7 @@ for (const [name, engine, profile] of [["safari-iphone", webkit, devices["iPhone
     await execute(page);
     await page.getByRole("heading", { name: "Você escreveu. E fez funcionar." }).waitFor();
     await editor.fill("while (true) {}");
+    await page.getByRole("button", { name: "Quero testar meu código mesmo assim", exact: true }).click();
     await page.getByRole("button", { name: "Executar código", exact: true }).click();
     await page.getByRole("button", { name: "Parar execução", exact: true }).click();
     await page.getByText("Execução interrompida. Seu código está preservado.", { exact: true }).waitFor();
