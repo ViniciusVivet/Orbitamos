@@ -15,3 +15,4 @@
 @media(prefers-reduced-motion:reduce){.track *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 @media(max-width:767px){:global(body:has([data-csharp-track]) .site-navigation){display:none}:global(body:has([data-csharp-track]) main){padding-top:0}}
 .moduleTabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}.moduleTabs button{min-height:44px;padding:10px 16px;border:1px solid #40594d;border-radius:5px;font-size:13px;color:#c4d4cd}.moduleTabs [aria-current]{border-color:#9cf4cf;color:#9cf4cf;background:#123629}
+.stageActions{display:flex;flex-direction:column;align-items:stretch;gap:10px;min-width:0}.stageActions svg{flex-shrink:0}

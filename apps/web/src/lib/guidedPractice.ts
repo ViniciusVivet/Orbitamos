@@ -58,6 +58,10 @@ function explainLine(code: string, python: boolean): GuidedLine {
     title = "Dê um nome a uma tarefa reutilizável"; why = `Uma função reúne instruções. Os nomes entre parênteses são os dados que ela recebe. ${python ? "Os dois-pontos abrem o corpo; as próximas linhas precisam de recuo." : "A chave { abre o corpo; uma chave } vai fechá-lo depois."}`;
   } else if (/^(if |else|elif)/.test(line)) {
     title = "Faça o programa tomar uma decisão"; why = "if testa uma condição; >= significa maior ou igual. O caminho só é seguido se o teste for verdadeiro. else é a alternativa. A ordem dos testes importa.";
+  } else if (/^for\s*\([^;]+;[^;]+;/.test(line)) {
+    title = "Defina o começo, a condição e o avanço"; why = "No for, os dois ; separam três partes. A primeira inicia o contador uma vez. A segunda é testada antes de cada volta. A terceira atualiza o contador ao final da volta: ++ soma 1. <= inclui o limite; < não inclui.";
+  } else if (/^while\s*\(/.test(line)) {
+    title = "Repita enquanto a condição for verdadeira"; why = "while testa antes de cada volta; pode executar zero vezes. Dentro do bloco, atualize o estado usado na condição para que o programa consiga parar.";
   } else if (/^for |^foreach/.test(line)) {
     title = "Repita sem reescrever tudo"; why = "Um laço percorre valores e repete seu bloco para cada um. Observe o início, o limite e como o valor muda para que a repetição termine.";
   } else if (/^return /.test(line)) {
@@ -70,7 +74,9 @@ function explainLine(code: string, python: boolean): GuidedLine {
     title = line === "{" ? "Abra o bloco" : "Feche o bloco que você abriu"; why = "Esses sinais delimitam uma lista ou um bloco de instruções. Abra e feche os pares: o executor precisa saber onde cada parte começa e termina.";
   } else if (line.includes("+=")) {
     title = "Atualize o valor acumulado"; why = "+= soma o valor da direita ao que já estava guardado. Não é começar do zero: é atualizar a variável existente.";
-  } else if (/^(let |const |var |int |string |\w+\s*=)/.test(line)) {
+  } else if (/^\w+(?:\+\+|--);?$/.test(line)) {
+    title = "Faça o contador avançar"; why = "++ aumenta a variável em 1; -- diminui em 1. Essa mudança ajuda o laço a chegar à condição de parada.";
+  } else if (/^(let |const |var |int |string |bool |\w+\s*=)/.test(line)) {
     title = "Guarde um valor com um nome"; why = `A variável dá um nome a um valor. Texto fica entre aspas; números não. ${python ? "Em Python, escreva nome = valor, sem let ou const." : /^(int|string|double|float|bool|decimal)\s/.test(line) ? "Em C#, o tipo vem antes do nome: string guarda texto; int guarda números inteiros. Termine a instrução com ponto e vírgula." : "let permite trocar o valor; const impede atribuir outro valor à mesma variável."}`;
   }
   if (line.includes(".filter(")) why = "filter seleciona os itens que passam em uma condição. reduce percorre os selecionados e acumula um único resultado; aqui, a soma dos pedidos pagos.";

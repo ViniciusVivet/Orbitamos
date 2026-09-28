@@ -10,6 +10,7 @@ export function diagnoseCSharp(code: string): string | null {
   if (textNumber) return `Você declarou ${textNumber[2]} como ${textNumber[1]}, mas colocou o valor entre aspas. ${textNumber[1] === "bool" ? "Use true ou false sem aspas." : "Para guardar um número, retire as aspas."}`;
   if (/\bif\s*\([^)]*(?<![=!<>])=(?!=)[^)]*\)/.test(structure)) return "Dentro do if, = está atribuindo um valor. Para comparar igualdade, use == (dois sinais de igual).";
   if (/\bif\s*\([^)]*\)\s*;/.test(structure)) return "Há um ; logo depois do if (...). Retire esse ponto e vírgula para que as chaves pertençam à condição.";
+  if (/\b(?:for|while)\s*\([^)]*\)\s*;/.test(structure)) return "Há um ; logo depois do for ou while (...). Nesta atividade, retire esse ;: ele cria uma repetição vazia e separa o bloco que você queria repetir.";
   const lines = structure.split("\n");
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
@@ -23,7 +24,7 @@ export function diagnoseCSharp(code: string): string | null {
 
 export function explainCSharpFailure(activity: VariableCode, code: string, result: BrowserCodeResult): string {
   if (result.cancelled) return "Execução interrompida. Seu código está preservado.";
-  if (result.timedOut) return "O programa levou tempo demais. Verifique se alguma repetição não termina; seu código foi preservado.";
+  if (result.timedOut) return "O programa levou tempo demais e foi interrompido. No while, confira se a variável da condição muda dentro do bloco. No for, confira a atualização e o limite. Seu código foi preservado.";
   const diagnostic = diagnoseCSharp(code);
   if (diagnostic) return diagnostic;
   const missing = result.error?.match(/(?:ReferenceError:\s*)?([\p{L}\w]+) is not defined/u)?.[1];
@@ -74,5 +75,6 @@ export async function runCSharpActivity(activity: VariableCode, code: string, si
     checks.push({ label: scenario.label, passed: !test.error && !test.timedOut && test.output.trim() === scenario.expected, expected: scenario.expected, actual: test.error || test.output || "Nenhuma saída" });
   }
   const failed = checks.find(check => !check.passed);
-  return { ...result, passed: !failed, checks, feedback: failed ? `A entrada inicial funcionou, mas o caso “${failed.label}” ainda falhou. Confira a comparação e os caminhos do if/else.` : "Código validado! Você aplicou o conceito e produziu a saída esperada." };
+  const hasLoop = /\b(?:for|while)\s*\(/.test(codeStructure(activity.solution));
+  return { ...result, passed: !failed, checks, feedback: failed ? `A entrada inicial funcionou, mas o caso “${failed.label}” ainda falhou. ${hasLoop ? "Confira o início, o limite e a atualização do laço; não use um total fixo no lugar das entradas." : "Confira a comparação e os caminhos do if/else."}` : "Código validado! Você aplicou o conceito e produziu a saída esperada." };
 }

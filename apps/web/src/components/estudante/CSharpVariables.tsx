@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, ListChecks, Map, Play, RotateCcw, Square } from "lucide-react";
 import { csharpStages } from "@/lib/csharpTrack";
-import { csharpPilot, csharpProgressKey, newVariablesProgress, readVariablesProgress, variableActivities as variablesActivities, variablesKey, type VariableCode, type VariableQuiz, type VariablesProgress } from "@/lib/csharpVariables";
+import { newVariablesProgress, type VariableCode, type VariableQuiz, type VariablesProgress } from "@/lib/csharpVariables";
 import { runCSharpActivity, type LearningRun } from "@/lib/csharpFeedback";
-import { conditionsActivities, conditionsPilot, conditionsKey, readConditionsProgress } from "@/lib/csharpConditions";
+import { csharpModules, csharpProgressKey, type CSharpModuleKind } from "@/lib/csharpModules";
 import GuidedPractice from "./GuidedPractice";
 import s from "./CSharpTrack.module.css";
 import m from "./CSharpVariables.module.css";
@@ -53,29 +53,28 @@ function QuizActivity({ activity, answer, onAnswer, onNext }: { activity: Variab
   return <section className={m.quiz} aria-label="Questão de múltipla escolha"><p className={s.small}>Pausa curta para pensar. Depois você volta ao código.</p>{activity.code && <pre>{activity.code}</pre>}<fieldset><legend>{activity.prompt}</legend>{activity.options.map((option, i) => <label key={option} data-selected={answer === i}><input type="radio" name={activity.id} checked={answer === i} onChange={() => onAnswer(i)}/><span>{option}</span></label>)}</fieldset><p className={answer === activity.answer ? s.success : s.small} role="status">{answer === undefined ? "Escolha uma alternativa. Você pode tentar de novo e entender cada resposta." : activity.feedback[answer]}</p>{answer === activity.answer && <button className={s.primary} onClick={onNext}>Continuar para a próxima<ArrowRight size={17}/></button>}</section>;
 }
 
-export default function CSharpVariables({ userId, onFullMap, moduleKind = "variables", onModuleChange }: { userId: string | number | null; onFullMap: () => void; moduleKind?: "variables" | "conditions"; onModuleChange?: (module: "variables" | "conditions") => void }) {
-  const isConditions = moduleKind === "conditions";
-  const label = isConditions ? "Condições" : "Variáveis";
-  const variableActivities = isConditions ? conditionsActivities : variablesActivities;
-  const guidedChallenge = isConditions ? conditionsPilot : csharpPilot;
+export default function CSharpVariables({ userId, onFullMap, moduleKind = "variables", onModuleChange }: { userId: string | number | null; onFullMap: () => void; moduleKind?: CSharpModuleKind; onModuleChange?: (module: CSharpModuleKind) => void }) {
+  const config = csharpModules[moduleKind];
+  const { label, activities: variableActivities, pilot: guidedChallenge } = config;
   const [progress, setProgress] = useState<VariablesProgress>(newVariablesProgress);
   const [ready, setReady] = useState(false);
   const [storageError, setStorageError] = useState(false);
   const latest = useRef(progress);
   const heading = useRef<HTMLHeadingElement>(null);
-  const key = userId === null ? null : isConditions ? conditionsKey(userId) : variablesKey(userId);
+  const focusActivity = useRef(false);
+  const key = userId === null ? null : config.key(userId);
   useEffect(() => {
     let active = true;
     queueMicrotask(() => {
       if (!active) return;
       try {
-        const restored = isConditions ? readConditionsProgress(key ? localStorage.getItem(key) : null) : readVariablesProgress(key ? localStorage.getItem(key) : null, userId !== null ? localStorage.getItem(csharpProgressKey(userId)) : null);
+        const restored = config.restore(key ? localStorage.getItem(key) : null, userId !== null ? localStorage.getItem(csharpProgressKey(userId)) : null);
         latest.current = restored; setProgress(restored);
       } catch { setStorageError(true); }
       setReady(true);
     });
     return () => { active = false; };
-  }, [key, userId, isConditions]);
+  }, [key, userId, config]);
   useEffect(() => {
     if (!ready || !key) return;
     const save = () => { try { localStorage.setItem(key, JSON.stringify(latest.current)); } catch { setStorageError(true); } };
@@ -83,10 +82,21 @@ export default function CSharpVariables({ userId, onFullMap, moduleKind = "varia
     window.addEventListener("pagehide", save);
     return () => { clearTimeout(timer); save(); window.removeEventListener("pagehide", save); };
   }, [key, ready, progress]);
+  useLayoutEffect(() => {
+    if (!ready || !focusActivity.current) return;
+    focusActivity.current = false;
+    heading.current?.focus({ preventScroll: true });
+    heading.current?.scrollIntoView({ block: "start", behavior: "instant" });
+  }, [ready, progress.active]);
   function update(value: Partial<VariablesProgress>) { const next = { ...latest.current, ...value }; latest.current = next; setProgress(next); }
   function select(id: string) {
+    if (id === latest.current.active) {
+      heading.current?.focus({ preventScroll: true });
+      heading.current?.scrollIntoView({ block: "start", behavior: "instant" });
+      return;
+    }
+    focusActivity.current = true;
     update({ active: id });
-    requestAnimationFrame(() => { heading.current?.focus({ preventScroll: true }); heading.current?.scrollIntoView({ block: "start", behavior: "instant" }); });
   }
   function mark(id: string, done: boolean) { if (latest.current.done.includes(id) === done) return; update({ done: [...latest.current.done.filter(item => item !== id), ...(done ? [id] : [])] }); }
   const index = variableActivities.findIndex(a => a.id === progress.active);
@@ -95,14 +105,16 @@ export default function CSharpVariables({ userId, onFullMap, moduleKind = "varia
   const complete = progress.done.length === variableActivities.length;
   const codeDone = variableActivities.filter(a => a.kind !== "quiz" && progress.done.includes(a.id)).length;
   const quizDone = variableActivities.filter(a => a.kind === "quiz" && progress.done.includes(a.id)).length;
+  const quizCount = variableActivities.filter(a => a.kind === "quiz").length;
+  const codeCount = variableActivities.length - quizCount;
   function advance() { if (next) select(next.id); else document.getElementById("variables-summary")?.scrollIntoView({ behavior: "smooth", block: "center" }); }
   const activityList = <ol className={m.activityList}>{variableActivities.map((a, i) => <li key={a.id}><button aria-current={a.id === activity.id ? "step" : undefined} onClick={() => select(a.id)}><span className={m.activityNumber}>{progress.done.includes(a.id) ? <Check size={14} aria-label="Concluída"/> : String(i + 1).padStart(2, "0")}</span><span>{a.title}<small>{a.kind === "quiz" ? "Questão rápida" : a.kind === "guided" ? "Código guiado" : "Escreva código"}</small></span></button></li>)}</ol>;
   if (!ready) return <p role="status">Abrindo suas práticas de {label.toLowerCase()}…</p>;
   return <section className={m.module} data-variables-module data-module-kind={moduleKind}>
-    <div className={m.location}><div><span>C# & .NET / MÓDULO {isConditions ? "02" : "01"} DE 08 / {isConditions ? "REGRAS DE NEGÓCIO" : "FUNDAMENTOS"}</span><strong>Você está aprendendo: {label}</strong></div><button onClick={onFullMap}><Map size={17}/>Mapa completo</button></div>
+    <div className={m.location}><div><span>C# & .NET / ETAPA {String(config.stage + 1).padStart(2, "0")} DE 08 / {config.section}</span><strong>Você está aprendendo: {label}</strong></div><button onClick={onFullMap}><Map size={17}/>Mapa completo</button></div>
     {storageError && <p className={s.notice} role="alert">O navegador não permitiu salvar. Copie seu código antes de sair.</p>}
     <div className={m.workspace}>
-      <aside className={m.rail} aria-label={`Mapa do módulo de ${label.toLowerCase()}`}><span className={s.kicker}>SEU CAMINHO NESTE MÓDULO</span><h2>{label}, na prática.</h2><p>7 práticas de código · 3 questões</p><div className={m.progress}><span style={{ width: `${progress.done.length / variableActivities.length * 100}%` }}/></div><p>{progress.done.length} de {variableActivities.length} atividades concluídas</p>{activityList}<div className={m.courseMap}><span>DEPOIS DE {label.toUpperCase()}</span><p>{isConditions ? "Laços e métodos (em preparação). Depois: objetos, dados, APIs, testes e entrega." : "Condições (disponível) → laços → métodos. Depois: objetos, dados, APIs, testes e entrega."}</p><button onClick={onFullMap}>Ver as 8 etapas da formação<ArrowRight size={14}/></button></div></aside>
+      <aside className={m.rail} aria-label={`Mapa do módulo de ${label.toLowerCase()}`}><span className={s.kicker}>SEU CAMINHO NESTE MÓDULO</span><h2>{label}, na prática.</h2><p>{codeCount} práticas de código · {quizCount} questões</p><div className={m.progress}><span style={{ width: `${progress.done.length / variableActivities.length * 100}%` }}/></div><p>{progress.done.length} de {variableActivities.length} atividades concluídas</p>{activityList}<div className={m.courseMap}><span>DEPOIS DE {label.toUpperCase()}</span><p>{config.upcoming}</p><button onClick={onFullMap}>Ver as 8 etapas da formação<ArrowRight size={14}/></button></div></aside>
       <div className={m.main}>
         <details className={m.mobileMap}><summary><ListChecks size={17}/>Atividades do módulo · {progress.done.length}/{variableActivities.length}</summary>{activityList}</details>
         <header className={m.activityHeading}><span className={s.kicker}>ATIVIDADE {index + 1} DE {variableActivities.length} / {activity.kind === "quiz" ? "MÚLTIPLA ESCOLHA" : "AGORA É CÓDIGO"}</span><h1 ref={heading} tabIndex={-1}>{activity.title}</h1><p><strong>Assunto: {activity.topic}.</strong> {activity.goal}</p></header>
@@ -111,10 +123,10 @@ export default function CSharpVariables({ userId, onFullMap, moduleKind = "varia
         {activity.kind === "quiz" && <QuizActivity key={activity.id} activity={activity} answer={progress.answers[activity.id]} onAnswer={answer => update({ answers: { ...latest.current.answers, [activity.id]: answer }, done: [...latest.current.done.filter(id => id !== activity.id), ...(answer === activity.answer ? [activity.id] : [])] })} onNext={advance}/>}
         <div className={m.next}><button disabled={index === 0} onClick={() => select(variableActivities[index - 1].id)}><ArrowLeft size={15}/>Anterior</button><span>{next ? <>A seguir: <strong>{next.topic}</strong></> : `Última prática do módulo de ${label.toLowerCase()}`}</span>{next && <button onClick={advance}>Explorar próxima<ArrowRight size={15}/></button>}</div>
         <p className={s.small}>Você pode explorar as atividades, mas só a execução validada ou a resposta correta marca a conclusão.</p>
-        <section className={m.summary} id="variables-summary"><span className={s.kicker}>SEU PROGRESSO EM {label.toUpperCase()}</span><h2>{complete ? `${label}: primeiras práticas concluídas.` : "Aprender é conseguir fazer."}</h2><p><strong>{codeDone}/7</strong> práticas de código validadas · <strong>{quizDone}/3</strong> questões respondidas corretamente</p><p>{complete ? (isConditions ? "Você combinou comparações, if/else, condições lógicas e variáveis. Revisite os casos que falharam e tente explicar cada decisão. Laços e métodos ainda estão em preparação." : "Você praticou texto, números, reatribuição, cálculo e leitura de erros. Agora pode continuar com condições e fazer seu programa tomar decisões.") : "Conclua as práticas e as questões no seu ritmo. Isso mostra seu avanço neste módulo — não uma porcentagem de toda a formação."}</p>{complete && !isConditions && onModuleChange && <button className={s.primary} onClick={() => onModuleChange("conditions")}>Continuar para condições<ArrowRight size={17}/></button>}<button className={s.textButton} onClick={onFullMap}>Onde isso entra na formação?<ArrowRight size={16}/></button></section>
+        <section className={m.summary} id="variables-summary"><span className={s.kicker}>SEU PROGRESSO EM {label.toUpperCase()}</span><h2>{complete ? `${label}: primeiras práticas concluídas.` : "Aprender é conseguir fazer."}</h2><p><strong>{codeDone}/{codeCount}</strong> práticas de código validadas · <strong>{quizDone}/{quizCount}</strong> questões respondidas corretamente</p><p>{complete ? config.completion : "Conclua as práticas e as questões no seu ritmo. Isso mostra seu avanço neste módulo — não uma porcentagem de toda a formação."}</p>{complete && config.next && onModuleChange && <button className={s.primary} onClick={() => onModuleChange(config.next!)}>Continuar para {csharpModules[config.next].label.toLowerCase()}<ArrowRight size={17}/></button>}<button className={s.textButton} onClick={onFullMap}>Onde isso entra na formação?<ArrowRight size={16}/></button></section>
         <p className={s.runtimeNote}>C# didático no navegador: este executor não é o compilador .NET completo. O progresso fica neste navegador, sem sincronização entre aparelhos.</p>
       </div>
     </div>
-    <details className={m.overview}><summary>Visão geral: do primeiro programa à entrega profissional</summary><ol>{csharpStages.map((stage, i) => <li key={stage.id}><strong>{String(i + 1).padStart(2, "0")} · {stage.title}</strong><span>{i === (isConditions ? 1 : 0) ? `Você está aqui: ${label.toLowerCase()}` : stage.available ? "Práticas disponíveis" : "Planejado"}</span><p>{stage.skill}</p></li>)}</ol></details>
+    <details className={m.overview}><summary>Visão geral: do primeiro programa à entrega profissional</summary><ol>{csharpStages.map((stage, i) => <li key={stage.id}><strong>{String(i + 1).padStart(2, "0")} · {stage.title}</strong><span>{i === config.stage ? `Você está aqui: ${label.toLowerCase()}` : stage.available ? "Práticas disponíveis" : "Planejado"}</span><p>{stage.skill}</p></li>)}</ol></details>
   </section>;
 }

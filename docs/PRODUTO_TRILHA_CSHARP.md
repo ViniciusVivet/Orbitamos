@@ -289,3 +289,37 @@ Arquivos: `csharpConditions.ts`, `csharpFeedback.ts`, `csharpConditions.test.ts`
 Os 226 testes unitários passaram nesta rodada. Não tratar estas alterações posteriores como publicadas só porque o commit anterior já foi enviado. Para o próximo agente: conferir `git status` e os relatórios em `test-results/csharp-conditions/` antes de informar publicação ou resultados da auditoria final.
 
 Fechamento da rodada: auditoria de condições aprovada em desktop, WebKit/iPhone 13 e Chromium 320 px, com zero violações automatizadas de acessibilidade; regressão completa de variáveis aprovada em desktop. Build de produção e lint aprovados (permanece o aviso preexistente de rastreamento em `api/course-materials`). Condições e feedback continuam locais, posteriores a `c46ce57`, aguardando avaliação antes de um novo push.
+
+## 15. Publicação de condições e continuidade com laços — 27/09/2026
+
+A rodada de condições foi commitada e enviada à `main` em `48b0ca4`, conforme pedido do fundador. Os 226 testes unitários e TypeScript passaram antes da publicação. O status público do commit confirmou `Vercel: success / Deployment has completed`. `CLAUDE.md` continua fora do commit.
+
+Nova fase local, posterior a esse push:
+
+- Laços: 7 práticas de código e 3 questões intercaladas. Sequência: primeiro for guiado; limite exclusivo; contador com limite variável; while com redução da fila; identificação de laço infinito; acumulador; if dentro do for; correção de erro no último item; posição do acumulador; entrega independente.
+- A entrega combina variáveis, pagamento, condição, repetição e totalização do valor pendente. Testes adicionais cobrem fila vazia, tudo entregue, pagamento pendente, outro valor por serviço e um único serviço.
+- Todas as práticas independentes, exceto a de depuração, começam vazias. Não inserir a solução no editor para criar uma falsa sensação de aprendizado. A primeira prática ensina cada linha; as demais oferecem conceito, enunciado, pista, saída esperada e feedback de execução.
+- Condições e laços pertencem à mesma **etapa 02 — Lógica: decidir e repetir**. Não transformar laços na etapa de objetos nem sugerir que métodos já existem. As 8 etapas permanecem, com 21 práticas e 9 questões disponíveis nas duas primeiras.
+- Registro compartilhado em `csharpModules.ts` organiza assunto, etapa, atividades, persistência e próxima parte. A interface existente é reutilizada. Condições oferece continuidade para laços ao concluir.
+- Estado local separado em `orbitamos-csharp-loops-v1-{userId}`; a seleção do módulo também é restaurada. Os rascunhos de variáveis e condições não são migrados para laços, nem apagados.
+- Feedback orienta a condição de parada quando há timeout e avisa sobre `;` acidental após for/while. Explicação guiada distingue início, condição e atualização do for. O botão Parar execução preserva o código.
+- Checagens adicionais rejeitam o limite fixo que só funciona para a entrada inicial. São verificações didáticas, não compilador completo, análise semântica geral nem sistema antifraude.
+- A troca de atividade posiciona foco/rolagem na fase de layout, antes de nova digitação. O foco agendado por animation frame podia disputar com o preenchimento do editor no WebKit; a auditoria agora verifica explicitamente que o rascunho permanece depois de preencher.
+
+Nota de teste: a auditoria longa dispara o evento de cancelamento imediatamente para não disputar com o timeout de 2,5 segundos em uma máquina ocupada. `audit-csharp-cancellation.mjs` testa separadamente o clique normal no WebKit/iPhone, preservação do rascunho e feedback de interrupção; esse teste passou. Não confundir automação do navegador com certificação do teclado físico do aparelho.
+
+Arquivos principais: `csharpLoops.ts`, `csharpLoops.test.ts`, `csharpModules.ts`. Auditoria: `node scripts/audit-csharp-loops.mjs`, reutilizando o percurso de condições com casos específicos de laço infinito, cancelamento, recuperação e limites. Relatórios locais em `test-results/csharp-loops/`. Regressões em `audit-csharp-conditions.mjs` e `audit-csharp-track.mjs`.
+
+Próxima parte de conteúdo: métodos, parâmetros e retorno, depois de avaliar laços com alunos reais. Continuam pendentes ambiente .NET completo, sincronização entre aparelhos e revisão de projetos. A emulação WebKit/iPhone não certifica o teclado físico do Safari.
+
+Estado ao encerrar 27/09: implementação e validação locais, posteriores a `48b0ca4` (que contém condições, não laços). A publicação desta fase foi autorizada pelo fundador em 28/09/2026; consultar o commit de fechamento e seu status de deploy para confirmar a versão em produção.
+
+Fechamento da fase: 236 testes unitários aprovados; lint e TypeScript aprovados; build de produção concluído. Auditoria final de laços aprovada nos três perfis (Chromium desktop, WebKit/iPhone 13 e Chromium 320 px), com zero violações automatizadas de acessibilidade no componente, sem transbordamento horizontal e com persistência, reinício/recuperação, cancelamento, timeout e invalidação ao editar verificados. As regressões completas de variáveis e condições também passaram no desktop durante a integração. O build mantém o aviso preexistente de rastreamento em `api/course-materials`, fora deste escopo.
+
+Para testar: abrir `/dev/csharp-preview` localmente ou `/estudante/trilhas/csharp` com login na versão publicada, entrar em **Codar → 02.2 · Laços**, fazer o primeiro for linha a linha e seguir até o resumo da fila. No mapa, condições e laços ficam juntos na etapa 02. Testar também no iPhone físico antes de considerar o teclado móvel validado.
+
+## 16. Fechamento para publicação — 28/09/2026
+
+Esta entrega reúne o módulo de laços, o registro compartilhado dos módulos, o ajuste de foco mobile, o feedback para repetições e as auditorias correspondentes. A trilha passa a oferecer 21 práticas de código e 9 questões, distribuídas entre variáveis, condições e laços. `CLAUDE.md` não integra esta publicação.
+
+Limites que devem continuar explícitos: as etapas seguintes ainda estão em preparação; o executor inicial não é o compilador .NET completo; rascunhos e progresso são locais ao navegador e não sincronizam entre aparelhos. A próxima fase de conteúdo é métodos, parâmetros e retorno, não uma alegação de que a formação profissional inteira já está pronta.
