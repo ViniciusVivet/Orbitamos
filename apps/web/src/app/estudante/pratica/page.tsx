@@ -7,6 +7,7 @@ import { ArrowRight, ArrowUpRight, CheckCircle2, HardDrive, Play, Search, X } fr
 import { desafios } from "@/lib/desafios";
 import { guidedStorageKey, readGuidedDraft } from "@/lib/guidedPractice";
 import { practicePath, practicePaths, type PracticePath } from "@/lib/practiceNarrative";
+import { readCatalogView } from "@/lib/practiceExperience";
 import { warmPythonRuntime } from "@/lib/browserCodeRunner";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -34,6 +35,25 @@ export function PraticaCatalog({ userId = null }: { userId?: string | number | n
   const [purpose, setPurpose] = useState<PracticePath | "all">("all");
   const [states, setStates] = useState<Record<string, ChallengeState>>({});
   const [reflections, setReflections] = useState<Record<string, boolean>>({});
+  const viewKey = `orbitamos-lab-view-v1-${userId ?? "guest"}`;
+  const [restoredView, setRestoredView] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    queueMicrotask(() => {
+      if (!active) return;
+      let raw = null;
+      try { raw = sessionStorage.getItem(viewKey); } catch { /* Filters still work without storage. */ }
+      const view = readCatalogView(raw, window.location.search);
+      setLanguage(view.language); setPurpose(view.purpose); setDifficulty(view.difficulty); setFilter(view.filter); setQuery(view.query);
+      setRestoredView(viewKey);
+    });
+    return () => { active = false; };
+  }, [viewKey]);
+  useEffect(() => {
+    if (restoredView !== viewKey) return;
+    try { sessionStorage.setItem(viewKey, JSON.stringify({ language, purpose, difficulty, filter, query })); } catch { /* Optional convenience, never a blocker to practice. */ }
+  }, [restoredView, viewKey, language, purpose, difficulty, filter, query]);
 
   useEffect(() => {
     Promise.resolve().then(() => {
@@ -127,7 +147,7 @@ return (
       <section id="experimentos" className={s.experimentLibrary} aria-label="Biblioteca de experimentos">
         <div className={s.libraryTitle}><div><span className={s.eyebrow}>Sua bancada de prática</span><h2>Encontre um desafio.</h2></div><Link href="/estudante/aulas">Revisar as aulas<ArrowUpRight size={15}/></Link></div>
         <div className={s.searchRow}>
-          <label className={s.searchField}><Search size={18}/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Tema, habilidade ou linguagem" aria-label="Buscar desafios"/>{query && <button type="button" onClick={() => setQuery("")} aria-label="Limpar busca"><X size={17}/></button>}</label>
+          <label className={s.searchField}><Search size={18}/><input value={query} maxLength={120} onChange={event => setQuery(event.target.value)} placeholder="Tema, habilidade ou linguagem" aria-label="Buscar desafios"/>{query && <button type="button" onClick={() => setQuery("")} aria-label="Limpar busca"><X size={17}/></button>}</label>
           <label className={s.difficultyField}><span>Dificuldade</span><select value={difficulty} onChange={event => setDifficulty(event.target.value as DifficultyFilter)} aria-label="Filtrar por dificuldade"><option value="todas">Todos os níveis</option><option value="iniciante">Iniciante</option><option value="basico">Básico</option><option value="intermediario">Intermediário</option></select></label>
         </div>
         <div className={s.languageTabs} aria-label="Linguagens">{(["todas", "javascript", "python", "csharp"] as const).map(value => <button key={value} type="button" aria-pressed={language === value} onClick={() => setLanguage(value)}>{value === "todas" ? "Todas as linguagens" : languageNames[value]}</button>)}</div>

@@ -17,7 +17,7 @@ for (const [name, engine, options] of profiles.filter(([name]) => !process.env.P
   const page = await context.newPage();
   const errors = [];
   const results = [];
-  page.on("pageerror", error => errors.push(error.message));
+  page.on("pageerror", error => errors.push({ message: error.message, stack: error.stack, url: page.url() }));
   async function check(label, selector = "[data-guided-lab]") {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${name}/${label} overflow`).toBe(true);
     const axe = await new AxeBuilder({ page }).include(selector).analyze();

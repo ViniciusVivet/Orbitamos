@@ -209,7 +209,7 @@ const desafiosExtras: Desafio[] = [
     linguagem: "javascript",
     dificuldade: "iniciante",
     categoria: "Operadores",
-    habilidade: "Aritmética e arredondamento",
+    habilidade: "Aritmética e porcentagem",
     minutos: 8,
     instrucao: "Crie precoFinal(preco, desconto) e exiba precoFinal(200, 15). O resultado deve ser 170.",
     codigoInicial: "function precoFinal(preco, desconto) {\n  // retorne o valor com desconto\n}\n\nconsole.log(precoFinal(200, 15));\n",

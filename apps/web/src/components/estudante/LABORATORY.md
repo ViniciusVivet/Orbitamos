@@ -129,3 +129,42 @@ O audit antigo mantém navegação manual intencionalmente (desliga o toggle) e 
 - Módulo de variáveis C# completo verificado em WebKit: 7 práticas e 3 questões, persistência e retorno pelo mapa. A auditoria revelou que `Can't find variable: ...` do Safari não recebia a mesma tradução pedagógica de `... is not defined` do Chromium. `csharpFeedback.ts` agora trata os dois, com quatro regressões unitárias.
 - Build final de produção aprovado, incluindo TypeScript e geração das páginas. O aviso antigo de tracing em `api/course-materials/[...path]` permanece e é independente desta revisão. As capturas são evidência de emulação, não de teclado físico do iPhone.
 - Esta rodada foi preparada localmente. Publicação não é implícita na revisão pedagógica; confirmar a solicitação atual antes de fazer commit/push.
+
+## Continuidade, foco e aplicação — revisão de 04/10/2026
+
+### Ordem lógica das melhorias
+
+Antes de adicionar mais exercícios, reduzir três lacunas da experiência atual: perder a visão da sequência ao abrir o editor, competir com informação demais durante a escrita mobile e concluir copiando sem aplicar a ideia em outra situação. A identidade continua sendo de uma ferramenta de estudo, não uma página comercial imersiva.
+
+1. **Localização no caminho:** `PracticeJourney` leva a sequência real da linguagem para dentro do desafio. Fechada inicialmente, abre por escolha do aluno. O número é a posição sugerida no catálogo, não domínio, certificado ou porcentagem da formação. Nada bloqueia exploração; links só apontam para desafios existentes.
+2. **Foco explícito:** o aluno pode ligar Foco no código. Mantém instrução, linha de referência, editor e controles; a explicação completa fica em “Entender esta linha”. Não trocar o nó do editor, descartar seleção, esconder a tarefa ou mudar o layout automaticamente ao focar o campo. Ao concluir a missão, a orientação de continuidade reaparece.
+3. **Aplicar depois de executar:** oito desafios iniciais recebem uma pergunta opcional de previsão, com feedback específico por alternativa e convite a experimentar no modo livre. A conclusão inclui um atalho para a pergunta, com margem de rolagem para não escondê-la atrás do cabeçalho. Não usar a pergunta para aprovar código, bloquear conclusões antigas ou prometer compreensão comprovada. Errou? Pode tentar de novo. O modo livre mantém seu rascunho separado; não injetar uma solução nele.
+4. **Retomada:** filtros ficam na sessão da aba, por usuário. Voltar explicitamente a uma linguagem seleciona essa linguagem e limpa filtros incompatíveis. Não confundir preferências com progresso ou sincronização entre aparelhos.
+5. **Digitação:** teclas auxiliares incluem ponto e vírgula, colchetes, divisão e resto; preservam seleção e foco. A última prática C# aponta para a trilha existente; outras linguagens oferecem revisão do catálogo, sem inventar próximo conteúdo.
+
+### Contratos técnicos
+
+- `practiceExperience.ts`: sequência, validação das preferências/respostas, oito perguntas e símbolos por linguagem. `practiceExperience.test.ts` cobre ordem, dados malformados, respostas e exemplos JS executáveis.
+- Respostas: `orbitamos-practice-check-v1-{userId}-{check.id}` em localStorage, com identificador versionado da questão. Independentes de `orbitamos-guided-v1-*` e da conclusão do desafio. Falha de armazenamento é informada, sem impedir prática.
+- Filtros: `orbitamos-lab-view-v1-{userId}` em sessionStorage; query limitada a 120 caracteres. `?linguagem=` explícito tem precedência sobre filtros lembrados.
+- Nenhuma mudança no executor, critérios de aprovação, autenticação, permissões, sincronização ou capacidade .NET. Os módulos C# embutidos recebem o controle de foco, mas não duplicam o mapa e as perguntas externas.
+
+### Verificação reproduzível
+
+```powershell
+npm test -- --maxWorkers=2
+node node_modules/typescript/bin/tsc --noEmit
+node scripts/audit-practice-continuity.mjs
+$env:PRACTICE_PROFILE='iphone-webkit'
+node scripts/audit-practice-onboarding.mjs
+Remove-Item Env:PRACTICE_PROFILE
+npm run build
+```
+
+O novo audit cobre desktop, WebKit/iPhone 13 e 320 px: mapa e links, mesmo nó de editor/seleção ao alternar foco, teclas de pontuação, resposta incorreta sem perda de conclusão, persistência de resposta, isolamento do modo livre, invalidação após editar e restauração de filtros. Checa axe e overflow nos estados capturados em `test-results/practice-continuity/`. Emulação não certifica teclado virtual físico; repetir no iPhone/Safari real antes de afirmar esse comportamento em aparelho.
+
+Resultados desta rodada: 256 testes em 28 arquivos aprovados; TypeScript e build de produção aprovados. Continuidade aprovada nos três perfis; WebKit repetido após adicionar o atalho da pergunta. Regressão de onboarding aprovada em WebKit, incluindo o módulo C# embutido. Teclas de dicionários Python verificadas adicionalmente em WebKit, preservando foco e sem overflow/violações axe. O aviso preexistente de tracing de `api/course-materials/[...path]` e a base Browserslist desatualizada permanecem fora deste escopo. Durante os ajustes, uma execução registrou erro de navegador sem mensagem; a repetição sem edições concorrentes passou, e o audit agora registra stack e URL para diagnóstico.
+
+### Próxima evolução recomendada
+
+Adicionar variações de código com retirada gradual das dicas e testes próprios, depois um pequeno projeto cumulativo. Ampliar a trilha C# para métodos/coleções com validação executável antes de avançar para CRUD e banco de dados. Não simular integração real com .NET, SQL ou Docker dentro do executor didático e chamar isso de experiência profissional. Esta rodada não publica alterações automaticamente.
