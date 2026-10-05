@@ -6,12 +6,15 @@ import { ArrowRight, BrainCircuit, Bug, CheckCircle2, Code2, Gamepad2, Play, Puz
 import { useAuth } from "@/contexts/AuthContext";
 import { fasesMonteCodigo, lerProgressoFase, type FaseProgresso } from "@/lib/jogoMonteCodigo";
 import { lerProgressoNivel, niveisGuiaOrbi, type NivelProgresso } from "@/lib/jogoGuiaOrbi";
+import { readVillageSave, villageLevels, villageStorageKey } from "@/lib/vilaDosBlocos";
+import { VillageCharacter } from "@/components/games/VillageCharacters";
 
 export default function JogosIndex() {
   const { user } = useAuth();
   const userId = user?.id ? String(user.id) : undefined;
   const [progresso, setProgresso] = useState<Record<string, FaseProgresso>>({});
   const [progressoOrbi, setProgressoOrbi] = useState<Record<string, NivelProgresso>>({});
+  const [villageCompleted, setVillageCompleted] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -27,6 +30,7 @@ export default function JogosIndex() {
       });
       setProgresso(next);
       setProgressoOrbi(nextOrbi);
+      try { setVillageCompleted(userId ? readVillageSave(localStorage.getItem(villageStorageKey(userId))).completed.length : 0); } catch { setVillageCompleted(0); }
     });
     return () => {
       active = false;
@@ -38,8 +42,8 @@ export default function JogosIndex() {
     fasesMonteCodigo.find((fase) => !progresso[fase.slug]?.concluido) ?? fasesMonteCodigo[0];
   const percent = Math.round((concluidas / fasesMonteCodigo.length) * 100);
   const orbiConcluidos = niveisGuiaOrbi.filter((nivel) => progressoOrbi[nivel.slug]?.concluido).length;
-  const totalFases = fasesMonteCodigo.length + niveisGuiaOrbi.length;
-  const totalConcluidas = concluidas + orbiConcluidos;
+  const totalFases = fasesMonteCodigo.length + niveisGuiaOrbi.length + villageLevels.length;
+  const totalConcluidas = concluidas + orbiConcluidos + villageCompleted;
   const percentGeral = Math.round((totalConcluidas / totalFases) * 100);
 
   return (
@@ -58,12 +62,12 @@ export default function JogosIndex() {
               <span className="bg-gradient-to-r from-orbit-purple to-orbit-electric bg-clip-text text-transparent">jogando.</span>
             </h1>
             <p className="mt-1.5 max-w-xl text-xs leading-5 text-white/50 sm:text-sm">
-              Dois jogos, zero digitação: guie o Orbi pelo espaço com comandos ou monte programas com blocos. Funciona até no celular.
+              Três aventuras para aprender no celular: descubra símbolos e recuos na Vila dos Blocos, guie o Orbi ou monte programas.
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
             <div className="rounded-full border border-white/10 bg-black/30 px-3 py-1.5 text-[11px] text-white/60">
-              <strong className="text-white">2</strong> jogos · <strong className="text-white">{totalFases}</strong> fases
+              <strong className="text-white">3</strong> jogos · <strong className="text-white">{totalFases}</strong> fases
             </div>
             <div className="rounded-full border border-emerald-400/20 bg-emerald-400/[.07] px-3 py-1.5 text-[11px] text-emerald-200">
               <strong>{totalConcluidas}</strong> concluídas · {percentGeral}%
@@ -91,6 +95,11 @@ export default function JogosIndex() {
             </div>
           ))}
         </section>
+
+        <Link href="/estudante/jogos/vila-dos-blocos" className="mb-7 flex flex-col gap-5 overflow-hidden rounded-3xl border-2 border-[#bdc9ae] bg-[#edead5] p-6 text-[#263b4a] transition hover:bg-[#f8f2df] sm:flex-row sm:items-center">
+          <div className="flex w-56 max-w-full shrink-0" aria-hidden="true"><VillageCharacter who="colchetes"/><VillageCharacter who="espacos"/><VillageCharacter who="chaves"/></div>
+          <div><span className="text-xs font-bold uppercase tracking-wider text-[#52644c]">Uma nova história · {villageCompleted}/{villageLevels.length} luzes</span><h2 className="mt-2 text-3xl font-black">Vila dos Blocos</h2><p className="mt-2 max-w-xl text-sm leading-6">Uma ventania, cinco amigos e um festival para salvar. Descubra o trabalho dos símbolos e mova linhas pelos trilhos de espaços. Uma aventura própria sobre sintaxe e indentação.</p><span className="mt-4 inline-flex min-h-12 items-center gap-3 rounded-xl bg-[#355c57] px-5 font-bold text-white">Entrar na vila <ArrowRight size={18}/></span></div>
+        </Link>
 
         {/* Destaque: Guia o Orbi */}
         <Link
