@@ -16,6 +16,7 @@ export default function CSharpTrack({ userId }: { userId: string | number | null
   const [ready, setReady] = useState(false);
   const [moduleKind, setModuleKind] = useState<CSharpModuleKind>("variables");
   const [storageError, setStorageError] = useState(false);
+  const [academyPreview, setAcademyPreview] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
   const latest = useRef(progress);
   const key = userId !== null ? csharpProgressKey(userId) : null;
@@ -25,8 +26,17 @@ export default function CSharpTrack({ userId }: { userId: string | number | null
     let active = true;
     queueMicrotask(() => {
       if (!active) return;
-      try { const restored = readCSharpProgress(key ? localStorage.getItem(key) : null); latest.current = restored; setProgress(restored); setModuleKind(readModuleKind(key ? localStorage.getItem(`${key}-module`) : null)); }
+      const params = new URLSearchParams(window.location.search);
+      setAcademyPreview(params.get("academy") === "1");
+      const requested = params.get("module");
+      const validModule = requested === "variables" || requested === "conditions" || requested === "loops" ? requested : null;
+      let saved = newCSharpProgress();
+      let savedModule: CSharpModuleKind = "variables";
+      try { saved = readCSharpProgress(key ? localStorage.getItem(key) : null); savedModule = readModuleKind(key ? localStorage.getItem(`${key}-module`) : null); }
       catch { setStorageError(true); }
+      const restored = validModule ? { ...saved, view: "pilot" as const } : saved;
+      latest.current = restored; setProgress(restored);
+      setModuleKind(validModule ?? savedModule);
       setReady(true);
     });
     return () => { active = false; };
@@ -41,17 +51,24 @@ export default function CSharpTrack({ userId }: { userId: string | number | null
   function update(change: Partial<CSharpTrackProgress>) { const next = { ...latest.current, ...change }; latest.current = next; setProgress(next); }
   function navigate(view: TrackView) {
     update({ view });
+    if (view !== "pilot") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("module")) { params.delete("module"); window.history.replaceState(null, "", `${window.location.pathname}${params.size ? `?${params.toString()}` : ""}`); }
+    }
     requestAnimationFrame(() => { heading.current?.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: "instant" }); });
   }
   function openModule(module: CSharpModuleKind) {
     setModuleKind(module);
     try { if (key) localStorage.setItem(`${key}-module`, module); } catch { setStorageError(true); }
+    const params = new URLSearchParams(window.location.search);
+    params.set("module", module);
+    window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
     navigate("pilot");
   }
   if (!ready) return <p role="status">Preparando sua jornada C#…</p>;
 
   return <div className={s.track} data-csharp-track>
-    <header className={s.masthead}><Link href="/estudante/orbita"><ArrowLeft size={16}/>Minha jornada</Link><span>ORBITAMOS ACADEMY <i>/</i> C# & .NET</span><span className={s.edition}>EDIÇÃO PILOTO</span></header>
+    <header className={s.masthead}><Link href={academyPreview ? "/dev/academy-preview?view=tracks" : "/estudante/trilhas"}><ArrowLeft size={16}/>Minhas trilhas</Link><span>ORBITAMOS ACADEMY <i>/</i> C# & .NET</span><span className={s.edition}>EDIÇÃO PILOTO</span></header>
     <nav className={s.navigation} aria-label="Etapas da jornada C#">{views.map((view, index) => <button key={view.id} aria-current={progress.view === view.id ? "page" : undefined} onClick={() => navigate(view.id)}><small>0{index + 1}</small>{view.title}</button>)}</nav>
     {storageError && <p className={s.notice} role="alert">O navegador não permitiu salvar. Você pode testar, mas copie seu código antes de sair.</p>}
 

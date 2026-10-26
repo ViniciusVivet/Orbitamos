@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { buddies, buddyTerms, evaluateVillage, initialAttempt, readVillageSave, villageCode, villageLevels, villageStorageKey, type Buddy, type VillageAttempt, type VillageSave } from "@/lib/vilaDosBlocos";
 import { VillageCharacter, VillageScene } from "./VillageCharacters";
+import LearningBridge from "@/components/estudante/LearningBridge";
+import { readVillageDraft, villageDraftKey, villageSignature } from "@/lib/gameDrafts";
 import s from "./VillageGame.module.css";
 
-export default function VillageGame({ userId }: { userId: string }) {
+export default function VillageGame({ userId, preview = false }: { userId: string; preview?: boolean }) {
   const [save, setSave] = useState<VillageSave>({ version: 1, completed: [], current: 0 });
   const [ready, setReady] = useState(false);
   const [started, setStarted] = useState(false);
@@ -30,7 +32,10 @@ export default function VillageGame({ userId }: { userId: string }) {
       if (!active) return;
       let stored = readVillageSave(null);
       try { stored = readVillageSave(localStorage.getItem(villageStorageKey(userId))); } catch { setStorageError(true); }
-      setSave(stored); setAttempt(initialAttempt(villageLevels[stored.current])); setReady(true);
+      const restoredLevel = villageLevels[stored.current];
+      let draft = null;
+      try { draft = readVillageDraft(localStorage.getItem(villageDraftKey(userId, restoredLevel.id)), restoredLevel); } catch { setStorageError(true); }
+      setSave(stored); setAttempt(draft?.attempt ?? initialAttempt(restoredLevel)); setSelected(draft?.selected ?? null); setResult(null); setHint(false); setStarted(false); setReady(true);
     });
     return () => { active = false; };
   }, [userId]);
@@ -42,19 +47,31 @@ export default function VillageGame({ userId }: { userId: string }) {
   }
   function enter(index: number) {
     shouldFocus.current = true;
-    persist({ ...save, current: index }); setAttempt(initialAttempt(villageLevels[index])); setResult(null); setSelected(null); setHint(false); setStarted(true);
+    const nextLevel = villageLevels[index];
+    let draft = null;
+    try { draft = readVillageDraft(localStorage.getItem(villageDraftKey(userId, nextLevel.id)), nextLevel); } catch { setStorageError(true); }
+    persist({ ...save, current: index }); setAttempt(draft?.attempt ?? initialAttempt(nextLevel)); setResult(null); setSelected(draft?.selected ?? null); setHint(false); setStarted(true);
+  }
+  function keepAttempt(next: VillageAttempt, nextSelected = selected) {
+    setAttempt(next); setSelected(nextSelected);
+    try { localStorage.setItem(villageDraftKey(userId, level.id), JSON.stringify({ version: 1, signature: villageSignature(level), attempt: next, selected: nextSelected })); } catch { setStorageError(true); }
+  }
+  function restartLevel() {
+    try { localStorage.removeItem(villageDraftKey(userId, level.id)); } catch { setStorageError(true); }
+    setAttempt(initialAttempt(level)); setSelected(null); setResult(null);
   }
   function play() {
     const outcome = evaluateVillage(level, attempt);
     setResult(outcome);
+    if (outcome.ok) try { localStorage.removeItem(villageDraftKey(userId, level.id)); } catch { setStorageError(true); }
     if (outcome.ok && !save.completed.includes(level.id)) persist({ ...save, completed: [...save.completed, level.id] });
   }
   function move(row: number, delta: number) {
     setResult(null);
-    setAttempt(previous => ({ ...previous, indents: previous.indents.map((n, i) => i === row ? Math.max(0, Math.min(2, n + delta)) : n) }));
+    keepAttempt({ ...attempt, indents: attempt.indents.map((n, i) => i === row ? Math.max(0, Math.min(2, n + delta)) : n) });
   }
   if (!ready) return <p role="status">Acordando a Vila dos Blocos…</p>;
-  return <div className={s.game} data-village data-level-id={level.id}>
+  return <div className={s.game} data-village data-learning-game data-level-id={level.id}>
     <header className={s.top}><Link href="/estudante/jogos">← Jogos</Link><span>ORBITAMOS · UMA AVENTURA DE SINTAXE</span><button ref={albumButton} onClick={() => { openAlbumFocus.current = !album; setAlbum(album ? null : level.buddy); }} aria-controls="village-album" aria-expanded={album !== null}>Álbum da turma</button></header>
     <VillageScene lit={save.completed.length} active={level.buddy} happy={result?.ok ?? false}/>
     {!started ? <section className={s.welcome}>
@@ -79,8 +96,8 @@ export default function VillageGame({ userId }: { userId: string }) {
           <div className={s.workshopTitle}><strong>{level.kind === "socket" ? "Oficina dos encaixes" : "Trilhos de espaços"}</strong><span>{level.language}</span></div>
           {level.kind === "socket" ? <>
             <p className={s.instructions}>1. Escolha quem vai ajudar. 2. Toque no encaixe.</p>
-            <div className={s.roster}>{(["parenteses", "colchetes", "chaves"] as const).map(who => <button key={who} aria-label={`Escolher ${buddies[who].name}: ${buddyTerms[who]}`} aria-pressed={selected === who} onClick={() => setSelected(who)}><VillageCharacter who={who}/><strong>{buddies[who].name}</strong><small>{buddyTerms[who]}</small><span>{buddies[who].symbol}</span></button>)}</div>
-            <button className={s.socket} disabled={!selected} onClick={() => { setAttempt({ ...attempt, pair: selected }); setResult(null); }} aria-label="Encaixar personagem no código"><pre>{villageCode(level, attempt)}</pre><span>{attempt.pair ? `${buddies[attempt.pair].name} no encaixe · toque para trocar` : selected ? "Toque aqui para encaixar!" : "Escolha um personagem acima"}</span></button>
+            <div className={s.roster}>{(["parenteses", "colchetes", "chaves"] as const).map(who => <button key={who} aria-label={`Escolher ${buddies[who].name}: ${buddyTerms[who]}`} aria-pressed={selected === who} onClick={() => keepAttempt(attempt, who)}><VillageCharacter who={who}/><strong>{buddies[who].name}</strong><small>{buddyTerms[who]}</small><span>{buddies[who].symbol}</span></button>)}</div>
+            <button className={s.socket} disabled={!selected} onClick={() => { keepAttempt({ ...attempt, pair: selected }); setResult(null); }} aria-label="Encaixar personagem no código"><pre>{villageCode(level, attempt)}</pre><span>{attempt.pair ? `${buddies[attempt.pair].name} no encaixe · toque para trocar` : selected ? "Toque aqui para encaixar!" : "Escolha um personagem acima"}</span></button>
           </> : <>
             <p className={s.instructions}>Mova a linha pelos trilhos. Cada passo acrescenta ou retira 4 espaços.</p>
             <div className={s.rails}>{level.lines.map((line, i) => <div key={i} className={s.rail} data-indent={attempt.indents[i]}>
@@ -89,17 +106,18 @@ export default function VillageGame({ userId }: { userId: string }) {
             </div>)}</div>
             <p className={s.legend}>· = um espaço visível para aprender. No código real, ele é vazio. Os controles não inserem tabs.</p>
           </>}
-          <div className={s.actions}><button className={s.primary} onClick={play}>▶ Testar na vila</button><button className={s.help} onClick={() => { setAttempt(initialAttempt(level)); setSelected(null); setResult(null); }}>Recomeçar esta fase</button></div>
+          <div className={s.actions}><button className={s.primary} onClick={play}>▶ Testar na vila</button><button className={s.help} onClick={restartLevel}>Recomeçar esta fase</button></div>
           <small className={s.simulation}>Simulação das regras desta fase — não é um compilador completo.</small>
           <div className={s.feedback} role="status" aria-live="polite" data-ok={result?.ok}>
             {result ? <><strong>{result.ok ? "✦ Mais uma luz na vila!" : "Vamos olhar juntos?"}</strong><p>{result.message}</p><div className={s.theater} data-place={level.place} aria-hidden="true"><VillageCharacter who={level.buddy} happy={result.ok}/><div className={s.props}>{level.place === "festival" ? <>{[0, 1, 2].map(i => <span key={i} data-lit={i < result.output.filter(line => /acesa/.test(line)).length}>✦</span>)}</> : <span data-lit={result.ok}>{level.place === "correio" ? "✉" : level.place === "abrigo" ? "⌂" : "▣"}</span>}</div></div><div className={s.console}><span>O QUE ACONTECEU NA CENA</span>{result.output.length ? result.output.map((line, i) => <div key={i}><span aria-hidden="true">{result.ok ? "✦" : "·"} </span>{line}</div>) : <p>Nenhuma mensagem produzida nesta simulação.</p>}</div></> : <p>Faça sua escolha e teste. Errar não tira nenhuma luz que você já conquistou.</p>}
           </div>
           {result?.ok && <div className={s.next}>{save.current < villageLevels.length - 1 ? <button className={s.primary} onClick={() => enter(save.current + 1)}>Próximo encontro →</button> : <button className={s.primary} onClick={() => enter(Math.max(0, villageLevels.findIndex(item => !save.completed.includes(item.id))))}>{finished ? "Visitar a vila de novo" : "Buscar as luzes que faltam"}</button>}<details><summary>Ver o código com espaços reais</summary><pre>{villageCode(level, attempt)}</pre></details></div>}
+          {result?.ok && <LearningBridge activity="village" unit={level.id} userId={userId} preview={preview}/>}
         </section>
       </div>
       {finished && <section className={s.celebration}><h2>O festival está aceso. E você fez parte disso.</h2><p>Você praticou chamadas, coleções, blocos e recuos. Agora leve essa descoberta para um programa escrito por você.</p><Link className={s.primary} href="/estudante/pratica/condicionais-python">Escrever no laboratório →</Link><p>Concluir a aventura é um começo, não um certificado de domínio.</p></section>}
     </>}
     {album && <section id="village-album" className={s.album} aria-label="Álbum da turma"><div className={s.albumHeading}><h2 ref={albumHeading} tabIndex={-1}>Passaportes da vila</h2><button onClick={() => { setAlbum(null); albumButton.current?.focus(); }}>Fechar álbum</button></div><p>Os símbolos viajam entre linguagens. Conheça alguns trabalhos de cada um — esta não é uma lista de todos os usos.</p><div className={s.albumTabs}>{(Object.keys(buddies) as Buddy[]).map(who => <button key={who} aria-pressed={album === who} onClick={() => setAlbum(who)}>{buddies[who].name}</button>)}</div><div className={s.passport}><VillageCharacter who={album}/><div><h3>{buddies[album].name} · {buddies[album].role}</h3><p>{buddies[album].speech}</p>{buddies[album].examples.map(example => <pre key={example}>{example}</pre>)}</div></div></section>}
-    <footer className={s.footer}>{storageError ? <span role="alert">Não conseguimos salvar neste navegador. Você pode jogar, mas o progresso pode se perder ao sair.</span> : "Luzes e fase atual salvas neste navegador, separadas por conta. Não sincronizam entre aparelhos."}</footer>
+    <footer className={s.footer}>{storageError ? <span role="alert">Não conseguimos salvar neste navegador. Você pode jogar, mas o progresso pode se perder ao sair.</span> : "Sua montagem, luzes e fase atual ficam salvas neste navegador, separadas por conta. Não sincronizam entre aparelhos."}</footer>
   </div>;
 }

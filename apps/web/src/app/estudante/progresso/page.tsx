@@ -19,6 +19,8 @@ import { defaultProgress, useProgress } from "@/contexts/ProgressContext";
 import { getDashboardSummary, type DashboardSummary } from "@/lib/api";
 import { listarAulasConcluidas, listarCursosAcademy, totalAulas, type Curso } from "@/lib/cursos";
 import { desafios } from "@/lib/desafios";
+import AcademyActivityProgress from "@/components/estudante/AcademyActivityProgress";
+import { useAcademyActivity } from "@/components/estudante/useAcademyActivity";
 
 type CourseProgress = {
   course: Curso;
@@ -31,7 +33,8 @@ export default function EstudanteProgresso() {
   const { progress: progressFromContext } = useProgress();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [courseProgress, setCourseProgress] = useState<CourseProgress[]>([]);
-  const [completedChallenges, setCompletedChallenges] = useState(0);
+  const { data: activity } = useAcademyActivity(user?.id);
+  const completedChallenges = activity?.summaries.code.completed ?? 0;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -56,25 +59,9 @@ export default function EstudanteProgresso() {
           };
         });
 
-        let challengeCount = 0;
-        if (user?.id) {
-          challengeCount = desafios.filter((challenge) => {
-            try {
-              const raw = localStorage.getItem(`orbitamos-pratica-${user.id}-${challenge.slug}`);
-              if (!raw) return false;
-              const parsed = JSON.parse(raw) as { stepStatus?: string[] };
-              return parsed.stepStatus?.length === challenge.steps.length &&
-                parsed.stepStatus.every((status) => status === "success");
-            } catch {
-              return false;
-            }
-          }).length;
-        }
-
         if (!active) return;
         setSummary(dashboard);
         setCourseProgress(stats);
-        setCompletedChallenges(challengeCount);
       } catch (reason) {
         if (active) setError(reason instanceof Error ? reason.message : "Não foi possível sincronizar sua evolução.");
       } finally {
@@ -92,7 +79,7 @@ export default function EstudanteProgresso() {
   const achievements = summary?.achievements ?? [];
   const totalLessons = courseProgress.reduce((total, item) => total + item.total, 0);
   const completedLessons = courseProgress.reduce((total, item) => total + item.completed, 0);
-  const academyPercent = totalLessons ? Math.round((completedLessons / totalLessons) * 100) : progress.percent;
+  const academyPercent = totalLessons ? Math.round((completedLessons / totalLessons) * 100) : 0;
   const activeCourses = courseProgress.filter((item) => item.completed > 0 && item.completed < item.total);
   const completedCourses = courseProgress.filter((item) => item.total > 0 && item.completed === item.total).length;
   const completedChecklist = checklist.filter((item) => item.done).length;
@@ -145,6 +132,7 @@ export default function EstudanteProgresso() {
       </section>
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 pt-8 sm:px-8 lg:px-10">
+        <AcademyActivityProgress userId={user?.id}/>
         {error && (
           <div className="rounded-2xl border border-amber-400/25 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
             Parte dos dados não sincronizou. Os números disponíveis continuam preservados.
@@ -165,7 +153,7 @@ export default function EstudanteProgresso() {
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-orbit-electric">
                       <Target className="size-4" /> Progresso acadêmico
                     </div>
-                    <h2 className="mt-2 text-2xl font-black text-white">{academyPercent}% da academia explorada</h2>
+                    <h2 className="mt-2 text-2xl font-black text-white">{totalLessons ? `${academyPercent}% das aulas concluídas` : "Histórico das aulas"}</h2>
                     <p className="mt-1 text-sm text-white/45">{completedCourses} cursos completos · {activeCourses.length} em andamento</p>
                   </div>
                   <Link href="/estudante/aulas" className="flex items-center gap-1 text-xs font-bold text-orbit-electric">

@@ -28,6 +28,7 @@ import AvatarWithPresence from "@/components/chat/AvatarWithPresence";
 import GroupInfoModal from "@/components/chat/GroupInfoModal";
 import NewDirectChatModal from "@/components/chat/NewDirectChatModal";
 import NewGroupChatModal from "@/components/chat/NewGroupChatModal";
+import { defaultPortalDestination, readPortalArea, rememberPortalArea, rememberedPortalArea, type PortalArea } from "@/lib/authNavigation";
 
 // ─── helpers locais ───────────────────────────────────────────────────────────
 
@@ -88,6 +89,18 @@ export default function MensagensPage() {
   const { user, token } = useAuth();
   const { setActiveConversation, clearUnread, unreadByConv } = useChat();
   const searchParams = useSearchParams();
+  const requestedArea = readPortalArea(searchParams.get("area"));
+  const [savedArea, setSavedArea] = useState<{ userId: UserId; area: PortalArea | null } | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    if (requestedArea) rememberPortalArea(user.id, requestedArea);
+    let active = true;
+    queueMicrotask(() => {
+      if (active) setSavedArea({ userId: user.id, area: requestedArea ?? rememberedPortalArea(user.id) });
+    });
+    return () => { active = false; };
+  }, [requestedArea, user]);
 
   // Estado de conversas e mensagens
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
@@ -278,7 +291,7 @@ export default function MensagensPage() {
       {/* Header */}
       <header className="flex h-14 md:h-16 shrink-0 items-center gap-2 md:gap-4 border-b border-white/10 bg-black/60 px-4 md:px-6 backdrop-blur-xl">
         <Link
-          href={user.role === "FREELANCER" ? "/colaborador" : "/estudante"}
+          href={defaultPortalDestination(user.role, requestedArea ?? (savedArea?.userId === user.id ? savedArea.area : null))}
           className="rounded-lg px-3 py-2 min-h-[44px] flex items-center text-white/70 transition hover:bg-white/10 hover:text-white touch-manipulation"
         >
           ← Voltar

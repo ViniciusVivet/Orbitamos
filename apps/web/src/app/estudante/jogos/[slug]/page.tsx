@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -20,6 +20,8 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import LearningBridge from "@/components/estudante/LearningBridge";
+import { assemblyDraftKey, assemblySignature, readAssemblyDraft } from "@/lib/gameDrafts";
 import {
   fasesMonteCodigo,
   criarOpcoesSaida,
@@ -50,6 +52,8 @@ export function MonteCodigoWorkspace({ previewUserId }: { previewUserId?: string
   const proxima = getProximaFase(slug);
   const { user } = useAuth();
   const userId = previewUserId ?? (user?.id ? String(user.id) : undefined);
+  const gamesHref = previewUserId ? "/dev/academy-preview" : "/estudante/jogos";
+  const phaseHref = (value: string) => `${previewUserId ? "/dev/monte-codigo-preview" : "/estudante/jogos"}/${value}${previewUserId === "academy-preview" ? "?from=academy" : ""}`;
 
   const [pool, setPool] = useState<number[]>([]);
   const [placed, setPlaced] = useState<number[]>([]);
@@ -61,9 +65,13 @@ export function MonteCodigoWorkspace({ previewUserId }: { previewUserId?: string
   const [selectedOutput, setSelectedOutput] = useState<string | null>(null);
   const [predictionWrong, setPredictionWrong] = useState(false);
   const [traceIndex, setTraceIndex] = useState(0);
+  const [readyKey, setReadyKey] = useState<string | null>(null);
+  const [storageError, setStorageError] = useState(false);
+  const draftKey = fase ? assemblyDraftKey(userId, fase.slug) : null;
 
-  const resetBoard = useCallback(() => {
+  const resetBoard = () => {
     if (!fase) return;
+    try { if (draftKey) localStorage.removeItem(draftKey); } catch { setStorageError(true); }
     setPool(shuffle(fase.linhas.map((_, index) => index)));
     setPlaced([]);
     setChecked(false);
@@ -73,19 +81,38 @@ export function MonteCodigoWorkspace({ previewUserId }: { previewUserId?: string
     setSelectedOutput(null);
     setPredictionWrong(false);
     setTraceIndex(0);
-  }, [fase]);
+    setAttempts(0);
+  };
 
   useEffect(() => {
     let active = true;
     queueMicrotask(() => {
       if (!active) return;
-      resetBoard();
-      setAttempts(0);
+      if (!fase || !draftKey) return;
+      let restored = null;
+      try { restored = readAssemblyDraft(localStorage.getItem(draftKey), fase); } catch { setStorageError(true); }
+      setPool(restored?.pool ?? shuffle(fase.linhas.map((_, index) => index)));
+      setPlaced(restored?.placed ?? []);
+      setAttempts(restored?.attempts ?? 0);
+      setAssembled(restored?.assembled ?? false);
+      setSelectedOutput(restored?.selectedOutput ?? null);
+      setPredictionWrong(Boolean(restored?.selectedOutput && restored.selectedOutput !== fase.saidaEsperada));
+      setTraceIndex(restored?.traceIndex ?? 0);
+      setChecked(false); setWon(false); setShowDica(false);
+      setReadyKey(draftKey);
     });
     return () => {
       active = false;
     };
-  }, [resetBoard]);
+  }, [fase, draftKey]);
+
+  useEffect(() => {
+    if (!fase || !draftKey || readyKey !== draftKey) return;
+    try {
+      if (won) localStorage.removeItem(draftKey);
+      else localStorage.setItem(draftKey, JSON.stringify({ version: 1, signature: assemblySignature(fase), pool, placed, attempts, assembled, selectedOutput, traceIndex }));
+    } catch { queueMicrotask(() => setStorageError(true)); }
+  }, [fase, draftKey, readyKey, pool, placed, attempts, assembled, selectedOutput, traceIndex, won]);
 
   const place = (id: number) => {
     setPool((current) => current.filter((item) => item !== id));
@@ -147,7 +174,7 @@ export function MonteCodigoWorkspace({ previewUserId }: { previewUserId?: string
         <div>
           <Gamepad2 className="mx-auto size-10 text-white/25" />
           <p className="mt-3 text-white/60">Fase não encontrada.</p>
-          <Link href="/estudante/jogos" className="mt-3 inline-flex text-sm font-bold text-orbit-electric">
+          <Link href={gamesHref} className="mt-3 inline-flex text-sm font-bold text-orbit-electric">
             Voltar para os jogos
           </Link>
         </div>
@@ -155,14 +182,16 @@ export function MonteCodigoWorkspace({ previewUserId }: { previewUserId?: string
     );
   }
 
+  if (readyKey !== draftKey) return <p role="status">Retomando seu tabuleiro…</p>;
+
   const faseIndex = fasesMonteCodigo.findIndex((item) => item.slug === fase.slug);
 
   return (
-    <div className="mx-auto max-w-3xl pb-16">
+    <div className="mx-auto max-w-3xl pb-16" data-learning-game>
       {/* Cabeçalho */}
       <div className="flex items-center gap-3">
         <Link
-          href="/estudante/jogos"
+          href={gamesHref}
           className="grid size-10 shrink-0 place-items-center rounded-xl text-white/55 transition hover:bg-white/[0.06] hover:text-white"
           aria-label="Voltar para os jogos"
         >
@@ -212,10 +241,11 @@ export function MonteCodigoWorkspace({ previewUserId }: { previewUserId?: string
             ))}
           </div>
           <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-white/60">{fase.explicacao}</p>
+          <LearningBridge activity="assembly" unit={fase.slug} userId={userId} preview={!!previewUserId}/>
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             {proxima ? (
               <Link
-                href={`/estudante/jogos/${proxima.slug}`}
+                href={phaseHref(proxima.slug)}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-5 text-sm font-black text-black transition hover:opacity-90"
               >
                 Próxima fase: {proxima.titulo}
@@ -223,7 +253,7 @@ export function MonteCodigoWorkspace({ previewUserId }: { previewUserId?: string
               </Link>
             ) : (
               <Link
-                href="/estudante/jogos"
+                href={gamesHref}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-5 text-sm font-black text-black transition hover:opacity-90"
               >
                 Você zerou o jogo! Ver todas as fases
@@ -463,6 +493,7 @@ export function MonteCodigoWorkspace({ previewUserId }: { previewUserId?: string
           )}
         </>
       )}
+      <p className="mt-5 text-xs leading-5 text-slate-400" role={storageError ? "alert" : undefined}>{storageError ? "Não conseguimos salvar a montagem. Você pode continuar jogando, mas esta tentativa pode se perder ao sair." : "Sua montagem fica salva neste navegador, separada por conta e fase."}</p>
     </div>
   );
 }

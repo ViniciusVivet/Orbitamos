@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState, useRef, useCallback, useEffect, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
+import { Suspense, useState, useRef, useCallback, useEffect, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { Play, Square, RotateCcw, ChevronRight, Lightbulb, CheckCircle2, XCircle, ArrowLeft, Code2, MessageSquare, Eye, EyeOff, Copy, Check, BookOpen, Trash2, Maximize2, Minimize2 } from "lucide-react";
 import Link from "next/link";
 import { getDesafio, getNextDesafio, type DesafioStep } from "@/lib/desafios";
@@ -10,6 +10,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import ReliableCodeEditor, { type ReliableCodeEditorHandle } from "@/components/estudante/ReliableCodeEditor";
 import lab from "@/components/estudante/Laboratory.module.css";
 import GuidedPractice from "@/components/estudante/GuidedPractice";
+import PracticeOrigin from "@/components/estudante/PracticeOrigin";
+import { academyPreviewHref } from "@/lib/portalNavigation";
 
 type MobileTab = "editor" | "guia";
 type ChatMessage = { tipo: "sistema" | "sucesso" | "erro" | "dica"; texto: string };
@@ -102,7 +104,7 @@ type ConsoleRun = {
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
 
-export function PraticaWorkspace({ userId = null }: { userId?: string | number | null }) {
+export function PraticaWorkspace({ userId = null, preview = false }: { userId?: string | number | null; preview?: boolean }) {
   const params = useParams();
   const challenge = getDesafio(params.slug as string);
   const [free, setFree] = useState<boolean | null>(null);
@@ -117,13 +119,14 @@ export function PraticaWorkspace({ userId = null }: { userId?: string | number |
     try { localStorage.setItem(modeKey, value ? "free" : "guided"); } catch { /* Keep the in-memory choice if storage is unavailable. */ }
     setFree(value);
   };
-  if (!challenge) return <p>Desafio não encontrado. <Link href="/estudante/pratica">Voltar ao laboratório</Link></p>;
+  if (!challenge) return <p>Desafio não encontrado. <Link href={preview ? academyPreviewHref("/estudante/pratica") : "/estudante/pratica"}>Voltar ao laboratório</Link></p>;
   if (free === null) return <p role="status">Abrindo seu laboratório…</p>;
-  if (!free) return <GuidedPractice key={`${userId}-${challenge.slug}`} challenge={challenge} userId={userId} onFreeMode={() => chooseMode(true)}/>;
-  return <><div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-300"><p>Modo livre · seu rascunho anterior continua aqui.</p><button className="min-h-11 rounded-lg border border-emerald-200/30 px-4 text-emerald-200" onClick={() => chooseMode(false)}>Voltar ao passo a passo</button></div><FreePracticeWorkspace key={`${userId}-${challenge.slug}`} userId={userId}/></>;
+  if (!free) return <><Suspense fallback={null}><PracticeOrigin/></Suspense><GuidedPractice key={`${userId}-${challenge.slug}`} challenge={challenge} userId={userId} preview={preview} onFreeMode={() => chooseMode(true)}/></>;
+  return <><div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-300"><p>Modo livre · seu rascunho anterior continua aqui.</p><button className="min-h-11 rounded-lg border border-emerald-200/30 px-4 text-emerald-200" onClick={() => chooseMode(false)}>Voltar ao passo a passo</button></div><FreePracticeWorkspace key={`${userId}-${challenge.slug}`} userId={userId} preview={preview}/></>;
 }
 
-function FreePracticeWorkspace({ userId = null }: { userId?: string | number | null }) {
+function FreePracticeWorkspace({ userId = null, preview = false }: { userId?: string | number | null; preview?: boolean }) {
+  const link = (href: string) => preview ? academyPreviewHref(href) : href;
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
@@ -465,7 +468,7 @@ function FreePracticeWorkspace({ userId = null }: { userId?: string | number | n
       <div className="flex h-[calc(100vh-8rem)] items-center justify-center">
         <div className="text-center">
           <p className="text-white/60">Desafio não encontrado.</p>
-          <Link href="/estudante/pratica" className="mt-3 inline-block text-orbit-electric hover:underline">
+          <Link href={link("/estudante/pratica")} className="mt-3 inline-block text-orbit-electric hover:underline">
             Voltar para desafios
           </Link>
         </div>
@@ -664,7 +667,7 @@ function FreePracticeWorkspace({ userId = null }: { userId?: string | number | n
               placeholder="Ex.: uma variável guarda um valor para eu reutilizar depois..."
               className="mt-1.5 w-full resize-none rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-xs leading-5 text-white outline-none placeholder:text-slate-400 focus:border-orbit-electric/50"
             />
-            <Link href={nextChallenge ? `/estudante/pratica/${nextChallenge.slug}` : "/estudante/pratica"} className="mt-2 inline-flex items-center gap-1 text-xs text-orbit-electric hover:underline">
+            <Link href={link(nextChallenge ? `/estudante/pratica/${nextChallenge.slug}` : "/estudante/pratica")} className="mt-2 inline-flex items-center gap-1 text-xs text-orbit-electric hover:underline">
               {nextChallenge ? `Próximo: ${nextChallenge.titulo}` : "Ver mais desafios"} <ChevronRight className="size-3" />
             </Link>
           </div>
@@ -675,6 +678,7 @@ function FreePracticeWorkspace({ userId = null }: { userId?: string | number | n
 
   return (
     <div className={lab.workspace} data-lab-workspace>
+      <Suspense fallback={null}><PracticeOrigin/></Suspense>
       {/* Top bar — compacto no mobile */}
       <div className={lab.editorToolbar}>
         <button

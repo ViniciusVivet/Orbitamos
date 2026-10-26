@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import StudentHome from "@/components/portal/StudentHome";
 import CollaboratorHome from "@/components/portal/CollaboratorHome";
 import PortalSidebar from "@/components/portal/PortalSidebar";
+import PortalHeader from "@/components/portal/PortalHeader";
 import { getNextIncompleteLesson } from "@/lib/learningExperience";
 import type { Curso } from "@/lib/cursos";
 import type { Project, Job, JobApplication } from "@/lib/api";
@@ -41,14 +42,11 @@ export default function PortalPreview({ role, state }: { role: "student" | "work
   const populated = state === "filled" || state === "complete" || retried;
   const sampleCourses = populated ? courses : [];
   return <div ref={previewRef} data-portal-preview data-preview-ready="false" className={s.workspace + " min-h-screen text-white"}>
-    <PortalSidebar mode={role} mobileOpen={open} onCloseMobile={close}/>
+    <PortalSidebar mode={role} mobileOpen={open} onCloseMobile={close} preview activeSection="home"/>
     <div className="lg:pl-56">
-      <header className={s.workspaceHeader + " sticky z-30 flex items-center gap-3 border-b border-white/10 px-4 lg:px-6"}>
-        <button className="min-h-11 px-2 lg:hidden" aria-label="Abrir menu" onClick={() => setOpen(true)}>☰</button>
-        <span className="text-xs text-slate-300">Prévia local · dados demonstrativos · {role === "student" ? "Academy" : "Studio"}</span>
-      </header>
+      <PortalHeader mode={role} preview section="home" title="Dados demonstrativos" mobileOpen={open} onOpenMenu={() => setOpen(true)}/>
       <div className="px-4 py-4 sm:py-6 lg:px-6 lg:py-8">
-        {role === "student" ? <StudentHome name="Alex"
+        {role === "student" ? <StudentHome name="Alex" userId="academy-preview" preview
           progress={{ percent: 20, phase: "Início", nextGoal: "", level: populated ? 3 : 1, xp: populated ? 420 : 0, streakDays: populated ? 4 : 0 }}
           progressLoading={loading} courses={sampleCourses}
           nextLesson={getNextIncompleteLesson(sampleCourses, new Set(state === "complete" ? ["a1", "a2", "a3", "b1", "c1"] : ["a1"]))}

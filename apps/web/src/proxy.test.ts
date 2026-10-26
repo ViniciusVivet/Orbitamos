@@ -42,7 +42,8 @@ describe("authentication proxy", () => {
     expect(response.status).toBe(307);
     const location = new URL(response.headers.get("location")!);
     expect(location.pathname).toBe("/entrar");
-    expect(location.searchParams.get("redirect")).toBe(pathname);
+    expect(location.searchParams.get("redirect")).toBe(`${pathname}?from=test`);
+    expect(location.searchParams.has("from")).toBe(false);
   });
 
   it("allows an authenticated user into protected routes", async () => {
@@ -53,6 +54,20 @@ describe("authentication proxy", () => {
       new NextRequest("http://localhost/estudante/aulas")
     );
     expect(response.status).toBe(200);
+  });
+
+  it("preserves the requested SQL mode without copying parameters onto the login page", async () => {
+    const response = await proxy(new NextRequest("http://localhost/estudante/trilhas/sql?mode=workshop&from=delivery"));
+    const location = new URL(response.headers.get("location")!);
+    expect(location.searchParams.get("redirect")).toBe("/estudante/trilhas/sql?mode=workshop&from=delivery");
+    expect([...location.searchParams.keys()]).toEqual(["redirect"]);
+  });
+
+  it("does not copy credential parameters into the return target", async () => {
+    const response = await proxy(new NextRequest("http://localhost/estudante?access_token=secret"));
+    const location = new URL(response.headers.get("location")!);
+    expect(location.searchParams.get("redirect")).toBe("/estudante");
+    expect(location.href).not.toContain("secret");
   });
 
   it("fails closed when the auth provider throws", async () => {

@@ -2,12 +2,17 @@
 
 import s from "@/components/portal/PortalExperience.module.css";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import EstudanteSidebar from "@/components/estudante/EstudanteSidebar";
 import NotificacoesPanel, { NotificacaoBadge } from "@/components/estudante/NotificacoesPanel";
 import { listNotifications, type NotificationItem } from "@/lib/workspace";
-import Link from "next/link";
+import PortalHeader from "@/components/portal/PortalHeader";
+import PracticeNavigation from "@/components/estudante/PracticeNavigation";
+import AcademyMobileNav from "@/components/estudante/AcademyMobileNav";
+import AcademyResumeTracker from "@/components/estudante/AcademyResumeTracker";
+import { academySection } from "@/lib/portalNavigation";
+import { loginPathFor } from "@/lib/authNavigation";
 
 export default function EstudanteLayout({
   children,
@@ -17,6 +22,7 @@ export default function EstudanteLayout({
   const { user, isAuthenticated, loading } = useAuth();
   const firstName = user?.name?.trim().split(" ")[0] ?? "";
   const router = useRouter();
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -30,10 +36,10 @@ export default function EstudanteLayout({
   useEffect(() => {
     if (loading) return;
     if (!isAuthenticated) {
-      router.replace("/entrar");
+      router.replace(loginPathFor(pathname + window.location.search + window.location.hash));
       return;
     }
-  }, [loading, isAuthenticated, router]);
+  }, [loading, isAuthenticated, router, pathname]);
 
   useEffect(() => {
     if (mobileMenuOpen) {
@@ -54,46 +60,23 @@ export default function EstudanteLayout({
     );
   }
   return (
-    <div className={s.workspace + " min-h-screen text-white"}>
+    <div className={s.workspace + " min-h-screen text-white"} data-portal-area="student">
+      <Suspense fallback={null}><AcademyResumeTracker userId={user?.id}/></Suspense>
       <EstudanteSidebar
         mobileOpen={mobileMenuOpen}
         onCloseMobile={closeMobileMenu}
       />
       <div className="min-h-screen pl-0 lg:pl-56">
-        <header className={s.workspaceHeader + " sticky z-30 flex items-center gap-3 border-b border-white/[0.06] px-4 py-2.5 backdrop-blur-xl lg:px-6"}>
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(true)}
-            className="lg:hidden flex h-10 min-w-[40px] shrink-0 items-center justify-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white touch-manipulation"
-            aria-label="Abrir menu"
-            aria-expanded={mobileMenuOpen}
-          >
-            <span className="text-xl">&#9776;</span>
-          </button>
-          <div className="flex min-w-0 items-center gap-2.5">
-            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-orbit-electric to-orbit-purple text-xs font-black text-black">
-              {firstName ? firstName[0].toUpperCase() : "?"}
-            </span>
-            <p className="min-w-0 truncate text-sm font-medium text-white/90">
-              {firstName ? `Olá, ${firstName}` : "Bem-vindo"}
-            </p>
-          </div>
-          <div className="ml-auto flex items-center gap-1.5">
-            <Link
-              href="/colaborador"
-              className="inline-flex min-h-9 items-center rounded-lg border border-orbit-purple/30 bg-orbit-purple/10 px-3 text-[11px] font-bold text-orbit-purple lg:hidden"
-              aria-label="Ir para a área do colaborador"
-            >
-              Trabalhar
-            </Link>
-            <NotificacaoBadge count={notifications.filter((item) => !item.readAt).length} onClick={() => setNotifOpen(true)} />
-          </div>
-        </header>
+        <PortalHeader mode="student" name={firstName} mobileOpen={mobileMenuOpen} onOpenMenu={() => setMobileMenuOpen(true)}>
+          <NotificacaoBadge count={notifications.filter((item) => !item.readAt).length} onClick={() => setNotifOpen(true)} />
+        </PortalHeader>
         <div className="container mx-auto px-4 py-4 sm:py-6 lg:px-6 lg:py-8 max-w-full">
+          {academySection(pathname) === "practice" && <PracticeNavigation/>}
           {children}
         </div>
       </div>
 
+      <AcademyMobileNav/>
       <NotificacoesPanel open={notifOpen} onClose={() => setNotifOpen(false)} items={notifications} onChange={loadNotifications} />
     </div>
   );

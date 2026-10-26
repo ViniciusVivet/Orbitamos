@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
-import Navigation from "@/components/Navigation";
-import CursorOrbit from "@/components/CursorOrbit";
+import SiteFrame from "@/components/SiteFrame";
 import { ClientAuthProvider } from "@/components/AuthProvider";
 import { ChatProvider } from "@/contexts/ChatContext";
 import { ProgressProviderWithAuth } from "@/contexts/ProgressContext";
-import ForumWidget from "@/components/ForumWidget";
-import FloatingChat from "@/components/chat/FloatingChat";
 import ErrorBoundaryWrapper from "@/components/ErrorBoundaryWrapper";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
@@ -80,13 +77,7 @@ export default function RootLayout({
             <ClientAuthProvider>
               <ProgressProviderWithAuth>
                 <ChatProvider>
-                  <CursorOrbit />
-                  <Navigation />
-                  <ForumWidget />
-                  <FloatingChat />
-                  <main className="pt-16 min-w-0 overflow-x-clip">
-                    {children}
-                  </main>
+                  <SiteFrame>{children}</SiteFrame>
                 </ChatProvider>
               </ProgressProviderWithAuth>
             </ClientAuthProvider>

@@ -22,6 +22,8 @@ import {
   Undo2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import LearningBridge from "@/components/estudante/LearningBridge";
+import { orbiDraftKey, orbiSignature, readOrbiDraft } from "@/lib/gameDrafts";
 import {
   calcularEstrelas,
   comandoDoFrameOrbi,
@@ -92,6 +94,8 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
   const proximo = getProximoNivel(slugNivel);
   const { user } = useAuth();
   const userId = previewUserId ?? (user?.id ? String(user.id) : undefined);
+  const mapHref = previewUserId ? "/dev/academy-preview" : "/estudante/jogos/orbi";
+  const levelHref = (value: string) => `${previewUserId ? "/dev/orbi-preview" : "/estudante/jogos/orbi"}/${value}${previewUserId === "academy-preview" ? "?from=academy" : ""}`;
 
   const [principal, setPrincipal] = useState<OrbiCmd[]>([]);
   const [funcao, setFuncao] = useState<OrbiCmd[]>([]);
@@ -109,6 +113,9 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
   const [manualFrames, setManualFrames] = useState<OrbiFrame[]>([]);
   const [manualCursor, setManualCursor] = useState(0);
   const [manualAttempt, setManualAttempt] = useState(0);
+  const [readyKey, setReadyKey] = useState<string | null>(null);
+  const [storageError, setStorageError] = useState(false);
+  const draftKey = nivel ? orbiDraftKey(userId, nivel.slug) : null;
 
   const timeoutsRef = useRef<number[]>([]);
   const prevDirRef = useRef(0);
@@ -121,19 +128,22 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
   const resetView = useCallback((alvo: NivelGuiaOrbi) => {
     prevDirRef.current = alvo.inicio.dir;
     setView({ x: alvo.inicio.x, y: alvo.inicio.y, dir: alvo.inicio.dir, rot: alvo.inicio.dir * 90, crashed: false, arrived: false });
-  }, []);
+  }, [setView]);
 
   useEffect(() => {
     if (!nivel) return;
     let active = true;
     queueMicrotask(() => {
       if (!active) return;
-      setPrincipal([]);
-      setFuncao([]);
-      setActiveTrack("principal");
+      let draft = null;
+      try { draft = readOrbiDraft(draftKey ? localStorage.getItem(draftKey) : null, nivel); } catch { setStorageError(true); }
+      setPrincipal(draft?.principal ?? []);
+      setFuncao(draft?.funcao ?? []);
+      setActiveTrack(draft?.activeTrack ?? "principal");
+      setRunning(false);
       setResultado(null);
       setEstrelas(0);
-      setTentativas(0);
+      setTentativas(draft?.tentativas ?? 0);
       setShowDica(false);
       setShowRoute(false);
       setActiveChip(null);
@@ -142,12 +152,21 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
       setManualCursor(0);
       setManualAttempt(0);
       resetView(nivel);
+      setReadyKey(draftKey);
     });
     return () => {
       active = false;
       clearTimeouts();
     };
-  }, [nivel, resetView, clearTimeouts]);
+  }, [nivel, draftKey, resetView, clearTimeouts]);
+
+  useEffect(() => {
+    if (!nivel || !draftKey || readyKey !== draftKey) return;
+    try {
+      if (resultado === "portal" || (!principal.length && !funcao.length)) localStorage.removeItem(draftKey);
+      else localStorage.setItem(draftKey, JSON.stringify({ version: 1, signature: orbiSignature(nivel), principal, funcao, activeTrack, tentativas }));
+    } catch { queueMicrotask(() => setStorageError(true)); }
+  }, [nivel, draftKey, readyKey, resultado, principal, funcao, activeTrack, tentativas]);
 
   const schedule = (delay: number, fn: () => void) => {
     timeoutsRef.current.push(window.setTimeout(fn, delay));
@@ -206,9 +225,11 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
 
   const limpar = () => {
     if (running || !nivel) return;
+    try { if (draftKey) localStorage.removeItem(draftKey); } catch { setStorageError(true); }
     setPrincipal([]);
     setFuncao([]);
     setSelectedChip(null);
+    setTentativas(0);
     invalidateExecution();
   };
 
@@ -313,13 +334,15 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
       <div className="grid min-h-[60vh] place-items-center text-center">
         <div>
           <p className="text-white/60">Nível não encontrado.</p>
-          <Link href="/estudante/jogos/orbi" className="mt-3 inline-flex text-sm font-bold text-orbit-electric">
+          <Link href={mapHref} className="mt-3 inline-flex text-sm font-bold text-orbit-electric">
             Voltar para o mapa
           </Link>
         </div>
       </div>
     );
   }
+
+  if (readyKey !== draftKey) return <p role="status">Retomando seu plano de voo…</p>;
 
   const nivelIndex = niveisGuiaOrbi.findIndex((item) => item.slug === nivel.slug);
   const comandosUsados = principal.length + funcao.length;
@@ -408,16 +431,17 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
           );
         })}
       </div>
+
     </div>
   );
 
   return (
-    <div className="mx-auto max-w-6xl pb-24 lg:pb-16">
+    <div className="mx-auto max-w-6xl pb-24 lg:pb-16" data-learning-game>
       <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[.055] via-[#080b13] to-orbit-purple/[.08] p-4 sm:p-5">
         <div className="pointer-events-none absolute -right-16 -top-20 size-56 rounded-full bg-orbit-electric/10 blur-3xl" />
         <div className="relative flex items-center gap-3">
         <Link
-          href="/estudante/jogos/orbi"
+          href={mapHref}
           className="grid size-10 shrink-0 place-items-center rounded-xl text-white/55 transition hover:bg-white/[0.06] hover:text-white"
           aria-label="Voltar para o mapa de níveis"
         >
@@ -608,7 +632,7 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
                 <div className="mt-4 flex flex-col gap-2">
                   {proximo ? (
                     <Link
-                      href={`/estudante/jogos/orbi/${proximo.slug}`}
+                      href={levelHref(proximo.slug)}
                       className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 text-xs font-black text-black"
                     >
                       Próximo nível: {proximo.titulo}
@@ -616,7 +640,7 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
                     </Link>
                   ) : (
                     <Link
-                      href="/estudante/jogos/orbi"
+                      href={mapHref}
                       className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-4 text-xs font-black text-black"
                     >
                       Você zerou o Guia o Orbi!
@@ -820,6 +844,8 @@ export function GuiaOrbiWorkspace({ previewUserId }: { previewUserId?: string })
       )}
         </section>
       </div>
+      {resultado === "portal" && <LearningBridge activity="orbi" unit={nivel.slug} userId={userId} preview={!!previewUserId}/>}
+      <p className="mt-5 text-xs leading-5 text-slate-400" role={storageError ? "alert" : undefined}>{storageError ? "Não conseguimos salvar o plano de voo. Você pode continuar jogando, mas sua montagem pode se perder ao sair." : "Seu plano de voo fica salvo neste navegador, separado por conta e nível."}</p>
     </div>
   );
 }

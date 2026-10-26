@@ -1,12 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { Menu } from "lucide-react";
+import { Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import PortalSidebar from "@/components/portal/PortalSidebar";
+import PortalHeader from "@/components/portal/PortalHeader";
+import PracticeNavigation from "@/components/estudante/PracticeNavigation";
+import AcademyMobileNav from "@/components/estudante/AcademyMobileNav";
+import AcademyResumeTracker from "@/components/estudante/AcademyResumeTracker";
+import type { AcademySection } from "@/lib/portalNavigation";
 import s from "@/components/portal/PortalExperience.module.css";
 
 /** Development-only shell: exercises the real sidebar and available editor width without a student account. */
-export default function LaboratoryPreviewFrame({ children, title = "Laboratório Academy", mode = "student" }: { children: ReactNode; title?: string; mode?: "student" | "work" }) {
+export default function LaboratoryPreviewFrame({ children, title, mode = "student", section, practiceMode = "code", showDock = false, userId }: { children: ReactNode; title?: string; mode?: "student" | "work"; section?: AcademySection; practiceMode?: "code" | "games" | "english" | "review"; showDock?: boolean; userId?: string }) {
+  const path = usePathname();
+  const selected = section ?? (path.includes("csharp") || path.includes("sql") ? "tracks" : "practice");
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const close = useCallback(() => setOpen(false), []);
@@ -17,14 +24,13 @@ export default function LaboratoryPreviewFrame({ children, title = "Laboratório
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = previous; };
   }, [open]);
-  return <div ref={root} data-lab-ready="false" className={s.workspace + " min-h-screen text-white"}>
-    <PortalSidebar mode={mode} mobileOpen={open} onCloseMobile={close}/>
+  return <div ref={root} data-lab-ready="false" data-portal-area={mode} className={s.workspace + " min-h-screen text-white"}>
+    {userId && <Suspense fallback={null}><AcademyResumeTracker userId={userId}/></Suspense>}
+    <PortalSidebar mode={mode} mobileOpen={open} onCloseMobile={close} preview activeSection={selected}/>
     <div className="lg:pl-56">
-      <header className={s.workspaceHeader + " sticky top-0 z-30 flex min-h-16 items-center gap-3 px-4 lg:px-6"}>
-        <button type="button" className="grid size-11 place-items-center lg:hidden" aria-label="Abrir menu do laboratório" aria-expanded={open} onClick={() => setOpen(true)}><Menu size={20}/></button>
-        <span className="text-xs text-slate-300">Prévia local · {title}</span>
-      </header>
-      <div className="px-4 py-4 sm:py-6 lg:px-6 lg:py-8">{children}</div>
+      <PortalHeader mode={mode} preview section={selected} title={title} mobileOpen={open} onOpenMenu={() => setOpen(true)}/>
+      <div className="px-4 py-4 sm:py-6 lg:px-6 lg:py-8">{selected === "practice" && <PracticeNavigation preview mode={practiceMode}/ >}{children}</div>
     </div>
+    {mode === "student" && <AcademyMobileNav preview section={selected} visible={showDock}/ >}
   </div>;
 }

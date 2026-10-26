@@ -484,6 +484,10 @@ html[data-theme="light"] body {
   color: #102033;
 }
 
+/* Activity routes keep the Academy menu, without a second commercial header. */
+body:has([data-learning-game]) .site-navigation { display: none; }
+body:has([data-learning-game]) main { padding-top: 0; }
+
 html[data-theme="light"] .site-navigation {
   background: rgba(242, 248, 253, 0.84) !important;
   border-bottom: 1px solid rgba(15, 35, 58, 0.09);

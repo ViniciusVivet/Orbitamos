@@ -4,7 +4,7 @@ import Link from "next/link";
 import OrbitPhoto from "@/components/brand/OrbitPhoto";
 import { coursePhotoKind } from "@/components/brand/orbitamosPhotography";
 import { useEffect, useMemo, useState } from "react";
-import { Check, ListFilter, Search, Sparkles, X } from "lucide-react";
+import { ArrowRight, Check, ListFilter, Search, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CourseRow from "@/components/estudante/CourseRow";
 import { useAuth } from "@/contexts/AuthContext";
@@ -418,11 +418,12 @@ export default function EstudanteAulas() {
             ))}
 
             <section className="rounded-3xl border border-white/10 bg-white/[.035] p-6 sm:p-8">
-              <span className="text-xs font-bold uppercase tracking-[.2em] text-orbit-electric">Em preparação</span>
-              <h2 className="mt-2 text-2xl font-black text-white">Quizzes e desafios de código estão entrando em órbita.</h2>
+              <span className="text-xs font-bold uppercase tracking-[.2em] text-orbit-electric">Da aula para a prática</span>
+              <h2 className="mt-2 text-2xl font-black text-white">Transforme o que viu em uma tentativa sua.</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-white/50">
-                A estrutura será integrada às suas aulas e ao progresso real, sem substituir os materiais que já estão disponíveis.
+                As aulas continuam disponíveis para consulta. Nas trilhas, encontre os caminhos práticos de C# e SQL; em Praticar, escolha código, jogos e revisão.
               </p>
+              <div className="mt-4 flex flex-wrap gap-5"><Link className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-emerald-200" href="/estudante/trilhas">Explorar trilhas<ArrowRight size={16}/></Link><Link className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-emerald-200" href="/estudante/jogos">Abrir Praticar<ArrowRight size={16}/></Link></div>
             </section>
           </>
         )}

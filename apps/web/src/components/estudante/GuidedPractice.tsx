@@ -13,8 +13,10 @@ import PracticeJourney from "./PracticeJourney";
 import PracticeCheck from "./PracticeCheck";
 import { practiceChecks, practiceSymbols } from "@/lib/practiceExperience";
 import s from "./GuidedPractice.module.css";
+import { academyPreviewHref } from "@/lib/portalNavigation";
 
-export default function GuidedPractice({ challenge, userId, onFreeMode, onComplete, onValidationChange, embedded = false }: { challenge: Desafio; userId: string | number | null; onFreeMode: () => void; onComplete?: () => void; onValidationChange?: (valid: boolean) => void; embedded?: boolean }) {
+export default function GuidedPractice({ challenge, userId, onFreeMode, onComplete, onValidationChange, embedded = false, preview = false }: { challenge: Desafio; userId: string | number | null; onFreeMode: () => void; onComplete?: () => void; onValidationChange?: (valid: boolean) => void; embedded?: boolean; preview?: boolean }) {
+  const link = (href: string) => preview ? academyPreviewHref(href) : href;
   const [draft, setDraft] = useState<GuidedDraft>(emptyGuidedDraft);
   const [ready, setReady] = useState(false);
   const [save, setSave] = useState("Abrindo seu caderno…");
@@ -175,7 +177,7 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
 
   return <section className={s.studio} data-guided-lab data-focus={focusMode && !showBrief && !missionPassed} onCompositionStart={() => setComposing(true)} onCompositionEnd={() => setComposing(false)}>
     {!embedded && <header className={s.header}>
-      <Link href={`/estudante/pratica?linguagem=${challenge.linguagem}#experimentos`}><ArrowLeft size={16}/> Laboratório</Link>
+      <Link href={link(`/estudante/pratica?linguagem=${challenge.linguagem}#experimentos`)}><ArrowLeft size={16}/> Laboratório</Link>
       <span>{lang} · {challenge.dificuldade}</span>
       <button onClick={onFreeMode}>Modo livre</button>
     </header>}
@@ -203,7 +205,7 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
         {!missionPassed && !enhanced && !matches && <button className={s.writeHere} onClick={() => textarea.current?.focus()}>Escrever esta etapa<ArrowRight size={16}/></button>}
         {!completed && (!finalLine || missionPassed) && <button className={s.primary} disabled={running || (!matches && !missionPassed)} onClick={advance}>{missionPassed ? "Próxima missão" : "Próxima etapa"}<ArrowRight size={17}/></button>}
         {draft.line > 0 && !missionPassed && <button className={s.backStep} onClick={() => { editedForAuto.current = false; focusStep.current = true; update({ ...draft, line: draft.line - 1 }); }}>Rever etapa anterior</button>}
-        {completed && !embedded && <div className={s.nextActions}>{practiceChecks[challenge.slug] && <a href="#practice-check">Aplicar o que aprendi · pergunta extra<ArrowRight size={16}/></a>}<button className={s.primary} onClick={onFreeMode}>Praticar sem o guia<ArrowRight size={17}/></button>{next ? <Link href={`/estudante/pratica/${next.slug}`}>Próximo desafio: {next.titulo}<ArrowRight size={16}/></Link> : challenge.linguagem === "csharp" ? <Link href="/estudante/trilhas/csharp">Continue na trilha C# &amp; .NET<ArrowRight size={16}/></Link> : <Link href={`/estudante/pratica?linguagem=${challenge.linguagem}#experimentos`}>Revisar os fundamentos de {lang}<ArrowRight size={16}/></Link>}</div>}
+        {completed && !embedded && <div className={s.nextActions}>{practiceChecks[challenge.slug] && <a href="#practice-check">Aplicar o que aprendi · pergunta extra<ArrowRight size={16}/></a>}<button className={s.primary} onClick={onFreeMode}>Praticar sem o guia<ArrowRight size={17}/></button>{next ? <Link href={link(`/estudante/pratica/${next.slug}`)}>Próximo desafio: {next.titulo}<ArrowRight size={16}/></Link> : challenge.linguagem === "csharp" ? <Link href={link("/estudante/trilhas/csharp")}>Continue na trilha C# &amp; .NET<ArrowRight size={16}/></Link> : <Link href={link(`/estudante/pratica?linguagem=${challenge.linguagem}#experimentos`)}>Revisar os fundamentos de {lang}<ArrowRight size={16}/></Link>}</div>}
         <details className={s.details}><summary>Objetivo, exemplos e próximo nível</summary><p>{challenge.steps[draft.mission].instrucao}</p>{challenge.exemplo && <pre>{challenge.exemplo}</pre>}<p>1. Siga o exemplo para conhecer a sintaxe.<br/>2. Preveja a saída antes de executar.<br/>3. No modo livre, resolva sem consultar e teste outros valores.</p><p>Este treino trabalha fundamentos. Projetos maiores exigem também depuração, testes e decisões próprias.</p>{challenge.linguagem === "csharp" && <p>C# usa um executor didático limitado, não o ambiente .NET completo.</p>}</details>
       </section>
       <section ref={codeColumn} className={s.codeColumn} aria-label="Escreva e execute">

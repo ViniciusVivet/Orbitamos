@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import AcademyTracksPage from "@/components/estudante/AcademyTracksPage";
 
 export default function EstudanteTrilhas() {
-  redirect("/estudante/orbita");
+  return <AcademyTracksPage/>;
 }

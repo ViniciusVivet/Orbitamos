@@ -4,5 +4,5 @@ import LaboratoryPreviewFrame from "../LaboratoryPreviewFrame";
 
 export default function VillagePreview() {
   if (process.env.NODE_ENV !== "development") notFound();
-  return <LaboratoryPreviewFrame title="Vila dos Blocos"><VillageGame userId="vila-preview"/></LaboratoryPreviewFrame>;
+  return <LaboratoryPreviewFrame title="Vila dos Blocos"><VillageGame userId="vila-preview" preview/></LaboratoryPreviewFrame>;
 }

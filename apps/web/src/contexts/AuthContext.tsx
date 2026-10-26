@@ -1,8 +1,9 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { login as loginApi, register as registerApi, getCurrentUser, updateProfile as updateProfileApi, logout as logoutApi, refreshSession, AuthResponse, User } from "@/lib/api";
+import { loginDestination, loginPathFor, portalAreaFromPath, rememberPortalArea, rememberedPortalArea, sanitizeReturnTo } from "@/lib/authNavigation";
 
 interface AuthContextType {
   user: User | null;
@@ -37,6 +38,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const area = portalAreaFromPath(pathname);
+    if (user && area) rememberPortalArea(user.id, area);
+  }, [pathname, user]);
 
   // Renova o JWT a cada 20h (token expira em 24h — renovar antes evita logout abrupto)
   useEffect(() => {
@@ -50,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Sessão expirou — faz logout limpo
         setToken(null);
         setUser(null);
-        router.push("/entrar");
+        router.replace(loginPathFor(window.location.pathname + window.location.search + window.location.hash));
       }
     }, REFRESH_INTERVAL_MS);
     return () => clearInterval(timer);
@@ -67,6 +74,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Mantém token em memória para o header Authorization nas requisições desta sessão.
           // O cookie httpOnly é o mecanismo primário de autenticação persistente.
           if (response.token) setToken(response.token);
+          if (response.token && window.location.pathname === "/entrar") {
+            const returnTo = new URLSearchParams(window.location.search).get("redirect");
+            const destination = loginDestination(returnTo, response.user.role, rememberedPortalArea(response.user.id));
+            const area = portalAreaFromPath(destination);
+            if (area) rememberPortalArea(response.user.id, area);
+            router.replace(destination);
+          }
         }
       })
       .catch(() => {
@@ -75,9 +89,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [router]);
 
   const login = async (email: string, password: string) => {
+    const returnTo = sanitizeReturnTo(new URLSearchParams(window.location.search).get("redirect"));
     const response: AuthResponse = await loginApi({ email, password });
     // Token mantido apenas em memória — cookie httpOnly é setado pelo backend
     setToken(response.token);
@@ -93,10 +108,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Garante perfil completo (telefone, endereço, etc.) antes de redirecionar
     const full = await getCurrentUser(response.token).catch(() => null);
     if (full?.success && full.user) setUser(full.user);
-    router.push(response.role === "FREELANCER" ? "/colaborador" : "/estudante");
+    const destination = loginDestination(returnTo, full?.user?.role ?? response.role, rememberedPortalArea(response.id));
+    const area = portalAreaFromPath(destination);
+    if (area) rememberPortalArea(response.id, area);
+    router.replace(destination);
   };
 
   const register = async (name: string, email: string, password: string, role?: "STUDENT" | "FREELANCER") => {
+    const returnTo = sanitizeReturnTo(new URLSearchParams(window.location.search).get("redirect"));
     const response: AuthResponse = await registerApi({ name, email, password, role });
     setToken(response.token);
     setUser({
@@ -110,7 +129,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     const full = await getCurrentUser(response.token).catch(() => null);
     if (full?.success && full.user) setUser(full.user);
-    router.push(response.role === "FREELANCER" ? "/colaborador" : "/estudante");
+    const destination = loginDestination(returnTo, full?.user?.role ?? response.role, rememberedPortalArea(response.id));
+    const area = portalAreaFromPath(destination);
+    if (area) rememberPortalArea(response.id, area);
+    router.replace(destination);
   };
 
   const logout = () => {
@@ -142,11 +164,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const switchToCollaborator = () => {
     if (!user) return;
+    rememberPortalArea(user.id, "work");
     router.push("/colaborador");
   };
 
   const switchToStudent = () => {
     if (!user) return;
+    rememberPortalArea(user.id, "student");
     router.push("/estudante");
   };
 

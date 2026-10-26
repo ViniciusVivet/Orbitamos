@@ -54,7 +54,7 @@ export default function EstudanteInicio() {
     return () => { active = false; };
   }, [user?.id, revision]);
 
-  return <StudentHome name={user?.name?.trim().split(" ")[0] || "estudante"}
+  return <StudentHome userId={user?.id} name={user?.name?.trim().split(" ")[0] || "estudante"}
     progress={progress ?? defaultProgress} progressLoading={progressLoading}
     courses={courses} nextLesson={nextLesson} completedLessons={completedLessons}
     loading={loading} error={courseError || summaryError} summary={summary}

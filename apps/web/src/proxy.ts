@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { sanitizeReturnTo } from "@/lib/authNavigation";
 
 const PROTECTED_PREFIXES = [
   "/estudante",
@@ -26,7 +27,8 @@ export async function proxy(request: NextRequest) {
   if (!supabaseUrl || !supabaseAnonKey) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/entrar";
-    redirectUrl.searchParams.set("redirect", pathname);
+    redirectUrl.search = "";
+    redirectUrl.searchParams.set("redirect", sanitizeReturnTo(pathname + request.nextUrl.search) ?? sanitizeReturnTo(pathname) ?? "/estudante");
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -61,7 +63,8 @@ export async function proxy(request: NextRequest) {
   if (!user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/entrar";
-    redirectUrl.searchParams.set("redirect", pathname);
+    redirectUrl.search = "";
+    redirectUrl.searchParams.set("redirect", sanitizeReturnTo(pathname + request.nextUrl.search) ?? sanitizeReturnTo(pathname) ?? "/estudante");
     return NextResponse.redirect(redirectUrl);
   }
 

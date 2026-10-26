@@ -17,6 +17,7 @@ coverage/
 *.lcov
 apps/web/test-results/
 apps/web/public/vendor/pyodide/
+apps/web/public/vendor/sqljs/
 
 # Next.jsimage.png
 .next/
