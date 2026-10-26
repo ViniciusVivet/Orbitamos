@@ -85,5 +85,13 @@ Scripts de verificação em `apps/web/scripts/`:
 
 Os relatórios e capturas ficam em `apps/web/test-results/`. Os perfis incluem
 desktop, WebKit com iPhone 13 e viewport de 320 pixels. A suíte unitária completa
-tem 374 testes em 41 arquivos. Build, lint e auditorias de navegador devem ser
+tem 385 testes em 42 arquivos após a rodada de trilha principal e escrita personalizada. Build, lint e auditorias de navegador devem ser
 conferidos novamente quando houver mudanças de comportamento.
+
+Na rodada posterior ao primeiro deploy, `academyStudyPath` passou a guardar uma
+escolha opcional de trilha C#/SQL por conta neste navegador. `AcademyContinue`
+prioriza o próximo passo real dessa trilha; a última atividade visitada permanece
+como ação secundária. Trocar ou limpar a escolha não altera os registros anteriores.
+O modo da oficina SQL é refletido em `mode=workshop`, inclusive após reload e
+voltar/avançar. O guia mobile recolhe contexto/opções e aproxima a instrução do
+editor, preservando a explicação da linha e o mapa para consulta.

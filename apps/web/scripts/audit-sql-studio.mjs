@@ -31,6 +31,7 @@ for (const [name, engine, device] of profiles.filter(([name]) => !process.env.SQ
     await page.goto("http://localhost:3015/dev/sql-preview", { waitUntil: "domcontentloaded", timeout: 120000 });
     await page.getByLabel("Opções da aventura", { exact: true }).click();
     await page.getByRole("button", { name: "Abrir oficina de criação", exact: true }).click();
+    await expect(page).toHaveURL(/mode=workshop/);
     await page.getByRole("button", { name: "Construir com o Orbi" }).waitFor({ timeout: 90000 });
     await capture("intro");
     await page.getByRole("button", { name: "Construir com o Orbi" }).click();
@@ -68,8 +69,7 @@ for (const [name, engine, device] of profiles.filter(([name]) => !process.env.SQ
     }
     await capture("complete");
     await page.reload();
-    await page.getByLabel("Opções da aventura", { exact: true }).click();
-    await page.getByRole("button", { name: "Abrir oficina de criação", exact: true }).click();
+    await expect(page).toHaveURL(/mode=workshop/);
     await page.getByRole("button", { name: "Retomar minha construção" }).click();
     await expect(page.getByRole("heading", { name: "A loja tem memória!" })).toBeVisible({ timeout: 15000 });
     await expect(page.getByRole("table", { name: "Tabela produtos · dados armazenados", exact: true })).toContainText("Caneta");

@@ -74,3 +74,29 @@ produto. Hipóteses de confusão e abandono devem ser verificadas com iniciantes
 A avaliação central desta auditoria é que a organização visual avançou mais que
 a continuidade pedagógica. O próximo ganho depende de conectar as experiências
 em uma jornada pessoal com começo, evidência de aprendizado e próximo passo claro.
+
+## Rodada seguinte: primeiras correções aplicadas
+
+A versão reorganizada foi publicada primeiro no commit `e4f191a`. A rodada
+seguinte tratou estes pontos do mapa:
+
+- **Escrita personalizada:** as três missões de variáveis JS agora aceitam nome,
+  idade e booleano próprios, com regras explícitas de nome e tipo. Outras
+  atividades mantêm a conferência anterior; execução e testes ainda validam a missão.
+- **Editor mobile:** iniciar/retomar leva à área de escrita sem abrir o teclado
+  automaticamente. Mapa e opções ficam recolhidos, orientação curta e posição
+  na missão permanecem junto ao campo. Seis símbolos essenciais ficam visíveis;
+  os demais continuam disponíveis em “Mais símbolos”.
+- **Trilha principal:** escolha opcional de C# ou SQL por conta/navegador na Home
+  e em Trilhas. Essa escolha organiza o próximo passo; visitas a outras atividades
+  aparecem como retomada secundária e não trocam a formação selecionada.
+- **SQL:** aventura/oficina seguem a URL; reload, voltar/avançar e retomada
+  preservam o modo, a query e a âncora sem reiniciar rascunhos.
+
+Auditorias específicas: `audit-guided-onboarding.mjs`, `audit-study-path.mjs` e
+`audit-sql-resume.mjs`. Os relatórios ficam em `apps/web/test-results/`.
+
+Continuam no backlog: sequência de pré-requisitos, transporte explícito do código
+ao modo livre, variações independentes em todos os desafios, progresso/XP coerente
+com habilidades, ampliação de conteúdo e revisão, e sincronização entre aparelhos.
+Escolher uma trilha não significa que esses pontos já estejam resolvidos.

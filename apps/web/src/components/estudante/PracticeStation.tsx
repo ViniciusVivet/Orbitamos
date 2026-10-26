@@ -9,6 +9,9 @@ import { activityCompletion, emptyJournal, journalKey, persistPractice, practice
 import { fasesMonteCodigo } from "@/lib/jogoMonteCodigo";
 import LearningBridge from "./LearningBridge";
 import s from "./PracticeStation.module.css";
+import { useAcademyStudyPath } from "./useAcademyStudyPath";
+import { academyStudyPaths } from "@/lib/academyStudyPath";
+import { academyPreviewHref } from "@/lib/portalNavigation";
 
 const OrbiDelivery = dynamic(() => import("@/components/games/OrbiDelivery"), { loading: () => <p role="status">Preparando o caminho do Orbi…</p> });
 const CodeEnglish = dynamic(() => import("@/components/games/CodeEnglish"), { loading: () => <p role="status">Abrindo a oficina de palavras…</p> });
@@ -40,12 +43,17 @@ function ActivityArt({ id }: { id: ActivityId }) {
 }
 export default function PracticeStation({ userId, preview = false }: { userId: string; preview?: boolean }) {
   const { journal, completed, destinations, storageError, ready } = useStation(userId, preview);
+  const study = useAcademyStudyPath(userId);
+  const selectedPath = academyStudyPaths.find(path => path.id === study.choice);
   const [goal, setGoal] = useState("todos");
-  const recommended = practiceActivities.find(item => item.id === recommendActivity(journal, completed))!;
+  const csharpActivities: ActivityId[] = ["delivery", "assembly", "village", "orbi", "english"];
+  const recommendedId = study.choice === "csharp" ? csharpActivities.find(id => !completed[id]) ?? recommendActivity(journal, completed) : recommendActivity(journal, completed);
+  const recommended = practiceActivities.find(item => item.id === recommendedId)!;
   const knownCount = Object.values(completed).filter(Boolean).length;
   const href = (item: typeof recommended) => destinations[item.id];
   return <div className={s.station} data-practice-station>
     <header className={s.masthead}><span>ORBITAMOS / APRENDER FAZENDO</span><Link href={preview ? "/dev/lab-preview?academy=1" : "/estudante/pratica"}>Abrir laboratório <Code2 size={15}/></Link></header>
+    {selectedPath && <div className={s.pathNotice}><p>Sua trilha principal é <strong>{selectedPath.title}</strong>. As experiências abaixo são formas de praticar; explorar outra atividade mantém sua escolha.</p><Link href={preview ? academyPreviewHref(selectedPath.href) : selectedPath.href}>Ver minha trilha<ArrowRight size={15}/></Link></div>}
     <section className={s.hero}><div><p className={s.eyebrow}>SEU ESPAÇO DE DESCOBERTAS</p><h1>Tem mais de um jeito<br/>de chegar ao <em>“entendi”.</em></h1><p>Jogue, faça uma previsão, complete uma ideia ou escreva código. Cada experiência ajuda a dar um próximo passo.</p><div className={s.heroActions}><Link className={s.primary} href={href(recommended)} onClick={() => persistPractice(userId, recommended.id, "open")}>{journal.activities[recommended.id]?.openedAt && !completed[recommended.id] ? "Retomar" : "Começar"}: {recommended.title}<ArrowRight size={17}/></Link><Link className={s.secondary} href={preview ? "/dev/ide-preview/variaveis-js?academy=1" : "/estudante/pratica/variaveis-js"}>Quero escrever código direto <ArrowRight size={15}/></Link></div><small>{ready ? `${knownCount} de 6 experiências praticadas neste navegador` : "Preparando seu próximo passo…"}</small></div><aside className={s.orbiNote}><Image src="/orbi-tech.png" width={145} height={170} alt="Orbi, seu companheiro de prática" priority/><p>“Você pode mudar de formato e pedir ajuda. Vamos descobrir uma coisa de cada vez?”</p><span>uma missão → uma descoberta → uma aplicação</span></aside></section>
     <section className={s.learningLoop} aria-label="Como as experiências se conectam">{[["01", "Explore uma ideia", "Um cenário ou exemplo deixa a regra visível."], ["02", "Teste o que entendeu", "Preveja, corrija ou resolva outra situação."], ["03", "Leve para o código", "Escreva e execute num desafio relacionado."]].map(([n, title, text]) => <div key={n}><span>{n}</span><strong>{title}</strong><p>{text}</p></div>)}</section>
     <section aria-label="Escolher uma experiência"><div className={s.sectionHeading}><div><p className={s.eyebrow}>ESCOLHA PELO QUE QUER PRATICAR</p><h2>Qual descoberta combina com agora?</h2></div><span>6 experiências disponíveis</span></div><div className={s.filters} aria-label="Objetivo de prática">{[["todos", "Explorar tudo"], ["logica", "Lógica e jogos"], ["dados", "Entender dados"], ["ingles", "Inglês para código"], ["codigo", "Ler programas"]].map(([value, label]) => <button key={value} aria-pressed={goal === value} onClick={() => setGoal(value)}>{label}</button>)}</div><div className={s.grid}>{practiceActivities.filter(item => goal === "todos" || item.goal === goal).map(item => <Link key={item.id} href={href(item)} onClick={() => persistPractice(userId, item.id, "open")} className={s.activity} data-theme={item.color}><ActivityArt id={item.id}/><div className={s.cardBody}><span className={s.kind}>{item.kind}{completed[item.id] && <span><Check size={13}/> Já praticou</span>}</span><h3>{item.title}</h3><p>{item.description}</p><div className={s.skill}>{item.skill}</div><span className={s.cardAction}>Abrir experiência <ArrowRight size={16}/></span></div></Link>)}</div></section>

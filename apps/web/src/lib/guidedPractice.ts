@@ -103,13 +103,17 @@ export function nextGuidedLine(draft: GuidedDraft, challenge: Desafio): number |
   if (draft.passed.includes(draft.mission) || draft.line >= lines.length - 1) return null;
   const before = challenge.steps.slice(0, draft.mission).map((_, index) => guidedProgram(challenge, index));
   const expected = [...before, ...lines.slice(0, draft.line + 1).map(line => line.code)].filter(Boolean).join("\n");
-  return writingMatches(draft.code, expected, challenge.linguagem === "python") ? draft.line + 1 : null;
+  return guidedWritingMatches(draft.code, expected, challenge) ? draft.line + 1 : null;
 }
 
 // A writing check, NOT a semantic grader. Ignore cosmetic spacing outside
 // strings, but retain tokens, literal content, and Python indentation.
+function lineTokens(line: string): string[] {
+  return line.trim().match(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|[A-Za-z_$\u00c0-\u024f][\w$\u00c0-\u024f]*|\d+(?:\.\d+)?|===|!==|==|!=|>=|<=|\+=|=>|\*\*|\S/g) ?? [];
+}
+
 function canonicalLine(line: string, python: boolean): string {
-  const tokens = line.trim().match(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|[A-Za-z_$\u00c0-\u024f][\w$\u00c0-\u024f]*|\d+(?:\.\d+)?|===|!==|==|!=|>=|<=|\+=|=>|\*\*|\S/g) ?? [];
+  const tokens = lineTokens(line);
   if (!python && tokens.at(-1) === ";") tokens.pop();
   return (python ? `${line.match(/^ */)?.[0].length ?? 0}:` : "") + JSON.stringify(tokens.map(token => /^['"]/.test(token) ? `string:${token.slice(1, -1)}` : token));
 }
@@ -118,6 +122,61 @@ export function writingMatches(code: string, expected: string, python: boolean):
   const actual = code.replace(/\r/g, "").split("\n").filter(line => line.trim());
   const target = expected.split("\n").filter(line => line.trim());
   return target.length > 0 && actual.length >= target.length && target.every((line, i) => canonicalLine(line, python) === canonicalLine(actual[i], python));
+}
+
+type PersonalizedWriting = NonNullable<Desafio["steps"][number]["escrita"]>;
+
+function stringLiteralValue(token: string): string | null {
+  if (!/^(?:"(?:\\.|[^"\\\r\n])*"|'(?:\\.|[^'\\\r\n])*')$/.test(token)) return null;
+  const content = token.slice(1, -1);
+  const escapes: Record<string, string> = { n: "\n", r: "\r", t: "\t", b: "\b", f: "\f", v: "\v", "0": "\0" };
+  let value = "";
+  for (let i = 0; i < content.length; i++) {
+    if (content[i] !== "\\") { value += content[i]; continue; }
+    const escaped = content[++i];
+    if (!escaped || /[1-9]/.test(escaped) || escaped === "0" && /\d/.test(content[i + 1] ?? "")) return null;
+    if (escaped === "x" || escaped === "u") {
+      if (escaped === "u" && content[i + 1] === "{") {
+        const end = content.indexOf("}", i + 2);
+        const hex = end < 0 ? "" : content.slice(i + 2, end);
+        if (!/^[\da-f]{1,6}$/i.test(hex) || parseInt(hex, 16) > 0x10ffff) return null;
+        value += String.fromCodePoint(parseInt(hex, 16)); i = end;
+      } else {
+        const length = escaped === "x" ? 2 : 4;
+        const hex = content.slice(i + 1, i + 1 + length);
+        if (!new RegExp(`^[\\da-f]{${length}}$`, "i").test(hex)) return null;
+        value += String.fromCharCode(parseInt(hex, 16)); i += length;
+      }
+    } else value += escapes[escaped] ?? escaped;
+  }
+  return value;
+}
+
+function typedLiteral(tokens: string[], kind: PersonalizedWriting["tipo"]): boolean {
+  if (kind === "texto") return tokens.length === 1 && !!stringLiteralValue(tokens[0])?.trim();
+  if (kind === "booleano") return tokens.length === 1 && /^(true|false)$/.test(tokens[0]);
+  const number = tokens.length === 1 ? tokens[0] : tokens.length === 2 && /^[+-]$/.test(tokens[0]) ? tokens.join("") : "";
+  return /^[+-]?\d+(?:\.\d+)?$/.test(number) && Number.isFinite(Number(number));
+}
+
+function personalizedDeclaration(actual: string, expected: string, rules: PersonalizedWriting[]): boolean {
+  const source = lineTokens(actual);
+  const target = lineTokens(expected);
+  if (source.at(-1) === ";") source.pop();
+  if (target.at(-1) === ";") target.pop();
+  if (!/^(let|const|var)$/.test(source[0] ?? "") || !/^(let|const|var)$/.test(target[0] ?? "") || source[1] !== target[1] || source[2] !== "=" || target[2] !== "=") return false;
+  const rule = rules.find(item => item.variavel === target[1]);
+  return !!rule && typedLiteral(target.slice(3), rule.tipo) && typedLiteral(source.slice(3), rule.tipo);
+}
+
+/** A guided writing gate; runtime tests still decide whether a mission passed.
+ * Personalization is opt-in per declaration, never a blanket string wildcard. */
+export function guidedWritingMatches(code: string, expected: string, challenge: Desafio): boolean {
+  const rules = challenge.linguagem === "javascript" ? challenge.steps.flatMap(step => step.escrita ? [step.escrita] : []) : [];
+  if (!rules.length) return writingMatches(code, expected, challenge.linguagem === "python");
+  const actual = code.replace(/\r/g, "").split("\n").filter(line => line.trim());
+  const target = expected.split("\n").filter(line => line.trim());
+  return target.length > 0 && actual.length >= target.length && target.every((line, i) => canonicalLine(line, false) === canonicalLine(actual[i], false) || personalizedDeclaration(actual[i], line, rules));
 }
 
 export function readGuidedDraft(raw: string | null, challenge: Desafio): GuidedDraft {

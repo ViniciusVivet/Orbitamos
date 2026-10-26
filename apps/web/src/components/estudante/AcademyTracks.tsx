@@ -4,16 +4,18 @@ import { ArrowRight, BookOpen, Code2, Compass, Database, Map } from "lucide-reac
 import { academyCatalogDestination, getAcademyCatalog } from "@/lib/academyCatalog";
 import type { Curso } from "@/lib/cursos";
 import s from "./AcademyTracks.module.css";
+import AcademyStudyPathPicker from "./AcademyStudyPathPicker";
 
-type Props = { courses?: Curso[]; preview?: boolean; children?: ReactNode; loading?: boolean; error?: boolean };
+type Props = { courses?: Curso[]; preview?: boolean; children?: ReactNode; loading?: boolean; error?: boolean; userId?: string | number | null };
 
-export default function AcademyTracks({ courses = [], preview = false, children, loading = false, error = false }: Props) {
+export default function AcademyTracks({ courses = [], preview = false, children, loading = false, error = false, userId }: Props) {
   const entries = getAcademyCatalog(courses);
   const practical = entries.filter(entry => entry.format !== "Aulas em vídeo");
   const videos = entries.filter(entry => entry.format === "Aulas em vídeo");
   return <div className={s.catalog} data-academy-tracks>
     <header className={s.heading}><p>ORBITAMOS ACADEMY / TRILHAS</p><h1>Um caminho claro.<br/><em>Um próximo passo possível.</em></h1><div>Escolha o assunto que quer aprender. Aulas, prática e apoio ficam juntos, com o formato de cada conteúdo explicado.</div></header>
     {children}
+    <AcademyStudyPathPicker userId={userId} preview={preview}/>
     {preview && <p className={s.notice}>Prévia de navegação. As aulas em vídeo e os mapas de carreira continuam nas rotas do portal e pedem sua conta para abrir.</p>}
     <section aria-labelledby="practical-tracks"><div className={s.sectionHeading}><div><span>APRENDER FAZENDO</span><h2 id="practical-tracks">Caminhos com prática guiada.</h2></div><p>Você pode começar sem instalar ferramentas.</p></div>
       <div className={s.practical}>{practical.map(entry => <article key={entry.id} className={s.track} data-tone={entry.tone}>

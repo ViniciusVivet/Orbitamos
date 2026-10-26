@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { editSqlLine, emptySqlDraft, readSqlDraft, sqlLessons, sqlLineMatches, sqlStorageKey, verifySqlLesson, type SqlDraft, type SqlSnapshot, type SqlTable } from "@/lib/sqlJourney";
 import { runSql } from "@/lib/sqlRunner";
 import s from "./SqlStudio.module.css";
@@ -128,8 +129,19 @@ function SqlWorkshop({ userId }: { userId: string }) {
   </div>;
 }
 
+function SqlMode({ userId }: { userId: string }) {
+  const params = useSearchParams();
+  const workshop = params.get("mode") === "workshop";
+  function openWorkshop(next: boolean) {
+    const target = new URL(window.location.href);
+    if (next) target.searchParams.set("mode", "workshop");
+    else target.searchParams.delete("mode");
+    const href = `${target.pathname}${target.search}${target.hash}`;
+    if (href !== `${window.location.pathname}${window.location.search}${window.location.hash}`) window.history.pushState(null, "", href);
+  }
+  return workshop ? <><button className="mb-4 inline-flex min-h-11 items-center gap-2 text-sm text-emerald-100 underline underline-offset-4" onClick={() => openWorkshop(false)}>← Voltar à aventura com o Orbi</button><SqlWorkshop key={userId} userId={userId}/></> : <SqlQuest key={userId} userId={userId} onWorkshop={() => openWorkshop(true)}/>;
+}
+
 export default function SqlStudio({ userId }: { userId: string }) {
-  const [workshop, setWorkshop] = useState(false);
-  useEffect(() => { if (new URLSearchParams(window.location.search).get("mode") === "workshop") queueMicrotask(() => setWorkshop(true)); }, []);
-  return workshop ? <><button className="mb-4 inline-flex min-h-11 items-center gap-2 text-sm text-emerald-100 underline underline-offset-4" onClick={() => setWorkshop(false)}>← Voltar à aventura com o Orbi</button><SqlWorkshop userId={userId}/></> : <SqlQuest key={userId} userId={userId} onWorkshop={() => setWorkshop(true)}/>;
+  return <Suspense fallback={<p role="status">Orbi está abrindo sua jornada SQL…</p>}><SqlMode userId={userId}/></Suspense>;
 }

@@ -6,6 +6,8 @@ export type DesafioStep = {
   dica: string;
   /** Código de referência do passo — o aluno pode revelar para copiar ou ocultar para tentar de cabeça */
   codigoExemplo?: string;
+  /** Permite personalizar só o literal desta declaração, mantendo nome e tipo. */
+  escrita?: { variavel: string; tipo: "texto" | "numero" | "booleano" };
 };
 
 export type Desafio = {
@@ -45,6 +47,7 @@ const desafiosBase: Desafio[] = [
         erro: "Crie a variável 'nome' com let/const e use console.log() para exibir.",
         dica: 'Tente: let nome = "Seu Nome"; console.log(nome);',
         codigoExemplo: 'let nome = "Seu Nome";\nconsole.log(nome);',
+        escrita: { variavel: "nome", tipo: "texto" },
       },
       {
         instrucao: "Agora crie uma variável 'idade' com um número e exiba no console.",
@@ -55,6 +58,7 @@ const desafiosBase: Desafio[] = [
         erro: "Declare a variável 'idade' com um valor numérico e use console.log().",
         dica: "Tente: let idade = 20; console.log(idade);",
         codigoExemplo: "let idade = 20;\nconsole.log(idade);",
+        escrita: { variavel: "idade", tipo: "numero" },
       },
       {
         instrucao: "Crie uma variável 'ativo' com valor true ou false e exiba no console.",
@@ -65,6 +69,7 @@ const desafiosBase: Desafio[] = [
         erro: "Declare 'ativo' com true ou false e exiba com console.log().",
         dica: "Tente: let ativo = true; console.log(ativo);",
         codigoExemplo: "let ativo = true;\nconsole.log(ativo);",
+        escrita: { variavel: "ativo", tipo: "booleano" },
       },
     ],
   },

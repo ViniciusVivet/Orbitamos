@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Play, RotateCcw, Square, Undo2 } from "lucide-react";
 import { getNextDesafio, type Desafio } from "@/lib/desafios";
-import { emptyGuidedDraft, guidedLines, guidedMissionProgram, guidedProgram, guidedStorageKey, nextGuidedLine, readGuidedDraft, writingMatches, type GuidedDraft } from "@/lib/guidedPractice";
+import { emptyGuidedDraft, guidedLines, guidedMissionProgram, guidedProgram, guidedStorageKey, nextGuidedLine, readGuidedDraft, guidedWritingMatches, type GuidedDraft } from "@/lib/guidedPractice";
 import { runCSharpInWorker, runJavaScriptInWorker, runPythonInWorker, type BrowserCodeResult } from "@/lib/browserCodeRunner";
 import { diagnoseCSharp } from "@/lib/csharpFeedback";
 import ReliableCodeEditor from "./ReliableCodeEditor";
@@ -46,14 +46,19 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
   const current = lines[draft.line];
   const previous = challenge.steps.slice(0, draft.mission).map((_, i) => guidedProgram(challenge, i)).join("\n");
   const expected = [previous, ...lines.slice(0, draft.line + 1).map(line => line.code)].filter(Boolean).join("\n");
-  const matches = writingMatches(draft.code, expected, challenge.linguagem === "python");
-  const fullMatches = writingMatches(draft.code, guidedMissionProgram(challenge, draft.mission), challenge.linguagem === "python");
+  const matches = guidedWritingMatches(draft.code, expected, challenge);
+  const fullMatches = guidedWritingMatches(draft.code, guidedMissionProgram(challenge, draft.mission), challenge);
   const canRun = Boolean(draft.code.trim()) && (fullMatches || allowPartialRun);
   const finalLine = draft.line === lines.length - 1;
   const missionPassed = draft.passed.includes(draft.mission);
   const completed = draft.passed.length === challenge.steps.length;
   const next = getNextDesafio(challenge.slug);
   const lang = { javascript: "JavaScript", typescript: "TypeScript", python: "Python", csharp: "C#" }[challenge.linguagem];
+  const symbols = practiceSymbols(challenge.linguagem);
+  const essentialSymbols = challenge.linguagem === "python" ? ["Recuo", "↵", ":", '"', "(", ")"] : challenge.linguagem === "csharp" ? ["↵", '"', ";", "=", "{", "}"] : ["↵", '"', ";", "=", "(", ")"];
+  const personalWriting = challenge.steps[draft.mission].escrita;
+  const personalTip = personalWriting && current.code.includes(` ${personalWriting.variavel} =`) ? personalWriting.tipo === "texto" ? "Troque o texto do exemplo pelo seu nome. Mantenha as aspas." : personalWriting.tipo === "numero" ? "Escolha sua idade, usando um número sem aspas." : "Escolha true ou false, sem aspas." : null;
+  const renderSymbol = (symbol: string) => <button key={symbol} type="button" data-essential={essentialSymbols.includes(symbol)} aria-label={symbol === "Recuo" ? "Inserir recuo" : symbol === "↵" ? "Nova linha" : `Inserir ${symbol}`} onPointerDown={event => event.preventDefault()} onClick={() => insert(symbol === "Recuo" ? (challenge.linguagem === "python" ? "    " : "  ") : symbol === "↵" ? "\n" : symbol)}>{symbol}</button>;
 
   useEffect(() => { if (ready) onValidationChange?.(completed); }, [ready, completed, onValidationChange]);
 
@@ -70,6 +75,7 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
     queueMicrotask(() => {
       if (!active) return;
       setRunning(false);
+      focusStep.current = restored.started;
       update(restored);
       setShowBrief(!embedded && !restored.started);
       setReady(true);
@@ -94,6 +100,7 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
     if (!ready || !focusStep.current) return;
     focusStep.current = false;
     missionHeading.current?.focus({ preventScroll: true });
+    if (window.matchMedia("(max-width: 767px)").matches) codeColumn.current?.scrollIntoView({ block: "start", behavior: "instant" });
   }, [ready, showBrief, draft.line, draft.mission]);
 
   useEffect(() => {
@@ -175,18 +182,21 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
 
   if (!ready) return <p role="status">Abrindo seu laboratório…</p>;
 
-  return <section className={s.studio} data-guided-lab data-focus={focusMode && !showBrief && !missionPassed} onCompositionStart={() => setComposing(true)} onCompositionEnd={() => setComposing(false)}>
+  return <section className={s.studio} data-guided-lab data-writing={!showBrief && !completed} data-focus={focusMode && !showBrief && !missionPassed} onCompositionStart={() => setComposing(true)} onCompositionEnd={() => setComposing(false)}>
     {!embedded && <header className={s.header}>
       <Link href={link(`/estudante/pratica?linguagem=${challenge.linguagem}#experimentos`)}><ArrowLeft size={16}/> Laboratório</Link>
       <span>{lang} · {challenge.dificuldade}</span>
       <button onClick={onFreeMode}>Modo livre</button>
     </header>}
     {!embedded && <div className={s.title}><div><p className={s.eyebrow}>ORBITAMOS / CÓDIGO NO SEU RITMO</p><h1>{challenge.titulo}</h1></div><span className={s.mode}>Passo a passo</span></div>}
-    {!embedded && <PracticeJourney challenge={challenge}/>}
+    {!embedded && showBrief && <PracticeJourney challenge={challenge} preview={preview}/>}
     {showBrief ? <PracticeBrief challenge={challenge} onStart={() => { focusStep.current = true; setShowBrief(false); update({ ...draft, started: true }); }}/> : <>
+    <details className={s.studyOptions}><summary>Seu objetivo, mapa e opções<span>Consultar quando precisar</span></summary><div className={s.optionsContent}>
+    {!embedded && <PracticeJourney challenge={challenge} preview={preview}/>}
     {!embedded && <PracticeBrief challenge={challenge} compact onReview={() => { editedForAuto.current = false; setShowBrief(true); }}/>}
     {!missionPassed && <div className={s.focusTools}><button type="button" aria-pressed={focusMode} onPointerDown={event => event.preventDefault()} onClick={() => { editedForAuto.current = false; setFocusMode(value => !value); }}>Foco no código<span aria-hidden="true">{focusMode ? "Ligado" : "Desligado"}</span></button><span>{focusMode ? `Etapa ${draft.line + 1}/${lines.length} · Avanço ${autoAdvance ? "automático" : "manual"}` : "Menos distrações, mesma orientação. Você escolhe quando ativar."}</span></div>}
     <div className={s.guideControls}><label><input type="checkbox" checked={autoAdvance} onChange={event => { editedForAuto.current = false; setAutoAdvance(event.target.checked); }}/>Avanço automático</label><span>{autoAdvance ? "Terminou a linha? O guia muda após uma breve pausa. Não executa sozinho." : "No seu ritmo: use Próxima etapa quando terminar a linha."}</span></div>
+    </div></details>
     <div className={s.progress} role="group" aria-label={`Missão ${draft.mission + 1} de ${challenge.steps.length}, etapa ${draft.line + 1} de ${lines.length}`}>
       {lines.map((_, i) => <span key={i} data-done={i < draft.line || missionPassed} data-active={i === draft.line}/>)}
     </div>
@@ -211,12 +221,12 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
       <section ref={codeColumn} className={s.codeColumn} aria-label="Escreva e execute">
         <div className={s.filebar}>{enhanced ? <strong>Seu código</strong> : <label htmlFor="guided-code">Seu código</label>}<span>rascunho.{challenge.linguagem === "python" ? "py" : challenge.linguagem === "csharp" ? "cs" : "js"}</span></div>
         <p className={s.editorHint} id="guided-editor-hint">Toque no campo para digitar. Você escreve o programa; nada é preenchido automaticamente.</p>
-        {!missionPassed && <div className={s.writingPrompt}><div role="status" aria-live="polite"><span>AGORA, ESCREVA / {draft.line + 1} DE {lines.length}</span><h2 ref={missionHeading} tabIndex={-1}>{current.title}</h2></div><p className={s.fullExplanation}>{current.why}</p><code>{current.code}</code><details className={s.focusExplanation} key={`${draft.mission}-${draft.line}`}><summary>Entender esta linha</summary><p>{current.why}</p></details><small>{draft.line ? "Mantenha as linhas anteriores e acrescente esta em uma nova linha." : "Comece digitando esta linha. Você pode ir no seu ritmo."}</small></div>}
+        {!missionPassed && <div className={s.writingPrompt}><div role="status" aria-live="polite"><span>MISSÃO {draft.mission + 1}/{challenge.steps.length} · ETAPA {draft.line + 1}/{lines.length}</span><h2 ref={missionHeading} tabIndex={-1}>{current.title}</h2></div><p className={s.fullExplanation}>{current.why}</p><code>{current.code}</code>{personalTip && <p>{personalTip}</p>}<details className={s.focusExplanation} key={`${draft.mission}-${draft.line}`}><summary>Entender esta linha</summary><p>{current.why}</p></details><small>{draft.line ? "Mantenha as linhas anteriores e acrescente esta em uma nova linha." : "Comece digitando esta linha. Você pode ir no seu ritmo."}</small></div>}
         {enhanced ? <div className={s.enhanced}><ReliableCodeEditor value={draft.code} language={challenge.linguagem} onChange={changeCode}/></div> : <div className={s.inputWrap}>
           <div ref={gutter} className={s.numbers} aria-hidden="true">{Array.from({ length: Math.max(6, draft.code.split("\n").length) }, (_, i) => <span key={i}>{i + 1}</span>)}</div>
           <textarea ref={textarea} id="guided-code" aria-label="Seu código" aria-describedby="guided-editor-hint" value={draft.code} onChange={event => changeCode(event.target.value)} onScroll={event => { if (gutter.current) gutter.current.scrollTop = event.currentTarget.scrollTop; }} placeholder="Toque aqui e escreva sua primeira linha…" autoCapitalize="off" autoCorrect="off" autoComplete="off" spellCheck={false} maxLength={100000} wrap="off" rows={Math.min(14, Math.max(6, draft.code.split("\n").length + 1))} onKeyDown={event => { if (event.key === "Tab") { event.preventDefault(); insert(challenge.linguagem === "python" ? "    " : "  "); } if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); void run(); } }}/>
         </div>}
-        {!enhanced && <div className={s.keys} role="group" aria-label="Teclas para programar">{practiceSymbols(challenge.linguagem).map(symbol => <button key={symbol} type="button" aria-label={symbol === "Recuo" ? "Inserir recuo" : symbol === "↵" ? "Nova linha" : `Inserir ${symbol}`} onPointerDown={event => event.preventDefault()} onClick={() => insert(symbol === "Recuo" ? (challenge.linguagem === "python" ? "    " : "  ") : symbol === "↵" ? "\n" : symbol)}>{symbol}</button>)}</div>}
+        {!enhanced && <div className={s.keys} role="group" aria-label="Teclas para programar">{symbols.map(renderSymbol)}</div>}
         {!missionPassed && <div className={s.mobileSupport}>{matches && <p role="status">Escrita conferida. {finalLine ? "Agora execute para testar." : autoAdvance ? "O guia avança depois de uma pausa na digitação." : "Toque em Continuar para próxima etapa."}</p>}{draft.line > 0 && <button onClick={() => { editedForAuto.current = false; focusStep.current = true; update({ ...draft, line: draft.line - 1 }); }}>Rever etapa anterior</button>}</div>}
         {!fullMatches && !missionPassed && <div className={s.runGuidance} id="guided-run-hint"><p>{allowPartialRun ? "Teste exploratório: um bloco incompleto pode dar erro. Isso não significa que você não consegue aprender." : "Primeiro monte as linhas desta missão. Depois, Executar código mostra o resultado e verifica se a regra funciona."}</p><button aria-pressed={allowPartialRun} onClick={() => { editedForAuto.current = false; setAllowPartialRun(!allowPartialRun); }}>{allowPartialRun ? "Voltar à execução guiada" : "Quero testar meu código mesmo assim"}</button></div>}
         {fullMatches && !missionPassed && <p className={s.readyToRun}>As linhas estão montadas. Preveja a saída e toque em Executar código para conferir.</p>}
@@ -225,6 +235,7 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
           <button aria-label="Desfazer última edição" disabled={running || !history.current.length} onClick={() => { editedForAuto.current = false; const code = history.current.pop(); if (code !== undefined) { update({ ...draft, code, passed: draft.passed.filter(n => n < draft.mission) }); setResult(null); } }}><Undo2 size={16}/>Desfazer</button>
           <button ref={resetButton} onClick={() => setResetting(true)}><RotateCcw size={16}/>Reiniciar</button>
         </div>
+        {!enhanced && <details className={s.moreSymbols}><summary>Mais símbolos para programar</summary><div className={s.keys} role="group" aria-label="Outras teclas para programar">{symbols.filter(symbol => !essentialSymbols.includes(symbol)).map(renderSymbol)}</div></details>}
         {!completed && (!finalLine || missionPassed) && <button className={s.continueWriting} disabled={running || (!matches && !missionPassed)} onClick={advance}>{matches || missionPassed ? <Check size={16}/> : null}{missionPassed ? "Continuar para próxima missão" : "Continuar para próxima etapa"}<ArrowRight size={16}/></button>}
         {resetting && <div className={s.reset} role="group" aria-label="Confirmar reinício"><strong>Recomeçar este desafio guiado?</strong><p>O código e as etapas deste modo serão reiniciados. Seu rascunho do modo livre não muda.</p><button ref={cancelReset} onClick={() => { setResetting(false); resetButton.current?.focus(); }}>Continuar editando</button><button onClick={reset}>Sim, reiniciar</button></div>}
         {undoDraft && <div className={s.reset}><p>O código anterior está disponível até você sair desta página.</p><button onClick={() => { editedForAuto.current = false; activeRun.current?.abort(); activeRun.current = null; setRunning(false); update(undoDraft); setUndoDraft(null); setResult(null); }}>Recuperar código anterior ao reinício</button></div>}

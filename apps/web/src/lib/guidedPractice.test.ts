@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import vm from "node:vm";
 import { desafios, getDesafio } from "./desafios";
-import { emptyGuidedDraft, guidedLines, guidedProgram, readGuidedDraft, writingMatches } from "./guidedPractice";
+import { emptyGuidedDraft, guidedLines, guidedMissionProgram, guidedProgram, guidedWritingMatches, nextGuidedLine, readGuidedDraft, writingMatches } from "./guidedPractice";
 
 describe("guided writing, not a substitute for runtime tests", () => {
   it("has complete, explained writing steps for every mission", () => {
@@ -25,6 +25,49 @@ describe("guided writing, not a substitute for runtime tests", () => {
     expect(writingMatches("total += numero", "    total += numero", true)).toBe(false);
     expect(writingMatches("    total+=numero", "    total += numero", true)).toBe(true);
     expect(guidedLines(getDesafio("lacos-python")!, 0)[1].why).toContain("101");
+  });
+  it("accepts the student's own name with equivalent declaration and quote styles", () => {
+    const challenge = getDesafio("variaveis-js")!;
+    const reference = guidedProgram(challenge, 0);
+    for (const declaration of ["let", "const", "var"]) for (const name of ['"João"', "'Bia'", '"João D\'Ávila"', '"Ana \\"Bia\\""', '"\\u0041na"', "'Lúcia'", '"\\u{1F680} Ana"']) {
+      const code = `${declaration} nome = ${name};\nconsole.log(nome);`;
+      expect(guidedWritingMatches(code, reference, challenge), code).toBe(true);
+      expect(nextGuidedLine({ ...emptyGuidedDraft(), code, started: true }, challenge), code).toBe(1);
+    }
+  });
+  it("preserves personal values while writing subsequent variable missions", () => {
+    const challenge = getDesafio("variaveis-js")!;
+    const code = 'const nome = "João";\nconsole.log(nome);\nvar idade = 35;\nconsole.log(idade);\nlet ativo = false;\nconsole.log(ativo);';
+    expect(guidedWritingMatches(code, guidedMissionProgram(challenge, 2), challenge)).toBe(true);
+    expect(nextGuidedLine({ ...emptyGuidedDraft(), code, mission: 1, started: true }, challenge)).toBe(1);
+    const output: string[] = [];
+    vm.runInNewContext(code, { console: { log: (value: unknown) => output.push(String(value)) } }, { timeout: 1000 });
+    for (const step of challenge.steps) expect(step.validacao(code, output.join("\n"))).toBe(true);
+    expect(output).toEqual(["João", "35", "false"]);
+  });
+  it("keeps names, literal types, previous instructions and output references required", () => {
+    const challenge = getDesafio("variaveis-js")!;
+    const reference = guidedMissionProgram(challenge, 2);
+    const valid = 'let nome = "João";\nconsole.log(nome);\nlet idade = 35;\nconsole.log(idade);\nlet ativo = false;\nconsole.log(ativo);';
+    for (const code of [
+      valid.replace('"João"', '35'), valid.replace('"João"', '""'), valid.replace('"João"', '"   "'),
+      valid.replace('"João"', '"\\n\\t"'), valid.replace('"João"', '"\\u00ZZ"'), valid.replace('"João"', '"\\xQQ"'),
+      valid.replace('"João"', '"\\u{110000}"'), valid.replace('"João"', '"João'), valid.replace('"João"', '`João ${2}`'),
+      valid.replace('let nome', 'let apelido'), valid.replace('let nome', 'nome'), valid.replace('let nome', '// let nome'),
+      valid.replace('console.log(nome)', 'console.log("João")'), valid.replace('idade = 35', 'idade = "35"'),
+      valid.replace('idade = 35', 'idade = 3 5'), valid.replace('idade = 35', 'idade = 30 + 5'), valid.replace('ativo = false', 'ativo = "false"'),
+      valid.replace('ativo = false', 'ativo = 0'), valid.replace('ativo = false', 'ativo = !true'),
+    ]) expect(guidedWritingMatches(code, reference, challenge), code).toBe(false);
+  });
+  it("does not relax unrelated exercises or the default strict writing gate", () => {
+    const challenge = getDesafio("variaveis-js")!;
+    const code = 'let nome = "João";\nconsole.log(nome);';
+    expect(writingMatches(code, guidedProgram(challenge, 0), false)).toBe(false);
+    expect(guidedWritingMatches(code, guidedProgram(challenge, 0), { ...challenge, steps: challenge.steps.map(step => ({ ...step, escrita: undefined })) })).toBe(false);
+    const python = getDesafio("lacos-python")!;
+    expect(guidedWritingMatches("total = 1", "total = 0", python)).toBe(false);
+    const functions = getDesafio("funcoes-js")!;
+    expect(guidedWritingMatches(guidedProgram(functions, 0).replace("Olá, mundo!", "Oi!"), guidedProgram(functions, 0), functions)).toBe(false);
   });
   it("preserves intentionally blank drafts and rejects malformed storage", () => {
     const challenge = getDesafio("lacos-python")!;
