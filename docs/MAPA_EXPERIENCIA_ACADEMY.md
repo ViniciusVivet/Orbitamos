@@ -100,3 +100,54 @@ Continuam no backlog: sequência de pré-requisitos, transporte explícito do c�
 ao modo livre, variações independentes em todos os desafios, progresso/XP coerente
 com habilidades, ampliação de conteúdo e revisão, e sincronização entre aparelhos.
 Escolher uma trilha não significa que esses pontos já estejam resolvidos.
+
+## Rodada de 28/10/2026: primeiro percurso com aplicação
+
+O caminho opcional **Primeiros passos** passa a organizar quatro entregas reais
+em JavaScript: perfil → conta de um serviço → decisão → primeiro orçamento.
+As primeiras atividades não exigem funções antes de ensiná-las. O mapa completo
+continua consultável e não bloqueia quem já sabe e quer explorar outro tema.
+
+Cada entrega tem três momentos: construir no guia, alterar o próprio programa e
+escrever uma nova versão sem código preenchido. Os dois últimos momentos executam
+JavaScript de verdade e conferem outras entradas, inclusive os limites das
+condições. Imprimir uma resposta fixa não basta para passar.
+
+Concluir o programa inicial continua preservado como evidência parcial. Para essas
+quatro atividades, a entrega completa exige também alteração e aplicação
+independente validadas. Editar o código invalida a prova daquela versão. A Home
+recomenda a primeira entrega incompleta, mesmo depois de uma visita por curiosidade
+a uma atividade posterior. O próximo tema após o orçamento é funções.
+
+O modo livre recebe explicitamente o código que o aluno construiu. Se já houver
+outro rascunho, ele escolhe qual abrir; substituir guarda a versão anterior para
+recuperação. Recuperar também preserva as edições atuais, e a importação não
+concede uma conclusão sem executar. Os registros permanecem separados por conta,
+atividade e navegador.
+
+Scripts desta rodada: `audit-first-delivery-path.mjs` (percurso real completo),
+`audit-beginner-application.mjs` (aplicações nos três perfis) e
+`audit-practice-handoff.mjs` (transporte, conflito e recuperação de código).
+Os dois últimos usam fixtures em partes anteriores do fluxo para isolar o que
+estão verificando; não representam alunos reais nem um teste de autenticação.
+
+Continuam pendentes: observar iniciantes reais no celular, ampliar esse ciclo às
+demais linguagens e atividades, aprofundar depuração/revisão cumulativa e
+sincronizar rascunhos entre aparelhos. O primeiro orçamento é um programa de
+console; CRUD, API e projetos profissionais não passam a estar disponíveis por
+causa desta rodada.
+
+Validação local desta rodada: 425 testes unitários em 45 arquivos; lint dos
+arquivos alterados; percurso completo sem fixture do guia nas quatro entregas;
+12 aplicações (quatro entregas em desktop, WebKit/iPhone 13 e Chromium de 320px);
+três cenários de recuperação durante execução pendente; três cenários de
+transporte/conflito/recuperação no modo livre; e três perfis de escrita guiada
+personalizada. Os cenários cobertos passaram sem erros de página ou violações
+axe. Foi corrigido um problema mobile em que o histórico e os avisos comprimiam
+o editor a zero: o painel passa a rolar e mantém área para escrever. WebKit
+simula Safari; a bateria não substitui a verificação no iPhone físico com teclado
+virtual nem a observação de alunos reais.
+
+Build de produção e TypeScript aprovados. Permanecem os avisos anteriores de
+Browserslist desatualizado e rastreamento amplo em
+`api/course-materials/[...path]`; esta rodada não alterou esse endpoint.

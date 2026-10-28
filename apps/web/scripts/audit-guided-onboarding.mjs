@@ -51,8 +51,10 @@ for (const [name, engine, options] of profiles) {
     await editor.fill(third);
     await expect(run).toBeEnabled();
     await activate(run);
-    await expect(page.getByText("Você escreveu. E fez funcionar.", { exact: true })).toBeVisible();
+    await expect(page.locator("[data-beginner-practice]")).toBeVisible();
     await page.reload();
+    await page.getByText("Rever o guia concluído e meu código", { exact: true }).waitFor({ timeout: 90000 });
+    await activate(page.getByText("Rever o guia concluído e meu código", { exact: true }));
     await editor.waitFor({ state: "visible", timeout: 90000 });
     await expect(editor).toHaveValue(third, { timeout: 45000 });
     report.checks.push("personalized name, numeric age and boolean accepted through three missions; actual execution and restored draft");

@@ -7,6 +7,7 @@ export const practicePaths = [
 ] as const;
 export type PracticePath = typeof practicePaths[number]["id"];
 export function practicePath(challenge: Desafio): PracticePath {
+  if (challenge.slug === "primeiro-orcamento-js") return "first";
   if (["Fundamentos", "Operadores"].includes(challenge.categoria ?? "")) return "first";
   if (["Condicionais", "Laços", "Algoritmos"].includes(challenge.categoria ?? "")) return "logic";
   return "building";
@@ -17,6 +18,9 @@ const story = (scene: string, goal: string, input: string, action: string, outco
 // Realistic practice scenarios, not claims that these small programs are full products.
 export const practiceStories: Record<string, Story> = {
   "variaveis-js": story("Uma comunidade precisa apresentar quem acabou de chegar. Você vai montar os primeiros dados de um perfil.", "Apresentar um perfil no console", "Nome, idade e estado ativo", "Guardar e mostrar", "Um perfil com três informações"),
+  "contas-servico-js": story("No OrbiServiços, um trabalho recebeu 80 e precisou de 25 em material. Vamos descobrir quanto ficou disponível depois desse custo. É uma conta simplificada de estudo, sem outros custos ou impostos.", "Descobrir quanto sobra de um serviço", "Valor 80 · material 25", "Subtrair o custo do valor recebido", "55 disponíveis"),
+  "decisao-servico-js": story("O serviço deixou 55 disponíveis. A pessoa definiu uma meta de 50 para esta simulação. Agora o programa vai comparar os dados e escolher uma resposta, em vez de sempre mostrar a mesma frase.", "Verificar se o serviço atingiu a meta", "Disponível 55 · meta 50", "Comparar e escolher um caminho", "Meta atingida"),
+  "primeiro-orcamento-js": story("Lia pediu três serviços de 40 e informou um limite de 150. Você vai juntar o que aprendeu num orçamento pequeno: guardar os dados, fazer a conta e dizer se o pedido cabe nesse limite. A entrega funciona no console; ainda não é um sistema comercial completo.", "Entregar seu primeiro orçamento no console", "Lia · 3 serviços de 40 · limite 150", "Calcular o total e comparar com o limite", "Lia · 120 · Dentro do limite"),
   "funcoes-js": story("Você repete algumas tarefas no programa: cumprimentar alguém, somar valores e dobrar uma quantidade. Vamos dar um nome a cada tarefa.", "Criar tarefas que podem ser chamadas", "Uma mensagem e números", "Criar e chamar funções", "Saudação, soma e dobro"),
   "arrays-js": story("Uma pequena feira tem três frutas no catálogo. Você vai reunir os nomes, percorrer a lista e preparar uma versão em maiúsculas.", "Organizar uma lista de produtos", "Três frutas", "Listar e transformar", "Frutas no console"),
   "operadores-js": story("Uma loja quer saber quanto cobrar por um produto de R$ 200 com 15% de desconto. Você vai ensinar essa conta ao programa para reutilizá-la com outros preços.", "Calcular o preço com desconto", "R$ 200 · desconto de 15%", "Subtrair a porcentagem", "R$ 170"),
@@ -56,6 +60,39 @@ export function practiceStory(challenge: Desafio): Story {
 
 export function contextualLine(challenge: Desafio, code: string): { title: string; why: string } | null {
   const line = code.trim();
+  if (["contas-servico-js", "decisao-servico-js", "primeiro-orcamento-js"].includes(challenge.slug)) {
+    const assignment = line.match(/^(?:let|const|var)\s+(\w+)\s*=\s*(.+?);?$/);
+    if (assignment) {
+      const [, name] = assignment;
+      const inputs: Record<string, [string, string]> = {
+        valorServico: ["Guarde o valor recebido pelo serviço", "valorServico guarda 80 neste exemplo. É um número, por isso não tem aspas. A conta seguinte vai ler esse valor pelo nome."],
+        custoMaterial: ["Guarde o custo do material", "custoMaterial guarda 25. Separar o custo do valor recebido ajuda o programa a fazer a conta e permite testar outros valores depois."],
+        meta: ["Defina o valor que queremos atingir", "meta guarda 50. Essa é a referência da comparação: o próximo teste vai perguntar se o valor disponível chegou a essa meta."],
+        cliente: ["Identifique para quem é o orçamento", "cliente guarda o texto Lia entre aspas. Vamos ler essa variável ao mostrar o resumo, em vez de escrever o nome de novo na saída."],
+        quantidade: ["Guarde quantos serviços foram pedidos", "quantidade guarda 3. Cada serviço terá o mesmo valor nesta simulação. A multiplicação usará esse número de serviços."],
+        valorPorServico: ["Guarde o preço de um serviço", "valorPorServico guarda 40. Esse é o valor de uma unidade, ainda não o total do pedido. O total será a quantidade multiplicada por esse valor."],
+        limite: ["Guarde o limite informado pela cliente", "limite guarda 150. O programa vai comparar o orçamento com esse valor, incluindo o caso em que o total fica exatamente igual ao limite."],
+      };
+      if (name === "valorDisponivel") return challenge.slug === "contas-servico-js"
+        ? { title: "Faça a conta usando os nomes dos dados", why: "O sinal - subtrai o custo do valor recebido: 80 - 25 resulta em 55. = guarda o resultado em valorDisponivel. A variável é calculada; não estamos escrevendo a resposta 55 diretamente." }
+        : { title: "Retome o valor disponível do serviço", why: "valorDisponivel começa em 55, o resultado do exercício anterior. Agora vamos usar esse dado numa decisão. Guardar o valor ainda não escolhe nenhuma mensagem." };
+      if (name === "total") return { title: "Calcule o valor de todos os serviços", why: "* significa multiplicar. quantidade * valorPorServico usa 3 × 40 e produz 120. = guarda esse resultado em total. Assim, a conta acompanha mudanças nos dados de entrada." };
+      if (inputs[name]) return { title: inputs[name][0], why: inputs[name][1] };
+    }
+    if (line.startsWith("if (valorDisponivel")) return { title: "Pergunte se o serviço alcançou a meta", why: "if abre uma decisão. valorDisponivel >= meta compara 55 com 50; >= significa maior ou igual. Neste exemplo é verdadeiro. A chave { abre o bloco que só será executado quando essa pergunta tiver resposta verdadeira." };
+    if (line.startsWith("if (total")) return { title: "Confira se o orçamento cabe no limite", why: "total <= limite pergunta se 120 é menor ou igual a 150. Neste exemplo a resposta é verdadeira. A chave { abre o caminho que informa que o orçamento cabe no limite." };
+    if (line === "} else {") return { title: "Prepare o outro caminho da decisão", why: "A primeira chave fecha o bloco do if. else significa caso contrário, e a nova chave abre a alternativa. Só um dos dois caminhos será executado; o outro ficará de fora nesta execução." };
+    const outputs: Record<string, [string, string]> = {
+      "console.log(valorDisponivel);": ["Mostre o resultado que a conta produziu", "Sem aspas, valorDisponivel lê o número calculado. console.log mostra 55 neste exemplo. Se você mudar o valor do serviço ou do custo, o programa poderá mostrar outro resultado sem trocar esta linha."],
+      "console.log(cliente);": ["Mostre para quem é o orçamento", "cliente está sem aspas: o programa lê o texto guardado na variável e mostra Lia. Este é o começo do resumo que você está entregando."],
+      "console.log(total);": ["Mostre o valor calculado do pedido", "total está sem aspas para mostrar o resultado da multiplicação, 120. Digitar 120 direto esconderia a conta e não acompanharia outros pedidos."],
+      'console.log("Meta atingida");': ["Responda quando o valor alcança a meta", "Esta mensagem está dentro do if. Ela aparece quando valorDisponivel é maior ou igual à meta. As aspas indicam o texto que queremos mostrar."],
+      'console.log("Falta para a meta");': ["Responda quando o valor fica abaixo da meta", "Esta linha pertence ao else. Ela só aparece quando a comparação do if é falsa. Neste exemplo, 55 já alcança 50, por isso este caminho não será escolhido."],
+      'console.log("Dentro do limite");': ["Confirme que o orçamento cabe no limite", "Esta mensagem pertence ao if. Ela aparece quando total é menor ou igual a limite. Com total 120 e limite 150, este será o caminho da execução."],
+      'console.log("Acima do limite");': ["Cuide do orçamento que ultrapassa o limite", "Esta linha pertence ao else. Ela aparece quando total ultrapassa limite. Você prepara a resposta mesmo que o exemplo atual use o outro caminho."],
+    };
+    if (outputs[line]) return { title: outputs[line][0], why: outputs[line][1] };
+  }
   if (["variaveis-js", "variaveis-python", "variaveis-csharp"].includes(challenge.slug)) {
     const assignment = line.match(/^(?:(let|const|string|int|bool)\s+)?(\w+)\s*=\s*(.+?);?$/);
     if (assignment) {

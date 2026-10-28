@@ -1,7 +1,9 @@
 import type { AcademyActivity, AcademyActivityItem } from "./academyActivity";
+import { beginnerJavaScriptPath } from "./practiceExperience";
 
-export type AcademyStudyPath = "csharp" | "sql";
+export type AcademyStudyPath = "fundamentals" | "csharp" | "sql";
 export const academyStudyPaths = [
+  { id: "fundamentals" as const, title: "Primeiros passos", description: "Do primeiro perfil a um orçamento: guia, alteração e aplicação independente.", href: "/estudante/pratica/variaveis-js" },
   { id: "csharp" as const, title: "C# & .NET", description: "Variáveis, condições e laços com prática guiada.", href: "/estudante/trilhas/csharp" },
   { id: "sql" as const, title: "SQL com Orbi", description: "Da primeira consulta à construção de uma tabela.", href: "/estudante/trilhas/sql" },
 ];
@@ -11,7 +13,7 @@ export function readStudyPath(raw: string | null): AcademyStudyPath | null {
     const value: unknown = JSON.parse(raw ?? "null");
     if (!value || typeof value !== "object" || Array.isArray(value)) return null;
     const record = value as Record<string, unknown>;
-    return record.version === 1 && (record.path === "csharp" || record.path === "sql") ? record.path : null;
+    return record.version === 1 && (record.path === "fundamentals" || record.path === "csharp" || record.path === "sql") ? record.path : null;
   } catch { return null; }
 }
 export const serializeStudyPath = (path: AcademyStudyPath) => JSON.stringify({ version: 1, path });
@@ -22,6 +24,14 @@ const stepFor = (item: AcademyActivityItem): AcademyStudyStep => ({ title: item.
 
 /** A chosen formation stays primary; an unrelated recent visit never changes it. Reads evidence only. */
 export function getStudyPathStep(path: AcademyStudyPath, activity: AcademyActivity | null): AcademyStudyStep {
+  if (path === "fundamentals") {
+    const next = beginnerJavaScriptPath.find(step => activity?.items.find(item => item.id === `code:${step.slug}`)?.status !== "completed");
+    if (next) {
+      const item = activity?.items.find(item => item.id === `code:${next.slug}`);
+      return { title: next.label, detail: item?.practiced ? item.detail : `${next.concept}. Aprenda com o guia, faça uma mudança e resolva uma nova situação por conta própria.`, href: `/estudante/pratica/${next.slug}`, action: item?.practiced ? "Continuar meus primeiros passos" : "Começar esta entrega", pilotComplete: false };
+    }
+    return { title: "Seu primeiro percurso está entregue.", detail: "Você praticou dados, contas, decisões e um pequeno orçamento. Seus códigos continuam disponíveis para revisar e experimentar.", href: "/estudante/pratica/primeiro-orcamento-js", action: "Rever meu primeiro orçamento", pilotComplete: true };
+  }
   if (path === "csharp") {
     const modules = ["variables", "conditions", "loops"].flatMap(id => activity?.items.find(item => item.id === `csharp:${id}`) ?? []);
     if (!modules.some(begun)) return { title: "Comece sua trilha C# & .NET.", detail: "Conheça o projeto da jornada e comece por variáveis. O piloto também inclui condições e laços.", href: "/estudante/trilhas/csharp", action: "Começar minha trilha", pilotComplete: false };

@@ -12,6 +12,10 @@ import lab from "@/components/estudante/Laboratory.module.css";
 import GuidedPractice from "@/components/estudante/GuidedPractice";
 import PracticeOrigin from "@/components/estudante/PracticeOrigin";
 import { academyPreviewHref } from "@/lib/portalNavigation";
+import PracticeHandoffChoice from "@/components/estudante/PracticeHandoffChoice";
+import { freePracticeStorageKey, freshFreePracticeDraft, practiceCodeHistoryKey, practiceHandoffDecision, readFreePracticeDraft, readPracticeCodeHistory, storePracticeProgram, type FreePracticeDraft, type PracticeCodeHistory } from "@/lib/practiceHandoff";
+import BeginnerPractice from "@/components/estudante/BeginnerPractice";
+import { supportsBeginnerPractice } from "@/lib/beginnerPractice";
 
 type MobileTab = "editor" | "guia";
 type ChatMessage = { tipo: "sistema" | "sucesso" | "erro" | "dica"; texto: string };
@@ -107,25 +111,55 @@ type SaveStatus = "idle" | "saving" | "saved" | "error";
 export function PraticaWorkspace({ userId = null, preview = false }: { userId?: string | number | null; preview?: boolean }) {
   const params = useParams();
   const challenge = getDesafio(params.slug as string);
-  const [free, setFree] = useState<boolean | null>(null);
   const modeKey = `orbitamos-practice-mode-${userId}-${params.slug}`;
+  const [mode, setMode] = useState<{ key: string; free: boolean } | null>(null);
+  const [pending, setPending] = useState<{ code: string; existingCode: string } | null>(null);
+  const [handoffError, setHandoffError] = useState("");
+  const [entryDraft, setEntryDraft] = useState<FreePracticeDraft | null>(null);
+  const free = mode?.key === modeKey ? mode.free : null;
   useEffect(() => {
     queueMicrotask(() => {
-      try { setFree(localStorage.getItem(modeKey) === "free"); }
-      catch { setFree(false); }
+      setPending(null); setEntryDraft(null); setHandoffError("");
+      try { setMode({ key: modeKey, free: localStorage.getItem(modeKey) === "free" }); }
+      catch { setMode({ key: modeKey, free: false }); }
     });
   }, [modeKey]);
   const chooseMode = (value: boolean) => {
     try { localStorage.setItem(modeKey, value ? "free" : "guided"); } catch { /* Keep the in-memory choice if storage is unavailable. */ }
-    setFree(value);
+    setPending(null); setMode({ key: modeKey, free: value });
+  };
+  const importGuidedCode = (code: string) => {
+    if (!challenge) return;
+    const next = freshFreePracticeDraft(code, challenge.steps.length);
+    try {
+      if (userId != null) storePracticeProgram(localStorage, freePracticeStorageKey(userId, challenge.slug), practiceCodeHistoryKey(userId, challenge.slug), next, "guided");
+      setEntryDraft(next); setHandoffError(""); chooseMode(true);
+    } catch {
+      setHandoffError("Não foi possível guardar uma versão segura. Seu rascunho livre anterior continua intacto. Você pode retomá-lo ou voltar à atividade para copiar seu programa.");
+    }
+  };
+  const requestFreeMode = (code?: string) => {
+    if (!challenge || typeof code !== "string" || !code.trim()) { setEntryDraft(null); chooseMode(true); return; }
+    try {
+      const raw = userId != null ? localStorage.getItem(freePracticeStorageKey(userId, challenge.slug)) : null;
+      const existing = readFreePracticeDraft(raw, challenge.steps.length);
+      const decision = practiceHandoffDecision(code, existing, challenge.codigoInicial);
+      if (decision === "same") { setEntryDraft(null); chooseMode(true); }
+      else if (decision === "choose" || raw && !existing) { setHandoffError(""); setPending({ code, existingCode: existing?.code ?? raw ?? "" }); }
+      else { setPending({ code, existingCode: existing?.code ?? "" }); importGuidedCode(code); }
+    } catch {
+      setPending({ code, existingCode: "" });
+      setHandoffError("Não foi possível ler o rascunho livre com segurança. O código desta atividade permanece guardado; você pode voltar e copiá-lo antes de continuar.");
+    }
   };
   if (!challenge) return <p>Desafio não encontrado. <Link href={preview ? academyPreviewHref("/estudante/pratica") : "/estudante/pratica"}>Voltar ao laboratório</Link></p>;
   if (free === null) return <p role="status">Abrindo seu laboratório…</p>;
-  if (!free) return <><Suspense fallback={null}><PracticeOrigin/></Suspense><GuidedPractice key={`${userId}-${challenge.slug}`} challenge={challenge} userId={userId} preview={preview} onFreeMode={() => chooseMode(true)}/></>;
-  return <><div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-300"><p>Modo livre · seu rascunho anterior continua aqui.</p><button className="min-h-11 rounded-lg border border-emerald-200/30 px-4 text-emerald-200" onClick={() => chooseMode(false)}>Voltar ao passo a passo</button></div><FreePracticeWorkspace key={`${userId}-${challenge.slug}`} userId={userId} preview={preview}/></>;
+  if (pending) return <PracticeHandoffChoice guidedCode={pending.code} existingCode={pending.existingCode} error={handoffError} onImport={() => importGuidedCode(pending.code)} onKeep={() => { setEntryDraft(null); chooseMode(true); }} onCancel={() => { setPending(null); setHandoffError(""); }}/ >;
+  if (!free) return <><Suspense fallback={null}><PracticeOrigin/></Suspense><GuidedPractice key={`${userId}-${challenge.slug}`} challenge={challenge} userId={userId} preview={preview} onFreeMode={requestFreeMode}/></>;
+  return <><div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-300"><p>Modo livre · experimente e execute suas próprias mudanças.</p><button className="min-h-11 rounded-lg border border-emerald-200/30 px-4 text-emerald-200" onClick={() => { setEntryDraft(null); chooseMode(false); }}>Voltar ao passo a passo</button></div><FreePracticeWorkspace key={`${userId}-${challenge.slug}`} userId={userId} preview={preview} initialDraft={entryDraft}/></>;
 }
 
-function FreePracticeWorkspace({ userId = null, preview = false }: { userId?: string | number | null; preview?: boolean }) {
+function FreePracticeWorkspace({ userId = null, preview = false, initialDraft = null }: { userId?: string | number | null; preview?: boolean; initialDraft?: FreePracticeDraft | null }) {
   const link = (href: string) => preview ? academyPreviewHref(href) : href;
   const params = useParams();
   const router = useRouter();
@@ -144,9 +178,14 @@ function FreePracticeWorkspace({ userId = null, preview = false }: { userId?: st
   const [showDica, setShowDica] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [applicationValidated, setApplicationValidated] = useState(false);
   const [running, setRunning] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [draftRestored, setDraftRestored] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+  const [canPersist, setCanPersist] = useState(false);
+  const [versions, setVersions] = useState<PracticeCodeHistory>({ version: 1, source: null, entries: [] });
+  const [versionError, setVersionError] = useState("");
   const [mobileTab, setMobileTab] = useState<MobileTab>("editor");
   const [consoleExpanded, setConsoleExpanded] = useState(false);
   const [stepAttempts, setStepAttempts] = useState<number[]>([]);
@@ -158,72 +197,79 @@ function FreePracticeWorkspace({ userId = null, preview = false }: { userId?: st
   const editorRef = useRef<ReliableCodeEditorHandle>(null);
   const activeRunRef = useRef<AbortController | null>(null);
   const codeRef = useRef("");
-  const storageKey = userId ? `orbitamos-pratica-${userId}-${slug}` : null;
+  const hydratedRef = useRef(false);
+  const preserveUnreadDraft = useRef(false);
+  const latestDraft = useRef<FreePracticeDraft>(freshFreePracticeDraft("", 0));
+  const storageKey = userId != null ? freePracticeStorageKey(userId, slug) : null;
+  const historyKey = userId != null ? practiceCodeHistoryKey(userId, slug) : null;
+  const applicationRequired = supportsBeginnerPractice(slug);
+
+  latestDraft.current = { code, currentStep, stepStatus, stepAttempts, reflection };
+
+  const persistFreeState = useCallback((draft: FreePracticeDraft) => {
+    if (!storageKey || !historyKey) return;
+    try {
+      if (preserveUnreadDraft.current) {
+        const history = storePracticeProgram(localStorage, storageKey, historyKey, draft, "restored");
+        preserveUnreadDraft.current = false; setVersions(history);
+      } else localStorage.setItem(storageKey, JSON.stringify(draft));
+      setSaveStatus("saved");
+    } catch { setSaveStatus("error"); }
+  }, [storageKey, historyKey]);
 
   useEffect(() => {
     if (!desafio) return;
     let active = true;
     queueMicrotask(() => {
       if (!active) return;
-      let restoredCode: string | undefined;
-      let restoredStep = 0;
-      let restoredStatus: ("pending" | "success" | "error")[] = desafio.steps.map(() => "pending");
-      let restoredAttempts = desafio.steps.map(() => 0);
-      let restoredReflection = "";
+      let restored = initialDraft;
+      let readable = true;
       if (storageKey) {
         try {
           const stored = localStorage.getItem(storageKey);
-          if (stored) {
-            const parsed = JSON.parse(stored) as {
-              code?: string;
-              currentStep?: number;
-              stepStatus?: ("pending" | "success" | "error")[];
-              stepAttempts?: number[];
-              reflection?: string;
-            };
-            restoredCode = typeof parsed.code === "string" ? parsed.code : undefined;
-            restoredStep = Math.min(Math.max(parsed.currentStep ?? 0, 0), desafio.steps.length - 1);
-            if (parsed.stepStatus?.length === desafio.steps.length) restoredStatus = parsed.stepStatus;
-            if (parsed.stepAttempts?.length === desafio.steps.length) restoredAttempts = parsed.stepAttempts;
-            if (typeof parsed.reflection === "string") restoredReflection = parsed.reflection;
-          }
+          restored ??= readFreePracticeDraft(stored, desafio.steps.length);
+          if (stored && !restored) { readable = false; preserveUnreadDraft.current = true; setVersionError("O rascunho anterior não pôde ser restaurado. Ele será preservado como versão antes de salvar suas novas alterações."); }
+          if (historyKey) setVersions(readPracticeCodeHistory(localStorage.getItem(historyKey)));
         } catch {
-          // ignore
+          readable = false; preserveUnreadDraft.current = true;
+          setVersionError("Não foi possível ler o armazenamento. Seu código pode ser editado, mas copie-o antes de sair se o salvamento falhar.");
         }
       }
-      const initialCode = restoredCode ?? desafio.codigoInicial;
-      codeRef.current = initialCode;
-      setCode(initialCode);
-      setCurrentStep(restoredStep);
-      setStepStatus(restoredStatus);
-      setStepAttempts(restoredAttempts);
-      setReflection(restoredReflection);
-      setCompleted(restoredStatus.every((status) => status === "success"));
-      setDraftRestored(Boolean(restoredCode));
-      setSaveStatus(restoredCode ? "saved" : "idle");
+      const next = restored ?? freshFreePracticeDraft(desafio.codigoInicial, desafio.steps.length);
+      codeRef.current = next.code;
+      latestDraft.current = next;
+      setCode(next.code);
+      setCurrentStep(next.currentStep);
+      setStepStatus(next.stepStatus);
+      setStepAttempts(next.stepAttempts);
+      setReflection(next.reflection);
+      setCompleted(next.stepStatus.every((status) => status === "success"));
+      setDraftRestored(!!restored);
+      setSaveStatus(!readable ? "error" : restored ? "saved" : "idle");
+      setCanPersist(readable); hydratedRef.current = true; setHydrated(true);
       setChatMessages([
         { tipo: "sistema", texto: `Desafio: ${desafio.titulo}` },
-        { tipo: "sistema", texto: desafio.steps[restoredStep].instrucao },
+        { tipo: "sistema", texto: desafio.steps[next.currentStep].instrucao },
       ]);
     });
     return () => {
       active = false;
     };
-  }, [desafio, storageKey]);
+  }, [desafio, storageKey, historyKey, initialDraft]);
 
   useEffect(() => {
-    if (!storageKey || !desafio) return;
+    if (!storageKey || !desafio || !hydrated || !canPersist) return;
     setSaveStatus("saving");
-    const timer = window.setTimeout(() => {
-      try {
-        localStorage.setItem(storageKey, JSON.stringify({ code, currentStep, stepStatus, stepAttempts, reflection }));
-        setSaveStatus("saved");
-      } catch {
-        setSaveStatus("error");
-      }
-    }, 350);
+    const timer = window.setTimeout(() => persistFreeState({ code, currentStep, stepStatus, stepAttempts, reflection }), 350);
     return () => window.clearTimeout(timer);
-  }, [code, currentStep, desafio, reflection, stepAttempts, stepStatus, storageKey]);
+  }, [code, currentStep, desafio, reflection, stepAttempts, stepStatus, storageKey, hydrated, canPersist, persistFreeState]);
+
+  useEffect(() => {
+    const saveNow = () => { if (hydratedRef.current && canPersist) persistFreeState({ ...latestDraft.current, code: codeRef.current }); };
+    const onHide = () => { if (document.visibilityState === "hidden") saveNow(); };
+    window.addEventListener("pagehide", saveNow); document.addEventListener("visibilitychange", onHide);
+    return () => { saveNow(); window.removeEventListener("pagehide", saveNow); document.removeEventListener("visibilitychange", onHide); };
+  }, [canPersist, persistFreeState]);
 
   useEffect(() => {
     let active = true;
@@ -253,11 +299,16 @@ function FreePracticeWorkspace({ userId = null, preview = false }: { userId?: st
   }, []);
 
   const handleCodeChange = useCallback((nextCode: string) => {
+    if (nextCode === codeRef.current) return;
+    activeRunRef.current?.abort(); activeRunRef.current = null; setRunning(false);
     codeRef.current = nextCode;
     setCode(nextCode);
     setErrorMark(null);
+    setConsoleRun(null); setCompleted(false); setApplicationValidated(false); setCurrentStep(0);
+    if (desafio) setStepStatus(desafio.steps.map(() => "pending"));
     setSaveStatus("saving");
-  }, []);
+    setCanPersist(true);
+  }, [desafio]);
 
   const executeCode = useCallback(async () => {
     if (!desafio || running) return;
@@ -278,6 +329,7 @@ function FreePracticeWorkspace({ userId = null, preview = false }: { userId?: st
       : desafio.linguagem === "csharp"
         ? await runCSharpInWorker(codeToRun, 2500, controller.signal, desafio.testCode)
         : await runJavaScriptInWorker(codeToRun, 2500, controller.signal, desafio.testCode);
+    if (activeRunRef.current !== controller) return;
     const friendlyError = result.error
       ? explainRuntimeError(result.error, result.timedOut, desafio.linguagem)
       : "";
@@ -337,6 +389,7 @@ function FreePracticeWorkspace({ userId = null, preview = false }: { userId?: st
       }
     }
     } catch {
+      if (activeRunRef.current !== controller) return;
       setConsoleRun({
         lines: [],
         error: { message: "Falha inesperada no executor.", friendly: "Não foi possível executar agora. Seu código continua salvo; tente novamente.", line: null },
@@ -344,14 +397,15 @@ function FreePracticeWorkspace({ userId = null, preview = false }: { userId?: st
         outcome: "error",
       });
     } finally {
-      if (activeRunRef.current === controller) activeRunRef.current = null;
-      setRunning(false);
+      if (activeRunRef.current === controller) { activeRunRef.current = null; setRunning(false); }
     }
   }, [currentStep, desafio, running, stepAttempts, stepStatus]);
 
   const stopExecution = useCallback(() => {
     activeRunRef.current?.abort();
   }, []);
+
+  useEffect(() => () => { activeRunRef.current?.abort(); activeRunRef.current = null; }, []);
 
   useEffect(() => {
     if (desafio?.linguagem !== "python") {
@@ -370,7 +424,7 @@ function FreePracticeWorkspace({ userId = null, preview = false }: { userId?: st
 
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
-      if (!(event.ctrlKey || event.metaKey)) return;
+      if (!(event.ctrlKey || event.metaKey) || !hydratedRef.current) return;
       if (event.key === "Enter") {
         event.preventDefault();
         void executeCode();
@@ -381,17 +435,29 @@ function FreePracticeWorkspace({ userId = null, preview = false }: { userId?: st
       } else if (event.key.toLowerCase() === "s") {
         event.preventDefault();
         if (!storageKey) return;
-        try {
-          localStorage.setItem(storageKey, JSON.stringify({ code: codeRef.current, currentStep, stepStatus, stepAttempts, reflection }));
-          setSaveStatus("saved");
-        } catch {
-          setSaveStatus("error");
-        }
+        setCanPersist(true);
+        persistFreeState({ code: codeRef.current, currentStep, stepStatus, stepAttempts, reflection });
       }
     };
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
-  }, [currentStep, executeCode, reflection, stepAttempts, stepStatus, storageKey]);
+  }, [currentStep, executeCode, reflection, stepAttempts, stepStatus, storageKey, persistFreeState]);
+
+  const recoverVersion = (index: number) => {
+    if (!desafio || !storageKey || !historyKey || running) return;
+    const version = versions.entries[index];
+    const next = version ? readFreePracticeDraft(version.raw, desafio.steps.length) : null;
+    if (!next) { setVersionError("Esta versão não pôde ser restaurada automaticamente. O texto guardado continua disponível para copiar."); return; }
+    try {
+      const history = storePracticeProgram(localStorage, storageKey, historyKey, next, "restored", JSON.stringify({ ...latestDraft.current, code: codeRef.current }));
+      setVersions(history); setVersionError(""); preserveUnreadDraft.current = false;
+      codeRef.current = next.code; latestDraft.current = next;
+      setCode(next.code); setCurrentStep(next.currentStep); setStepStatus(next.stepStatus); setStepAttempts(next.stepAttempts); setReflection(next.reflection);
+      setCompleted(next.stepStatus.every(status => status === "success")); setDraftRestored(true); setCanPersist(true); setSaveStatus("saved"); setConsoleRun(null); setErrorMark(null);
+      setChatMessages([{ tipo: "sistema", texto: "Versão anterior recuperada. O programa que estava aberto também foi guardado nas versões." }, { tipo: "sistema", texto: desafio.steps[next.currentStep].instrucao }]);
+      requestAnimationFrame(() => editorRef.current?.focus());
+    } catch { setVersionError("Não foi possível recuperar com segurança. O código aberto e as versões anteriores foram mantidos."); }
+  };
 
   const handleReset = () => {
     if (!desafio) return;
@@ -475,6 +541,7 @@ function FreePracticeWorkspace({ userId = null, preview = false }: { userId?: st
       </div>
     );
   }
+  if (!hydrated) return <p role="status">Restaurando seu código antes de abrir o editor…</p>;
 
   const guiaContent = (
     <div className="flex min-h-full flex-col">
@@ -656,8 +723,8 @@ function FreePracticeWorkspace({ userId = null, preview = false }: { userId?: st
       ) : (
         <div className="border-t border-white/10 p-3">
           <div className="rounded-xl bg-gradient-to-br from-orbit-electric/15 to-orbit-purple/15 border border-orbit-electric/30 p-3">
-            <p className="text-sm font-bold text-white">Desafio completo!</p>
-            <p className="mt-1 text-[11px] leading-5 text-white/55">Feche o ciclo: explique com suas palavras o que seu código fez. Isso ajuda a memória a durar.</p>
+            <p className="text-sm font-bold text-white">{applicationRequired && !applicationValidated ? "Seu programa foi validado." : "Desafio completo!"}</p>
+            <p className="mt-1 text-[11px] leading-5 text-white/55">{applicationRequired && !applicationValidated ? "Agora altere os dados e construa uma versão independente para fechar esta entrega." : "Feche o ciclo: explique com suas palavras o que seu código fez. Isso ajuda a memória a durar."}</p>
             <label className="mt-3 block text-[9px] font-black uppercase tracking-wider text-orbit-electric" htmlFor="practice-reflection">Meu aprendizado</label>
             <textarea
               id="practice-reflection"
@@ -667,9 +734,9 @@ function FreePracticeWorkspace({ userId = null, preview = false }: { userId?: st
               placeholder="Ex.: uma variável guarda um valor para eu reutilizar depois..."
               className="mt-1.5 w-full resize-none rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-xs leading-5 text-white outline-none placeholder:text-slate-400 focus:border-orbit-electric/50"
             />
-            <Link href={link(nextChallenge ? `/estudante/pratica/${nextChallenge.slug}` : "/estudante/pratica")} className="mt-2 inline-flex items-center gap-1 text-xs text-orbit-electric hover:underline">
+            {applicationRequired && !applicationValidated ? <a href="#beginner-free-application" className="mt-2 inline-flex min-h-11 items-center gap-1 text-xs text-emerald-200 underline underline-offset-4">Aplicar com novos dados e escrever sozinho <ChevronRight className="size-3"/></a> : <Link href={link(nextChallenge ? `/estudante/pratica/${nextChallenge.slug}` : "/estudante/pratica")} className="mt-2 inline-flex items-center gap-1 text-xs text-orbit-electric hover:underline">
               {nextChallenge ? `Próximo: ${nextChallenge.titulo}` : "Ver mais desafios"} <ChevronRight className="size-3" />
-            </Link>
+            </Link>}
           </div>
         </div>
       )}
@@ -677,7 +744,7 @@ function FreePracticeWorkspace({ userId = null, preview = false }: { userId?: st
   );
 
   return (
-    <div className={lab.workspace} data-lab-workspace>
+    <><div className={lab.workspace} data-lab-workspace>
       <Suspense fallback={null}><PracticeOrigin/></Suspense>
       {/* Top bar — compacto no mobile */}
       <div className={lab.editorToolbar}>
@@ -761,13 +828,24 @@ function FreePracticeWorkspace({ userId = null, preview = false }: { userId?: st
       </div>
 
       {/* Main content */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         {/* Editor + Console — full width mobile, 80% desktop */}
-        <div id="practice-editor-panel" role="tabpanel" aria-labelledby="practice-code-tab" className={`min-w-0 flex-col overflow-hidden ${mobileTab === "editor" ? "flex flex-1" : "hidden md:flex md:flex-1"}`}>
+        <div id="practice-editor-panel" role="tabpanel" aria-labelledby="practice-code-tab" className={`min-h-0 min-w-0 flex-col overflow-x-hidden overflow-y-auto md:overflow-hidden ${mobileTab === "editor" ? "flex flex-1" : "hidden md:flex md:flex-1"}`}>
           <div className={lab.fileBar}>
             <span className={lab.fileTab}><Code2 size={13}/>rascunho.{{ javascript: "js", typescript: "ts", python: "py", csharp: "cs" }[desafio.linguagem]}</span>
             <span className={lab.editorSave} data-error={saveStatus === "error"}>{saveStatus === "saving" ? "Salvando…" : saveStatus === "saved" ? "Salvo neste navegador" : saveStatus === "error" ? "Falha ao salvar" : "Rascunho local"}</span>
           </div>
+          {versions.source === "guided" && <p className="shrink-0 border-b border-emerald-100/10 bg-emerald-200/5 px-3 py-2 text-[11px] leading-5 text-emerald-100" data-practice-handoff-origin>Este é o código que você trouxe da atividade. No modo livre, execute para validar suas próprias mudanças.</p>}
+          {versions.source === "restored" && <p className="shrink-0 px-3 py-2 text-[11px] leading-5 text-emerald-100">Versão recuperada. O programa anterior também está guardado nas versões.</p>}
+          {versions.entries.length > 0 && <details className="shrink-0 border-b border-white/10 bg-[#101d2b] text-xs text-slate-200" data-practice-code-versions>
+            <summary className="min-h-11 cursor-pointer px-3 py-3">Versões guardadas · {versions.entries.length}</summary>
+            <div className="max-h-64 overflow-y-auto px-3 pb-3"><p className="mb-3 text-[11px] leading-5 text-slate-300">Recuperar guarda também o código aberto agora. O passo a passo continua com seu próprio rascunho.</p>{versions.entries.map((version, index) => {
+              const draft = readFreePracticeDraft(version.raw, desafio.steps.length);
+              return <details key={`${version.savedAt}-${index}`} className="border-t border-white/10 py-1"><summary className="min-h-11 cursor-pointer py-3">Versão {versions.entries.length - index} · {new Date(version.savedAt).toLocaleString("pt-BR")}</summary><pre className="max-h-36 overflow-auto whitespace-pre-wrap break-words rounded bg-black/30 p-3 text-[11px] leading-5">{draft?.code ?? version.raw}</pre>{draft ? <button type="button" disabled={running} onClick={() => recoverVersion(index)} className="my-2 min-h-11 rounded border border-emerald-100/30 px-3 py-2 text-emerald-100">Recuperar código desta versão</button> : <p className="py-2 text-[11px] text-amber-100">Texto preservado. Esta versão precisa ser copiada manualmente.</p>}</details>;
+            })}</div>
+          </details>}
+          {versionError && <p role="alert" className="shrink-0 border-b border-amber-200/20 bg-amber-200/5 px-3 py-2 text-[11px] leading-5 text-amber-100">{versionError}</p>}
+          {completed && applicationRequired && !applicationValidated && <a href="#beginner-free-application" className="shrink-0 border-b border-emerald-100/20 bg-emerald-200/10 px-3 py-3 text-xs leading-5 text-emerald-100">Programa validado. Agora aplique com novos dados e escreva sozinho ↓</a>}
           {!completed && desafio.steps[currentStep] && (
             <div className="shrink-0 border-b border-orbit-electric/15 bg-orbit-electric/[.055] px-3 py-2.5 md:hidden">
               <div className="flex items-start gap-2">
@@ -782,7 +860,7 @@ function FreePracticeWorkspace({ userId = null, preview = false }: { userId?: st
               </div>
             </div>
           )}
-          <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
+          <div className="min-h-[280px] min-w-0 flex-1 shrink-0 overflow-hidden md:min-h-0 md:shrink">
             <ReliableCodeEditor
               ref={editorRef}
               language={desafio.linguagem}
@@ -795,7 +873,7 @@ function FreePracticeWorkspace({ userId = null, preview = false }: { userId?: st
 
           {/* Console output */}
           <div
-            className={`${lab.consoleSection} relative z-10 border-t md:h-[var(--console-height)] md:shrink-0`}
+            className={`${lab.consoleSection} relative z-10 shrink-0 border-t md:h-[var(--console-height)]`}
             style={{ "--console-height": `${consoleHeight}px` } as CSSProperties}
           >
             <button
@@ -915,6 +993,8 @@ function FreePracticeWorkspace({ userId = null, preview = false }: { userId?: st
         </div>
       </div>
     </div>
+    {completed && applicationRequired && <div id="beginner-free-application" className="scroll-mt-20 pt-6"><BeginnerPractice challengeSlug={slug} userId={userId} guidedCode={code} origin="free" onValidatedChange={setApplicationValidated}/>{applicationValidated && <Link href={link(nextChallenge ? `/estudante/pratica/${nextChallenge.slug}` : "/estudante/pratica")} className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-lg bg-emerald-200 px-5 py-3 text-sm font-semibold text-emerald-950">{nextChallenge ? `Próximo: ${nextChallenge.titulo}` : "Ver mais desafios"}<ChevronRight size={16}/></Link>}</div>}
+    </>
   );
 }
 

@@ -1,3 +1,5 @@
+import { beginnerJavaScriptChallenges } from "./beginnerJavaScript";
+
 export type DesafioStep = {
   instrucao: string;
   validacao: (code: string, output: string, verificationOutput?: string) => boolean;
@@ -608,12 +610,15 @@ const desafiosBaseComMetadata = desafiosBase.map((desafio, index): Desafio => ({
 
 const challengeSequence = [
   "variaveis-js",
+  "contas-servico-js",
+  "decisao-servico-js",
+  "primeiro-orcamento-js",
+  "funcoes-js",
   "operadores-js",
   "condicionais-js",
   "lacos-js",
   "arrays-js",
   "objetos-js",
-  "funcoes-js",
   "strings-js",
   "metodos-array-js",
   "assincrono-js",
@@ -642,7 +647,7 @@ const challengeSequence = [
 ] as const;
 
 const challengeBySlug = new Map(
-  [...desafiosBaseComMetadata, ...desafiosExtras].map((challenge) => [challenge.slug, challenge])
+  [...desafiosBaseComMetadata, ...beginnerJavaScriptChallenges, ...desafiosExtras].map((challenge) => [challenge.slug, challenge])
 );
 
 export const desafios: Desafio[] = challengeSequence.flatMap((slug) => {

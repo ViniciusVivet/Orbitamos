@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { academyResumeEntry, getAcademyActivity, readAcademyResume, resumeStorageKey } from "./academyActivity";
 import { emptyJournal, journalKey, recordPractice } from "./practiceStation";
-import { desafios } from "./desafios";
+import { desafios, getDesafio } from "./desafios";
+import { beginnerPracticeKey, emptyBeginnerPractice } from "./beginnerPractice";
 import { guidedStorageKey } from "./guidedPractice";
 import { emptyQuest, questKey, questSteps } from "./sqlQuest";
 import { englishLessons, englishStorageKey } from "./codeEnglish";
@@ -37,11 +38,26 @@ describe("Academy read-only continuity", () => {
     expect(result.items.find(item => item.id === `code:${challenge.slug}`)?.status).toBe("new");
   });
   it("recognizes real guided and free editor completion without counting the same challenge twice", () => {
-    const challenge = desafios[0];
+    const challenge = getDesafio("funcoes-js")!;
     const data = store({ [guidedStorageKey("u", challenge.slug)]: { version: 1, code: "let treino = 1;", mission: 0, line: 0, passed: challenge.steps.map((_, index) => index), started: true }, [`orbitamos-pratica-u-${challenge.slug}`]: { code: "let treino = 1;", stepStatus: challenge.steps.map(() => "success") } });
     const result = getAcademyActivity("u", data.read);
     expect(result.summaries.code.completed).toBe(1);
     expect(result.items.find(item => item.id === `code:${challenge.slug}`)?.completedUnits).toBe(challenge.steps.length);
+  });
+  it("preserves finished beginner missions and requires both application phases for a full delivery", () => {
+    const challenge = getDesafio("variaveis-js")!;
+    const guide = { version: 1, code: 'let nome = "Lia";', mission: 2, line: 0, passed: [0, 1, 2], started: true };
+    const data = store({ [guidedStorageKey("u", challenge.slug)]: guide });
+    const pending = getAcademyActivity("u", data.read).items.find(item => item.id === `code:${challenge.slug}`)!;
+    expect(pending).toMatchObject({ status: "in-progress", completedUnits: 3, totalUnits: 5 });
+    expect(pending.detail).toContain("Código inicial validado");
+    const base = emptyBeginnerPractice(challenge.slug, guide.code);
+    const application = { ...base, stage: "independent", adaptationCode: 'let nome = "Bia";', adaptationValidated: true, adaptationValidatedCode: 'let nome = "Bia";', adaptationValidatedAt: 1000, code: 'let nome = "Caio";', validated: true, validatedCode: 'let nome = "Caio";', validatedAt: 2000 };
+    data.saves.set(beginnerPracticeKey("u", challenge.slug), JSON.stringify(application));
+    expect(getAcademyActivity("u", data.read).items.find(item => item.id === `code:${challenge.slug}`)).toMatchObject({ status: "completed", completedUnits: 5, totalUnits: 5 });
+    data.saves.set(beginnerPracticeKey("u", challenge.slug), JSON.stringify({ ...application, code: 'let nome = "Editado";' }));
+    expect(getAcademyActivity("u", data.read).items.find(item => item.id === `code:${challenge.slug}`)).toMatchObject({ status: "in-progress", completedUnits: 4 });
+    expect(data.saves.get(guidedStorageKey("u", challenge.slug))).toBe(JSON.stringify(guide));
   });
   it("finds untimestamped drafts honestly and separates C# modules from experiences", () => {
     const config = csharpModules.conditions;

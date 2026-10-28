@@ -1,6 +1,7 @@
 import { desafios } from "./desafios";
 import { guidedStorageKey, readGuidedDraft } from "./guidedPractice";
-import { hasCompletedPractice } from "./practiceProgress";
+import { hasCompletedLearningDelivery, hasCompletedPractice } from "./practiceProgress";
+import { beginnerPracticeKey, readBeginnerPractice, supportsBeginnerPractice } from "./beginnerPractice";
 import { activityCompletion, bridgeTarget, journalKey, practiceActivities, practiceDestination, readJournal, type ActivityId } from "./practiceStation";
 import { deliveryMissions, deliveryStorageKey, readDeliverySave } from "./orbiDelivery";
 import { englishLessons, englishStorageKey, readEnglishSave } from "./codeEnglish";
@@ -115,15 +116,20 @@ export function getAcademyActivity(userId: string, read: ReadSave): AcademyActiv
     const guided = readGuidedDraft(guidedRaw, challenge);
     const free = object(freeRaw);
     const freeCount = Array.isArray(free?.stepStatus) && free.stepStatus.length === challenge.steps.length ? free.stepStatus.filter(status => status === "success").length : 0;
-    const done = hasCompletedPractice(challenge, freeRaw, guidedRaw);
-    const count = Math.max(guided.started ? guided.passed.length : 0, freeCount);
+    const applicationRaw = get(beginnerPracticeKey(userId, challenge.slug));
+    const application = readBeginnerPractice(applicationRaw, challenge.slug);
+    const needsApplication = supportsBeginnerPractice(challenge.slug);
+    const supportedDone = hasCompletedPractice(challenge, freeRaw, guidedRaw);
+    const done = hasCompletedLearningDelivery(challenge, freeRaw, guidedRaw, applicationRaw);
+    const count = Math.max(guided.started ? guided.passed.length : 0, freeCount) + (needsApplication ? Number(application.adaptationValidated) + Number(application.validated) : 0);
     // Legacy free mode saves its starter on mount: identical boilerplate alone is not activity.
     const changedFreeCode = text(free?.code) && free.code !== challenge.codigoInicial;
-    const practiced = count > 0 || (guided.started && text(guided.code)) || changedFreeCode || (Array.isArray(free?.stepAttempts) && free.stepAttempts.some(positive));
+    const practiced = count > 0 || (guided.started && text(guided.code)) || changedFreeCode || (needsApplication && (application.attempts > 0 || text(application.code))) || (Array.isArray(free?.stepAttempts) && free.stepAttempts.some(positive));
     const next = desafios.slice(index + 1).find(item => item.linguagem === challenge.linguagem);
     items.push({ id: `code:${challenge.slug}`, title: challenge.titulo, group: "code", href: `/estudante/pratica/${challenge.slug}`,
-      status: done ? "completed" : practiced ? "in-progress" : guided.started ? "opened" : "new", completedUnits: count, totalUnits: challenge.steps.length, unit: "missões", practiced, reviewed: 0,
-      detail: `${challenge.linguagem === "csharp" ? "C#" : challenge.linguagem === "python" ? "Python" : "JavaScript"} · ${challenge.habilidade || challenge.categoria || "Fundamentos"}`,
+      status: done ? "completed" : practiced ? "in-progress" : guided.started ? "opened" : "new", completedUnits: count, totalUnits: challenge.steps.length + (needsApplication ? 2 : 0), unit: needsApplication ? "etapas" : "missões", practiced, reviewed: 0,
+      lastAt: needsApplication ? application.validatedAt ?? application.adaptationValidatedAt ?? undefined : undefined,
+      detail: needsApplication && supportedDone && !application.validated ? application.adaptationValidated ? "Código inicial e alteração validados · falta resolver a aplicação independente." : "Código inicial validado · agora altere os dados e aplique sem a resposta pronta." : `${challenge.linguagem === "csharp" ? "C#" : challenge.linguagem === "python" ? "Python" : "JavaScript"} · ${challenge.habilidade || challenge.categoria || "Fundamentos"}`,
       nextHref: next ? `/estudante/pratica/${next.slug}` : "/estudante/pratica", nextLabel: next ? `Próximo desafio: ${next.titulo}` : "Escolher outro desafio no laboratório",
     });
   });

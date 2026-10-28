@@ -33,6 +33,12 @@ export function getAcademyCatalog(courses: Curso[]): AcademyCatalogEntry[] {
   });
   const entries: AcademyCatalogEntry[] = [
     {
+      id: "fundamentals", title: "Primeiros passos na programação", format: "Trilha prática", tone: "blue",
+      description: "Monte um perfil, faça a conta de um serviço, tome uma decisão e entregue um pequeno orçamento em JavaScript.",
+      available: "4 entregas: com guia, fazendo uma mudança e resolvendo sozinho.",
+      href: "/estudante/pratica/variaveis-js", courses: [],
+    },
+    {
       id: "csharp", title: "C# & .NET", format: "Trilha prática", tone: "mint",
       description: "Um mapa de estudo com código guiado, perguntas e um projeto de contexto para suas primeiras linhas em C#.",
       available: "Comece por variáveis, condições e laços.",

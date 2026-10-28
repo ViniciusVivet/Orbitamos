@@ -7,6 +7,7 @@ describe("a student's chosen formation", () => {
   it("accepts only authored versioned choices and isolates accounts", () => {
     expect(readStudyPath(serializeStudyPath("csharp"))).toBe("csharp");
     expect(readStudyPath(serializeStudyPath("sql"))).toBe("sql");
+    expect(readStudyPath(serializeStudyPath("fundamentals"))).toBe("fundamentals");
     for (const raw of [null, "broken", "[]", '"sql"', '{"path":"sql"}', '{"version":2,"path":"sql"}', '{"version":1,"path":"https://bad.invalid"}']) expect(readStudyPath(raw)).toBeNull();
     expect(studyPathKey("one")).not.toBe(studyPathKey("two"));
   });
@@ -54,5 +55,21 @@ describe("a student's chosen formation", () => {
     const workshop = activity.items.find(item => item.id === "sql-workshop")!;
     workshop.status = "in-progress"; workshop.practiced = true;
     expect(getStudyPathStep("sql", activity).href).toBe(workshop.href);
+  });
+  it("keeps the first incomplete beginner delivery ahead of unrelated or later exploration", () => {
+    expect(getStudyPathStep("fundamentals", null).href).toBe("/estudante/pratica/variaveis-js");
+    const activity = fresh();
+    activity.items.find(item => item.id === "code:variaveis-js")!.status = "completed";
+    const later = activity.items.find(item => item.id === "code:primeiro-orcamento-js")!;
+    later.status = "in-progress"; later.lastAt = Date.now(); activity.continueItem = later;
+    expect(getStudyPathStep("fundamentals", activity).href).toBe("/estudante/pratica/contas-servico-js");
+    expect(activity.continueItem.id).toBe(later.id);
+  });
+  it("finishes the four-delivery path only when every authored delivery is complete", () => {
+    const activity = fresh();
+    for (const slug of ["variaveis-js", "contas-servico-js", "decisao-servico-js"]) activity.items.find(item => item.id === `code:${slug}`)!.status = "completed";
+    expect(getStudyPathStep("fundamentals", activity).pilotComplete).toBe(false);
+    activity.items.find(item => item.id === "code:primeiro-orcamento-js")!.status = "completed";
+    expect(getStudyPathStep("fundamentals", activity)).toMatchObject({ href: "/estudante/pratica/primeiro-orcamento-js", pilotComplete: true });
   });
 });

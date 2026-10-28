@@ -1,5 +1,13 @@
 import { desafios, type Desafio } from "./desafios";
 
+/** A small, complete first route; legacy challenges and saved slugs remain available. */
+export const beginnerJavaScriptPath = [
+  { slug: "variaveis-js", label: "Meu primeiro perfil", concept: "Guardar e mostrar dados", prerequisites: [] },
+  { slug: "contas-servico-js", label: "A conta de um serviço", concept: "Calcular com os dados", prerequisites: ["variaveis-js"] },
+  { slug: "decisao-servico-js", label: "Uma decisão do programa", concept: "Comparar e escolher um caminho", prerequisites: ["variaveis-js", "contas-servico-js"] },
+  { slug: "primeiro-orcamento-js", label: "Meu primeiro orçamento", concept: "Entregar um pequeno programa", prerequisites: ["variaveis-js", "contas-servico-js", "decisao-servico-js"] },
+] as const;
+
 export function practiceJourney(challenge: Desafio) {
   const items = desafios.filter(item => item.linguagem === challenge.linguagem);
   const index = items.findIndex(item => item.slug === challenge.slug);

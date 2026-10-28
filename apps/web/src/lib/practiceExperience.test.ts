@@ -5,7 +5,7 @@ import { guidedProgram } from "./guidedPractice";
 import { defaultCatalogView, practiceChecks, practiceJourney, practiceSymbols, readCatalogView, readPracticeAnswer } from "./practiceExperience";
 
 describe("a continuous practice experience", () => {
-  it("places all 32 challenges in the actual sequence without crossing languages", () => {
+  it("places every catalog challenge in the actual sequence without crossing languages", () => {
     for (const challenge of desafios) {
       const journey = practiceJourney(challenge);
       expect(journey.items[journey.index]).toBe(challenge);

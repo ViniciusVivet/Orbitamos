@@ -13,7 +13,8 @@ import { useAuth } from "@/contexts/AuthContext";
 
 import s from "@/components/estudante/Laboratory.module.css";
 import { getLaboratoryCover } from "@/components/estudante/laboratoryCovers";
-import { hasCompletedPractice } from "@/lib/practiceProgress";
+import { hasCompletedLearningDelivery } from "@/lib/practiceProgress";
+import { beginnerPracticeKey } from "@/lib/beginnerPractice";
 import { academyPreviewHref } from "@/lib/portalNavigation";
 
 const languageNames: Record<string, string> = { javascript: "JavaScript", typescript: "TypeScript", python: "Python", csharp: "C#" };
@@ -74,7 +75,7 @@ export function PraticaCatalog({ userId = null, preview = false }: { userId?: st
           if (guided.started) {
             let freeDraft: { stepStatus?: string[]; reflection?: string } | null = null;
             try { freeDraft = raw ? JSON.parse(raw) : null; } catch { /* A damaged legacy draft must not hide guided progress. */ }
-            next[challenge.slug] = hasCompletedPractice(challenge, raw, localStorage.getItem(guidedStorageKey(userId, challenge.slug))) ? "concluido" : "andamento";
+            next[challenge.slug] = hasCompletedLearningDelivery(challenge, raw, localStorage.getItem(guidedStorageKey(userId, challenge.slug)), localStorage.getItem(beginnerPracticeKey(userId, challenge.slug))) ? "concluido" : "andamento";
             nextReflections[challenge.slug] = Boolean(freeDraft?.reflection?.trim());
             return;
           }
@@ -84,11 +85,7 @@ export function PraticaCatalog({ userId = null, preview = false }: { userId?: st
             return;
           }
           const parsed = JSON.parse(raw) as { stepStatus?: string[]; reflection?: string };
-          next[challenge.slug] =
-            parsed.stepStatus?.length === challenge.steps.length &&
-            parsed.stepStatus.every((status) => status === "success")
-              ? "concluido"
-              : "andamento";
+          next[challenge.slug] = hasCompletedLearningDelivery(challenge, raw, localStorage.getItem(guidedStorageKey(userId, challenge.slug)), localStorage.getItem(beginnerPracticeKey(userId, challenge.slug))) ? "concluido" : "andamento";
           nextReflections[challenge.slug] = Boolean(parsed.reflection?.trim());
         } catch {
           next[challenge.slug] = "novo";
@@ -130,7 +127,7 @@ return (
         </div>
       </header>
 
-      <section className={s.learningPath} aria-label="Como começar no laboratório"><div><span className={s.eyebrow}>NUNCA PROGRAMOU?</span><h2>Uma linha de cada vez.</h2><p>Comece com orientação, depois experimente sem o guia. Você não precisa instalar nada para treinar.</p><Link href={link("/estudante/pratica/variaveis-js")}>Minha primeira linha em JavaScript <ArrowRight size={16}/></Link><Link href={link("/estudante/pratica/variaveis-python")}>Prefiro começar por Python <ArrowRight size={16}/></Link></div><ol><li><strong>01 / Entenda</strong><span>O que escrever e por que funciona.</span></li><li><strong>02 / Escreva e teste</strong><span>Editor vazio, etapas curtas e execução real.</span></li><li><strong>03 / Ganhe autonomia</strong><span>Modo livre, funções, coleções e desafios intermediários.</span></li></ol></section>
+      <section className={s.learningPath} aria-label="Como começar no laboratório"><div><span className={s.eyebrow}>NUNCA PROGRAMOU?</span><h2>Uma linha de cada vez.</h2><p>Quatro entregas em JavaScript, do seu perfil a um pequeno orçamento. Você não precisa instalar nada para treinar.</p><Link href={link("/estudante/pratica/variaveis-js")}>Começar meus primeiros passos <ArrowRight size={16}/></Link><Link href={link("/estudante/pratica/variaveis-python")}>Explorar fundamentos em Python <ArrowRight size={16}/></Link></div><ol><li><strong>01 / Construa com ajuda</strong><span>O que escrever, por que funciona e como testar.</span></li><li><strong>02 / Faça uma alteração</strong><span>Mude os dados do seu programa e confira a regra.</span></li><li><strong>03 / Escreva sozinho</strong><span>Uma nova situação, sem resposta preenchida e com pistas se precisar.</span></li></ol></section>
 
       {recommended && <Link
         href={link(`/estudante/pratica/${recommended.slug}`)}

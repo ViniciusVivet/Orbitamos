@@ -1,5 +1,6 @@
 import type { Desafio } from "./desafios";
 import { readGuidedDraft } from "./guidedPractice";
+import { hasCompletedBeginnerPractice, supportsBeginnerPractice } from "./beginnerPractice";
 
 /** Counts validated missions from either practice mode, never a page visit. */
 export function hasCompletedPractice(challenge: Desafio, freeRaw: string | null, guidedRaw: string | null): boolean {
@@ -14,4 +15,10 @@ export function hasCompletedPractice(challenge: Desafio, freeRaw: string | null,
   } catch {
     return false;
   }
+}
+
+/** A learning delivery adds independently tested application to the existing guided/free evidence.
+ * The earlier mission records remain unchanged and can still be shown as validated support. */
+export function hasCompletedLearningDelivery(challenge: Desafio, freeRaw: string | null, guidedRaw: string | null, applicationRaw: string | null): boolean {
+  return hasCompletedPractice(challenge, freeRaw, guidedRaw) && (!supportsBeginnerPractice(challenge.slug) || hasCompletedBeginnerPractice(applicationRaw, challenge.slug));
 }

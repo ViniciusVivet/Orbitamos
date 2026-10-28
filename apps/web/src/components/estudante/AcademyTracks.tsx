@@ -18,10 +18,10 @@ export default function AcademyTracks({ courses = [], preview = false, children,
     <AcademyStudyPathPicker userId={userId} preview={preview}/>
     {preview && <p className={s.notice}>Prévia de navegação. As aulas em vídeo e os mapas de carreira continuam nas rotas do portal e pedem sua conta para abrir.</p>}
     <section aria-labelledby="practical-tracks"><div className={s.sectionHeading}><div><span>APRENDER FAZENDO</span><h2 id="practical-tracks">Caminhos com prática guiada.</h2></div><p>Você pode começar sem instalar ferramentas.</p></div>
-      <div className={s.practical}>{practical.map(entry => <article key={entry.id} className={s.track} data-tone={entry.tone}>
-        <div className={s.trackTop}><span>{entry.format}</span>{entry.id === "csharp" ? <Code2 size={25} aria-hidden="true"/> : <Database size={25} aria-hidden="true"/>}</div>
+      <div className={s.practical}>{practical.map(entry => <article key={entry.id} className={s.track} data-tone={entry.tone} data-foundations={entry.id === "fundamentals"}>
+        <div className={s.trackTop}><span>{entry.format}</span>{entry.id === "fundamentals" ? <Compass size={25} aria-hidden="true"/> : entry.id === "csharp" ? <Code2 size={25} aria-hidden="true"/> : <Database size={25} aria-hidden="true"/>}</div>
         <h3>{entry.title}</h3><p>{entry.description}</p><div className={s.available}>{entry.available}</div>{entry.boundary && <small>{entry.boundary}</small>}
-        <Link className={s.primary} href={academyCatalogDestination(entry, preview)}>Abrir {entry.id === "csharp" ? "trilha C#" : "aventura SQL"}<ArrowRight size={17}/></Link>
+        <Link className={s.primary} href={academyCatalogDestination(entry, preview)}>{entry.id === "fundamentals" ? "Começar meus primeiros passos" : entry.id === "csharp" ? "Abrir trilha C#" : "Abrir aventura SQL"}<ArrowRight size={17}/></Link>
         {entry.courses.length > 0 && <details className={s.support}><summary><BookOpen size={15}/> Aulas em vídeo para apoiar este caminho</summary><div>{entry.courses.map(course => <Link key={course.slug} href={`/estudante/cursos/${course.slug}`}><span>{course.titulo}</span><ArrowRight size={15}/></Link>)}</div></details>}
       </article>)}</div>
     </section>

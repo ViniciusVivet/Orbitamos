@@ -85,7 +85,8 @@ Scripts de verificação em `apps/web/scripts/`:
 
 Os relatórios e capturas ficam em `apps/web/test-results/`. Os perfis incluem
 desktop, WebKit com iPhone 13 e viewport de 320 pixels. A suíte unitária completa
-tem 385 testes em 42 arquivos após a rodada de trilha principal e escrita personalizada. Build, lint e auditorias de navegador devem ser
+tem 425 testes em 45 arquivos após a rodada de aplicação independente e transporte
+seguro de código. Build, lint e auditorias de navegador devem ser
 conferidos novamente quando houver mudanças de comportamento.
 
 Na rodada posterior ao primeiro deploy, `academyStudyPath` passou a guardar uma
@@ -95,3 +96,15 @@ como ação secundária. Trocar ou limpar a escolha não altera os registros ant
 O modo da oficina SQL é refletido em `mode=workshop`, inclusive após reload e
 voltar/avançar. O guia mobile recolhe contexto/opções e aproxima a instrução do
 editor, preservando a explicação da linha e o mapa para consulta.
+
+Em 28/10/2026, **Primeiros passos** foi acrescentado às opções de trilha principal.
+Seu mapa tem quatro entregas JavaScript, em ordem de pré-requisitos. Guia, alteração
+e aplicação independente têm evidências distintas; completar só o guia não encerra
+essas entregas. A escolha C#/SQL existente e os rascunhos anteriores são preservados.
+O transporte ao modo livre usa uma escolha explícita quando há conflito e mantém
+versões recuperáveis, sem atribuir uma conclusão pela importação do código.
+
+Para testar localmente: `/dev/academy-preview?view=tracks` → Primeiros passos, ou
+`/dev/ide-preview/variaveis-js?academy=1`. Na produção, o caminho equivalente é
+`/estudante/pratica/variaveis-js`, dentro da conta do aluno. Os saves novos continuam
+locais por conta/navegador, sem sincronização entre aparelhos.
