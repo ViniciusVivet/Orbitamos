@@ -19,6 +19,7 @@ for (const [name, engine, options] of profiles) {
     await expect(page.locator("[data-academy-continue] h1")).toHaveText("Sua primeira linha de código.", { timeout: 60000 });
     await page.goto(`${base}/dev/academy-preview?view=tracks`);
     const picker = page.locator("[data-study-path-picker]");
+    await tap(picker.locator("summary"));
     await tap(picker.getByRole("button", { name: "C# & .NET", exact: false }));
     await expect(picker.getByRole("button", { name: "C# & .NET", exact: false })).toHaveAttribute("aria-pressed", "true");
     await home();

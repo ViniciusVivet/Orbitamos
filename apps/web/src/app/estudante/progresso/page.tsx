@@ -2,25 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import {
-  ArrowRight,
-  BookOpen,
-  Check,
-  Code2,
-  Flame,
-  Orbit,
-  Rocket,
-  Sparkles,
-  Target,
-  Trophy,
-} from "lucide-react";
+import { ArrowRight, Check, Trophy } from "lucide-react";
+import OrbitPhoto from "@/components/brand/OrbitPhoto";
+import { coursePhotoKind } from "@/components/brand/orbitamosPhotography";
 import { useAuth } from "@/contexts/AuthContext";
 import { defaultProgress, useProgress } from "@/contexts/ProgressContext";
 import { getDashboardSummary, type DashboardSummary } from "@/lib/api";
 import { listarAulasConcluidas, listarCursosAcademy, totalAulas, type Curso } from "@/lib/cursos";
-import { desafios } from "@/lib/desafios";
 import AcademyActivityProgress from "@/components/estudante/AcademyActivityProgress";
-import { useAcademyActivity } from "@/components/estudante/useAcademyActivity";
 
 type CourseProgress = {
   course: Curso;
@@ -33,8 +22,6 @@ export default function EstudanteProgresso() {
   const { progress: progressFromContext } = useProgress();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [courseProgress, setCourseProgress] = useState<CourseProgress[]>([]);
-  const { data: activity } = useAcademyActivity(user?.id);
-  const completedChallenges = activity?.summaries.code.completed ?? 0;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -91,198 +78,37 @@ export default function EstudanteProgresso() {
   }, [progress.xp]);
 
   return (
-    <div className="-mx-4 -mt-4 min-h-screen overflow-hidden pb-14 sm:-mt-6 lg:-mx-6 lg:-mt-8">
-      <section className="relative isolate overflow-hidden border-b border-white/10 px-4 py-5 sm:px-8 sm:py-6 lg:px-10">
-        <div className="absolute inset-0 -z-20 bg-[#03050a]" />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_55%_120%_at_88%_0%,rgba(139,92,246,.18),transparent_60%),radial-gradient(ellipse_50%_100%_at_5%_100%,rgba(0,212,255,.12),transparent_68%)]" />
-        <div className="mx-auto max-w-7xl">
-          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[.22em] text-orbit-electric">
-            <Orbit className="size-3.5" /> Telemetria da jornada
-          </div>
-          <h1 className="mt-1.5 text-xl font-black tracking-tight text-white sm:text-2xl lg:text-3xl">
-            Sua evolução, <span className="bg-gradient-to-r from-orbit-electric to-orbit-purple bg-clip-text text-transparent">sem atalhos.</span>
-          </h1>
-          <p className="mt-1.5 max-w-xl text-xs leading-5 text-white/50 sm:text-sm">
-            Acompanhe o que concluiu, o que está praticando e qual é o próximo marco da sua órbita.
-          </p>
-
-          <div className="mt-5 grid grid-cols-2 gap-2.5 xl:grid-cols-4">
-            <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/[.07] p-3.5">
-              <BookOpen className="size-4 text-cyan-300" />
-              <div className="mt-2 text-2xl font-black text-white">{completedLessons}</div>
-              <div className="mt-0.5 text-[11px] text-white/45">de {totalLessons || "—"} aulas concluídas</div>
-            </div>
-            <div className="rounded-xl border border-violet-400/20 bg-violet-400/[.07] p-3.5">
-              <Rocket className="size-4 text-violet-300" />
-              <div className="mt-2 text-2xl font-black text-white">{progress.xp}</div>
-              <div className="mt-0.5 text-[11px] text-white/45">XP · nível {progress.level}</div>
-            </div>
-            <div className="rounded-xl border border-orange-400/20 bg-orange-400/[.07] p-3.5">
-              <Flame className="size-4 text-orange-300" />
-              <div className="mt-2 text-2xl font-black text-white">{progress.streakDays}</div>
-              <div className="mt-0.5 text-[11px] text-white/45">{progress.streakDays === 1 ? "dia de sequência" : "dias de sequência"}</div>
-            </div>
-            <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/[.07] p-3.5">
-              <Code2 className="size-4 text-emerald-300" />
-              <div className="mt-2 text-2xl font-black text-white">{completedChallenges}</div>
-              <div className="mt-0.5 text-[11px] text-white/45">de {desafios.length} desafios concluídos</div>
-            </div>
-          </div>
+    <div className="mx-auto max-w-[1180px] pb-12 text-[#edf3ef]">
+      <header className="mb-7 flex flex-wrap items-end justify-between gap-4">
+        <div><p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#b6d8c8]">MEU PROGRESSO</p><h1 className="mt-3 text-3xl font-semibold tracking-[-.04em]">Seu caminho, até aqui.</h1></div>
+        <Link href="/estudante/trilhas" className="inline-flex min-h-11 items-center gap-2 text-xs text-[#c6e4ce]">Ver minhas trilhas<ArrowRight size={16}/></Link>
+      </header>
+      <AcademyActivityProgress userId={user?.id}/>
+      {error && <p role="status" className="mb-6 rounded-xl border border-amber-200/25 bg-amber-200/5 px-4 py-3 text-xs leading-6 text-amber-100">Parte dos dados não sincronizou. Os registros disponíveis continuam preservados.</p>}
+      <section className="mt-9 border-t border-white/15 pt-7">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+          <div><h2 className="text-xl font-semibold tracking-tight">Suas aulas</h2><p className="mt-2 text-xs leading-6 text-[#b3c8ca]">{completedLessons} de {totalLessons || "—"} aulas · {completedCourses} cursos completos · {activeCourses.length} em andamento</p></div>
+          <Link href="/estudante/aulas" className="inline-flex min-h-11 items-center gap-2 text-xs text-[#c6e4ce]">Escolher uma aula<ArrowRight size={16}/></Link>
         </div>
+        {loading ? <p role="status" className="py-6 text-sm text-[#b3c8ca]">Buscando seu histórico de aulas…</p> : <>
+          <div className="mb-6 h-1.5 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[#c6e4ce]" style={{width:academyPercent+"%"}}/></div>
+          <div className="grid gap-3 md:grid-cols-2">{(activeCourses.length ? activeCourses : courseProgress.slice(0, 4)).map(item => {
+            const percent = item.total ? Math.round(item.completed / item.total * 100) : 0;
+            return <Link key={item.course.id} href={`/estudante/cursos/${item.course.slug}`} className="flex items-center gap-4 overflow-hidden rounded-xl border border-white/15 bg-[#111e27] p-3">
+              <OrbitPhoto kind={coursePhotoKind(item.course.slug)} className="!aspect-square w-20 shrink-0 rounded-lg" sizes="80px"/>
+              <div className="min-w-0 flex-1"><h3 className="text-sm font-semibold leading-6">{item.course.titulo}</h3><p className="mt-2 text-xs text-[#b3c8ca]">{item.completed} de {item.total} aulas · {percent}%</p></div><ArrowRight size={17} className="shrink-0 text-[#c6e4ce]"/>
+            </Link>;
+          })}</div>
+        </>}
       </section>
-
-      <div className="mx-auto max-w-7xl space-y-8 px-4 pt-8 sm:px-8 lg:px-10">
-        <AcademyActivityProgress userId={user?.id}/>
-        {error && (
-          <div className="rounded-2xl border border-amber-400/25 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
-            Parte dos dados não sincronizou. Os números disponíveis continuam preservados.
-          </div>
-        )}
-
-        {loading ? (
-          <div className="flex items-center gap-3 py-10 text-sm text-white/45">
-            <span className="size-5 animate-spin rounded-full border-2 border-orbit-electric border-t-transparent" />
-            Montando sua linha de evolução...
-          </div>
-        ) : (
-          <>
-            <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(300px,.8fr)]">
-              <section className="rounded-3xl border border-white/10 bg-[#080a0f] p-5 sm:p-6">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-orbit-electric">
-                      <Target className="size-4" /> Progresso acadêmico
-                    </div>
-                    <h2 className="mt-2 text-2xl font-black text-white">{totalLessons ? `${academyPercent}% das aulas concluídas` : "Histórico das aulas"}</h2>
-                    <p className="mt-1 text-sm text-white/45">{completedCourses} cursos completos · {activeCourses.length} em andamento</p>
-                  </div>
-                  <Link href="/estudante/aulas" className="flex items-center gap-1 text-xs font-bold text-orbit-electric">
-                    Continuar aulas <ArrowRight className="size-3.5" />
-                  </Link>
-                </div>
-                <div className="mt-6 h-3 overflow-hidden rounded-full bg-white/8">
-                  <div className="h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple" style={{ width: `${academyPercent}%` }} />
-                </div>
-
-                <div className="mt-6 space-y-3">
-                  {(activeCourses.length ? activeCourses : courseProgress.slice(0, 3)).map((item) => {
-                    const percent = item.total ? Math.round((item.completed / item.total) * 100) : 0;
-                    return (
-                      <Link
-                        key={item.course.id}
-                        href={`/estudante/cursos/${item.course.slug}`}
-                        className="group block rounded-2xl border border-white/8 bg-white/[.025] p-4 transition hover:border-orbit-electric/25 hover:bg-white/[.05]"
-                      >
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="min-w-0">
-                            <h3 className="truncate text-sm font-bold text-white group-hover:text-orbit-electric">{item.course.titulo}</h3>
-                            <p className="mt-1 text-xs text-white/40">{item.completed} de {item.total} aulas</p>
-                          </div>
-                          <span className="text-sm font-black text-white/70">{percent}%</span>
-                        </div>
-                        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-black/50">
-                          <div className="h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple" style={{ width: `${percent}%` }} />
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </section>
-
-              <section className="rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-400/[.09] to-cyan-400/[.035] p-5 sm:p-6">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-violet-300">
-                  <Sparkles className="size-4" /> Próximo marco
-                </div>
-                <div className="mt-5 flex items-end justify-between">
-                  <div>
-                    <div className="text-4xl font-black text-white">{nextMilestone.next} XP</div>
-                    <p className="mt-1 text-sm text-white/45">Faltam {nextMilestone.missing} XP para alcançar</p>
-                  </div>
-                  <div className="grid size-14 place-items-center rounded-2xl bg-gradient-to-br from-orbit-electric to-orbit-purple text-xl font-black text-black">
-                    {progress.level}
-                  </div>
-                </div>
-                <div className="mt-6 h-2 overflow-hidden rounded-full bg-black/40">
-                  <div className="h-full rounded-full bg-gradient-to-r from-violet-400 to-cyan-300" style={{ width: `${nextMilestone.percent}%` }} />
-                </div>
-                <div className="mt-6 rounded-2xl border border-white/10 bg-black/25 p-4">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">Próxima meta</div>
-                  <p className="mt-2 text-sm leading-5 text-white/70">{progress.nextGoal || "Concluir sua próxima aula e manter a sequência."}</p>
-                </div>
-                <Link href="/estudante/orbita" className="mt-5 flex items-center gap-1 text-xs font-bold text-violet-300">
-                  Ver na Jornada <ArrowRight className="size-3.5" />
-                </Link>
-              </section>
-            </div>
-
-            <div className="grid gap-5 lg:grid-cols-2">
-              <section className="rounded-3xl border border-white/10 bg-white/[.035] p-5 sm:p-6">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-emerald-300">
-                      <Check className="size-4" /> Meta semanal
-                    </div>
-                    <h2 className="mt-2 text-xl font-black text-white">Consistência antes de intensidade.</h2>
-                  </div>
-                  {checklist.length > 0 && <span className="text-2xl font-black text-emerald-300">{completedChecklist}/{checklist.length}</span>}
-                </div>
-                <div className="mt-5 space-y-2">
-                  {checklist.length ? checklist.map((item) => (
-                    <div key={item.label} className="flex items-center gap-3 rounded-xl bg-black/25 px-3 py-3">
-                      <span className={`grid size-6 shrink-0 place-items-center rounded-full border ${item.done ? "border-emerald-400 bg-emerald-400 text-black" : "border-white/20 text-transparent"}`}>
-                        <Check className="size-3.5" />
-                      </span>
-                      <span className={item.done ? "text-sm text-white/40 line-through" : "text-sm text-white/70"}>{item.label}</span>
-                    </div>
-                  )) : (
-                    <p className="rounded-xl border border-dashed border-white/15 p-4 text-sm text-white/45">Conclua uma aula para começar sua meta semanal.</p>
-                  )}
-                </div>
-              </section>
-
-              <section className="rounded-3xl border border-white/10 bg-white/[.035] p-5 sm:p-6">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-amber-300">
-                  <Trophy className="size-4" /> Conquistas
-                </div>
-                <h2 className="mt-2 text-xl font-black text-white">Marcos que você já desbloqueou.</h2>
-                {achievements.length ? (
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {achievements.map((achievement) => (
-                      <span key={achievement} className="rounded-full border border-amber-300/20 bg-amber-300/[.07] px-3 py-2 text-xs font-bold text-amber-100">
-                        {achievement}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="mt-5 rounded-2xl border border-dashed border-white/15 p-4">
-                    <p className="text-sm text-white/45">Sua primeira conquista aparece quando você começa a transformar estudo em constância.</p>
-                    <Link href="/estudante/aulas" className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-orbit-electric">
-                      Abrir próxima aula <ArrowRight className="size-3.5" />
-                    </Link>
-                  </div>
-                )}
-              </section>
-            </div>
-
-            <section className="rounded-3xl border border-emerald-400/15 bg-emerald-400/[.045] p-5 sm:p-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-emerald-300">
-                    <Code2 className="size-4" /> Habilidade em construção
-                  </div>
-                  <h2 className="mt-2 text-xl font-black text-white">
-                    {completedChallenges ? `${completedChallenges} desafio${completedChallenges > 1 ? "s" : ""} vencido${completedChallenges > 1 ? "s" : ""}.` : "Leve o aprendizado para o código."}
-                  </h2>
-                  <p className="mt-1 text-sm text-white/45">Práticas concluídas ficam salvas neste dispositivo e entram neste mapa.</p>
-                </div>
-                <Link href="/estudante/pratica" className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-emerald-400 px-5 text-sm font-black text-black hover:bg-emerald-300 touch-manipulation">
-                  Abrir desafios <ArrowRight className="size-4" />
-                </Link>
-              </div>
-            </section>
-          </>
-        )}
-      </div>
+      <details className="mt-8 border-t border-white/15 py-3">
+        <summary className="min-h-11 cursor-pointer py-3 text-sm text-[#c6e4ce]">Ver XP, metas e conquistas das aulas</summary>
+        <div className="mt-4 grid gap-5 sm:grid-cols-2">
+          <section className="rounded-xl border border-white/15 bg-[#111e27] p-5"><h2 className="text-sm font-semibold">Seu ritmo nas aulas</h2><div className="mt-4 flex gap-7"><div><strong className="text-2xl font-semibold">{progress.xp}</strong><p className="mt-1 text-xs text-[#b3c8ca]">XP · nível {progress.level}</p></div><div><strong className="text-2xl font-semibold">{progress.streakDays}</strong><p className="mt-1 text-xs text-[#b3c8ca]">{progress.streakDays === 1 ? "dia de sequência" : "dias de sequência"}</p></div></div><div className="mt-5 h-1 overflow-hidden rounded-full bg-white/10"><div className="h-full bg-[#c6e4ce]" style={{width:nextMilestone.percent+"%"}}/></div><p className="mt-3 text-xs leading-6 text-[#b3c8ca]">Faltam {nextMilestone.missing} XP para {nextMilestone.next} XP.</p><p className="mt-3 text-xs leading-6 text-[#b3c8ca]">{progress.nextGoal || "Conclua uma aula e continue no seu ritmo."}</p></section>
+          <section className="rounded-xl border border-white/15 bg-[#111e27] p-5"><h2 className="text-sm font-semibold">Meta semanal {checklist.length > 0 && <span className="ml-2 text-[#c6e4ce]">{completedChecklist}/{checklist.length}</span>}</h2><div className="mt-4 space-y-3">{checklist.length ? checklist.map(item => <div key={item.label} className="flex items-start gap-3 text-xs leading-6 text-[#b3c8ca]"><span className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border ${item.done ? "border-[#c6e4ce] bg-[#c6e4ce] text-[#173c36]" : "border-white/25 text-transparent"}`}><Check size={12}/></span><span className={item.done ? "line-through" : ""}>{item.label}</span></div>) : <p className="text-xs leading-6 text-[#b3c8ca]">Sua meta aparece quando você começa uma aula.</p>}</div></section>
+          <section className="sm:col-span-2"><h2 className="flex items-center gap-2 text-sm font-semibold"><Trophy size={17} className="text-[#d5ddaf]"/> Conquistas</h2>{achievements.length ? <div className="mt-4 flex flex-wrap gap-2">{achievements.map(achievement => <span key={achievement} className="rounded-full border border-[#c6e4ce]/30 px-3 py-2 text-xs text-[#c6e4ce]">{achievement}</span>)}</div> : <p className="mt-3 text-xs leading-6 text-[#b3c8ca]">Ainda sem conquistas de aulas. Uma tentativa de cada vez.</p>}</section>
+        </div>
+      </details>
     </div>
   );
 }

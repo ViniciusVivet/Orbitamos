@@ -1,0 +1,407 @@
+"use client";
+
+import Link from "next/link";
+import OrbitPhoto from "@/components/brand/OrbitPhoto";
+import { coursePhotoKind } from "@/components/brand/orbitamosPhotography";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowRight, Check, ListFilter, Search, X } from "lucide-react";
+import s from "@/components/estudante/StudentLibrary.module.css";
+import { Button } from "@/components/ui/button";
+import CourseRow from "@/components/estudante/CourseRow";
+import { useAuth } from "@/contexts/AuthContext";
+import type { UserId } from "@/lib/api";
+import {
+  cursos as cursosFallback,
+  getCourseTrackGroups,
+  listarAulasConcluidas,
+  listarCursosAcademy,
+  totalAulas,
+  type Aula,
+  type Curso,
+} from "@/lib/cursos";
+
+const STORAGE_KEY = "orbitacademy-progress";
+
+
+function normalizeSearch(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s#+.]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function matchesSearch(text: string, query: string) {
+  const normalizedText = normalizeSearch(text);
+  const normalizedQuery = normalizeSearch(query);
+  if (!normalizedQuery) return true;
+  if (normalizedText.includes(normalizedQuery)) return true;
+
+  return normalizedQuery.split(" ").every((term) => {
+    if (normalizedText.includes(term)) return true;
+    if (term.length < 3) return false;
+    const words = normalizedText.split(" ");
+    return words.some((word) => {
+      const maxDistance = term.length >= 7 ? 2 : 1;
+      if (Math.abs(word.length - term.length) > maxDistance) return false;
+      let mismatches = 0;
+      const length = Math.max(word.length, term.length);
+      for (let index = 0; index < length; index += 1) {
+        if (word[index] !== term[index]) mismatches += 1;
+        if (mismatches > maxDistance) return false;
+      }
+      return true;
+    });
+  });
+}
+
+function getProgress(cursoSlug: string, userId: UserId | undefined) {
+  if (typeof window === "undefined" || !userId) return { concluidas: 0 };
+  try {
+    const raw = localStorage.getItem(`${STORAGE_KEY}-${userId}-${cursoSlug}`);
+    if (!raw) return { concluidas: 0 };
+    const data = JSON.parse(raw);
+    return { concluidas: Array.isArray(data.concluidas) ? data.concluidas.length : 0 };
+  } catch {
+    return { concluidas: 0 };
+  }
+}
+
+type LessonResult = {
+  aula: Aula;
+  curso: Curso;
+  modulo: string;
+  completed: boolean;
+};
+
+export default function AcademyLessons({ preview = false }: { preview?: boolean } = {}) {
+  const { user } = useAuth();
+  const userId = preview ? "academy-preview" : user?.id;
+  const [cursos, setCursos] = useState<Curso[]>(cursosFallback);
+  const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(!preview);
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    if (preview) return;
+    let active = true;
+    listarCursosAcademy()
+      .then(async (items) => {
+        if (!active) return;
+        setCursos(items);
+        const lessonIds = items.flatMap((curso) =>
+          curso.modulos.flatMap((modulo) => modulo.aulas.map((aula) => aula.id))
+        );
+        const completed = await listarAulasConcluidas(lessonIds);
+        if (active) setCompletedLessonIds(new Set(completed));
+      })
+      .catch(() => {
+        if (active) setCursos(cursosFallback);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [preview, userId]);
+
+  const progressByCourse = useMemo(() => {
+    const map = new Map<string, number>();
+    cursos.forEach((curso) => {
+      const lessonIds = curso.modulos.flatMap((modulo) => modulo.aulas.map((aula) => aula.id));
+      const fromSupabase = lessonIds.filter((id) => completedLessonIds.has(id)).length;
+      map.set(curso.slug, fromSupabase || getProgress(curso.slug, userId).concluidas);
+    });
+    return map;
+  }, [completedLessonIds, cursos, userId]);
+
+  const allLessons = useMemo<LessonResult[]>(
+    () =>
+      cursos.flatMap((curso) =>
+        curso.modulos.flatMap((modulo) =>
+          modulo.aulas.map((aula) => ({
+            aula,
+            curso,
+            modulo: modulo.titulo,
+            completed: completedLessonIds.has(aula.id),
+          }))
+        )
+      ),
+    [completedLessonIds, cursos]
+  );
+
+  const trackGroups = useMemo(() => getCourseTrackGroups(cursos), [cursos]);
+
+  const [selectedTracks, setSelectedTracks] = useState<string[]>([]);
+  const toggleTrack = (id: string) =>
+    setSelectedTracks((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
+  const allowedSlugs = useMemo(() => {
+    if (!selectedTracks.length) return null;
+    const set = new Set<string>();
+    trackGroups.forEach((track) => {
+      if (selectedTracks.includes(track.id)) track.cursos.forEach((curso) => set.add(curso.slug));
+    });
+    return set;
+  }, [selectedTracks, trackGroups]);
+  const visibleTracks = selectedTracks.length ? trackGroups.filter((track) => selectedTracks.includes(track.id)) : trackGroups;
+
+  const suggested =
+    cursos.find((curso) => (progressByCourse.get(curso.slug) ?? 0) > 0 && (progressByCourse.get(curso.slug) ?? 0) < totalAulas(curso)) ??
+    cursos.find((curso) => (progressByCourse.get(curso.slug) ?? 0) < totalAulas(curso)) ??
+    cursos[0];
+
+  const searchResults = useMemo(() => {
+    if (!query.trim()) return [];
+    return allLessons.filter(({ aula, curso, modulo }) =>
+      matchesSearch(
+        [aula.titulo, aula.conteudo, curso.titulo, curso.descricao, modulo].filter(Boolean).join(" "),
+        query
+      )
+    );
+  }, [allLessons, query]);
+
+  const matchingCourses = useMemo(() => {
+    if (!query.trim()) return [];
+    return cursos.filter((curso) =>
+      matchesSearch(
+        [
+          curso.titulo,
+          curso.descricao,
+          ...curso.modulos.map((modulo) => modulo.titulo),
+          ...curso.modulos.flatMap((modulo) => modulo.aulas.map((aula) => aula.titulo)),
+        ]
+          .filter(Boolean)
+          .join(" "),
+        query
+      )
+    );
+  }, [cursos, query]);
+
+  const filteredSearchResults = useMemo(
+    () => (allowedSlugs ? searchResults.filter((result) => allowedSlugs.has(result.curso.slug)) : searchResults),
+    [searchResults, allowedSlugs]
+  );
+  const filteredMatchingCourses = useMemo(
+    () => (allowedSlugs ? matchingCourses.filter((curso) => allowedSlugs.has(curso.slug)) : matchingCourses),
+    [matchingCourses, allowedSlugs]
+  );
+
+  function courseCard(curso: Curso, compact = false) {
+    const total = totalAulas(curso);
+    const completed = progressByCourse.get(curso.slug) ?? 0;
+    const percent = total ? Math.round((completed / total) * 100) : 0;
+
+    return (
+      <Link
+        key={curso.id}
+        href={`/estudante/cursos/${curso.slug}`}
+        className={`group block shrink-0 snap-start ${compact ? "w-[230px] sm:w-[260px]" : "w-[260px] sm:w-[300px]"}`}
+      >
+        <article className="overflow-hidden rounded-2xl border border-white/10 bg-[#0b0d12] transition duration-300 hover:-translate-y-1 hover:border-orbit-electric/45 hover:shadow-[0_18px_55px_rgba(0,212,255,.14)]">
+          <div className="relative aspect-[4/3] overflow-hidden">
+            <OrbitPhoto kind={coursePhotoKind(curso.slug)} fill sizes="300px"/>
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+            <div className="absolute inset-x-4 bottom-4">
+              <span className="rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.18em] text-white/75 backdrop-blur">
+                OrbitAcademy
+              </span>
+              <h3 className="mt-2 line-clamp-2 text-xl font-black leading-tight text-white">{curso.titulo}</h3>
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition group-hover:bg-black/20 group-hover:opacity-100">
+              <span className="grid size-12 place-items-center rounded-full bg-white text-lg text-black shadow-xl">▶</span>
+            </div>
+          </div>
+          <div className="space-y-3 p-4">
+            <p className="line-clamp-2 min-h-10 text-sm leading-5 text-white/55">
+              {curso.descricao ?? `${total} aulas para avançar na sua jornada.`}
+            </p>
+            <div>
+              <div className="mb-1.5 flex items-center justify-between text-[11px] text-white/45">
+                <span>{completed ? `${completed} de ${total} aulas` : `${total} aulas`}</span>
+                <span className={percent === 100 ? "text-emerald-300" : "text-orbit-electric"}>{percent}%</span>
+              </div>
+              <div className="h-1 overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-orbit-electric to-orbit-purple"
+                  style={{ width: `${percent}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </article>
+      </Link>
+    );
+  }
+
+  return (
+    <div data-academy-lessons className="-mx-4 -mt-4 overflow-hidden pb-12 sm:-mt-6 lg:-mx-6 lg:-mt-8">
+      <section className="relative isolate overflow-hidden border-b border-white/10 px-4 py-5 sm:px-8 sm:py-6 lg:px-12">
+        <div className="mx-auto max-w-7xl">
+          <div className={s.hero}>
+            <div><span>AULAS EM VÍDEO</span><h1>Uma pausa para<br/>{" "}entender melhor.</h1><p>Escolha um assunto e dê o play. Depois, leve a ideia para o seu código.</p></div>
+            <OrbitPhoto kind="estudo" className={s.cover} sizes="(max-width: 650px) 92vw, 45vw"/>
+          </div>
+          <div className="relative mt-6 max-w-3xl">
+            <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-orbit-electric" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="O que você quer estudar hoje?"
+              aria-label="Pesquisar aulas e cursos"
+              className="h-12 w-full rounded-xl border border-white/15 bg-black/45 pl-11 pr-11 text-sm text-white shadow-[0_12px_40px_rgba(0,0,0,.3)] outline-none backdrop-blur-xl transition placeholder:text-white/40 focus:border-orbit-electric/60 focus:ring-4 focus:ring-orbit-electric/10"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                aria-label="Limpar pesquisa"
+                className="absolute right-2 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-full text-white/50 transition hover:bg-white/10 hover:text-white"
+              >
+                <X className="size-4" />
+              </button>
+            )}
+          </div>
+
+          {trackGroups.length > 0 && (
+            <details className={s.filters}><summary><ListFilter size={15}/> Filtrar por área {selectedTracks.length > 0 && <span>{selectedTracks.length} selecionada{selectedTracks.length > 1 ? "s" : ""}</span>}</summary><div className="flex max-w-full flex-wrap items-center gap-2 pb-3">
+              <button
+                type="button"
+                aria-pressed={selectedTracks.length === 0}
+                onClick={() => setSelectedTracks([])}
+                className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition ${selectedTracks.length === 0 ? "border-orbit-electric/50 bg-orbit-electric/15 text-orbit-electric" : "border-white/10 bg-white/[.03] text-white/55 hover:bg-white/[.07] hover:text-white"}`}
+              >
+                Todas
+              </button>
+              {trackGroups.map((track) => {
+                const active = selectedTracks.includes(track.id);
+                return (
+                  <button
+                    key={track.id}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => toggleTrack(track.id)}
+                    className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition ${active ? "border-orbit-electric/50 bg-orbit-electric/15 text-orbit-electric" : "border-white/10 bg-white/[.03] text-white/55 hover:bg-white/[.07] hover:text-white"}`}
+                  >
+                    <span aria-hidden>{track.icon}</span>
+                    {track.titulo}
+                    {active && <Check className="size-3.5" />}
+                  </button>
+                );
+              })}
+            </div></details>
+          )}
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-7xl space-y-12 px-4 pt-8 sm:px-8 lg:px-12">
+        {loading && (
+          <div className="flex items-center gap-3 text-sm text-white/50">
+            <span className="size-5 animate-spin rounded-full border-2 border-orbit-electric border-t-transparent" />
+            Sincronizando seu catálogo...
+          </div>
+        )}
+
+        {query.trim() ? (
+          <section aria-live="polite">
+            <div className="mb-5 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[.2em] text-orbit-electric">Busca inteligente</p>
+                <h2 className="mt-1 text-2xl font-black text-white">
+                  {filteredSearchResults.length} {filteredSearchResults.length === 1 ? "aula encontrada" : "aulas encontradas"}
+                </h2>
+                <p className="mt-1 text-sm text-white/45">Resultados relacionados a “{query}”</p>
+              </div>
+              <Button variant="ghost" onClick={() => setQuery("")} className="text-white/60 hover:bg-white/10 hover:text-white">
+                Ver tudo
+              </Button>
+            </div>
+
+            {filteredSearchResults.length > 0 ? (
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {filteredSearchResults.map(({ aula, curso, modulo, completed }) => (
+                  <Link
+                    key={`${curso.id}-${aula.id}`}
+                    href={`/estudante/cursos/${curso.slug}`}
+                    className="group flex min-h-40 overflow-hidden rounded-2xl border border-white/10 bg-white/[.035] transition hover:border-orbit-electric/40 hover:bg-white/[.07]"
+                  >
+                    <div className="relative w-24 shrink-0 sm:w-36">
+                      <OrbitPhoto kind={coursePhotoKind(curso.slug)} fill sizes="144px"/>
+                      <div className="absolute inset-0 grid place-items-center bg-black/40 text-3xl text-white" aria-hidden="true">{completed ? "✓" : "▶"}</div>
+                    </div>
+                    <div className="flex min-w-0 flex-1 flex-col p-4">
+                      <span className="text-[10px] font-bold uppercase tracking-[.16em] text-orbit-electric">{curso.titulo}</span>
+                      <h3 className="mt-2 line-clamp-2 font-bold text-white group-hover:text-orbit-electric">{aula.titulo}</h3>
+                      <p className="mt-1 truncate text-xs text-white/40">{modulo}</p>
+                      <span className="mt-auto pt-3 text-xs text-white/55">{completed ? "Concluída" : "Abrir aula"}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : filteredMatchingCourses.length > 0 ? (
+              <CourseRow className="flex snap-x gap-4 overflow-x-auto pb-4">{filteredMatchingCourses.map(curso => courseCard(curso))}</CourseRow>
+            ) : (
+              <div className="rounded-3xl border border-dashed border-white/15 bg-white/[.025] px-6 py-14 text-center">
+                <Search className="mx-auto size-8 text-white/25" />
+                <h3 className="mt-4 text-lg font-bold text-white">Nenhuma aula apareceu por aqui</h3>
+                <p className="mx-auto mt-2 max-w-md text-sm text-white/50">
+                  Tente uma tecnologia, tema ou habilidade, como “Python”, “banco de dados” ou “criar site”.
+                </p>
+              </div>
+            )}
+          </section>
+        ) : (
+          <>
+            {suggested && (
+              <section>
+                <div className="mb-4">
+                  <h2 className="text-2xl font-semibold tracking-tight text-white">{(progressByCourse.get(suggested.slug) ?? 0) > 0 ? "Continue de onde parou" : "Que tal começar por aqui?"}</h2>
+                </div>
+                <div className="relative grid items-center gap-6 overflow-hidden rounded-3xl border border-white/15 bg-[#101922] p-6 sm:p-8 lg:grid-cols-[1.1fr_.9fr]">
+                  <OrbitPhoto kind={coursePhotoKind(suggested.slug)} className="order-2 rounded-xl" sizes="(max-width: 1023px) 90vw, 35vw"/>
+                  <div className="relative max-w-2xl">
+                    <span className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#b6d8c8]">UMA AULA PARA AGORA</span>
+                    <h3 className="mt-3 text-3xl font-black text-white">{suggested.titulo}</h3>
+                    <p className="mt-3 line-clamp-2 max-w-xl text-sm leading-6 text-[#b3c8ca]">{suggested.descricao}</p>
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <Button asChild className="rounded-full bg-white px-6 font-bold text-black hover:bg-white/90">
+                        <Link href={`/estudante/cursos/${suggested.slug}`}>▶ Continuar estudando</Link>
+                      </Button>
+                      <span className="self-center text-xs text-white/45">
+                        {progressByCourse.get(suggested.slug) ?? 0} de {totalAulas(suggested)} aulas concluídas
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {visibleTracks.map(track => (
+              <section key={track.id}>
+                <div className="mb-4 flex items-end justify-between gap-4">
+                  <div>
+                    <h2 className="flex items-center gap-2 text-xl font-black text-white sm:text-2xl">
+                      <span>{track.icon}</span> {track.titulo}
+                    </h2>
+                    <p className="mt-1 max-w-2xl text-sm text-white/45">{track.descricao}</p>
+                  </div>
+                  <span className="hidden text-xs text-[#b3c8ca] sm:block">{track.cursos.length} cursos</span>
+                </div>
+                <CourseRow className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5">
+                  {track.cursos.map(curso => courseCard(curso, true))}
+                </CourseRow>
+              </section>
+            ))}
+
+            <section className={s.practice}>
+              <OrbitPhoto kind="criacao" className={s.practicePhoto} sizes="(max-width: 650px) 92vw, 30vw"/>
+              <div><span>DA AULA PARA A PRÁTICA</span><h2>Agora, uma tentativa sua.</h2><p>Escreva código com ajuda ou descubra uma ideia jogando.</p><div><Link href="/estudante/trilhas">Explorar trilhas<ArrowRight size={16}/></Link><Link href="/estudante/jogos">Abrir Praticar<ArrowRight size={16}/></Link></div></div>
+            </section>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

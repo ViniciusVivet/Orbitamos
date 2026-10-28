@@ -16,6 +16,8 @@ import { getLaboratoryCover } from "@/components/estudante/laboratoryCovers";
 import { hasCompletedLearningDelivery } from "@/lib/practiceProgress";
 import { beginnerPracticeKey } from "@/lib/beginnerPractice";
 import { academyPreviewHref } from "@/lib/portalNavigation";
+import studyCover from "../../../../public/images/academy/codigo-no-celular-v1.webp";
+import dataCover from "../../../../public/images/laboratorio/dados-v1.png";
 
 const languageNames: Record<string, string> = { javascript: "JavaScript", typescript: "TypeScript", python: "Python", csharp: "C#" };
 const languageCodes: Record<string, string> = { javascript: "JS", typescript: "TS", python: "Py", csharp: "C#" };
@@ -118,46 +120,26 @@ export function PraticaCatalog({ userId = null, preview = false }: { userId?: st
 
 return (
     <div className={s.catalog} data-lab-catalog>
-      <header className={s.catalogHeader}>
-        <div><span className={s.eyebrow}>OrbitAcademy / Aprender fazendo</span><h1>Laboratório<br/>de código<span>.</span></h1><p>Programe pelo celular. Leia uma etapa, escreva código real e execute para descobrir o resultado.</p></div>
-        <div className={s.catalogStats} aria-label="Resumo dos desafios">
-          <div><strong>{String(desafios.length).padStart(2, "0")}</strong><span>Experimentos</span></div>
-          <div><strong>{String(inProgress).padStart(2, "0")}</strong><span>Em andamento</span></div>
-          <div><strong>{String(completed).padStart(2, "0")}</strong><span>Concluídos aqui</span></div>
-        </div>
-      </header>
-
-      <section className={s.learningPath} aria-label="Como começar no laboratório"><div><span className={s.eyebrow}>NUNCA PROGRAMOU?</span><h2>Uma linha de cada vez.</h2><p>Quatro entregas em JavaScript, do seu perfil a um pequeno orçamento. Você não precisa instalar nada para treinar.</p><Link href={link("/estudante/pratica/variaveis-js")}>Começar meus primeiros passos <ArrowRight size={16}/></Link><Link href={link("/estudante/pratica/variaveis-python")}>Explorar fundamentos em Python <ArrowRight size={16}/></Link></div><ol><li><strong>01 / Construa com ajuda</strong><span>O que escrever, por que funciona e como testar.</span></li><li><strong>02 / Faça uma alteração</strong><span>Mude os dados do seu programa e confira a regra.</span></li><li><strong>03 / Escreva sozinho</strong><span>Uma nova situação, sem resposta preenchida e com pistas se precisar.</span></li></ol></section>
-
-      {recommended && <Link
-        href={link(`/estudante/pratica/${recommended.slug}`)}
+      <header className={s.visualHeading}><div><span className={s.eyebrow}>LABORATÓRIO DE CÓDIGO</span><h1>Vamos praticar?</h1><p>No celular ou no computador. Uma missão de cada vez.</p></div><a href="#experimentos">Ver desafios<ArrowRight size={16}/></a></header>
+      {recommended && <Link href={link(`/estudante/pratica/${recommended.slug}`)} className={s.featuredLesson} data-lab-start
         onPointerEnter={() => { if (recommended.linguagem === "python") void warmPythonRuntime(); }}
-        onFocus={() => { if (recommended.linguagem === "python") void warmPythonRuntime(); }}
-        className={s.resumeExperiment}
-      >
-        <div className={s.resumeMain}>
-          <span className={s.eyebrow}>{states[recommended.slug] === "andamento" ? "Retomar experimento" : "Um bom ponto de partida"}</span>
-          <h2>{recommended.titulo}</h2><p>{recommended.descricao}</p>
-          <div className={s.resumeFoot}><span>{languageNames[recommended.linguagem]} · {recommended.minutos ? `~${recommended.minutos} min` : "No seu ritmo"}</span><span className={s.resumeAction}>{states[recommended.slug] === "andamento" ? "Continuar" : "Abrir experimento"}<ArrowUpRight size={19}/></span></div>
-        </div>
-        <div className={s.resumeOutline}><span className={s.outlineLabel}>DENTRO DESTE EXPERIMENTO</span><ol>{recommended.steps.slice(0, 2).map((step, index) => <li key={index}><span>{String(index + 1).padStart(2, "0")}</span><p>{step.instrucao}</p></li>)}</ol><span className={s.outlineTotal}>{recommended.steps.length} etapa{recommended.steps.length === 1 ? "" : "s"} com orientação<ArrowRight size={15}/></span></div>
+        onFocus={() => { if (recommended.linguagem === "python") void warmPythonRuntime(); }}>
+        <div className={s.featuredPhoto}><Image src={studyCover} alt="" fill priority placeholder="blur" sizes="(max-width:767px) 100vw, 60vw"/><span>SEU CÓDIGO CABE NO SEU DIA</span></div>
+        <div className={s.featuredCopy}><span className={s.eyebrow}>{states[recommended.slug] === "andamento" ? "SEU RASCUNHO ESTÁ AQUI" : "COMECE POR AQUI"}</span><h2>{recommended.titulo}</h2><p>{recommended.descricao}</p><small>{languageNames[recommended.linguagem]} · {recommended.minutos ? `${recommended.minutos} min` : "No seu ritmo"} · Com passo a passo</small><span className={s.featuredAction}>{states[recommended.slug] === "andamento" ? "Continuar meu código" : "Vamos começar"}<ArrowRight size={18}/></span></div>
       </Link>}
-
+      <div className={s.visualShortcuts}><Link href={link("/estudante/trilhas/sql")}><div><Image src={dataCover} alt="" fill placeholder="blur" sizes="112px"/></div><span><small>APRENDA COM UMA HISTÓRIA</small><strong>Uma loja. Seus primeiros dados.</strong></span><ArrowUpRight size={19}/></Link><Link href={link("/estudante/jogos")}><div className={s.orbiShortcut}><Image src="/orbi-tech.png" alt="" fill sizes="100px"/></div><span><small>PREFERE JOGAR?</small><strong>Descubra com o Orbi.</strong></span><ArrowUpRight size={19}/></Link></div>
       <section id="experimentos" className={s.experimentLibrary} aria-label="Biblioteca de experimentos">
-        <Link href={link("/estudante/trilhas/sql")} className="mb-7 flex min-h-24 items-center justify-between gap-4 rounded-2xl border border-emerald-200/30 bg-emerald-200/10 p-5 text-emerald-100"><div><span className="text-xs font-bold uppercase tracking-wider">Aventura guiada · comece do zero</span><h2 className="mt-2 text-xl font-bold">SQL com Orbi: uma loja, sua primeira missão</h2><p className="mt-2 text-sm leading-6">Ajude o Orbi a encontrar os produtos que estão acabando. Descubra os dados, faça escolhas e escreva suas primeiras consultas, um passo de cada vez.</p></div><ArrowRight size={24} className="shrink-0"/></Link>
         <div className={s.libraryTitle}><div><span className={s.eyebrow}>Sua bancada de prática</span><h2>Encontre um desafio.</h2></div><Link href={link("/estudante/aulas")}>Revisar as aulas<ArrowUpRight size={15}/></Link></div>
         <div className={s.searchRow}>
           <label className={s.searchField}><Search size={18}/><input value={query} maxLength={120} onChange={event => setQuery(event.target.value)} placeholder="Tema, habilidade ou linguagem" aria-label="Buscar desafios"/>{query && <button type="button" onClick={() => setQuery("")} aria-label="Limpar busca"><X size={17}/></button>}</label>
-          <label className={s.difficultyField}><span>Dificuldade</span><select value={difficulty} onChange={event => setDifficulty(event.target.value as DifficultyFilter)} aria-label="Filtrar por dificuldade"><option value="todas">Todos os níveis</option><option value="iniciante">Iniciante</option><option value="basico">Básico</option><option value="intermediario">Intermediário</option></select></label>
         </div>
-        <div className={s.languageTabs} aria-label="Linguagens">{(["todas", "javascript", "python", "csharp"] as const).map(value => <button key={value} type="button" aria-pressed={language === value} onClick={() => setLanguage(value)}>{value === "todas" ? "Todas as linguagens" : languageNames[value]}</button>)}</div>
-        <section className={s.practiceRoutes} aria-label="Caminhos de aprendizagem">
-          <div><span className={s.eyebrow}>{language === "todas" ? "ESCOLHA UMA LINGUAGEM E UM FOCO" : `SEU CAMINHO EM ${languageNames[language].toUpperCase()}`}</span><h3>O que você quer praticar agora?</h3><p>Uma sequência sugerida, sem bloquear quem já sabe. Estes são exercícios de fundamentos, não projetos completos.</p></div>
-          <div className={s.routeButtons} role="group" aria-label="Filtrar por objetivo"><button type="button" aria-pressed={purpose === "all"} onClick={() => setPurpose("all")}><strong>Explorar tudo</strong><span>Todos os fundamentos disponíveis</span></button>{practicePaths.map((path, index) => <button key={path.id} type="button" aria-pressed={purpose === path.id} onClick={() => setPurpose(path.id)}><strong>{index + 1}. {path.label}</strong><span>{path.description}</span><small>{desafios.filter(item => (language === "todas" || item.linguagem === language) && practicePath(item) === path.id).length} desafios</small></button>)}</div>
-          {(language === "todas" || language === "csharp") && <Link className={s.trackEntry} href={link("/estudante/trilhas/csharp")}><div><strong>Quer um caminho acompanhado? Trilha C# &amp; .NET</strong><span>Mapa da jornada, práticas de código e perguntas para conferir o entendimento. Comece pelos fundamentos disponíveis.</span></div><ArrowUpRight size={22}/></Link>}
-          <details className={s.projectRoadmap}><summary>Depois dos fundamentos: projetos profissionais <span>Em preparação</span></summary><p>O próximo caminho será construir uma aplicação por partes. Ainda não são aulas disponíveis: hoje você pode praticar os fundamentos acima{language === "csharp" ? " e seguir a trilha C# & .NET" : ""}.</p><ol><li><strong>CRUD com contexto</strong><span>Cadastrar, consultar, editar e excluir dados de um projeto.</span></li><li><strong>Persistência em banco SQL</strong><span>{language === "csharp" ? "A trilha C# prevê SQL Server e EF Core. PostgreSQL pode ser uma prática complementar." : "Guardar os dados, modelar tabelas e trabalhar com consultas; PostgreSQL é um exemplo de laboratório futuro."}</span></li><li><strong>API, validação e testes</strong><span>Comunicar as partes da aplicação e conferir seu comportamento.</span></li><li><strong>Entrega com Docker</strong><span>Entender containers quando houver uma aplicação para executar e distribuir.</span></li></ol></details>
-        </section>
-        <div className={s.statusRow}><div className={s.statusFilters} aria-label="Status do desafio">{([["todos", "Todos"], ["novo", "Novos"], ["andamento", "Em andamento"], ["concluido", "Concluídos"]] as const).map(([value, label]) => <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)}>{label}</button>)}</div><p aria-live="polite">{filteredChallenges.length} de {desafios.length} experimentos</p></div>
+        <div className={s.languageTabs} aria-label="Linguagens">{(["todas", "javascript", "python", "csharp"] as const).map(value => <button key={value} type="button" aria-pressed={language === value} onClick={() => setLanguage(value)}>{value === "todas" ? "Todas" : languageNames[value]}</button>)}</div>
+        <details className={s.moreFilters} data-lab-filters><summary>Filtrar por tema, nível ou progresso <span>{[purpose !== "all", difficulty !== "todas", filter !== "todos"].filter(Boolean).length || ""}</span></summary>
+          <div className={s.filterBody}><label className={s.difficultyField}><span>Nível</span><select value={difficulty} onChange={event => setDifficulty(event.target.value as DifficultyFilter)} aria-label="Filtrar por dificuldade"><option value="todas">Todos os níveis</option><option value="iniciante">Iniciante</option><option value="basico">Básico</option><option value="intermediario">Intermediário</option></select></label>
+          <div className={s.filterThemes} role="group" aria-label="Filtrar por objetivo"><button type="button" aria-pressed={purpose === "all"} onClick={() => setPurpose("all")}>Todos os temas</button>{practicePaths.map(path => <button type="button" key={path.id} aria-pressed={purpose === path.id} onClick={() => setPurpose(path.id)}>{path.label}</button>)}</div>
+          <div className={s.statusFilters} aria-label="Status do desafio">{([["todos", "Todos"], ["novo", "Novos"], ["andamento", "Em andamento"], ["concluido", "Concluídos"]] as const).map(([value, label]) => <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)}>{label}</button>)}</div></div>
+        </details>
+        <p className={s.libraryCount} aria-live="polite">{filteredChallenges.length} desafios{inProgress > 0 ? ` · ${inProgress} em andamento` : ""}{completed > 0 ? ` · ${completed} concluídos` : ""}</p>
 
         {filteredChallenges.length ? <div className={s.experimentGrid}>{filteredChallenges.map(challenge => {
           const state = states[challenge.slug] ?? "novo";
@@ -176,23 +158,20 @@ return (
                 style={{ objectPosition: cover.position }}
                 data-lab-cover={cover.key}
               />
-              <span className={s.experimentIndex}>E—{String(desafios.findIndex(item => item.slug === challenge.slug) + 1).padStart(2, "0")}</span>
               <span className={s.languageMark}>{languageCodes[challenge.linguagem]}</span>
             </div>
             <div className={s.experimentBody}>
-              <span className={s.experimentCategory}>{practicePaths.find(path => path.id === practicePath(challenge))?.label} · {challenge.categoria || languageNames[challenge.linguagem]}</span>
+              <span className={s.experimentCategory}>{challenge.categoria || languageNames[challenge.linguagem]}</span>
               <div className={s.experimentHeading}><h3>{challenge.titulo}</h3><ArrowUpRight size={20}/></div>
               <p className={s.experimentDescription}>{challenge.descricao}</p>
-              {challenge.habilidade && <p className={s.experimentSkill}>{challenge.habilidade}</p>}
-              <div className={s.experimentMeta}><span>{difficultyNames[challenge.dificuldade || "iniciante"]}</span><span>{challenge.steps.length} etapa{challenge.steps.length === 1 ? "" : "s"}</span>{challenge.minutos && <span>~{challenge.minutos} min</span>}</div>
-              <div className={s.experimentBottom}><span data-state={state}>{state === "concluido" ? <CheckCircle2 size={14}/> : state === "andamento" ? <Play size={13}/> : <span className={s.statusDot}/>} {state === "concluido" ? "Concluído" : state === "andamento" ? "Continuar rascunho" : "Não iniciado"}</span>{reflections[challenge.slug] && <span>Reflexão salva</span>}</div>
+              <div className={s.experimentMeta}><span>{difficultyNames[challenge.dificuldade || "iniciante"]}</span>{challenge.minutos && <span>~{challenge.minutos} min</span>}</div>
+              <div className={s.experimentBottom}><span data-state={state}>{state === "concluido" ? <CheckCircle2 size={14}/> : state === "andamento" ? <Play size={13}/> : <ArrowRight size={14}/>} {state === "concluido" ? "Concluído · revisitar" : state === "andamento" ? "Continuar meu código" : "Começar desafio"}</span>{reflections[challenge.slug] && <span>Reflexão salva</span>}</div>
             </div>
           </Link>;
         })}</div> : <div className={s.noResults}><Search size={30}/><h3>Nenhum experimento por aqui.</h3><p>{purpose === "building" && language === "csharp" ? "Os desafios avulsos de funções e dados em C# ainda estão em preparação. Explore os fundamentos disponíveis ou abra o mapa da trilha." : "Tente outro tema ou remova os filtros para explorar a bancada."}</p><button type="button" onClick={() => { setQuery(""); setFilter("todos"); setLanguage("todas"); setDifficulty("todas"); setPurpose("all"); }}>Mostrar todos os experimentos<ArrowRight size={16}/></button></div>}
       </section>
 
-      <Link className={s.blocksAlternative} href={link("/estudante/jogos")}><span className={s.blockMotif} aria-hidden="true"><i/><i/><i/></span><div><span className={s.eyebrow}>Outro jeito de praticar</span><h2>Prefere começar pelos blocos?</h2><p>Monte o Código: organize o programa antes de partir para o teclado.</p></div><ArrowUpRight size={24}/></Link>
-      <p className={s.storageNote}><HardDrive size={17}/>Seus rascunhos ficam neste navegador, sem sincronização entre aparelhos. No modo guiado, você pode recuperar o código anterior ao reinício enquanto permanecer na página.</p>
+      <details className={s.guideHelp}><summary>Como funciona o passo a passo?</summary><ol><li>Construa um programa com ajuda.</li><li>Altere os dados e teste o resultado.</li><li>Nos Primeiros passos de JavaScript, resolva outra situação por conta própria.</li></ol><Link href={link("/estudante/trilhas")}>Ver todos os caminhos de estudo<ArrowRight size={16}/></Link><p><HardDrive size={14}/>Seus rascunhos ficam neste navegador, separados por conta.</p></details>
     </div>
   );
 }

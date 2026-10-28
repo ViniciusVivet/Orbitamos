@@ -1,5 +1,7 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
+import studyCover from "../../../public/images/academy/codigo-no-celular-v1.webp";
 import { ArrowRight, BookOpen, Code2, Compass, Gamepad2 } from "lucide-react";
 import { useAcademyActivity } from "./useAcademyActivity";
 import { academyPreviewHref } from "@/lib/portalNavigation";
@@ -29,6 +31,6 @@ export default function AcademyContinue({ userId, nextLessonHref, nextLessonTitl
       {unavailable && <small role="status">O histórico local não está disponível. Você pode continuar estudando normalmente.</small>}
       <AcademyStudyPathPicker userId={userId} preview={preview} compact/>
     </div>
-    <aside className={s.choices}><p>SEU ESPAÇO DE ESTUDO</p><Link href={link("/estudante/trilhas")}><Compass size={20}/><span><strong>Meu caminho</strong><small>Veja o mapa e escolha sua direção.</small></span><ArrowRight size={15}/></Link><Link href={link("/estudante/pratica")}><Code2 size={20}/><span><strong>Laboratório de código</strong><small>Orientação e editor para praticar.</small></span><ArrowRight size={15}/></Link><Link href={link("/estudante/jogos")}><Gamepad2 size={20}/><span><strong>Jogos e descobertas</strong><small>Lógica, dados, inglês e revisão.</small></span><ArrowRight size={15}/></Link><Link href={link("/estudante/aulas")}><BookOpen size={20}/><span><strong>Biblioteca de aulas</strong><small>Consulte os conteúdos no seu ritmo.</small></span><ArrowRight size={15}/></Link></aside>
+    <aside className={s.homeScene}><Image src={studyCover} alt="" fill priority placeholder="blur" sizes="(max-width:767px) 100vw, 40vw"/><div className={s.sceneLinks}><Link href={link("/estudante/trilhas")}><Compass size={17}/>Trilhas<ArrowRight size={14}/></Link><Link href={link("/estudante/pratica")}><Code2 size={17}/>Escrever código<ArrowRight size={14}/></Link><Link href={link("/estudante/jogos")}><Gamepad2 size={17}/>Jogar<ArrowRight size={14}/></Link><Link href={link("/estudante/aulas")}><BookOpen size={17}/>Ver aulas<ArrowRight size={14}/></Link></div></aside>
   </section>;
 }

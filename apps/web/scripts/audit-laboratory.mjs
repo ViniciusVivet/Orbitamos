@@ -58,12 +58,13 @@ try {
     await page.getByRole("button", { name: "JavaScript", exact: true }).click();
     assert(await cards.count() > 0);
     assert(await cards.evaluateAll(items => items.every(el => el.dataset.language === "javascript")));
-    await page.getByRole("button", { name: "Todas as linguagens", exact: true }).click();
+    await page.getByRole("button", { name: "Todas", exact: true }).click();
     assert.equal(await cards.count(), total);
     await page.getByLabel("Buscar desafios", { exact: true }).fill("zzzznaoexiste");
     await page.getByRole("heading", { name: "Nenhum experimento por aqui." }).waitFor();
     await page.getByRole("button", { name: "Mostrar todos os experimentos" }).click();
     assert.equal(await cards.count(), total);
+    await page.locator("[data-lab-filters] > summary").click();
     await page.getByLabel("Filtrar por dificuldade").selectOption("iniciante");
     assert(await cards.count() > 0);
     await page.getByLabel("Filtrar por dificuldade").selectOption("todas");
@@ -71,7 +72,8 @@ try {
     const slug = firstHref.split("/").pop();
     await page.evaluate(slug => localStorage.setItem("orbitamos-pratica-lab-preview-" + slug, JSON.stringify({ stepStatus: ["pending"], reflection: "Minha reflexão de teste" })), slug);
     await page.reload({ waitUntil: "networkidle" });
-    await page.getByText("Retomar experimento", { exact: true }).waitFor();
+    await page.getByText("SEU RASCUNHO ESTÁ AQUI", { exact: true }).waitFor();
+    await page.locator("[data-lab-filters] > summary").click();
     await page.getByRole("button", { name: "Em andamento", exact: true }).click();
     assert.equal(await cards.count(), 1);
     await page.getByText("Reflexão salva", { exact: true }).waitFor();

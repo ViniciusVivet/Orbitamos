@@ -44,7 +44,7 @@ export default function CourseRow({ children, className = "" }: { children: Reac
           type="button"
           aria-label="Voltar"
           onClick={() => scroll(-1)}
-          className="absolute inset-y-0 left-0 z-20 hidden w-16 items-center justify-start bg-gradient-to-r from-black/85 via-black/40 to-transparent pl-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 md:flex"
+          className="absolute inset-y-0 left-0 z-20 hidden w-16 items-center justify-start bg-gradient-to-r from-black/85 via-black/40 to-transparent pl-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 md:flex"
         >
           <span className="grid size-10 place-items-center rounded-full bg-black/45 text-white/90 ring-1 ring-white/15 backdrop-blur-sm transition hover:scale-105 hover:bg-black/70">
             <ChevronLeft className="size-6" />
@@ -61,7 +61,7 @@ export default function CourseRow({ children, className = "" }: { children: Reac
           type="button"
           aria-label="Avançar"
           onClick={() => scroll(1)}
-          className="absolute inset-y-0 right-0 z-20 hidden w-16 items-center justify-end bg-gradient-to-l from-black/85 via-black/40 to-transparent pr-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 md:flex"
+          className="absolute inset-y-0 right-0 z-20 hidden w-16 items-center justify-end bg-gradient-to-l from-black/85 via-black/40 to-transparent pr-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 md:flex"
         >
           <span className="grid size-10 place-items-center rounded-full bg-black/45 text-white/90 ring-1 ring-white/15 backdrop-blur-sm transition hover:scale-105 hover:bg-black/70">
             <ChevronRight className="size-6" />

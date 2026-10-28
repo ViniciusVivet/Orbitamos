@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
@@ -18,11 +19,28 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { listarAulasConcluidas, listarCursosAcademy, totalAulas } from "@/lib/cursos";
 import { getTotalSkills, roadmaps, type CareerRoadmap, type RoadmapCategory } from "@/lib/roadmaps";
+import criacao from "../../../public/images/orbitamos/criacao-v1.png";
+import estudo from "../../../public/images/orbitamos/estudo-v1.png";
+import equipe from "../../../public/images/orbitamos/equipe-v1.png";
+import dados from "../../../public/images/orbitamos/dados-v1.png";
+import hardware from "../../../public/images/orbitamos/hardware-v1.png";
+import fundamentos from "../../../public/images/laboratorio/fundamentos-v1.png";
+import projetoCSharp from "../../../public/images/academy/projeto-csharp-v1.webp";
 
 const CHECKS_STORAGE_PREFIX = "orbitamos-roadmap-check";
 const CAREER_STORAGE_PREFIX = "orbitamos-career-journey";
 
 const stageIcons = ["🧭", "🪐", "🛰️", "🚀", "⭐"];
+const careerCovers = { frontend: criacao, "backend-csharp": projetoCSharp, "backend-python": fundamentos, "analista-dados": dados, fullstack: equipe, "suporte-ti": hardware };
+const careerCover = (slug: string) => careerCovers[slug as keyof typeof careerCovers] ?? estudo;
+const careerIntroductions: Record<string, string> = {
+  frontend: "Crie as telas e interações que as pessoas usam.",
+  "backend-csharp": "Construa as regras e os dados de uma aplicação com C#.",
+  "backend-python": "Crie automações e aplicações com Python.",
+  "analista-dados": "Encontre respostas e conte histórias com dados.",
+  fullstack: "Conecte as telas, as regras e os dados de uma aplicação.",
+  "suporte-ti": "Cuide dos computadores e ajude pessoas a resolver problemas.",
+};
 
 function getStorageKey(prefix: string, userId: string | number | undefined) {
   return userId ? `${prefix}-${userId}` : null;
@@ -136,12 +154,12 @@ function CareerPicker({
           Qual profissional você quer se tornar?
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-white/50">
-          Sua escolha organiza aulas, habilidades e projetos em um único mapa. Você poderá trocar depois sem perder o que já concluiu.
+          Veja o que estudar em cada carreira. Você pode trocar de direção depois.
         </p>
       </div>
 
       <Link href="/estudante/trilhas/csharp" className="mb-5 flex min-h-16 items-center justify-between gap-4 rounded-xl border border-emerald-300/30 bg-emerald-300/5 p-5 text-emerald-200">
-        <span><strong className="block">Experimente a nova jornada C# & .NET</strong><span className="mt-1 block text-sm text-slate-300">Profissão, roadmap e sua primeira missão com código. Edição piloto.</span></span><ArrowRight className="size-5 shrink-0"/>
+        <span><strong className="block">Quer começar pelo código?</strong><span className="mt-1 block text-sm text-slate-300">A trilha C# tem suas primeiras práticas guiadas. Edição piloto.</span></span><ArrowRight className="size-5 shrink-0"/>
       </Link>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {roadmaps.map((roadmap) => {
@@ -151,20 +169,22 @@ function CareerPicker({
               key={roadmap.id}
               type="button"
               onClick={() => onSelect(roadmap)}
-              className={`group rounded-2xl border p-4 text-left transition duration-300 hover:-translate-y-1 ${
+              className={`group overflow-hidden rounded-2xl border p-4 text-left transition duration-300 hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orbit-electric motion-reduce:transform-none motion-reduce:transition-none ${
                 selected
                   ? `${roadmap.border} bg-gradient-to-br ${roadmap.color} ring-1 ring-white/20`
                   : "border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.06]"
               }`}
             >
-              <div className="flex items-start justify-between gap-3">
-                <span className={`grid size-12 place-items-center rounded-xl bg-gradient-to-br ${roadmap.color} text-2xl`}>
+              <div className="relative -mx-4 -mt-4 mb-4 h-40 overflow-hidden bg-[#142532]">
+                <Image src={careerCover(roadmap.slug)} alt="" fill placeholder="blur" sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1279px) 45vw, 340px" className="object-cover transition duration-500 group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none"/>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#09151e]/80 to-transparent"/>
+                <span className="absolute bottom-3 left-4 text-2xl" aria-hidden="true">
                   {roadmap.icon}
                 </span>
-                {selected && <CheckCircle2 className="size-5 text-emerald-300" />}
+                {selected && <CheckCircle2 className="absolute right-4 top-4 size-6 rounded-full bg-[#09231d] text-emerald-200" aria-label="Carreira selecionada"/>}
               </div>
               <h3 className="mt-4 text-base font-black text-white">{roadmap.title}</h3>
-              <p className="mt-1 min-h-10 text-xs leading-5 text-white/45">{roadmap.subtitle}</p>
+              <p className="mt-1 min-h-10 text-xs leading-5 text-slate-300">{careerIntroductions[roadmap.slug] ?? roadmap.subtitle}</p>
               <div className="mt-4 flex items-center justify-between text-[11px] font-bold">
                 <span className="text-white/35">{roadmap.estimatedMonths}</span>
                 <span className={roadmap.accent}>
@@ -381,8 +401,8 @@ export default function CareerJourney() {
   return (
     <div className="space-y-6 pb-12">
       <section className={`relative overflow-hidden rounded-3xl border ${selectedRoadmap.border} bg-gradient-to-br ${selectedRoadmap.color} p-5 sm:p-7`}>
-        <div className="absolute -right-16 -top-20 size-64 rounded-full border border-white/10" />
-        <div className="absolute -bottom-28 right-16 size-56 rounded-full bg-orbit-electric/10 blur-3xl" />
+        <Image src={careerCover(selectedRoadmap.slug)} alt="" fill placeholder="blur" sizes="(max-width: 767px) 100vw, 80vw" className="object-cover object-right opacity-40 sm:opacity-75"/>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#07131b] via-[#07131b]/95 to-[#07131b]/30"/>
 
         <div className="relative">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
@@ -396,7 +416,7 @@ export default function CareerJourney() {
                 </span>
                 <div>
                   <h1 className="text-xl font-black text-white sm:text-3xl">{selectedRoadmap.title}</h1>
-                  <p className="mt-1 text-xs text-white/50 sm:text-sm">{selectedRoadmap.subtitle}</p>
+                  <p className="mt-1 text-xs text-slate-300 sm:text-sm">{careerIntroductions[selectedRoadmap.slug] ?? selectedRoadmap.subtitle}</p>
                 </div>
               </div>
             </div>
