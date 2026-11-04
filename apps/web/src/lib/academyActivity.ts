@@ -4,6 +4,7 @@ import { hasCompletedLearningDelivery, hasCompletedPractice } from "./practicePr
 import { beginnerPracticeKey, readBeginnerPractice, supportsBeginnerPractice } from "./beginnerPractice";
 import { activityCompletion, bridgeTarget, journalKey, practiceActivities, practiceDestination, readJournal, type ActivityId } from "./practiceStation";
 import { deliveryMissions, deliveryStorageKey, readDeliverySave } from "./orbiDelivery";
+import { chapterMissions, orbiChapterKey, readChapterSave } from "./orbiChapter";
 import { englishLessons, englishStorageKey, readEnglishSave } from "./codeEnglish";
 import { questKey, questSteps, readQuest } from "./sqlQuest";
 import { readSqlDraft, sqlLessons, sqlStorageKey } from "./sqlJourney";
@@ -18,7 +19,7 @@ export type AcademyActivityItem = {
   id: string; title: string; group: "experience" | "code" | "csharp" | "sql-workshop";
   href: string; status: "new" | "opened" | "in-progress" | "completed";
   completedUnits: number; totalUnits: number; unit: string; practiced: boolean;
-  reviewed: number; lastAt?: number; detail: string; nextHref: string; nextLabel: string;
+  reviewed: number; lastAt?: number; detail: string; history?: string; nextHref: string; nextLabel: string;
 };
 export type AcademyActivitySummary = { completed: number; total: number; practiced: number; reviewed: number; unit: string };
 export type AcademyActivity = {
@@ -76,10 +77,10 @@ export function getAcademyActivity(userId: string, read: ReadSave): AcademyActiv
   const journal = readJournal(get(journalKey(userId)));
   const complete = activityCompletion(userId, get);
   const quest = readQuest(get(questKey(userId)));
-  const delivery = readDeliverySave(get(deliveryStorageKey(userId)));
+  const legacyDelivery = readDeliverySave(get(deliveryStorageKey(userId)));
+  const delivery = readChapterSave(get(orbiChapterKey(userId)));
   const english = readEnglishSave(get(englishStorageKey(userId)));
   // Final game checks are also evidence if their wrapper journal write was unavailable.
-  complete.delivery ||= delivery.completed.length === deliveryMissions.length;
   complete.english ||= english.finished;
   const village = readVillageSave(get(villageStorageKey(userId)));
   const assembly = fasesMonteCodigo.map(phase => ({ phase, saved: object(get(`${JOGO_STORAGE_PREFIX}-${userId}-${phase.slug}`)), draft: readAssemblyDraft(get(assemblyDraftKey(userId, phase.slug)), phase) }));
@@ -90,7 +91,7 @@ export function getAcademyActivity(userId: string, read: ReadSave): AcademyActiv
   });
   const evidence: Record<ActivityId, { count: number; total: number; unit: string; drafted: boolean; detail: string }> = {
     sql: { count: quest.step, total: questSteps.length, unit: "etapas", drafted: quest.drafts.some(text), detail: questSteps[Math.min(quest.step, questSteps.length - 1)].title },
-    delivery: { count: delivery.completed.length, total: deliveryMissions.length, unit: "entregas", drafted: false, detail: deliveryMissions[delivery.current].title },
+    delivery: { count: delivery.completed.length, total: chapterMissions.length, unit: "entregas do capítulo", drafted: chapterMissions.some(mission => delivery.attempts[mission.id] > 0 || delivery.drafts[mission.id] !== mission.starterCode), detail: chapterMissions.find(mission => mission.id === delivery.current)!.title },
     english: { count: english.completed.length, total: englishLessons.length, unit: "cenas", drafted: text(english.draft), detail: englishLessons[english.current].title },
     village: { count: village.completed.length, total: villageLevels.length, unit: "fases", drafted: villageDrafted, detail: villageLevels[village.current].title },
     assembly: { count: assembly.filter(item => item.saved?.concluido === true).length, total: assembly.length, unit: "fases", drafted: assembly.some(item => positive(item.saved?.tentativas) || (!!item.draft && (item.draft.placed.length > 0 || item.draft.attempts > 0))), detail: assembly.find(item => item.saved?.concluido !== true)?.phase.titulo ?? "Todas as fases praticadas" },
@@ -98,14 +99,17 @@ export function getAcademyActivity(userId: string, read: ReadSave): AcademyActiv
   };
   const items: AcademyActivityItem[] = practiceActivities.map(activity => {
     const record = journal.activities[activity.id];
+    const versionedRecord = activity.id !== "delivery" || record?.contentVersion === 2 ? record : undefined;
+    const deliveryHistory = activity.id === "delivery" ? legacyDelivery.completed.length ? `Jogo anterior: ${legacyDelivery.completed.length} de ${deliveryMissions.length} entregas. Seu histórico continua guardado.` : record?.legacyCompletedAt || (record?.completedAt && record.contentVersion !== 2) ? "Conclusão do jogo anterior preservada. Este capítulo tem três novas entregas." : undefined : undefined;
     const progress = evidence[activity.id];
     const practiced = progress.count > 0 || progress.drafted || complete[activity.id];
     const href = practiceDestination(activity.id, userId, get);
     return { id: activity.id, group: "experience", title: activity.title, href,
       status: complete[activity.id] ? "completed" : practiced ? "in-progress" : record?.openedAt ? "opened" : "new",
-      completedUnits: progress.count, totalUnits: progress.total, unit: progress.unit, practiced, reviewed: complete[activity.id] ? record?.reviews ?? 0 : 0,
-      lastAt: Math.max(record?.openedAt ?? 0, record?.completedAt ?? 0, record?.reviewedAt ?? 0) || undefined,
+      completedUnits: progress.count, totalUnits: progress.total, unit: progress.unit, practiced, reviewed: complete[activity.id] ? versionedRecord?.reviews ?? 0 : 0,
+      lastAt: Math.max(versionedRecord?.openedAt ?? 0, versionedRecord?.completedAt ?? 0, versionedRecord?.reviewedAt ?? 0) || undefined,
       detail: complete[activity.id] ? "Experiência finalizada. Agora experimente aplicar a ideia." : progress.detail,
+      history: deliveryHistory,
       nextHref: bridgeTarget(activity.id), nextLabel: activity.id === "sql" ? "Construir uma tabela na oficina SQL" : "Aplicar a descoberta no código",
     };
   });

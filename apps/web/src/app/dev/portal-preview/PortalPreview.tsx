@@ -7,7 +7,8 @@ import PortalSidebar from "@/components/portal/PortalSidebar";
 import PortalHeader from "@/components/portal/PortalHeader";
 import { getNextIncompleteLesson } from "@/lib/learningExperience";
 import type { Curso } from "@/lib/cursos";
-import type { Project, Job, JobApplication } from "@/lib/api";
+import type { Job } from "@/lib/api";
+import { collaboratorDemoProjects as projects, collaboratorDemoApplications as applications } from "@/lib/collaboratorPreviewFixtures";
 import s from "@/components/portal/PortalExperience.module.css";
 
 // Isolated visual fixtures. This route returns 404 outside development.
@@ -21,15 +22,10 @@ const courses: Curso[] = [
   { id: "demo-web", slug: "html-css-js", titulo: "HTML, CSS e JavaScript", modulos: [{ id: "web", titulo: "Sua primeira página", aulas: [{ id: "b1", titulo: "Estrutura de uma página", youtubeVideoId: "" }] }] },
   { id: "demo-git", slug: "github-colaborativo", titulo: "GitHub e colaboração", modulos: [{ id: "git", titulo: "Versionamento", aulas: [{ id: "c1", titulo: "Seu primeiro commit", youtubeVideoId: "" }] }] },
 ];
-const projects: Project[] = [
-  { id: 1, title: "Uma nova experiência para a comunidade", description: "Protótipo e interface", status: "in_progress", createdAt: "2026-09-10", clientName: "Projeto demonstrativo", progress: 65 },
-  { id: 2, title: "Portfólio de uma marca autoral", description: "Design de interface", status: "in_progress", createdAt: "2026-09-09", progress: 30 },
-];
 const jobs: Job[] = [
   { id: 1, title: "Desenvolvimento de interfaces web", description: "", type: "Projeto", status: "aberta", createdAt: "2026-09-10", workModel: "Remoto", skills: ["React", "CSS"], budgetLabel: "A combinar" },
   { id: 2, title: "Design para experiências digitais", description: "", type: "Freelance", status: "aberta", createdAt: "2026-09-09", workModel: "Remoto", skills: ["Figma", "UI Design"] },
 ];
-const applications: JobApplication[] = [{ id: 1, jobId: 1, jobTitle: "Desenvolvimento de interfaces web", jobType: "Projeto", status: "reviewing", createdAt: "2026-09-12T12:00:00Z" }];
 
 export default function PortalPreview({ role, state }: { role: "student" | "work"; state: string }) {
   const [open, setOpen] = useState(false);
@@ -53,7 +49,7 @@ export default function PortalPreview({ role, state }: { role: "student" | "work
           completedLessons={state === "complete" ? 5 : populated ? 1 : 0}
           loading={loading} error={failed ? "Não foi possível atualizar suas aulas. Tente novamente para retomar seu progresso." : ""}
           summary={null} retry={() => setRetried(true)}/>
-          : <CollaboratorHome name="Alex" projects={populated ? projects : []} jobs={populated ? jobs : []}
+          : <CollaboratorHome preview name="Alex" projects={populated ? projects : []} jobs={populated ? jobs : []}
             applications={populated ? applications : []} loading={loading}
             failed={failed ? ["projetos", "vagas", "candidaturas"] : []} retry={() => setRetried(true)}/>}
       </div>

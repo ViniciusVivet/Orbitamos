@@ -18,7 +18,7 @@ export default function AcademyWorkspacePreview() {
   const activity = params.get("activity");
   const section: AcademySection = activity === "sql" ? "tracks" : activity ? "practice" : view === "home" ? "home" : view === "tracks" || view === "lessons" ? "tracks" : view === "progress" ? "progress" : view === "community" || view === "mentoring" ? "community" : "practice";
   const practiceMode = activity === "english" ? "english" : activity === "review" ? "review" : "games";
-  return <LaboratoryPreviewFrame section={section} practiceMode={practiceMode} showDock={!activity} userId="academy-preview">
+  return <LaboratoryPreviewFrame section={section} practiceMode={practiceMode} showDock={!activity} userId="academy-preview" hidePracticeNavigation={activity === "delivery"}>
     {section === "home" ? <StudentHome name="orbitante" userId="academy-preview" preview progress={defaultProgress} progressLoading={false} courses={cursos} nextLesson={null} completedLessons={0} loading={false} error="" summary={null} retry={() => {}}/>
       : !activity && view === "lessons" ? <AcademyLessons preview/>
       : !activity && view === "mentoring" ? <AcademyMentoring/>

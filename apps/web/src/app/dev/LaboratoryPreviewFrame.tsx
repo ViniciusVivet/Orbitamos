@@ -11,7 +11,7 @@ import type { AcademySection } from "@/lib/portalNavigation";
 import s from "@/components/portal/PortalExperience.module.css";
 
 /** Development-only shell: exercises the real sidebar and available editor width without a student account. */
-export default function LaboratoryPreviewFrame({ children, title, mode = "student", section, practiceMode = "code", showDock = false, userId }: { children: ReactNode; title?: string; mode?: "student" | "work"; section?: AcademySection; practiceMode?: "code" | "games" | "english" | "review"; showDock?: boolean; userId?: string }) {
+export default function LaboratoryPreviewFrame({ children, title, mode = "student", section, practiceMode = "code", showDock = false, userId, hidePracticeNavigation = false }: { children: ReactNode; title?: string; mode?: "student" | "work"; section?: AcademySection; practiceMode?: "code" | "games" | "english" | "review"; showDock?: boolean; userId?: string; hidePracticeNavigation?: boolean }) {
   const path = usePathname();
   const selected = section ?? (path.includes("csharp") || path.includes("sql") ? "tracks" : "practice");
   const [open, setOpen] = useState(false);
@@ -29,7 +29,7 @@ export default function LaboratoryPreviewFrame({ children, title, mode = "studen
     <PortalSidebar mode={mode} mobileOpen={open} onCloseMobile={close} preview activeSection={selected}/>
     <div className="lg:pl-56">
       <PortalHeader mode={mode} preview section={selected} title={title} mobileOpen={open} onOpenMenu={() => setOpen(true)}/>
-      <div className="px-4 py-4 sm:py-6 lg:px-6 lg:py-8">{selected === "practice" && <PracticeNavigation preview mode={practiceMode}/ >}{children}</div>
+      <div className="px-4 py-4 sm:py-6 lg:px-6 lg:py-8">{selected === "practice" && !hidePracticeNavigation && <PracticeNavigation preview mode={practiceMode}/ >}{children}</div>
     </div>
     {mode === "student" && <AcademyMobileNav preview section={selected} visible={showDock}/ >}
   </div>;

@@ -26,7 +26,7 @@ type PreparedUpload = { blob: Blob; extension: string; contentType: string };
  * (canvas) para no maximo MAX_AVATAR_DIMENSION px, exportando WebP leve.
  * GIF passa direto (para preservar a animacao), apenas com limite de tamanho.
  */
-async function prepareAvatarUpload(file: File): Promise<PreparedUpload> {
+export async function prepareAvatarUpload(file: File): Promise<PreparedUpload> {
   if (!file.type.startsWith("image/")) {
     throw new Error("Envie um arquivo de imagem (JPG, PNG, GIF ou WebP).");
   }

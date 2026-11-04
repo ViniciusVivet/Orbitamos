@@ -1,0 +1,864 @@
+.chapter {
+  --cream:#f6eddc;
+  --mint:#9be3cd;
+  --ink:#0b2029;
+  color:var(--cream);
+  max-width:1180px;
+  margin:auto;
+  font-family:var(--font-geist-sans,Arial,sans-serif)
+}
+.chapter button,.chapter a {
+   -webkit-tap-highlight-color:transparent
+}
+.chapter button {
+  cursor:pointer
+}
+.chapter button:disabled {
+  cursor:default;
+  opacity:.45
+}
+.chapter button:focus-visible,.chapter a:focus-visible,.chapter summary:focus-visible {
+  outline:3px solid var(--mint);
+  outline-offset:4px
+}
+.header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:24px
+}
+.back {
+  display:flex;
+  gap:7px;
+  align-items:center;
+  font-size:13px;
+  color:#c0d4d1;
+  min-height:44px
+}
+.series {
+  font-size:12px;
+  font-weight:750;
+  letter-spacing:.12em
+}
+.series span {
+  font-size:10px;
+  color:#86a6a4;
+  display:block;
+  letter-spacing:.18em;
+  margin-top:4px
+}
+.progress {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:12px;
+  color:var(--mint)
+}
+.intro {
+  min-height:530px;
+  position:relative;
+  isolation:isolate;
+  border-radius:24px;
+  overflow:hidden;
+  background:#152d36;
+  border:1px solid #dbe5d51a;
+  display:flex;
+  align-items:center
+}
+.introArt {
+  position:absolute;
+  inset:0;
+  z-index:-2;
+  background:url("/images/games/orbi-chapter/background-v1.webp") center/cover no-repeat
+}
+.intro:after {
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:linear-gradient(90deg,#081d29ed 0%,#091d2bba 36%,#07172005 76%),linear-gradient(0deg,#0b2029c9,transparent 45%)
+}
+.introCopy {
+  max-width:590px;
+  padding:48px 42px
+}
+.eyebrow {
+  display:block;
+  color:var(--mint);
+  font-size:10px;
+  line-height:1.6;
+  letter-spacing:.16em;
+  font-weight:750
+}
+.intro h1 {
+  font-size:clamp(44px,5.5vw,76px);
+  line-height:1.02;
+  letter-spacing:-.05em;
+  font-weight:780;
+  margin:18px 0 22px
+}
+.intro p {
+  max-width:390px;
+  font-size:16px;
+  line-height:1.7;
+  color:#c6d6d2;
+  margin:0 0 26px
+}
+.introSprite {
+  position:absolute;
+  right:8%;
+  bottom:3%;
+  width:300px;
+  height:300px;
+  background:url("/images/games/orbi-chapter/orbi-sheet-v1.webp") 0 0/1200px 600px no-repeat;
+  filter:drop-shadow(0 12px 15px #04182180)
+}
+.primary {
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  min-height:50px;
+  border-radius:12px;
+  padding:13px 20px;
+  background:var(--mint);
+  color:#102c30;
+  font-size:14px;
+  font-weight:750;
+  border:1px solid transparent;
+  text-decoration:none;
+  line-height:1.4
+}
+.primary:hover {
+  background:#b4efd9
+}
+.introMeta {
+  display:block;
+  font-size:11px;
+  color:#a7c2bc;
+  margin-top:15px
+}
+.intro .history {
+  font-size:11px;
+  line-height:1.5;
+  margin-top:16px;
+  margin-bottom:0;
+  display:flex;
+  gap:7px;
+  align-items:center
+}
+.missionBar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin:0 0 17px
+}
+.missionBar h1 {
+  font-weight:720;
+  letter-spacing:-.03em;
+  font-size:clamp(24px,3.5vw,36px);
+  line-height:1.2;
+  margin:5px 0 6px
+}
+.missionBar p {
+  font-size:13px;
+  line-height:1.5;
+  color:#b5cfca;
+  margin:0
+}
+.tools {
+  display:flex;
+  gap:6px
+}
+.tools button,.dialogHead button {
+  display:grid;
+  place-items:center;
+  width:44px;
+  height:44px;
+  color:#bbd3ce;
+  background:#b0d4ca0a;
+  border:1px solid #d4e3d221;
+  border-radius:12px;
+  flex-shrink:0
+}
+.stage {
+  position:relative;
+  border:1px solid #abc9b82e;
+  border-radius:20px;
+  padding:4px;
+  background:#15313a;
+  box-shadow:0 22px 80px #0003;
+  overflow:hidden
+}
+.stage>div:first-child {
+  max-height:590px!important;
+  min-height:280px!important;
+  aspect-ratio:19/10!important
+}
+.overlay {
+  position:absolute;
+  inset:4px;
+  background:#071e2bdf;
+  backdrop-filter:blur(10px);
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:13px;
+  padding:22px;
+  text-align:center
+}
+.overlay h2 {
+  font-size:clamp(24px,3vw,40px);
+  line-height:1.1;
+  letter-spacing:-.035em;
+  font-weight:740;
+  max-width:600px;
+  margin:0
+}
+.overlay p {
+  max-width:500px;
+  font-size:14px;
+  line-height:1.6;
+  color:#b6d1c8;
+  margin:0 0 6px
+}
+.successIcon {
+  display:grid;
+  place-items:center;
+  background:#9be3cd22;
+  color:var(--mint);
+  border:1px solid #9be3cd55;
+  border-radius:50%;
+  height:52px;
+  width:52px
+}
+.loading {
+  position:absolute;
+  left:18px;
+  top:16px;
+  font-size:12px;
+  color:var(--cream);
+  pointer-events:none;
+  background:#10232ed9;
+  padding:8px;
+  border-radius:6px
+}
+.controls {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:15px 0 0;
+  user-select:none;
+  touch-action:none
+}
+.directions {
+  display:flex;
+  gap:7px
+}
+.controls button {
+  touch-action:none;
+  min-height:54px;
+  border:1px solid #b6d2c735;
+  border-radius:13px;
+  color:#d8e9df;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  background:#15323b;
+  font-size:13px;
+  font-weight:650
+}
+.directions button {
+  width:68px;
+  box-shadow:0 4px 0 #071a23
+}
+.controls button:active {
+  background:#2a4c51;
+  transform:translateY(2px)
+}
+.controls .jump {
+  padding:0 24px;
+  background:#234744
+}
+.jump span {
+  color:var(--mint)
+}
+.controls .terminalButton {
+  padding:0 22px;
+  margin-left:auto;
+  background:#97cdbb1a;
+  border-color:#9be3cd55;
+  color:#bcebd7
+}
+.controls .terminalButton:disabled {
+  background:#10282f;
+  opacity:.48
+}
+.controls .restart {
+  width:50px
+}
+.notice {
+  display:flex;
+  align-items:flex-start;
+  gap:9px;
+  color:#c3d7cb;
+  font-size:13px;
+  line-height:1.6;
+  margin:17px 0 13px;
+  min-height:21px
+}
+.orbiDot {
+  display:block;
+  height:8px;
+  width:8px;
+  background:var(--mint);
+  border-radius:50%;
+  margin-top:6px;
+  flex-shrink:0
+}
+.help {
+  font-size:12px;
+  color:#94b4ad;
+  border-top:1px solid #bfdcc21a;
+  padding-top:12px;
+  line-height:1.8
+}
+.help summary {
+  cursor:pointer;
+  width:fit-content;
+  min-height:36px
+}
+.help p {
+  max-width:800px;
+  margin:4px 0 12px
+}
+.route {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin-top:25px
+}
+.route button {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:17px 14px;
+  text-align:left;
+  background:#14303944;
+  border:1px solid #bbd8c51a;
+  border-radius:13px;
+  color:#b3cac1;
+  min-width:0;
+  line-height:1.4
+}
+.route button[aria-current] {
+  border-color:#9be3cd70;
+  background:#9be3cd0d
+}
+.route button>span:first-child {
+  color:var(--mint);
+  font-size:13px;
+  width:24px;
+  flex-shrink:0
+}
+.route button>span:last-child {
+  font-size:13px;
+  font-weight:650
+}
+.route small {
+  display:block;
+  color:#83a99c;
+  font-size:10px;
+  font-weight:400;
+  margin-top:4px
+}
+.warning {
+  font-size:13px;
+  color:#ffd390;
+  margin:15px 0
+}
+.textButton {
+  background:none;
+  border:0;
+  color:#b8d9cc;
+  font-size:12px;
+  padding:8px 4px;
+  min-height:36px;
+  text-decoration:underline;
+  text-underline-offset:4px
+}
+.textButton:hover {
+  color:#edfff5
+}
+.dialog {
+  width:min(680px,calc(100vw - 24px));
+  max-height:calc(100dvh - 28px);
+  margin:auto;
+  background:#102731;
+  color:var(--cream);
+  border:1px solid #719f9766;
+  border-radius:20px;
+  padding:25px;
+  box-shadow:0 25px 120px #0009;
+  overflow:auto;
+  overscroll-behavior:contain
+}
+.dialog::backdrop {
+  background:#04121bd9;
+  backdrop-filter:blur(7px)
+}
+.dialogHead {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px
+}
+.dialogHead button {
+  width:38px;
+  height:38px;
+  min-height:38px
+}
+.dialog h2 {
+  font-size:30px;
+  line-height:1.2;
+  letter-spacing:-.03em;
+  margin:8px 0 12px;
+  font-weight:750
+}
+.instruction {
+  font-size:14px;
+  line-height:1.7;
+  color:#c0d3cb;
+  margin:0 0 18px
+}
+.example {
+  padding:12px 15px;
+  background:#9be3cd09;
+  border-left:2px solid var(--mint);
+  margin-bottom:20px
+}
+.example span {
+  display:block;
+  font-size:11px;
+  color:#8cad9e;
+  margin-bottom:7px
+}
+.example code {
+  font-size:15px;
+  color:#b8efd7
+}
+.editorLabel {
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  font-weight:650;
+  margin-bottom:8px
+}
+.editorLabel span {
+  font-size:11px;
+  color:#8eafa3;
+  font-weight:400
+}
+.dialog textarea {
+  display:block;
+  width:100%;
+  min-height:150px;
+  background:#071b26;
+  color:#e4efdc;
+  border:1px solid #94c5b84d;
+  border-radius:12px;
+  font-size:16px;
+  line-height:1.8;
+  padding:16px;
+  font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
+  resize:vertical;
+  tab-size:2;
+  outline-offset:3px
+}
+.dialog textarea:focus {
+  outline:2px solid var(--mint)
+}
+.symbols {
+  display:flex;
+  gap:6px;
+  margin:10px 0;
+  flex-wrap:wrap
+}
+.symbols button {
+  height:36px;
+  min-width:42px;
+  padding:0 10px;
+  background:#20404b;
+  color:#dcecdf;
+  border:1px solid #7cae9e30;
+  border-radius:7px;
+  font:13px ui-monospace,monospace
+}
+.draftNote {
+  font-size:11px;
+  line-height:1.6;
+  color:#8db1a4;
+  margin:0 0 15px
+}
+.feedbackError,.feedbackOk {
+  border-radius:9px;
+  padding:12px;
+  font-size:13px;
+  line-height:1.6;
+  margin:12px 0
+}
+.feedbackError {
+  background:#76503a33;
+  color:#ffce9e;
+  border:1px solid #e0ae7855
+}
+.feedbackOk {
+  background:#9be3cd16;
+  color:#bdebd9;
+  border:1px solid #9be3cd55
+}
+.feedbackOk code,.feedbackError code {
+  display:block;
+  font-size:13px;
+  margin-top:6px
+}
+.hints {
+  background:#e8c8770c;
+  padding:12px 15px;
+  border-radius:9px;
+  margin:12px 0;
+  font-size:12px;
+  line-height:1.7;
+  color:#d0d6bd
+}
+.hints strong {
+  color:#f0d996
+}
+.hints p {
+  margin:7px 0
+}
+.dialogActions {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap
+}
+.secondary {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:50px;
+  border:1px solid #a0bcad55;
+  border-radius:12px;
+  padding:10px 16px;
+  background:transparent;
+  color:#c4dfce;
+  font-size:13px
+}
+.resetRow {
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  align-items:center;
+  border-top:1px solid #bad4bd18;
+  padding-top:9px;
+  margin-top:18px
+}
+.resetRow>span {
+  font-size:12px;
+  color:#aeccbd
+}
+@media(min-width:1500px) {
+  .stage>div:first-child {
+    aspect-ratio:2.1!important
+  }
+}
+@media(max-width:700px) {
+  .header {
+    margin-bottom:15px;
+    gap:7px
+  }
+  .series {
+    font-size:10px;
+    letter-spacing:.08em
+  }
+  .series span {
+    font-size:9px
+  }
+  .intro {
+    min-height:620px;
+    align-items:flex-start
+  }
+  .introArt {
+    background-position:62% center
+  }
+  .intro:after {
+    background:linear-gradient(180deg,#081e2aed,#081e2ac9 38%,#07172000 70%,#0b2029b0)
+  }
+  .introCopy {
+    padding:30px 25px;
+    max-width:100%
+  }
+  .intro h1 {
+    font-size:54px;
+    margin:15px 0
+  }
+  .intro p {
+    font-size:14px;
+    max-width:340px;
+    line-height:1.6;
+    margin-bottom:20px
+  }
+  .introSprite {
+    width:230px;
+    height:230px;
+    background-size:920px 460px;
+    right:3%;
+    bottom:-2%
+  }
+  .introMeta {
+    font-size:10px
+  }
+  .intro .history {
+    max-width:270px;
+    font-size:10px
+  }
+  .missionBar {
+    align-items:flex-start;
+    gap:8px
+  }
+  .missionBar h1 {
+    font-size:25px;
+    max-width:280px
+  }
+  .missionBar p {
+    font-size:12px
+  }
+  .tools {
+    gap:4px
+  }
+  .tools button {
+    height:40px;
+    width:40px;
+    border-radius:10px
+  }
+  .controls {
+    gap:7px;
+    flex-wrap:wrap;
+    margin-top:11px
+  }
+  .directions {
+    gap:6px
+  }
+  .directions button {
+    width:53px
+  }
+  .controls .jump {
+    padding:0 19px
+  }
+  .controls .terminalButton {
+    padding:0 14px
+  }
+  .controls .terminalButton span {
+    font-size:0
+  }
+  .controls .terminalButton span:after {
+    content:"Terminal";
+    font-size:12px
+  }
+  .controls .restart {
+    width:44px
+  }
+  .controls button {
+    min-height:50px;
+    border-radius:11px
+  }
+  .stage>div:first-child {
+    aspect-ratio:1.22!important;
+    min-height:280px!important
+  }
+  .route {
+    gap:8px;
+    margin-top:18px
+  }
+  .route button {
+    flex-direction:column;
+    align-items:flex-start;
+    padding:12px 10px;
+    gap:5px
+  }
+  .route button>span:last-child {
+    font-size:11px
+  }
+  .route small {
+    display:none
+  }
+  .notice {
+    font-size:12px
+  }
+  .dialog {
+    padding:18px;
+    border-radius:16px
+  }
+  .dialog h2 {
+    font-size:26px
+  }
+  .dialogActions .primary {
+    flex:1;
+    font-size:13px;
+    padding:12px
+  }
+  .instruction {
+    font-size:13px
+  }
+  .overlay {
+    padding:20px 16px;
+    gap:10px
+  }
+  .overlay h2 {
+    font-size:27px
+  }
+  .overlay p {
+    font-size:12px;
+    line-height:1.6
+  }
+  .overlay .primary {
+    min-height:44px;
+    font-size:12px;
+    padding:11px 13px
+  }
+}
+@media(max-width:380px) {
+  .intro {
+    min-height:595px
+  }
+  .introCopy {
+    padding:25px 20px
+  }
+  .intro h1 {
+    font-size:46px
+  }
+  .intro .primary {
+    font-size:12px;
+    padding:12px
+  }
+  .introSprite {
+    width:210px;
+    height:210px;
+    background-size:840px 420px
+  }
+  .directions button {
+    width:43px
+  }
+  .controls .jump {
+    padding:0 12px
+  }
+  .controls .terminalButton {
+    padding:0 10px
+  }
+  .controls .restart {
+    width:39px
+  }
+  .controls {
+    gap:5px
+  }
+  .missionBar h1 {
+    font-size:22px
+  }
+  .tools button {
+    width:35px;
+    height:38px
+  }
+  .overlay {
+    gap:7px
+  }
+  .overlay h2 {
+    font-size:23px
+  }
+  .overlay p {
+    font-size:11px
+  }
+  .successIcon {
+    height:36px;
+    width:36px
+  }
+  .dialogActions {
+    flex-direction:column
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .chapter * {
+    scroll-behavior:auto!important;
+    transition:none!important
+  }
+}
+.codeReading {
+  margin:9px 0 0!important;
+  line-height:1.7
+}
+.stage:has([data-chapter-victory]) {
+  isolation: isolate;
+}
+@media(max-width:700px) {
+  .stage:has([data-chapter-victory]) [data-orbi-chapter-canvas] {
+    display: none;
+  }
+  .overlay[data-chapter-victory] {
+    position: relative;
+    inset: auto;
+    min-height: 350px;
+    padding: 24px 16px;
+  }
+}
+.codeReading code {
+  font-size:11px
+}
+@media(max-width:700px) {
+  .controls {
+    display:grid;
+    grid-template-columns:auto minmax(62px,1fr) auto;
+    align-items:stretch
+  }
+  .controls .jump {
+    padding:0 8px;
+    gap:6px
+  }
+  .controls .terminalButton {
+    margin-left:0;
+    padding:0 10px;
+    gap:6px
+  }
+  .controls .restart {
+    width:44px
+  }
+  .tools button {
+    width:44px;
+    height:44px
+  }
+}
+@media(max-width:380px) {
+  .controls .terminalButton {
+    width:auto;
+    padding:0 10px;
+    gap:6px
+  }
+  .controls .terminalButton span {
+    display:inline;
+    font-size:0
+  }
+  .directions button {
+    width:44px
+  }
+  .controls .restart {
+    width:44px
+  }
+  .tools button {
+    width:44px;
+    height:44px
+  }
+}

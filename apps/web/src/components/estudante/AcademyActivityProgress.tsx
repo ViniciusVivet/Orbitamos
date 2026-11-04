@@ -12,13 +12,13 @@ function ActivityRecord({ item, preview }: { item: AcademyActivityItem; preview:
   const percent = item.totalUnits ? Math.min(100, item.completedUnits / item.totalUnits * 100) : 0;
   return <Link href={preview ? academyPreviewHref(item.href) : item.href} className={s.record}>
     <OrbitPhoto kind={item.group === "sql-workshop" ? "dados" : item.group === "experience" ? "criacao" : "estudo"} className={s.thumbnail} sizes="96px"/>
-    <div className={s.recordContent}><span className={s.recordStatus}>{item.status === "completed" && <Check size={12}/>} {statusLabels[item.status]}</span><strong>{item.title}</strong><div className={s.track}><span style={{width:percent+"%"}}/></div><p>{item.completedUnits} de {item.totalUnits} {item.unit}{item.reviewed ? ` · ${item.reviewed} ${item.reviewed === 1 ? "revisão" : "revisões"}` : ""}</p>{item.status === "completed" && item.completedUnits < item.totalUnits && <small>Conquista preservada. Esta contagem é da tentativa atual.</small>}</div><ArrowRight size={17}/>
+    <div className={s.recordContent}><span className={s.recordStatus}>{item.status === "completed" && <Check size={12}/>} {statusLabels[item.status]}</span><strong>{item.title}</strong><div className={s.track}><span style={{width:percent+"%"}}/></div><p>{item.completedUnits} de {item.totalUnits} {item.unit}{item.reviewed ? ` · ${item.reviewed} ${item.reviewed === 1 ? "revisão" : "revisões"}` : ""}</p>{item.history && <small>{item.history}</small>}{item.status === "completed" && item.completedUnits < item.totalUnits && <small>Conquista preservada. Esta contagem é da tentativa atual.</small>}</div><ArrowRight size={17}/>
   </Link>;
 }
 
 export default function AcademyActivityProgress({ userId, preview = false }: { userId?: string | number | null; preview?: boolean }) {
   const { data, ready, unavailable } = useAcademyActivity(userId);
-  const visible = data?.items.filter(item => item.status !== "new") ?? [];
+  const visible = data?.items.filter(item => item.status !== "new" || item.history) ?? [];
   return <section className={s.panel} data-academy-evidence aria-label="Código, experiências e trilha C#">
     <header className={s.heading}><div><span>SUAS TENTATIVAS VIRAM CAMINHO</span><h2>Olha o que você<br/>{" "}está construindo.</h2><p>{visible.length ? "Seu código e suas descobertas estão aqui. Escolha uma atividade para continuar." : "Tudo começa com uma tentativa. Seu primeiro programa pode ser hoje."}</p>{!visible.length && <Link href={preview ? academyPreviewHref("/estudante/pratica/variaveis-js") : "/estudante/pratica/variaveis-js"}>Escrever minha primeira linha<ArrowRight size={17}/></Link>}</div><OrbitPhoto kind="estudo" className={s.cover} sizes="(max-width: 650px) 92vw, 42vw"/></header>
     {!ready ? <p role="status">Lendo suas atividades salvas…</p> : <>

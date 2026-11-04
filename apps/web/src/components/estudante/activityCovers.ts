@@ -1,5 +1,5 @@
 import loja from "../../../public/images/jogos/loja-orbi-v1.webp";
-import entrega from "../../../public/images/jogos/entrega-orbi-v1.webp";
+import entrega from "../../../public/images/jogos/entrega-orbi-v2.webp";
 import ingles from "../../../public/images/jogos/ingles-em-cena-v1.webp";
 import vila from "../../../public/images/jogos/vila-blocos-v1.webp";
 import rota from "../../../public/images/jogos/guia-orbi-v1.webp";

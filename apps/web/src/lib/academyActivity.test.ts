@@ -9,9 +9,32 @@ import { englishLessons, englishStorageKey } from "./codeEnglish";
 import { csharpModules } from "./csharpModules";
 import { csharpProgressKey } from "./csharpTrack";
 import { fasesMonteCodigo, JOGO_STORAGE_PREFIX } from "./jogoMonteCodigo";
+import { chapterMissionIds, emptyChapterSave, orbiChapterKey } from "./orbiChapter";
+import { deliveryMissions, deliveryStorageKey } from "./orbiDelivery";
 
 function store(initial: Record<string, unknown> = {}) { const saves = new Map(Object.entries(initial).map(([key, value]) => [key, JSON.stringify(value)])); return { saves, read: (key: string) => saves.get(key) ?? null }; }
 describe("Academy read-only continuity", () => {
+  it("shows legacy delivery history separately while counting only the new chapter", () => {
+    const oldRecord = { version: 1 as const, activities: { delivery: { openedAt: 900, completedAt: 1000, reviewedAt: 2000, reviews: 3 } } };
+    const data = store({ [deliveryStorageKey("u")]: { version: 1, current: 2, completed: deliveryMissions.map(mission => mission.id) }, [journalKey("u")]: oldRecord });
+    const before = [...data.saves];
+    const first = getAcademyActivity("u", data.read).items.find(item => item.id === "delivery")!;
+    expect(first).toMatchObject({ completedUnits: 0, totalUnits: 3, practiced: false, reviewed: 0 });
+    expect(first.status).not.toBe("completed");
+    expect(first.history).toContain("3 de 3 entregas");
+    expect(first.lastAt).toBeUndefined();
+    expect([...data.saves]).toEqual(before);
+    const chapter = { ...emptyChapterSave(), completed: ["ponte"], current: "elevador", attempts: { ponte: 1, elevador: 2, farol: 0 } };
+    data.saves.set(orbiChapterKey("u"), JSON.stringify(chapter));
+    expect(getAcademyActivity("u", data.read).items.find(item => item.id === "delivery")).toMatchObject({ status: "in-progress", completedUnits: 1, reviewed: 0 });
+    data.saves.set(orbiChapterKey("u"), JSON.stringify({ ...chapter, completed: chapterMissionIds }));
+    expect(getAcademyActivity("u", data.read).items.find(item => item.id === "delivery")).toMatchObject({ status: "completed", completedUnits: 3, reviewed: 0 });
+    data.saves.set(journalKey("u"), JSON.stringify(recordPractice(recordPractice(oldRecord, "delivery", "complete", 3000), "delivery", "review", 4000)));
+    const complete = getAcademyActivity("u", data.read).items.find(item => item.id === "delivery")!;
+    expect(complete).toMatchObject({ status: "completed", completedUnits: 3, reviewed: 1, lastAt: 4000 });
+    expect(complete.history).toContain("Jogo anterior");
+    expect(getAcademyActivity("another", data.read).items.find(item => item.id === "delivery")).toMatchObject({ status: "new", completedUnits: 0, practiced: false });
+  });
   it("offers no invented progress or last activity to a new account", () => {
     const result = getAcademyActivity("a", () => null);
     expect(result.continueItem).toBeNull();

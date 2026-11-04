@@ -3,13 +3,14 @@ import { readVillageSave, villageLevels, villageStorageKey } from "./vilaDosBloc
 import { fasesMonteCodigo, JOGO_STORAGE_PREFIX } from "./jogoMonteCodigo";
 import { niveisGuiaOrbi } from "./jogoGuiaOrbi";
 import { academyPreviewHref } from "./portalNavigation";
+import { chapterMissionIds, orbiChapterKey, readChapterSave } from "./orbiChapter";
 
 export const activityIds = ["sql", "delivery", "english", "village", "orbi", "assembly"] as const;
 export type ActivityId = typeof activityIds[number];
 export type Activity = { id: ActivityId; title: string; kind: string; goal: string; description: string; skill: string; codeSlug: string; route: string; preview: string; color: string };
 export const practiceActivities: Activity[] = [
   { id: "sql", title: "A loja do Orbi", kind: "Aventura guiada", goal: "dados", description: "Encontre os produtos que estão acabando e escreva suas primeiras consultas.", skill: "Linhas, colunas e filtros", codeSlug: "dicionarios-python", route: "/estudante/trilhas/sql", preview: "/dev/academy-preview?activity=sql", color: "sage" },
-  { id: "delivery", title: "Entrega do Orbi", kind: "Jogo de plataforma", goal: "logica", description: "Pule, explore e descubra como valores e condições mudam o movimento.", skill: "Variáveis e condições", codeSlug: "variaveis-js", route: "/estudante/jogos/entregas-do-orbi", preview: "/dev/academy-preview?activity=delivery", color: "blue" },
+  { id: "delivery", title: "Entrega do Orbi", kind: "Jogo de plataforma", goal: "logica", description: "Explore o bairro e escreva código para abrir a ponte, subir o elevador e acender o farol.", skill: "Variáveis e expressões", codeSlug: "variaveis-js", route: "/estudante/jogos/entregas-do-orbi", preview: "/dev/academy-preview?activity=delivery", color: "blue" },
   { id: "english", title: "Inglês em cena", kind: "Imagens e palavras", goal: "ingles", description: "Reconheça arquivos, leia um erro e descubra o inglês que aparece no código.", skill: "Vocabulário em contexto", codeSlug: "variaveis-js", route: "/estudante/jogos/ingles-em-cena", preview: "/dev/academy-preview?activity=english", color: "peach" },
   { id: "village", title: "Vila dos Blocos", kind: "Quebra-cabeça com história", goal: "logica", description: "Salve o festival enquanto descobre onde símbolos e espaços fazem diferença.", skill: "Sintaxe e indentação", codeSlug: "condicionais-python", route: "/estudante/jogos/vila-dos-blocos", preview: "/dev/academy-preview?activity=village", color: "sand" },
   { id: "orbi", title: "Guia o Orbi", kind: "Planejamento visual", goal: "logica", description: "Planeje uma rota, acompanhe cada comando e corrija o caminho.", skill: "Sequências e repetição", codeSlug: "lacos-js", route: "/estudante/jogos/orbi", preview: "/dev/orbi-preview/decolagem?from=academy", color: "night" },
@@ -27,7 +28,7 @@ export function practiceDestination(id: ActivityId, userId: string, read: (key: 
   const root = preview ? id === "orbi" ? "/dev/orbi-preview" : "/dev/monte-codigo-preview" : id === "orbi" ? "/estudante/jogos/orbi" : "/estudante/jogos";
   return `${root}/${phase.slug}${preview ? "?from=academy" : ""}`;
 }
-export type ActivityRecord = { openedAt?: number; completedAt?: number; reviewedAt?: number; dueAt?: number; reviews: number };
+export type ActivityRecord = { openedAt?: number; completedAt?: number; reviewedAt?: number; dueAt?: number; reviews: number; contentVersion?: 2; legacyCompletedAt?: number; legacyReviewedAt?: number; legacyReviews?: number };
 export type PracticeJournal = { version: 1; activities: Partial<Record<ActivityId, ActivityRecord>> };
 export const journalKey = (userId: string) => `orbitamos-practice-journal-v1-${userId}`;
 export const emptyJournal = (): PracticeJournal => ({ version: 1, activities: {} });
@@ -41,7 +42,9 @@ export function readJournal(raw: string | null): PracticeJournal {
       const record = value.activities[id];
       if (!record || !Number.isInteger(record.reviews) || record.reviews < 0 || record.reviews > 100) continue;
       const next: ActivityRecord = { reviews: record.reviews };
-      for (const field of ["openedAt", "completedAt", "reviewedAt", "dueAt"] as const) if (typeof record[field] === "number" && Number.isFinite(record[field]) && record[field] > 0 && record[field] <= 8640000000000000) next[field] = record[field];
+      for (const field of ["openedAt", "completedAt", "reviewedAt", "dueAt", "legacyCompletedAt", "legacyReviewedAt"] as const) if (typeof record[field] === "number" && Number.isFinite(record[field]) && record[field] > 0 && record[field] <= 8640000000000000) next[field] = record[field];
+      if (id === "delivery" && record.contentVersion === 2) next.contentVersion = 2;
+      if (id === "delivery" && Number.isInteger(record.legacyReviews) && record.legacyReviews >= 0 && record.legacyReviews <= 100) next.legacyReviews = record.legacyReviews;
       activities[id] = next;
     }
     return { version: 1, activities };
@@ -51,12 +54,19 @@ export function recordPractice(journal: PracticeJournal, id: ActivityId, event: 
   const current = journal.activities[id] ?? { reviews: 0 };
   const next = { ...current };
   if (event === "open") next.openedAt = now;
-  if (event === "complete" && !next.completedAt) { next.completedAt = now; next.dueAt = now + 86400000; }
-  if (event === "review") { next.reviews = Math.min(current.reviews + 1, 100); next.reviewedAt = now; next.dueAt = now + [3, 7, 14, 30][Math.min(next.reviews - 1, 3)] * 86400000; }
+  if ((event === "complete" || event === "review") && id === "delivery" && current.contentVersion !== 2) {
+    if (current.completedAt) next.legacyCompletedAt = current.completedAt;
+    if (current.reviewedAt) next.legacyReviewedAt = current.reviewedAt;
+    if (current.reviews) next.legacyReviews = current.reviews;
+    next.contentVersion = 2; next.reviews = 0; delete next.reviewedAt; delete next.completedAt; delete next.dueAt;
+    if (event === "complete") { next.completedAt = now; next.dueAt = now + 86400000; }
+  } else if (event === "complete" && !next.completedAt) { next.completedAt = now; next.dueAt = now + 86400000; }
+  if (event === "review") { next.reviews = Math.min(next.reviews + 1, 100); next.reviewedAt = now; next.dueAt = now + [3, 7, 14, 30][Math.min(next.reviews - 1, 3)] * 86400000; }
   return { version: 1, activities: { ...journal.activities, [id]: next } };
 }
 export function persistPractice(userId: string, id: ActivityId, event: "open" | "complete" | "review"): boolean {
   try {
+    if (id === "delivery" && event !== "open" && readChapterSave(localStorage.getItem(orbiChapterKey(userId))).completed.length !== chapterMissionIds.length) return false;
     const next = recordPractice(readJournal(localStorage.getItem(journalKey(userId))), id, event);
     localStorage.setItem(journalKey(userId), JSON.stringify(next));
     window.dispatchEvent(new Event("orbitamos-practice-updated"));
@@ -72,7 +82,7 @@ export function activityCompletion(userId: string, read: (key: string) => string
     village: readVillageSave(read(villageStorageKey(userId))).completed.length === villageLevels.length,
     assembly: fasesMonteCodigo.every(f => legacyDone(JOGO_STORAGE_PREFIX, f.slug)),
     orbi: niveisGuiaOrbi.every(f => legacyDone("orbitamos-jogo-orbi", f.slug)),
-    delivery: !!journal.activities.delivery?.completedAt,
+    delivery: readChapterSave(read(orbiChapterKey(userId))).completed.length === chapterMissionIds.length,
     english: !!journal.activities.english?.completedAt,
   };
 }
@@ -93,8 +103,8 @@ export type ReviewQuestion = { id: string; activity: ActivityId; prompt: string;
 export const reviewQuestions: ReviewQuestion[] = [
   { id: "sql-filter", activity: "sql", prompt: "O estoque é 2, 6 e 9. Quais valores passam por este filtro?", code: "WHERE estoque < 6", choices: ["Somente 2", "2 e 6", "6 e 9"], answer: "Somente 2", explanation: "Menor que 6 exclui o próprio 6. A consulta não apaga os outros registros." },
   { id: "sql-source", activity: "sql", prompt: "Quero nome e cidade da tabela clientes. Qual trecho indica a origem?", code: "SELECT nome, cidade FROM clientes;", choices: ["SELECT", "FROM clientes", "nome, cidade"], answer: "FROM clientes", explanation: "FROM aponta a tabela. SELECT escolhe o que deve aparecer no resultado." },
-  { id: "delivery-variable", activity: "delivery", prompt: "O Orbi avança 2 unidades por passo. Mudamos velocidade para 4. O que muda?", code: "let velocidade = 4;", choices: ["O avanço em cada passo dobra", "O pulo fica automaticamente mais alto", "Nada muda"], answer: "O avanço em cada passo dobra", explanation: "Esse valor controla o avanço horizontal neste exemplo. A altura depende de outro parâmetro." },
-  { id: "delivery-condition", activity: "delivery", prompt: "Energia vale 3. A entrega pode acontecer?", code: "if (energia >= 5) { entregar(); }", choices: ["Sim", "Não"], answer: "Não", explanation: "3 não é maior ou igual a 5. O corpo desse if não executa." },
+  { id: "delivery-variable", activity: "delivery", prompt: "Na oficina, alcance valia 80. Você mudou para 280. O que muda no bairro?", code: "const alcance = 280;", choices: ["A ponte fica mais comprida", "Orbi pula automaticamente mais alto", "O elevador sobe mais"], answer: "A ponte fica mais comprida", explanation: "alcance controla quantos pixels da ponte aparecem. Trocar 80 por 280 aumenta a ponte em 200 pixels; altura e pulo têm outras regras." },
+  { id: "delivery-expression", activity: "delivery", prompt: "O consumo do Farol mudou para 7. Qual será a energia, mantendo esta regra?", code: "const custo = 7;\nconst energia = custo + 2;", choices: ["6", "7", "9"], answer: "9", explanation: "A expressão usa o valor de custo: 7 + 2 = 9. Guardar custo + 2 mantém a reserva de 2 mesmo quando o consumo muda." },
   { id: "english-error", activity: "english", prompt: "Um arquivo foi renomeado. O programa avisa file not found. Qual a primeira verificação?", choices: ["Conferir nome e caminho do arquivo", "Trocar a cor do botão", "Aumentar a velocidade do computador"], answer: "Conferir nome e caminho do arquivo", explanation: "File é arquivo; not found indica que ele não foi encontrado no caminho esperado." },
   { id: "english-output", activity: "english", prompt: "A instrução pede Check the output. O que você precisa conferir?", choices: ["O resultado produzido", "A pasta do projeto", "O teclado"], answer: "O resultado produzido", explanation: "Output é a saída produzida: por exemplo, o resultado mostrado no console." },
   { id: "village-indent", activity: "village", prompt: "Queremos mostrar Fim uma vez. Qual linha precisa ficar fora do laço?", code: 'for item in range(3):\n    print("Item")\n    print("Fim")', choices: ['print("Fim")', 'print("Item")', "for item in range(3):"], answer: 'print("Fim")', explanation: "O corpo indentado repete. Ao retirar o recuo de Fim, ele aparece uma vez depois do laço." },
@@ -105,6 +115,7 @@ export const reviewQuestions: ReviewQuestion[] = [
   { id: "assembly-output", activity: "assembly", prompt: "O que será mostrado?", code: "let pontos = 3;\npontos = pontos + 2;\nconsole.log(pontos);", choices: ["3", "5", "32"], answer: "5", explanation: "São números: 3 + 2 resulta em 5. A atribuição atualiza pontos antes da exibição." },
 ];
 export function reviewQueue(completed: Record<ActivityId, boolean>, journal: PracticeJournal, now = Date.now()): ReviewQuestion[] {
-  const ids = activityIds.filter(id => completed[id]).sort((a, b) => (journal.activities[a]?.dueAt ?? now) - (journal.activities[b]?.dueAt ?? now));
-  return ids.slice(0, 3).map(id => { const options = reviewQuestions.filter(q => q.activity === id); return options[(journal.activities[id]?.reviews ?? 0) % options.length]; });
+  const currentRecord = (id: ActivityId) => id === "delivery" && journal.activities[id]?.contentVersion !== 2 ? undefined : journal.activities[id];
+  const ids = activityIds.filter(id => completed[id]).sort((a, b) => (currentRecord(a)?.dueAt ?? now) - (currentRecord(b)?.dueAt ?? now));
+  return ids.slice(0, 3).map(id => { const options = reviewQuestions.filter(q => q.activity === id); return options[(currentRecord(id)?.reviews ?? 0) % options.length]; });
 }

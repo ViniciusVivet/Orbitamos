@@ -1,12 +1,66 @@
-import { describe, expect, it } from "vitest";
-import { activityCompletion, activityIds, bridgeTarget, emptyJournal, journalKey, practiceActivities, practiceDestination, readJournal, recommendActivity, recordPractice, reviewQueue } from "./practiceStation";
+import { describe, expect, it, vi } from "vitest";
+import { activityCompletion, activityIds, bridgeTarget, emptyJournal, journalKey, persistPractice, practiceActivities, practiceDestination, readJournal, recommendActivity, recordPractice, reviewQueue, reviewQuestions } from "./practiceStation";
 import { desafios } from "./desafios";
 import { fasesMonteCodigo } from "./jogoMonteCodigo";
 import { villageLevels } from "./vilaDosBlocos";
 import { niveisGuiaOrbi } from "./jogoGuiaOrbi";
+import { chapterMissionIds, emptyChapterSave, orbiChapterKey } from "./orbiChapter";
+import { deliveryMissions, deliveryStorageKey } from "./orbiDelivery";
 
 const incomplete = () => ({ sql: false, delivery: false, english: false, village: false, orbi: false, assembly: false });
 describe("Connected practice", () => {
+  it("requires the chapter v2 missions instead of a legacy completion or journal marker", () => {
+    const legacy = { version: 1, current: 2, completed: deliveryMissions.map(mission => mission.id) };
+    const journal = { version: 1, activities: { delivery: { completedAt: 1000, reviews: 2 } } };
+    const saves = new Map([[deliveryStorageKey("u"), JSON.stringify(legacy)], [journalKey("u"), JSON.stringify(journal)]]);
+    const before = [...saves];
+    const read = (key: string) => saves.get(key) ?? null;
+    expect(activityCompletion("u", read).delivery).toBe(false);
+    expect([...saves]).toEqual(before);
+    saves.set(orbiChapterKey("u"), JSON.stringify({ ...emptyChapterSave(), completed: ["ponte", "elevador"] }));
+    expect(activityCompletion("u", read).delivery).toBe(false);
+    saves.set(orbiChapterKey("u"), JSON.stringify({ ...emptyChapterSave(), completed: chapterMissionIds }));
+    expect(activityCompletion("u", read).delivery).toBe(true);
+    expect(activityCompletion("another", read).delivery).toBe(false);
+  });
+  it("versions the new completion while keeping the earlier achievement and reviews as history", () => {
+    const old = { version: 1 as const, activities: { delivery: { completedAt: 1000, reviewedAt: 2000, dueAt: 3000, reviews: 2 } } };
+    const next = recordPractice(old, "delivery", "complete", 4000);
+    expect(next.activities.delivery).toMatchObject({ contentVersion: 2, completedAt: 4000, dueAt: 4000 + 86400000, reviews: 0, legacyCompletedAt: 1000, legacyReviewedAt: 2000, legacyReviews: 2 });
+    expect(next.activities.delivery?.reviewedAt).toBeUndefined();
+    expect(old.activities.delivery.completedAt).toBe(1000);
+    expect(readJournal(JSON.stringify(next))).toEqual(next);
+    const reviewed = recordPractice(next, "delivery", "review", 5000);
+    expect(recordPractice(reviewed, "delivery", "complete", 6000).activities.delivery).toMatchObject({ completedAt: 4000, reviews: 1, legacyCompletedAt: 1000, legacyReviews: 2 });
+  });
+  it("reviews the bridge and dependent energy expression without importing old review counts", () => {
+    const old = { version: 1 as const, activities: { delivery: { completedAt: 1000, reviews: 1 } } };
+    const completed = { ...incomplete(), delivery: true };
+    expect(reviewQueue(incomplete(), old)).toEqual([]);
+    expect(reviewQueue(completed, old)[0].id).toBe("delivery-variable");
+    const next = recordPractice(old, "delivery", "review", 5000);
+    expect(next.activities.delivery).toMatchObject({ contentVersion: 2, reviews: 1, reviewedAt: 5000, legacyCompletedAt: 1000, legacyReviews: 1 });
+    expect(next.activities.delivery?.completedAt).toBeUndefined();
+    expect(reviewQueue(completed, next)[0].id).toBe("delivery-expression");
+    expect(reviewQuestions.find(question => question.id === "delivery-variable")?.answer).toBe("A ponte fica mais comprida");
+    expect(reviewQuestions.find(question => question.id === "delivery-expression")?.answer).toBe("9");
+  });
+  it("persists a delivery completion or review only after all chapter missions are recorded", () => {
+    const saves = new Map<string, string>();
+    const write = vi.fn((key: string, value: string) => saves.set(key, value));
+    vi.stubGlobal("localStorage", { getItem: (key: string) => saves.get(key) ?? null, setItem: write });
+    vi.stubGlobal("window", { dispatchEvent: vi.fn() });
+    try {
+      expect(persistPractice("u", "delivery", "complete")).toBe(false);
+      expect(persistPractice("u", "delivery", "review")).toBe(false);
+      expect(write).not.toHaveBeenCalled();
+      saves.set(orbiChapterKey("u"), JSON.stringify({ ...emptyChapterSave(), completed: chapterMissionIds }));
+      expect(persistPractice("u", "delivery", "complete")).toBe(true);
+      expect(readJournal(saves.get(journalKey("u")) ?? null).activities.delivery).toMatchObject({ contentVersion: 2, reviews: 0 });
+      expect(persistPractice("u", "delivery", "review")).toBe(true);
+      expect(readJournal(saves.get(journalKey("u")) ?? null).activities.delivery?.reviews).toBe(1);
+    } finally { vi.unstubAllGlobals(); }
+  });
   it("offers a beginning and resumes a real visit without calling it completion", () => {
     const journal = recordPractice(emptyJournal(), "english", "open", 1000);
     expect(recommendActivity(emptyJournal(), incomplete())).toBe("sql");
