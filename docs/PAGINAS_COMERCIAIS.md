@@ -65,5 +65,9 @@ ServiceSignals emite apenas CustomEvent("orbitamos:service") na janela: slug, ac
 - Comparar por origem e serviço, não apenas total agregado. Alterações visuais só poderão ser associadas a ganho comercial após dados reais; um teste A/B precisa de volume e alocação adequados.
 - Não existe, neste momento, base empírica para declarar que estas páginas aumentaram a conversão ou que PNL garante fechamento.
 
-## Publicação
-Implementação e evidências prontas localmente. Aprovação para commit/push deste redesenho foi solicitada; ainda não recebida no fechamento do registro. Não confundir com os commits anteriores já publicados.
+## Registro de publicação
+No fechamento da rodada de 16/09, implementação e evidências estavam prontas
+localmente e a aprovação para commit/push ainda estava pendente. O histórico Git
+local contém o redesenho no commit `9a93280`, de 17/09/2026. Isso confirma seu
+versionamento; o estado atual de publicação na Vercel não foi verificado nesta
+revisão documental.

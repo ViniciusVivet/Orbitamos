@@ -1,6 +1,87 @@
 # Academy — revisão pedagógica e continuidade
 
-Data: 24/10/2026. Foco: prática, jogos, código e experiência mobile/desktop. Não inclui páginas comerciais, vídeos ou biblioteca de leitura.
+Atualização documental: 04/11/2026, conferida nos componentes e contratos de
+progresso. A auditoria e a validação de 24/10/2026 continuam abaixo como histórico.
+Não foram repetidos testes, sessões com alunos ou verificações de publicação
+nesta revisão dos documentos.
+
+## Estado atual — 04/11/2026
+
+O ciclo continua sendo **contexto → experimentar → prever/explicar → aplicar em
+código → revisitar**. A implementação varia entre experiências; a presença de
+uma ponte ao editor não demonstra que o aluno transfere a ideia sem ajuda.
+
+| Experiência atual | Percurso disponível | Ideia praticada |
+| --- | --- | --- |
+| A loja do Orbi | Dez etapas de aventura; oficina SQL de cinco missões como continuação | Linhas, colunas, `SELECT`, `FROM`, `WHERE`; criação, cadastro e atualização na oficina |
+| Entrega do Orbi — A última luz do bairro | Três entregas com exploração, terminal, código e travessia manual | Declarações, valores e expressão dependente entre variáveis |
+| Inglês em cena | Oito cenas com escolha, leitura contextual e recuperação de palavra | Vocabulário, `file not found`, diferença entre `return` e saída |
+| Vila dos Blocos | Dez fases de encaixe de símbolos e ajuste de recuos | Sintaxe, blocos, coleções e indentação |
+| Guia o Orbi | Oito níveis de planejamento e execução de comandos | Sequência, funções, repetição e introdução de recursão |
+| Monte o Código | Doze fases de programa em peças e previsão, em JS/Python | Ordem, leitura e resultado do programa |
+
+A central autenticada é `/estudante/jogos`. As rotas de cada experiência e as
+prévias estão na [arquitetura](ARQUITETURA_ESTUDANTE.md). A Revisão de bolso é um
+formato complementar, não uma sétima experiência: mantém 12 perguntas, no máximo
+três por sessão, sobre experiências concluídas. As duas perguntas da Entrega já
+tratam ponte e expressão de energia do capítulo atual. A fila prioriza datas,
+permite revisão antecipada e não é adaptativa por proficiência.
+
+### Entrega atual versus v1
+
+A descrição de velocidade, impulso, assistência de movimento e pergunta final
+na rodada de 24/10 refere-se à **v1**. Hoje a mesma rota abre **A última luz do
+bairro**: explorar → encontrar o terminal → escrever → aplicar → testar o
+caminho → levar a ideia ao laboratório. Ponte usa `alcance`; elevador usa
+`altura`; farol exige `custo` e `energia = custo + 2`. O apoio diminui entre
+terminais, mantendo pistas opcionais. Código válido mas insuficiente produz uma
+consequência visível; código inválido mantém o último programa aplicado.
+
+Concluir exige código adequado e chegada física ao destino. O terminal aceita
+uma gramática restrita de declarações e contas, sem `eval`, rede, DOM ou acesso
+a arquivos; não é uma IDE JavaScript geral. Teclado, toque, pausa, retomada,
+recomeçar código com confirmação e desfazer fazem parte deste capítulo. Ele é a
+referência mínima aprovada para os próximos jogos, sem transformar os outros
+formatos em plataformas ou declarar todos já refinados. Ver
+[registro e critérios de 04/11](STUDIO_E_ORBI_CAPITULO_01.md).
+
+O save `orbitamos-orbi-chapter-v2-<conta>` é a fonte de conclusão. A v1 permanece
+intacta como histórico; o diário marca registros novos com `contentVersion=2`
+e guarda datas/revisões antigas em `legacy*`. Conquista antiga, abertura ou
+importação do diário não concluem o capítulo novo. A sincronização é somente
+entre abas/componentes do navegador; não há continuidade entre aparelhos.
+
+### Jornada e limites pedagógicos
+
+A Home e Trilhas agora permitem escolher **Primeiros passos**, **C# & .NET** ou
+**SQL com Orbi** por conta/navegador. Essa escolha prioriza a formação na Home;
+visitar outro jogo não a troca. Em Jogos, C# selecionado prioriza experiências
+de lógica; a relação de cada jogo com cada habilidade das demais trilhas ainda
+precisa ser construída.
+
+Primeiros passos tem quatro entregas JavaScript: perfil, conta de serviço,
+decisão e orçamento de console. Guia, alteração e aplicação independente têm
+evidências distintas; concluir somente o exemplo é parcial. Esse ciclo não foi
+expandido a todos os desafios. O piloto C# contém variáveis, condições e laços;
+métodos e as etapas seguintes do mapa estão em preparação. SQL contém aventura
+e oficina; não é um curso completo de bancos de dados. Aulas em vídeo anteriores
+seguem como apoio com histórico próprio.
+
+Progresso reúne evidências sem somar aulas, missões, níveis e módulos em um
+percentual de domínio. Escolha, rascunhos e diário continuam locais. Permanecem
+como trabalho futuro: observar iniciantes reais, aprofundar depuração e revisão
+cumulativa, ampliar aplicações independentes, conectar os formatos ao percurso
+e definir sincronização sem perder saves. O
+[mapa da experiência](MAPA_EXPERIENCIA_ACADEMY.md) preserva os gargalos e as
+correções datadas; o [fluxo unificado](ACADEMY_FLUXO_UNIFICADO.md) descreve a
+navegação atual.
+
+## Histórico — revisão de 24/10/2026
+
+Foco original: prática, jogos, código e experiência mobile/desktop. Não incluiu
+páginas comerciais, vídeos ou biblioteca de leitura. Entregas, limitações,
+próximas etapas e números de validação a seguir pertencem àquela rodada; a
+sidebar e a Entrega evoluíram depois, conforme o estado atual acima.
 
 ## Diagnóstico
 
@@ -54,7 +135,7 @@ Rota autenticada: `/estudante/jogos`. Prévia somente em desenvolvimento: `/dev/
 | Guia o Orbi | Planejamento e execução de comandos | Sequência, função e repetição |
 | Monte o Código | Programa em peças e previsão | Leitura, ordem e resultado |
 
-### Entrega do Orbi
+### Entrega do Orbi v1 — histórico de 24/10/2026
 
 - Jogo com movimento contínuo, gravidade, plataformas, pulo e queda.
 - Três missões: velocidade horizontal, impulso do pulo e condição de energia.
@@ -92,7 +173,7 @@ Rota autenticada: `/estudante/jogos`. Prévia somente em desenvolvimento: `/dev/
 - A primeira sugestão é registrada para outro dia; revisões seguintes usam intervalos de 3, 7, 14 e 30 dias para priorizar a fila. É uma regra inicial do produto, não um intervalo cientificamente “perfeito”.
 - O aluno pode revisar antes. Não há bloqueio, notificação automática, perda de sequência ou punição por ausência.
 
-## Estado e limitações
+## Estado e limitações em 24/10/2026
 
 - Os jogos e o diário de práticas usam **localStorage por conta e navegador**. Não há sincronização desses novos registros entre celular e computador.
 - Visitar a experiência registra apenas abertura. “Já praticou” significa conclusão das checagens daquela experiência, não certificação de domínio.
@@ -103,7 +184,7 @@ Rota autenticada: `/estudante/jogos`. Prévia somente em desenvolvimento: `/dev/
 - Não foram adicionados rastreadores ou telemetria de alunos.
 - Testes WebKit simulam Safari/iPhone, mas não substituem teclado virtual, desempenho e toque em um aparelho físico.
 
-## Validação reproduzível
+## Validação registrada em 24/10/2026
 
 Na pasta `apps/web`:
 
@@ -130,7 +211,7 @@ Os scripts de navegador usam o servidor de desenvolvimento em `http://localhost:
 - Verificações de acessibilidade automatizada, overflow e erros de página nos cenários cobertos. Isso não equivale a uma auditoria WCAG completa.
 - Evidências locais em `apps/web/test-results/`, ignoradas pelo Git. Os relatórios distinguem conclusões realmente jogadas de fixtures usadas para testar integração.
 
-## Próximas etapas, em ordem
+## Próximas etapas propostas em 24/10/2026
 
 1. **Observar três a cinco iniciantes no celular**, sem ensinar onde tocar. Perguntar: “O que você está tentando fazer? Por que essa resposta? Consegue fazer uma variação sem a dica?”. Corrigir primeiro os pontos de abandono.
 2. **Aprofundar transferência**: uma pequena tarefa inédita após a atividade, com critérios observáveis, em vez de apenas repetir o exemplo. Acrescentar desafios de depuração e previsão antes de mais conteúdo.

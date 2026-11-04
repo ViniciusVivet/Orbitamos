@@ -1,6 +1,7 @@
 # Supabase nativo
 
-Última atualização: 2026-07-28
+Revisão documental: **04/11/2026**. Nomes e comportamento conferidos no repositório;
+nenhuma migration foi executada nesta revisão.
 
 Este documento descreve o estado implementado no repositório. Ele não afirma
 que uma migration foi aplicada no banco remoto sem verificação no Supabase.
@@ -23,20 +24,25 @@ As migrations atuais ficam em `supabase/migrations` e são aplicadas da `005` à
 
 | Arquivo | Responsabilidade |
 | --- | --- |
-| `005_supabase_native_platform.sql` | Perfis, progresso, contato, fórum e chat |
-| `006_supabase_academy_content.sql` | Cursos, aulas, materiais, quizzes e progresso |
-| `007_security_hardening.sql` | Policies, colunas protegidas e storage de avatar |
-| `008_course_materials_seed.sql` | Seed inicial de materiais |
-| `009_publish_seeded_video_lessons.sql` | Publicação corretiva das aulas com vídeo |
-| `010_collaborator_workspace.sql` | Perfis profissionais, vagas, candidaturas e projetos |
-| `011_collaborator_preferences.sql` | Preferências e visibilidade profissional |
-| `012_admin_operations_security.sql` | Staff/admin, notificações, portfólio e privacidade |
-| `013_profiles_pii_hardening.sql` | Restrição de telefone, endereço e nascimento |
-| `014_profile_email_hardening.sql` | Restrição do email de perfil |
-| `015_contact_rate_limit.sql` | Rate limit persistente do contato |
-| `016_academy_admin.sql` | Policies administrativas da academia |
-| `017_academy_storage.sql` | Bucket e policies de materiais |
-| `018_avatars_bucket_fix.sql` | Correção do bucket e MIME types de avatar |
+| [20260619000500_supabase_native_platform.sql](../supabase/migrations/20260619000500_supabase_native_platform.sql) | Perfis, progresso, contato, fórum e chat |
+| [20260619000600_supabase_academy_content.sql](../supabase/migrations/20260619000600_supabase_academy_content.sql) | Cursos, aulas, materiais, quizzes e progresso |
+| [20260619000700_security_hardening.sql](../supabase/migrations/20260619000700_security_hardening.sql) | Policies, colunas protegidas e storage de avatar |
+| [20260619000800_course_materials_seed.sql](../supabase/migrations/20260619000800_course_materials_seed.sql) | Seed inicial de materiais |
+| [20260619000900_publish_seeded_video_lessons.sql](../supabase/migrations/20260619000900_publish_seeded_video_lessons.sql) | Publicação corretiva das aulas com vídeo |
+| [20260619001000_collaborator_workspace.sql](../supabase/migrations/20260619001000_collaborator_workspace.sql) | Perfis profissionais, vagas, candidaturas e projetos |
+| [20260619001100_collaborator_preferences.sql](../supabase/migrations/20260619001100_collaborator_preferences.sql) | Preferências e visibilidade profissional |
+| [20260619001200_admin_operations_security.sql](../supabase/migrations/20260619001200_admin_operations_security.sql) | Staff/admin, notificações, portfólio e privacidade |
+| [20260619001300_profiles_pii_hardening.sql](../supabase/migrations/20260619001300_profiles_pii_hardening.sql) | Restrição de telefone, endereço e nascimento |
+| [20260619001400_profile_email_hardening.sql](../supabase/migrations/20260619001400_profile_email_hardening.sql) | Restrição do email de perfil |
+| [20260619001500_contact_rate_limit.sql](../supabase/migrations/20260619001500_contact_rate_limit.sql) | Rate limit persistente do contato |
+| [20260619001600_academy_admin.sql](../supabase/migrations/20260619001600_academy_admin.sql) | Policies administrativas da academia |
+| [20260619001700_academy_storage.sql](../supabase/migrations/20260619001700_academy_storage.sql) | Bucket e policies de materiais |
+| [20260619001800_avatars_bucket_fix.sql](../supabase/migrations/20260619001800_avatars_bucket_fix.sql) | Correção do bucket e MIME types de avatar |
+
+Os números 005–018 são identificadores de sequência usados nos guias; o CLI usa
+os nomes timestampados acima. Comentários em SQL histórico podem citar caminhos
+anteriores em `docs/migrations`; isso não é motivo para renomear arquivos ou
+reescrever migrations já aplicadas.
 
 Não pule as migrations de endurecimento. O frontend usa funções introduzidas
 por elas, como `v3_get_my_profile`, `v3_is_staff`,
@@ -87,15 +93,25 @@ order by tablename;
 
 Buckets esperados:
 
-- `avatars`: público para leitura, escrita limitada pelas policies;
-- `academy-materials`: público para leitura, gestão limitada a staff/admin.
+- `avatars`: público para leitura, escrita limitada pelas policies ao prefixo do
+  usuário autenticado. A migration 018 define 15 MB por objeto e não limita MIME
+  no bucket; o cliente valida e comprime imagens antes de enviar. O portfólio usa
+  `<auth.uid>/portfolio/<uuid>.webp` nesse mesmo bucket.
+- `academy`: público para leitura, gestão limitada a staff por policies que usam
+  `v3_is_staff()`. A migration 017 não declara limite de tamanho; os 25 MB no
+  helper `uploadAcademyAsset` são validação do cliente.
+
+`academy-materials` era um nome obsoleto nesta documentação; não é o bucket
+criado pelas migrations atuais. Arquivos de aula também podem existir em
+`apps/web/public/course-materials`, conforme o fluxo de materiais.
 
 Após aplicar `017` e `018`, confira em `Storage` os buckets, MIME types e
 policies. Não torne a service role pública para contornar policy incorreta.
 
 ## Auth
 
-Em `Authentication -> URL Configuration`:
+Exemplo de configuração em `Authentication -> URL Configuration` (não é uma
+confirmação do painel remoto atual). Ajuste os domínios e portas realmente usados:
 
 ```text
 Site URL: https://www.orbitamosbr.com
@@ -104,6 +120,7 @@ Redirect URLs:
 https://www.orbitamosbr.com/**
 https://orbitamosbr.com/**
 http://localhost:3000/**
+http://localhost:3015/**
 ```
 
 A política de confirmação de email é uma decisão operacional. Não a desligue

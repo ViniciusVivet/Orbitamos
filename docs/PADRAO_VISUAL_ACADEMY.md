@@ -47,6 +47,27 @@ o número de imagens em volta da mesma quantidade de texto.
 - Início: mídia humana no painel de continuidade, mantendo a retomada e a escolha
   da trilha principal.
 
+## Referência aprovada para jogos — 04/11/2026
+
+O capítulo **A última luz do bairro**, da Entrega do Orbi, é a referência mínima
+aprovada para próximos jogos e refinamentos. Consulte
+[STUDIO_E_ORBI_CAPITULO_01.md](STUDIO_E_ORBI_CAPITULO_01.md) para o ciclo pedagógico,
+as artes, os controles, a persistência v2 e as verificações registradas.
+
+Preserve direção de arte própria, personagens coerentes, história curta,
+controles jogáveis no teclado e no toque, feedback e consequências visíveis do
+código. A mecânica de cada experiência deve servir ao que ela ensina. Essa
+referência não exige converter os outros formatos em jogos de plataforma nem
+significa que todas as experiências já receberam o mesmo refinamento.
+
+A capa atual da Entrega é a captura real
+`apps/web/public/images/jogos/entrega-orbi-v2.webp`. Cenário e sprites autorais
+ajudam a compor o jogo; não substituem captura de gameplay no catálogo. Física e
+renderização ficam no cliente, com mídia otimizada e carregamento sob demanda.
+Conferir o percurso real, incluindo erro, retomada, conquistas, dois toques
+simultâneos e desempenho em aparelhos modestos, continua necessário em cada
+nova implementação.
+
 ## Artes e origem
 
 Novas cenas editoriais geradas com o **ImageGen integrado**, convertidas para WebP

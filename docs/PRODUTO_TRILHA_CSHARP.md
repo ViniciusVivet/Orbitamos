@@ -1,8 +1,20 @@
 # Orbitamos — Trilha C#/.NET orientada à primeira oportunidade
 
 Pesquisa e proposta de produto: **25/09/2026**.
-Status: **desenho para discussão e implementação por etapas**, não curso completo publicado.
+Status: **piloto implementado com variáveis, condições e laços**; a formação completa continua em preparação.
 Público inicial proposto: pessoa iniciante no Brasil, conciliando estudo com trabalho, buscando backend júnior. Full stack entra como especialização opcional.
+
+Conferência no código em **04/11/2026**: `csharpModules.ts` oferece três módulos,
+com 21 práticas de código e 9 questões nas duas primeiras etapas do mapa. O
+botão principal abre variáveis diretamente; `?module=variables`,
+`?module=conditions` e `?module=loops` permitem abrir cada módulo e retomar sua
+atividade local. Métodos e as etapas de objetos, dados, APIs, qualidade, entrega
+e carreira continuam em preparação. Rascunhos e progresso permanecem no
+navegador, separados por conta; o executor é didático, sem runtime .NET completo.
+
+As seções 1–11 preservam a proposta de 25/09 e as seguintes registram as rodadas
+de implementação. A pesquisa de vagas e salários mantém sua data original;
+esta conferência de código não atualiza essas fontes nem verifica o deploy.
 
 ## 1. O produto que queremos entregar
 
@@ -162,7 +174,7 @@ Primeiros vídeos a produzir: apresentação da jornada; primeira linha e consol
 
 ## 8. Celular, computador e o limite técnico atual
 
-### O que existe no repositório hoje
+### Base inspecionada na proposta de 25/09/2026
 
 - `src/lib/cursos.ts`: fallback C# com 14 aulas em cinco módulos. Há títulos cobrindo sintaxe, objetos, LINQ, API, EF Core e projeto, mas essa inspeção **não valida a qualidade/atualidade dos vídeos incorporados**. Em produção, o catálogo pode vir do Supabase; editar apenas o fallback não garante alterar o curso ao vivo.
 - `src/lib/roadmaps.ts` e `CareerJourney.tsx`: roadmap C# já existe, com checklist e associação a cursos. Aproveitar IDs e histórico, não apagar o progresso.

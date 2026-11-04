@@ -1,90 +1,86 @@
 # Contribuindo com a Orbitamos
 
-Última atualização: 2026-07-28
+Revisão documental: **04/11/2026**.
 
-## Ambiente principal
+## Preparação
 
-Pré-requisitos:
-
-- Node.js compatível com Next.js 16;
-- npm;
-- acesso a um projeto Supabase de desenvolvimento para fluxos persistentes.
+Leia [README.md](README.md), [docs/README.md](docs/README.md) e
+[apps/web/AGENTS.md](apps/web/AGENTS.md). Use Node.js 22.12+ na linha 22 ou 24+, npm e
+as dependências do lockfile:
 
 ```powershell
-git clone https://github.com/ViniciusVivet/orbitamos.git
-cd orbitamos/apps/web
-npm install
-Copy-Item .env.example .env.local
-npm run dev
+git clone https://github.com/ViniciusVivet/Orbitamos.git
+cd Orbitamos/apps/web
+npm ci
+if (!(Test-Path .env.local)) { Copy-Item .env.example .env.local }
+npm run dev -- --port 3015
 ```
 
-Edite `apps/web/.env.local` usando
-[docs/VARIAVEIS_AMBIENTE.md](docs/VARIAVEIS_AMBIENTE.md). Não use secrets de
-produção no desenvolvimento.
+Configure somente as variáveis necessárias segundo
+[VARIAVEIS_AMBIENTE.md](docs/VARIAVEIS_AMBIENTE.md).
+Preserve o arquivo local existente e não copie secrets de produção para testes.
 
-## Antes de alterar
+## Escopo, branch e publicação
 
-1. Leia [docs/README.md](docs/README.md).
-2. Identifique quais tabelas, policies e buckets Supabase o fluxo utiliza.
-3. Para mudanças de banco, leia as migrations posteriores à tabela alterada:
-   uma policy antiga pode ter sido endurecida em arquivo posterior.
-4. Não edite migrations já aplicadas para esconder uma correção. Crie a próxima
-   migration cumulativa e idempotente.
-5. Valide migrations e RLS no Supabase local conforme
-   [docs/SUPABASE_LOCAL.md](docs/SUPABASE_LOCAL.md).
-
-## Validação
-
-Execute no diretório `apps/web`:
+A branch `main` aciona publicação na Vercel. Para trabalhos delegados,
+experimentos e contribuições, use uma branch de trabalho identificável, por exemplo:
 
 ```powershell
-npm run lint
-npx tsc --noEmit
-npm run test:coverage
-npm run test:contracts
-npm run build
+git switch -c feat/melhorar-laboratorio
 ```
 
-O estado conhecido e as limitações da suíte estão em
-[docs/TESTES_AUTOMATIZADOS.md](docs/TESTES_AUTOMATIZADOS.md).
+Mantenha o pedido e os critérios de aceitação claros. Ao entregar, informe o que
+mudou, como testar e quais limitações continuam. Publicação em `main` segue o
+escopo autorizado pelo responsável; não confundir testar em localhost com deploy.
 
-Não documente um comando como aprovado se ele não foi executado. No PR,
-registre resultado, erro ou bloqueio de ambiente.
+## Organização e mudanças de banco
 
-## Segurança
-
-- Nunca commite `.env`, service role, senha, token ou chave privada.
-- Toda tabela acessível pela anon key deve ter RLS revisada.
-- Proteção de tela não substitui autorização no banco.
-- Dados pessoais não devem ser incluídos em logs, fixtures ou screenshots.
-- Mudanças em PII, admin, contato ou storage exigem teste negativo com usuário
-  sem permissão.
-
-## Padrões
-
-- TypeScript estrito; evite `any` sem justificativa local.
-- Componentes devem ter responsabilidade limitada.
-- Acesso a dados novo deve ficar no módulo do domínio, não ampliar
+- Siga [ORGANIZACAO_REPOSITORIO.md](docs/ORGANIZACAO_REPOSITORIO.md).
+- Novos acessos a dados devem ficar no módulo do domínio; evite ampliar
   indefinidamente `src/lib/api.ts`.
-- Use Conventional Commits, por exemplo:
+- Preserve rotas públicas, chaves de progresso e arquivos de criação.
+- Para banco, leia também as migrations posteriores à tabela/policy alterada.
+  Use uma migration timestampada nova; não reescreva histórico já aplicado.
+- Teste mudanças de banco no ambiente descartável de
+  [SUPABASE_LOCAL.md](docs/SUPABASE_LOCAL.md).
+- Não presuma aplicação no Supabase remoto a partir de um arquivo no Git.
 
-```text
-feat(cursos): adiciona ordenação de módulos
-fix(auth): preserva sessão após refresh
-docs: atualiza ordem das migrations
+## Validação proporcional
+
+Para documentação, confira caminhos, links e comandos. Para lógica, execute os
+testes do domínio e amplie quando necessário. Para interface, teste o fluxo e
+inspecione screenshots reais, incluindo mobile e estados vazios/erro.
+
+Comandos disponíveis em `apps/web`:
+
+```powershell
+npm test
+npm run lint
+npm run test:contracts
 ```
 
-## Pull request
+O guia de [testes](docs/TESTES_AUTOMATIZADOS.md) distingue contratos, cobertura,
+navegador e pgTAP. Para build de produção, pare o dev antes de
+`npm run build`. Não execute dev e build simultaneamente na mesma pasta.
 
-Inclua:
+Não marque uma verificação como aprovada sem execução. Registre resultado, erro
+ou limitação. Não reutilize contagens históricas como se fossem da alteração atual.
 
-- problema e resultado esperado;
-- arquivos/domínios afetados;
-- migrations e impacto de rollback, se houver;
-- comandos executados e resultados;
-- validação manual;
-- screenshots para mudança visual;
-- riscos ou pontos ainda não testados.
+## Segurança e interface
 
-Não prometa prazo de review, certificado, acesso especial ou canal comunitário
-sem uma política operacional existente.
+- Não commitar `.env*` reais, tokens, service role ou dados pessoais em fixtures.
+- RLS e autorização de backend continuam necessárias, mesmo com proteção de tela.
+- Mudanças de PII, admin e storage precisam de verificação negativa de permissões.
+- Academia e jogos seguem a referência visual e pedagógica aprovada em AGENTS.md.
+- Controles, foco, teclado, toque e mensagens de erro fazem parte da entrega.
+- Não prometer prazo, certificação ou resultado profissional sem base operacional.
+
+## Commit e revisão
+
+Use commits por assunto e títulos claros, por exemplo
+`fix(auth): preserva sessão após refresh` ou
+`docs: atualiza guia das migrations`.
+
+No PR/relatório, explique o problema resolvido, comportamento resultante,
+verificações realizadas e riscos materiais. Inclua screenshots quando a mudança
+for visual e detalhes de migração/rollback quando houver alteração de banco.

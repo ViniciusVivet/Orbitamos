@@ -1,6 +1,12 @@
 # Fluxo unificado da Academy
 
-Registro de implementação e decisões: 26/10/2026.
+Estado conferido no código em 04/11/2026. Histórico de implementação desde
+26/10/2026. Esta atualização é documental; não repete as verificações de
+navegador, autenticação ou build das rodadas anteriores.
+
+Referências: [arquitetura e rotas](ARQUITETURA_ESTUDANTE.md),
+[mapa da experiência](MAPA_EXPERIENCIA_ACADEMY.md) e
+[capítulo aprovado da Entrega do Orbi](STUDIO_E_ORBI_CAPITULO_01.md).
 
 ## Dois contextos de navegação
 
@@ -13,11 +19,11 @@ O menu do estudante tem cinco destinos estáveis:
 
 | Destino | Função |
 | --- | --- |
-| Início | Próxima ação e retomada da atividade salva |
-| Trilhas | C#, SQL e conteúdos de apoio organizados por assunto |
-| Praticar | Código, Jogos, Inglês e Revisão |
-| Progresso | Aulas e evidências das atividades, sem misturar percentuais |
-| Comunidade | Fórum público, Discord, mentorias e mensagens |
+| Início — `/estudante` | Próxima ação da trilha escolhida e retomada da atividade salva |
+| Trilhas — `/estudante/trilhas` | Primeiros passos, piloto C#, SQL e aulas de apoio por assunto |
+| Praticar — `/estudante/pratica` | Código; abas para Jogos, Inglês e Revisão |
+| Progresso — `/estudante/progresso` | Aulas e evidências das atividades, sem misturar percentuais |
+| Comunidade — `/estudante/comunidade` | Fórum público, Discord, mentorias e mensagens |
 
 Conta e configurações, troca de área, retorno ao site e saída ficam no rodapé.
 O colaborador mantém seus destinos de trabalho com o mesmo cabeçalho.
@@ -35,10 +41,50 @@ uma rota nunca concede conclusão. Saves antigos sem data são apresentados como
 atividade salva, sem inventar quando foram feitos. O escopo é por conta neste
 navegador; esses registros locais ainda não sincronizam entre dispositivos.
 
-A página inicial oferece uma ação principal de retomada. Quando não há atividade,
-propõe a primeira linha de código. Jogos apontam para a aplicação do conceito no
-editor. C# preserva o módulo na URL e SQL mantém o modo oficina. Os cursos em vídeo
-anteriores permanecem acessíveis como apoio, sem duplicar as trilhas de prática.
+A página inicial prioriza a escolha opcional de **Primeiros passos**, **C# & .NET**
+ou **SQL com Orbi**; uma visita fora dessa trilha permanece como retomada
+secundária. Sem escolha, usa a atividade disponível, a próxima aula ou a primeira
+linha de código. A seleção é guardada em
+`orbitamos-academy-study-path-v1-<userId>` e pode ser trocada ou limpa sem apagar
+rascunhos. C# preserva `module=variables|conditions|loops` na URL; SQL preserva
+`mode=workshop`. Os cursos em vídeo anteriores permanecem acessíveis como apoio,
+sem duplicar as trilhas de prática.
+
+## Conteúdo disponível em 04/11/2026
+
+- **Primeiros passos:** quatro entregas JavaScript, de perfil a orçamento de
+  console, com guia, alteração validada e aplicação independente. Esse ciclo não
+  está implementado em todos os desafios do laboratório.
+- **C# & .NET:** piloto de variáveis, condições e laços. Métodos, objetos, dados,
+  APIs, testes e entrega profissional são etapas do mapa em preparação.
+- **SQL:** aventura de dez etapas e oficina de cinco missões, de `CREATE TABLE`
+  e `INSERT` a consulta, filtro e `UPDATE`. A oficina executa SQL no ambiente local
+  de prática; não representa um banco pessoal publicado.
+- **Jogos:** seis experiências na central `/estudante/jogos`: A loja do Orbi,
+  Entrega do Orbi, Inglês em cena, Vila dos Blocos, Guia o Orbi e Monte o Código.
+  Revisão de bolso é um formato complementar em `/estudante/jogos/revisao`.
+
+As pontes levam à prática do conceito: SQL abre sua oficina; os demais jogos
+abrem desafios do laboratório, com origem identificada e sem substituir o
+rascunho do aluno. Elas não são conclusão automática nem prova de transferência.
+Na central, C# selecionado prioriza jogos de lógica; nas outras escolhas, a
+recomendação ainda usa retomada/primeira experiência incompleta. Ainda não há
+vínculo curricular de cada jogo com cada entrega da trilha.
+
+### Entrega do Orbi: capítulo atual e histórico
+
+`/estudante/jogos/entregas-do-orbi` abre **A última luz do bairro**. O aluno explora,
+abre terminais, escreve declarações curtas e testa a consequência no cenário:
+alcance da ponte, altura do elevador e energia calculada a partir de custo.
+Concluir exige programa adequado e chegada física ao destino; a pergunta final
+e a assistência de movimento da v1 não descrevem este capítulo.
+
+O save `orbitamos-orbi-chapter-v2-<userId>` é a fonte de conclusão das três
+entregas. O save v1 permanece como histórico. O diário marca `contentVersion=2`
+e preserva datas/revisões antigas em `legacy*`; importar o diário ou abrir o jogo
+não conclui o capítulo. A atualização entre abas do mesmo navegador não equivale
+a sincronização entre aparelhos. Ver detalhes no
+[registro de 04/11](STUDIO_E_ORBI_CAPITULO_01.md).
 
 ## Celular e acessibilidade
 
@@ -55,12 +101,13 @@ recusando URLs externas, escapes e loops de autenticação. Login, cadastro,
 restauração de sessão e guards usam a mesma política. Mensagens recebe
 `area=student|work` e considera o contexto salvo por conta para voltar à área certa.
 
-Limite de validação: nesta cópia local o Supabase não está configurado para
-concluir uma autenticação real. As regras de retorno têm testes unitários e de
-proxy, mas isso não equivale a um login ponta a ponta aprovado. Não foram criadas
-contas reais nem alteradas as variáveis de ambiente.
+Limite registrado na auditoria de 26/10: a configuração local do Supabase impediu
+concluir uma autenticação real. As regras de retorno tinham testes unitários e
+de proxy, mas isso não equivalia a um login ponta a ponta aprovado. Esta revisão
+documental não inspecionou credenciais/configuração nem repetiu o login; não
+atualiza esse resultado histórico.
 
-## Prévia local e verificações
+## Prévias e verificações registradas
 
 As prévias continuam disponíveis apenas em desenvolvimento:
 
@@ -71,6 +118,10 @@ As prévias continuam disponíveis apenas em desenvolvimento:
 - `/dev/academy-preview`: jogos e formatos de prática.
 - `/dev/lab-preview?academy=1`: laboratório integrado à mesma prévia.
 - `/dev/csharp-preview?academy=1`: trilha C# com o mesmo identificador local.
+- `/dev/academy-preview?activity=delivery`: capítulo atual da Entrega do Orbi.
+- `/dev/academy-preview?activity=sql&mode=workshop`: oficina SQL.
+- `/dev/academy-preview?activity=english|village|review`: use um dos valores para
+  abrir Inglês em cena, Vila dos Blocos ou Revisão.
 
 Links de conta, mensagens e conteúdos privados continuam exigindo autenticação;
 a prévia não simula acesso aos dados privados.
@@ -83,11 +134,15 @@ Scripts de verificação em `apps/web/scripts/`:
 - `audit-academy-continuity.mjs`: saves preservados, retomada e módulo C#.
 - `audit-auth-navigation.mjs`: registra também o bloqueio de configuração do login.
 
-Os relatórios e capturas ficam em `apps/web/test-results/`. Os perfis incluem
-desktop, WebKit com iPhone 13 e viewport de 320 pixels. A suíte unitária completa
-tem 425 testes em 45 arquivos após a rodada de aplicação independente e transporte
+Os relatórios e capturas históricos ficam em `apps/web/test-results/`. Os perfis
+incluem desktop, WebKit com iPhone 13 e viewport de 320 pixels. A suíte unitária
+registrou 425 testes em 45 arquivos na rodada de aplicação independente e transporte
 seguro de código. Build, lint e auditorias de navegador devem ser
-conferidos novamente quando houver mudanças de comportamento.
+conferidos novamente quando houver mudanças de comportamento. A rodada do capítulo
+de 04/11 registra sua própria validação em `STUDIO_E_ORBI_CAPITULO_01.md`; os números
+acima não são uma execução nova nem o total atual da suíte.
+
+## Histórico — 26 a 28/10/2026
 
 Na rodada posterior ao primeiro deploy, `academyStudyPath` passou a guardar uma
 escolha opcional de trilha C#/SQL por conta neste navegador. `AcademyContinue`

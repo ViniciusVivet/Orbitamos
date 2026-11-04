@@ -1,6 +1,7 @@
 # Variáveis de ambiente
 
-Última atualização: 2026-07-28
+Revisão documental: **04/11/2026**. Nomes cruzados com o código; valores locais
+e configurações dos provedores não foram consultados.
 
 Esta lista foi cruzada com os acessos `process.env` em `apps/web/src`.
 

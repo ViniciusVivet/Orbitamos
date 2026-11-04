@@ -3,123 +3,96 @@
 Estúdio digital na entrada; plataforma de tecnologia, educação e colaboração
 na área autenticada.
 
-Última atualização da documentação: 2026-07-28
+Revisão documental: **04/11/2026**. Código de referência: `3643a04`;
+padrão de qualidade aprovado registrado em `5b34877`.
+Resultados de testes e verificações de produção são registros datados, não uma
+afirmação de execução nova a cada leitura.
 
-## Produto
+## Comece por aqui
 
-O mesmo aplicativo atende duas frentes:
+- [Índice da documentação](docs/README.md): arquitetura, produto, operação e histórico.
+- [Aplicativo web](apps/web/README.md): instalação, comandos e prévias locais.
+- [Organização do repositório](docs/ORGANIZACAO_REPOSITORIO.md): onde guardar código,
+  artes, exemplos, documentação e arquivos locais.
+- [Contribuição](CONTRIBUTING.md) e [orientações para agentes](AGENTS.md).
 
-1. **Site comercial:** serviços, portfólio, cases e contato.
-2. **Portal autenticado:** estudante, colaborador, academia, progresso, fórum,
-   mensagens, vagas, projetos e administração.
+## Produto e arquitetura
 
-Produção verificada em: [www.orbitamosbr.com](https://www.orbitamosbr.com).
-
-## Arquitetura atual
+O mesmo aplicativo atende ao site comercial (serviços, cases e contato),
+à Academy (trilhas, código, jogos, aulas e progresso) e ao Studio
+(projetos, oportunidades, portfólio e colaboração).
 
 ```text
-Vercel / Next.js 16
-  -> Supabase Auth
-  -> Supabase Postgres + RLS
-  -> Supabase Storage
-  -> rotas auxiliares do Next.js
+Vercel / Next.js 16 + React 19
+  ├─ páginas comerciais e portal autenticado
+  ├─ navegador: editores, Workers, jogos e saves locais
+  ├─ Supabase Auth + Postgres/RLS + Storage
+  └─ rotas auxiliares do Next.js: contato e materiais
 ```
 
-| Camada | Tecnologia | Estado no repositório |
-| --- | --- | --- |
-| Aplicativo | Next.js, React, TypeScript e Tailwind | Principal |
-| Auth e dados | Supabase | Principal |
-| Hospedagem | Vercel | Principal |
+Os dados e arquivos ligados à conta usam Supabase. Parte da prática e dos jogos
+ainda guarda progresso no navegador, por conta; isso não sincroniza aparelhos.
+Detalhes: [arquitetura](docs/ARCHITECTURE.md).
 
-Detalhes e limites: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-
-## Estrutura
+## Estrutura principal
 
 ```text
-apps/
-  web/                 aplicativo principal
+apps/web/                  aplicação principal, dependências e configuração
+  src/                     páginas, componentes, domínios e testes unitários
+  public/                  mídia e Workers usados pelo aplicativo
+  scripts/                 auditorias e utilitários de desenvolvimento
+  examples/                experimentos isolados, fora do aplicativo
 supabase/
-  migrations/          migrations SQL da plataforma atual
-  tests/database/      testes locais das policies RLS
+  migrations/              migrations atuais timestampadas (005 a 018)
+  tests/database/          testes locais de RLS
 docs/
-  migrations/          migrations históricas 001 a 004
-  legacy/              documentos históricos
-  local/               runbooks locais ignorados pelo Git
-  README.md             índice da documentação
+  migrations/              migrations históricas 001 a 004
+  local/                   materiais e operação locais, ignorados pelo Git
+  README.md                índice por assunto e estado
+.github/workflows/         verificações de integração contínua
 ```
 
-## Executar o aplicativo principal
+## Rodar e testar
 
-Pré-requisitos: Node.js e npm.
+Use Node.js **22.12+ na linha 22 ou 24+**, compatível com as dependências, e npm.
+A faixa considera também Vite/Vitest do lockfile, além do mínimo do Next.js.
+A instalação reproduzível usa o lockfile:
 
 ```powershell
 cd apps/web
-npm install
-Copy-Item .env.example .env.local
-npm run dev
+npm ci
+if (!(Test-Path .env.local)) { Copy-Item .env.example .env.local }
+npm run dev -- --port 3015
 ```
 
-No macOS/Linux:
+Preencha as variáveis públicas do Supabase em `apps/web/.env.local`, preservando
+qualquer configuração existente. Nunca versionar credenciais.
+Veja [variáveis de ambiente](docs/VARIAVEIS_AMBIENTE.md).
 
-```bash
-cd apps/web
-npm install
-cp .env.example .env.local
-npm run dev
-```
+O acesso local é `http://localhost:3015`. As [prévias](apps/web/README.md#prévias-locais)
+ajudam a testar interface sem gravar fixtures em contas reais.
 
-Configure em `.env.local`:
+Para verificações, consulte [o guia de testes](docs/TESTES_AUTOMATIZADOS.md).
+Pare o servidor de desenvolvimento antes de executar `npm run build`.
+A última entrega registrou 450 testes em 48 arquivos e build aprovado; esse número
+não substitui executar as verificações adequadas à próxima alteração.
 
-```dotenv
-NEXT_PUBLIC_SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=SUA_ANON_KEY
-```
+## Produção e banco
 
-Variáveis opcionais e regras de segurança:
-[docs/VARIAVEIS_AMBIENTE.md](docs/VARIAVEIS_AMBIENTE.md).
+A aplicação é publicada na Vercel a partir de `main`, com Root Directory
+`apps/web`. O site é [orbitamosbr.com](https://orbitamosbr.com).
+Cada publicação autorizada deve ser conferida no provedor.
 
-## Validação
+A ordem e os nomes reais das migrations estão em
+[Supabase nativo](docs/SUPABASE_NATIVE_MIGRATION.md). Um SQL no Git não prova que
+ele foi aplicado remotamente. Testes locais de RLS usam ambiente descartável,
+conforme [Supabase local](docs/SUPABASE_LOCAL.md).
 
-```powershell
-cd apps/web
-npm run lint
-npx tsc --noEmit
-npm run test:coverage
-npm run test:contracts
-npm run build
-```
-
-O estado conhecido da suíte está documentado em
-[docs/TESTES_AUTOMATIZADOS.md](docs/TESTES_AUTOMATIZADOS.md). Não assuma que
-todos os comandos passam sem consultar esse registro e executar novamente.
-
-## Supabase
-
-A plataforma v3 usa as migrations `005` a `018`. Elas cobrem:
-
-- perfil, PII e progresso;
-- academia, aulas, materiais e quizzes;
-- fórum e chat;
-- vagas, candidaturas, projetos e squads;
-- staff/admin, notificações, portfólio e privacidade;
-- contato, rate limit e storage.
-
-A existência de um arquivo SQL no Git não prova que ele foi aplicado no banco
-remoto. Ordem completa e consultas de verificação:
-[docs/SUPABASE_NATIVE_MIGRATION.md](docs/SUPABASE_NATIVE_MIGRATION.md).
-
-## Documentação
-
-- [Índice](docs/README.md)
-- [Arquitetura](docs/ARCHITECTURE.md)
-- [Infraestrutura](docs/INFRA_ATUAL.md)
-- [Variáveis de ambiente](docs/VARIAVEIS_AMBIENTE.md)
-- [Supabase e migrations](docs/SUPABASE_NATIVE_MIGRATION.md)
-- [Testes](docs/TESTES_AUTOMATIZADOS.md)
-- [Contribuição](CONTRIBUTING.md)
+Limites de planos, estado dos serviços e diferenças entre evidência local e
+produção estão em [infraestrutura](docs/INFRA_ATUAL.md).
 
 ## Licença
 
-O README anterior declarava MIT, mas não há arquivo `LICENSE` versionado no
-repositório nesta revisão. Antes de distribuir o projeto como MIT, adicione o
-texto da licença e confirme a titularidade dos materiais e assets.
+Não há `LICENSE` versionado nesta revisão. Antes de distribuir o projeto como
+MIT ou outra licença, confirme a titularidade do código e dos materiais e
+adicione o texto correspondente.

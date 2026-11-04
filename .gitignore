@@ -19,7 +19,7 @@ apps/web/test-results/
 apps/web/public/vendor/pyodide/
 apps/web/public/vendor/sqljs/
 
-# Next.jsimage.png
+# Next.js (arquivos gerados)
 .next/
 out/
 
@@ -117,6 +117,7 @@ replay_pid*
 
 # Arquivos de trabalho / rascunho na raiz (nao versionar)
 # Assets do projeto ficam em apps/web/public
+# Originais locais organizados ficam em docs/local/media (também ignorado).
 /*.png
 /*.jpg
 /*.jpeg

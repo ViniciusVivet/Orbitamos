@@ -1,5 +1,21 @@
 # SQL com Orbi — oficina da loja
 
+## Estado implementado em 04/11/2026
+
+A aventura de dez atividades e a oficina de cinco missões continuam disponíveis.
+A oficina também abre diretamente em `/estudante/trilhas/sql?mode=workshop`.
+`SqlStudio.tsx` mantém a escolha no URL; voltar/avançar e recarregar preservam o
+ambiente selecionado. A retomada da Academy registra esse destino sem misturar
+os rascunhos da aventura e da oficina, que continuam locais e separados por conta.
+
+A conclusão da aventura alimenta a revisão em `/estudante/jogos/revisao`, com
+perguntas de filtro e origem dos dados. O diário local agenda a próxima revisão;
+não há notificação externa nem sincronização entre aparelhos. Inglês em cena
+também já existe como experiência separada na Academy. Os relatos e resultados
+datados abaixo registram as rodadas anteriores; não foram reexecutados nesta
+conferência de código. `scripts/audit-sql-resume.mjs` cobre a troca de ambiente,
+histórico, recarga, preservação dos rascunhos e destino de retomada.
+
 ## Escopo da primeira entrega
 
 Entrada atual: uma aventura de dez pequenas atividades na loja do Orbi, seguida pela oficina de cinco missões para criar a tabela `produtos`, cadastrar mercadorias, consultar, filtrar e atualizar. É uma introdução a SQL, não um curso completo nem formação profissional.
@@ -18,7 +34,7 @@ As prateleiras reagem às consultas; o resultado real fica ao lado no computador
 
 Progresso da aventura usa `orbitamos-sql-quest-v1-{userId}`. A oficina antiga usa sua chave anterior, preservada; fica acessível em Opções → Abrir oficina de criação e ao concluir a aventura. Não há migração destrutiva nem sincronização entre aparelhos. Reinício exige confirmação e oferece desfazer durante a sessão.
 
-A revisão automática em outro dia, a expansão para outras linguagens e o inglês contextual continuam como próximos passos. A primeira entrega concentra a experiência completa nesta missão SQL.
+Na entrega de 24/10, revisão em outro dia, expansão para outras linguagens e inglês contextual eram próximos passos. O estado atual da integração com revisão e inglês está descrito acima; a aventura SQL continua concentrada nesta missão da loja.
 
 Verificação adicional: `src/lib/sqlQuest.test.ts` executa casos reais, resultados errados, alterações ocultas e progresso inválido. `node scripts/audit-sql-quest.mjs` cobre as dez atividades em desktop, WebKit/iPhone e 320px com axe, retomada e reinício. O teste da oficina anterior continua disponível em `scripts/audit-sql-studio.mjs`, agora entrando pelo menu de opções.
 

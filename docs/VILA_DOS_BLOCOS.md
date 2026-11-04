@@ -1,5 +1,19 @@
 # Vila dos Blocos — direção pedagógica e de jogo
 
+## Estado implementado em 04/11/2026
+
+As dez fases continuam disponíveis. Além das luzes e da fase atual, o jogo agora
+guarda a montagem em andamento: símbolo encaixado, personagem selecionado e
+níveis de recuo, por conta e fase, em `orbitamos-vila-draft-v1-{userId}-{fase}`.
+`gameDrafts.ts` valida o formato e a compatibilidade com a fase antes de restaurar;
+rascunhos inválidos são descartados. Recomeçar ou acertar remove o rascunho da
+fase, preservando as conquistas. Não há sincronização entre aparelhos.
+
+Após um acerto, `LearningBridge` oferece uma prática de código relacionada à
+fase. A Academy também identifica montagens em andamento e fases concluídas
+para orientar a continuidade. Os resultados abaixo pertencem à primeira versão;
+esta atualização foi conferida no código, sem nova execução das auditorias.
+
 ## Pedido e identidade (05/10/2026)
 
 Jogo NOVO, separado de Monte o Código e Guia o Orbi. Não substituir o pedido por fases de ordenação. Uma aventura acolhedora, quase um livro ilustrado interativo: a ventania apagou a vila; o jogador ajuda a turma de símbolos a recuperar dez luzes para um festival. Não usar linguagem infantilizante para julgar o aluno, nem vidas, contagem regressiva ou punição por errar.
@@ -51,5 +65,5 @@ npm run build
 - Dez fases jogadas em desktop, WebKit/iPhone 13 e Chromium 320 px: encaixes errados/certos, recuos, consequências, álbum e foco, revisita, retomada e ausência de luzes duplicadas.
 - Axe sem violações nos estados de abertura, álbum, encaixe, recuo e festival; sem overflow horizontal da página. Linhas de código longas têm rolagem interna acessível por teclado.
 - A revisão corrigiu anúncio de recuos para leitores de tela, diferenciou recuo inválido de intenção diferente e retirou o cabeçalho comercial duplicado no mobile somente enquanto o jogo está presente.
-- O estado conserva luzes e fase atual, não as tentativas intermediárias de cada tabuleiro. Não prometer retomada de um encaixe ainda não testado.
+- Na primeira versão, o estado conservava luzes e fase atual, sem as tentativas intermediárias de cada tabuleiro. A persistência atual da montagem está descrita no início deste documento.
 - Conteúdo anterior de Monte o Código e Guia o Orbi preservado. Esta versão nova fica local até autorização de publicação.

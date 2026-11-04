@@ -1,6 +1,64 @@
 # Mapa da experiência da Academy
 
-Auditoria de jornada em 26/10/2026. Produto mantido como está nesta rodada.
+Estado documental conferido no código em 04/11/2026. As auditorias e medidas de
+26 e 28/10 abaixo foram preservadas como histórico; não são uma nova observação
+de alunos nem uma nova validação de navegador.
+
+## Percurso atual — 04/11/2026
+
+1. **Escolher e retomar:** Início (`/estudante`) e Trilhas
+   (`/estudante/trilhas`) permitem escolher Primeiros passos, C# & .NET ou SQL.
+   A escolha local por conta governa a ação principal da Home; a atividade
+   recente fora da trilha continua acessível como retomada secundária.
+2. **Primeiros passos:** perfil → conta de um serviço → decisão → orçamento.
+   As quatro entregas JavaScript têm guia, alteração e aplicação independente
+   validadas. O mapa informa pré-requisitos sem bloquear exploração. Funções e
+   os desafios antigos continuam no laboratório; nem todos receberam esse ciclo.
+3. **Pilotar outras trilhas:** C# oferece variáveis, condições e laços; métodos e
+   as etapas profissionais do mapa ainda estão em preparação. SQL tem aventura
+   de dez etapas e oficina de cinco missões, com modo preservado na URL.
+   Os cursos anteriores de vídeo são material de apoio em `/estudante/aulas`
+   e `/estudante/cursos/[slug]`, com histórico próprio.
+4. **Experimentar outro formato:** `/estudante/jogos` reúne seis experiências:
+   A loja do Orbi, Entrega do Orbi, Inglês em cena, Vila dos Blocos, Guia o Orbi e
+   Monte o Código. A recomendação considera a retomada; C# selecionado prioriza
+   jogos de lógica. As demais trilhas ainda não ordenam jogos por conceito.
+5. **Aplicar e revisar:** as pontes abrem desafios relacionados, ou a oficina
+   no caso de SQL. A Entrega do Orbi agora abre **A última luz do bairro**, com
+   ponte, elevador e farol controlados por código e travessia manual. Revisão de
+   bolso (`/estudante/jogos/revisao`) tem 12 perguntas, até três por sessão,
+   sobre experiências concluídas, sem adaptação por proficiência.
+6. **Ler evidências:** Progresso distingue abertura, prática, conclusão e revisão;
+   não soma aulas, fases e missões em um percentual de domínio. O capítulo novo
+   usa save v2; conquistas da Entrega v1 permanecem como histórico, sem concluir
+   as três novas entregas. Rascunhos, escolha de trilha e diário continuam locais
+   por conta/navegador, sem sincronização entre dispositivos.
+
+O catálogo e as entradas visuais seguem o
+[padrão visual da Academy](PADRAO_VISUAL_ACADEMY.md). A referência aprovada para
+próximos jogos é o [capítulo de 04/11](STUDIO_E_ORBI_CAPITULO_01.md), sem supor que
+as outras cinco experiências já tenham o mesmo tratamento artístico e mecânico.
+
+## Pendências atuais
+
+- Observar iniciantes reais no celular, incluindo teclado e desempenho em aparelho
+  físico. Os registros de auditoria não demonstram transferência ou retenção.
+- Expandir aplicação independente e depuração às demais atividades; conectar
+  jogos, revisão e aulas a habilidades da trilha escolhida.
+- Ampliar o conteúdo após os pilotos sem apresentar métodos, APIs ou projetos
+  profissionais do mapa como aulas já disponíveis.
+- Alinhar evidências locais com métricas de aulas/XP e definir sincronização com
+  preservação de rascunhos, datas e resolução de conflitos.
+
+Fontes de implementação: `academyStudyPath.ts`, `practiceExperience.ts`,
+`practiceStation.ts`, `academyActivity.ts` e `orbiChapter.ts`, em `apps/web/src/lib/`.
+As [rotas e os contratos atuais](ARQUITETURA_ESTUDANTE.md) detalham essa separação.
+
+## Histórico da auditoria — 26/10/2026
+
+O produto foi mantido como estava durante a auditoria inicial. O percurso e os
+gargalos a seguir descrevem aquela versão; as rodadas posteriores estão
+registradas ao final e no estado atual acima.
 
 ## Escopo e evidências
 
@@ -13,7 +71,7 @@ Capturas e dados de reprodução: `apps/web/test-results/academy-journey/`.
 Os scripts e relatórios dessa pasta são artefatos de auditoria, não código do
 produto. Hipóteses de confusão e abandono devem ser verificadas com iniciantes.
 
-## Percurso atual
+## Percurso observado em 26/10/2026
 
 1. **Entrar e escolher:** a Home propõe a primeira linha de JavaScript. Oferece
    também catálogo de trilhas, laboratório, jogos e biblioteca de aulas. Não há
@@ -36,9 +94,9 @@ produto. Hipóteses de confusão e abandono devem ser verificadas com iniciantes
    registros separados. A recomendação de retomada considera a visita recente;
    ela não equivale ao próximo passo de uma trilha pessoal.
 
-## Gargalos priorizados
+## Gargalos priorizados em 26/10/2026
 
-| Prioridade | Evidência atual | Consequência provável | Direção de correção |
+| Prioridade | Evidência na auditoria | Consequência provável | Direção de correção |
 | --- | --- | --- | --- |
 | P1 | A primeira missão pede o próprio nome; `let nome = "João"; console.log(nome);` continua com execução guiada desabilitada. O literal `"Seu Nome"` é aceito. Reproduzido na interface. | O aluno pode cumprir a instrução e interpretar o bloqueio como incapacidade própria. | Alinhar enunciado, conferência da linha e validação semântica. Aceitar personalizações válidas. |
 | P1 | Após a introdução, no WebKit/iPhone, o início do editor está a 1.077 px do topo, com viewport de 664 px e scroll zero. | É necessário atravessar títulos, mapa e opções para achar onde digitar. | Priorizar uma instrução curta, editor e uma ação principal durante a prática; recolher contexto e opções. |
@@ -61,7 +119,7 @@ produto. Hipóteses de confusão e abandono devem ser verificadas com iniciantes
 - Distinção honesta entre uma visita, participar e concluir uma atividade.
 - Informação transparente sobre o conteúdo que ainda está em preparação.
 
-## Ordem recomendada para a próxima implementação
+## Ordem recomendada na auditoria de 26/10/2026
 
 1. Corrigir bloqueios de escrita válida e reduzir a distância até o editor mobile.
 2. Definir a sequência de pré-requisitos e uma trilha principal escolhida pelo aluno.
@@ -96,7 +154,7 @@ seguinte tratou estes pontos do mapa:
 Auditorias específicas: `audit-guided-onboarding.mjs`, `audit-study-path.mjs` e
 `audit-sql-resume.mjs`. Os relatórios ficam em `apps/web/test-results/`.
 
-Continuam no backlog: sequência de pré-requisitos, transporte explícito do código
+Naquele momento continuavam no backlog: sequência de pré-requisitos, transporte explícito do código
 ao modo livre, variações independentes em todos os desafios, progresso/XP coerente
 com habilidades, ampliação de conteúdo e revisão, e sincronização entre aparelhos.
 Escolher uma trilha não significa que esses pontos já estejam resolvidos.
