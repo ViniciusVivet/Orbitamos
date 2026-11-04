@@ -32,3 +32,17 @@ slogans e cartões vazios de ícones. Organizar o texto não resolve esse proble
   vídeo ou cena interativa por uma imagem. A mídia precisa ajudar a entender a ação.
 - Confira screenshots reais em desktop e celular, além de lint/build. Número de
   testes aprovados não comprova qualidade visual. Preserve auth, saves e progresso.
+
+## Academy: referência aprovada para jogos (04/11/2026)
+
+O usuário aprovou o capítulo **A última luz do bairro**, da Entrega do Orbi,
+como referência mínima para os próximos jogos e refinamentos. Preserve o cuidado
+com direção de arte própria, personagens coerentes, história curta, controles
+realmente jogáveis no teclado e no toque, feedback e consequências visíveis do
+código. As mecânicas devem servir ao objetivo pedagógico de cada experiência.
+
+Consulte `../../docs/STUDIO_E_ORBI_CAPITULO_01.md`. Verifique o percurso real,
+inclusive dois toques simultâneos, erros, retomada e preservação das conquistas.
+Mantenha física e renderização no cliente, mídia otimizada e carregamento sob
+demanda. Sincronizações futuras devem gravar marcos úteis, evitando chamadas ao
+banco por quadro ou tecla. Avalie também desempenho em aparelhos modestos.
