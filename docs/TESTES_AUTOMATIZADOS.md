@@ -19,6 +19,7 @@ npm run test:coverage           # suíte + limites dos módulos selecionados
 npm run test:contracts          # contratos de colaborador e Supabase local
 npm run test:collaborator       # somente contratos de colaborador
 npm run test:supabase:contracts # somente contratos do ambiente Supabase local
+npx next typegen                # declarações Next em um clone limpo
 npx tsc --noEmit                # TypeScript
 npm run lint
 npm run build
@@ -169,6 +170,11 @@ focais não medem todo o app.
 alteram `apps/web`, `supabase` ou o próprio workflow, com Node 20 e seis etapas
 bloqueantes: instalação, typecheck, lint, cobertura, contratos e build.
 O build normaliza o caminho real no Windows antes de iniciar o Next.js.
+
+A etapa de typecheck executa `next typegen` antes do `tsc`. O Next gera
+`next-env.d.ts` (ignorado pelo Git), incluindo os tipos de importação de imagens,
+e os tipos das rotas. Assim a checagem não depende de um `next dev` ou build
+anterior na máquina e funciona também no checkout limpo do runner.
 
 Existem duas suítes pgTAP: 14 verificações em
 `supabase/tests/database/rls.test.sql` e 32 em

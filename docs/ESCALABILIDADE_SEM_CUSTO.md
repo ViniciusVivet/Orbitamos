@@ -164,6 +164,8 @@ Browserslist e tracing amplo na rota de materiais. O lint
 completo terminou sem erros, com 31 avisos, incluindo arquivos de QA locais
 ignorados pelo Git. Os avisos de imagens/variáveis existentes foram preservados.
 Lint focal e verificação de whitespace dos escopos alterados foram aprovados.
+A preparação do CI gera as declarações com `next typegen` antes de executar
+TypeScript, inclusive em checkout limpo sem `next-env.d.ts` prévio.
 Os dois testes SQL usam identidades fictícias e terminam com `rollback`. A suíte
 RLS de 14 casos modela grants legados mínimos de contatos, vagas, solicitações e
 colunas públicas de perfil dentro da fixture transacional, pois o CLI recente
