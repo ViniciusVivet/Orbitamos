@@ -16,7 +16,7 @@ afirmação de execução nova a cada leitura.
   artes, exemplos, documentação e arquivos locais.
 - [Contribuição](CONTRIBUTING.md) e [orientações para agentes](AGENTS.md).
 - [Escalabilidade com a infraestrutura atual](docs/ESCALABILIDADE_SEM_CUSTO.md):
-  catálogo resumido, chat paginado, sessão e conclusão/XP; SQL 019 pendente de aplicação remota pelo usuário.
+  catálogo resumido, chat paginado, sessão e conclusão/XP; aplicação da 019 informada pelo usuário.
 
 ## Produto e arquitetura
 
@@ -93,11 +93,10 @@ A ordem e os nomes reais das migrations estão em
 ele foi aplicado remotamente. Testes locais de RLS usam ambiente descartável,
 conforme [Supabase local](docs/SUPABASE_LOCAL.md).
 
-A migration 019 de conclusão e XP está pronta e testada localmente. O usuário
-decidiu aplicar o SQL depois; nenhuma migration remota foi aplicada nesta rodada.
-Em um projeto com 005–018 já aplicadas, instalar somente a 019 conforme o
-[procedimento](docs/ESCALABILIDADE_SEM_CUSTO.md#aplicar-depois-somente-a-019-no-projeto-existente),
-sem reset ou seed de produção.
+A migration 019 de conclusão e XP foi testada localmente. Em **05/11/2026**, o
+usuário informou que executou o SQL com sucesso no Supabase. Essa aplicação não
+foi verificada funcionalmente pelos agentes em uma sessão remota autenticada;
+veja o [estado e procedimento](docs/ESCALABILIDADE_SEM_CUSTO.md#instalar-somente-a-019-no-projeto-existente).
 
 Limites de planos, estado dos serviços e diferenças entre evidência local e
 produção estão em [infraestrutura](docs/INFRA_ATUAL.md).

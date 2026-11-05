@@ -86,8 +86,10 @@ experiências da central não equivalem a uma formação profissional completa.
 - Progresso de aulas e métricas da conta: `lesson_progress` e `v3_user_progress`.
   Conclusão/XP usam `v3_complete_lesson(text,text,uuid)` da migration 019,
   transacional e idempotente; o servidor concede 10 XP apenas na primeira
-  conclusão. A 019 está pronta e testada localmente, com aplicação remota adiada
-  pelo usuário. Sem RPC, o cliente mantém a conclusão local pendente.
+  conclusão. A 019 foi testada localmente e teve aplicação bem-sucedida informada
+  pelo usuário em 05/11/2026, sem nova validação funcional remota pelos agentes.
+  Ver [o registro da 019](ESCALABILIDADE_SEM_CUSTO.md). Sem RPC, o cliente mantém
+  a conclusão local pendente.
   Essas tabelas não sincronizam os saves dos jogos e do laboratório.
 - Notificações: `v3_notifications`.
 

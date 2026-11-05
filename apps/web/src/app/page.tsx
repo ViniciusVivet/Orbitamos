@@ -12,7 +12,6 @@ import {
   Layers3,
   MessageCircle,
   Plus,
-  Rocket,
   ShieldCheck,
   Smartphone,
   Sparkles,
@@ -28,6 +27,7 @@ import MagneticButton from "@/components/MagneticButton";
 import LazyVideo from "@/components/LazyVideo";
 import HomeProcess from "@/components/home/HomeProcess";
 import HomeEngineering from "@/components/home/HomeEngineering";
+import HomeCapabilitiesStrip from "@/components/home/HomeCapabilitiesStrip";
 import useWarpCTAScene from "@/components/three/WarpCTAScene";
 import usePerformanceProfile from "@/hooks/usePerformanceProfile";
 import { projetos } from "@/data/projetos";
@@ -38,7 +38,7 @@ const WHATSAPP_URL =
   "https://wa.me/5511949138973?text=Ol%C3%A1%2C+vim+pelo+site+da+Orbitamos+e+quero+fazer+um+or%C3%A7amento";
 
 const stats = [
-  { value: `${projetos.length}+`, label: "projetos entregues", icon: Layers3 },
+  { value: String(projetos.length), label: "projetos no portfólio", icon: Layers3 },
   { value: "24h", label: "primeiro contato", icon: Zap },
   { value: "100%", label: "mobile-first", icon: Smartphone },
   { value: "IA", label: "automações sob medida", icon: Bot },
@@ -412,21 +412,7 @@ export default function Home() {
 
       {/* ═══ FEATURES STRIP ═══ */}
       <ScrollReveal from={{ opacity: 0, y: 15 }} to={{ duration: 0.5 }}>
-        <section className="border-y border-white/[0.08] bg-[#070a12]">
-          <div className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-5 py-5 sm:px-8 lg:grid-cols-4 lg:gap-4 lg:px-10">
-            {[
-              { icon: Rocket, text: "Velocidade de startup" },
-              { icon: Zap, text: "Layout para conversão" },
-              { icon: Bot, text: "Automações e IA" },
-              { icon: Code2, text: "Pronto para escalar" },
-            ].map((item) => (
-              <div key={item.text} className="flex items-center gap-2.5 text-xs text-white/58 sm:text-sm sm:gap-3">
-                <item.icon className="size-4 shrink-0 text-orbit-electric" />
-                <span>{item.text}</span>
-              </div>
-            ))}
-          </div>
-        </section>
+        <HomeCapabilitiesStrip />
       </ScrollReveal>
 
       {/* ═══ SERVICES ═══ */}

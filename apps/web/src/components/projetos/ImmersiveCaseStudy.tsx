@@ -31,6 +31,8 @@ interface ImmersiveCaseStudyProps {
 type MotionProfile = readonly [cameraPhase: number, flow: number, tension: number, angle: number];
 
 const CASE_THEMES: Record<string, { accent: string; accentSoft: string; second: string; motion: MotionProfile }> = {
+  "fast-comunicacao-design": { accent: "#b18aff", accentSoft: "177 138 255", second: "#7950e8", motion: [0.26, 0.72, 0.48, 0.64] },
+  "palladinos-assessoria": { accent: "#d5bb83", accentSoft: "213 187 131", second: "#846238", motion: [0.62, 0.28, 0.76, 0.36] },
   "yume-moda-disruptiva": { accent: "#29f5c6", accentSoft: "41 245 198", second: "#8b5cf6", motion: [0.18, 0.84, 0.28, 0.12] },
   "sensimilla-records": { accent: "#d9ff57", accentSoft: "217 255 87", second: "#8b5cf6", motion: [0.76, 0.42, 0.88, 0.34] },
   "mb-multimarcas-infantil": { accent: "#ff79b7", accentSoft: "255 121 183", second: "#70d6ff", motion: [0.42, 0.68, 0.38, 0.74] },

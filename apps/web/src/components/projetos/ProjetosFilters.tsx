@@ -1,35 +1,32 @@
 "use client";
 
 import { CATEGORIAS } from "@/types/projeto";
+import type { ProjectFilter } from "@/lib/projectCatalog";
+import s from "./ProjectCatalog.module.css";
 
-const TODOS = { slug: "todos" as const, label: "Todos" };
+const options = [{ slug: "todos" as const, label: "Todos" }, ...CATEGORIAS];
 
-type FilterSlug = "todos" | (typeof CATEGORIAS)[number]["slug"];
-
-interface ProjetosFiltersProps {
-  activeFilter: string;
-  onFilter: (slug: FilterSlug) => void;
-}
-
-export default function ProjetosFilters({ activeFilter, onFilter }: ProjetosFiltersProps) {
-  const options = [TODOS, ...CATEGORIAS];
-
-  return (
-    <div className="flex flex-wrap items-center justify-center gap-2 py-6">
-      {options.map(({ slug, label }) => (
-        <button
-          key={slug}
-          type="button"
-          onClick={() => onFilter(slug)}
-          className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
-            activeFilter === slug
-              ? "bg-gradient-to-r from-orbit-electric/20 to-orbit-purple/20 border border-orbit-electric/50 text-white"
-              : "border border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:border-white/25"
-          }`}
-        >
-          {label}
-        </button>
-      ))}
+export default function ProjetosFilters({ activeFilter, onFilter, counts }: {
+  activeFilter: ProjectFilter;
+  onFilter: (slug: ProjectFilter) => void;
+  counts: Record<ProjectFilter, number>;
+}) {
+  return <>
+    <div className={s.mobileFilter}>
+      <label htmlFor="project-category">Tipo de projeto</label>
+      <select id="project-category" value={activeFilter} onChange={(event) => onFilter(event.target.value as ProjectFilter)} aria-controls="projetos-resultados">
+        {options.map(({ slug, label }) => <option key={slug} value={slug}>{label} ({counts[slug]})</option>)}
+      </select>
     </div>
-  );
+    <div className={s.filters} role="group" aria-label="Filtrar projetos por tipo">
+    {options.map(({ slug, label }) => <button
+      key={slug}
+      type="button"
+      onClick={() => onFilter(slug)}
+      className={s.filter}
+      aria-pressed={activeFilter === slug}
+      aria-controls="projetos-resultados"
+    >{label}<span aria-hidden="true">{counts[slug]}</span></button>)}
+    </div>
+  </>;
 }

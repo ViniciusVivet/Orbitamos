@@ -19,7 +19,7 @@ quando descrevem uma execução específica.
 | Documento | Finalidade |
 | --- | --- |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Arquitetura executada, domínios e persistência |
-| [ESCALABILIDADE_SEM_CUSTO.md](ESCALABILIDADE_SEM_CUSTO.md) | Catálogo resumido, chat por cursor, proteção de sessão e XP transacional; 019 pronta localmente, aplicação remota adiada pelo usuário |
+| [ESCALABILIDADE_SEM_CUSTO.md](ESCALABILIDADE_SEM_CUSTO.md) | Catálogo resumido, chat por cursor, proteção de sessão e XP transacional; aplicação da 019 informada pelo usuário, sem nova validação funcional remota |
 | [INFRA_ATUAL.md](INFRA_ATUAL.md) | Provedores, publicação, custos e evidências datadas |
 | [VARIAVEIS_AMBIENTE.md](VARIAVEIS_AMBIENTE.md) | Nomes das variáveis lidas pelo código e exposição |
 | [SUPABASE_NATIVE_MIGRATION.md](SUPABASE_NATIVE_MIGRATION.md) | Nomes reais, ordem das migrations e Storage |
@@ -50,6 +50,7 @@ quando descrevem uma execução específica.
 | [METODO_ORBITA_IMERSIVA.md](METODO_ORBITA_IMERSIVA.md) | Processo, decisões e iterações de imersão |
 | [INICIO_PROCESSO_ENGENHARIA.md](INICIO_PROCESSO_ENGENHARIA.md) | Seções de engenharia/processo da home e verificações |
 | [PAGINAS_COMERCIAIS.md](PAGINAS_COMERCIAIS.md) | Páginas de serviços, estratégia e registros de entrega |
+| [PORTFOLIO_COMERCIAL.md](PORTFOLIO_COMERCIAL.md) | Seleção da home, catálogo com busca, faixa em movimento e capturas reais dos cases |
 
 ## Planejamento e histórico
 

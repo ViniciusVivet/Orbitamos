@@ -77,3 +77,27 @@ Scene/backdrop: lived-in dark creative workspace, warm wood desk edge, one charc
 Style/medium: premium photorealistic editorial photography, natural adult skin, believable fingers, tangible fabric and paper, controlled depth of field. Warm daylight and restrained cool shadows, not neon cyberpunk.
 Composition/framing: close three-quarter view from shoulder height; smartphone and hands prominent and centrally composed, action inside the central horizontal band so it survives responsive 16:10 crops. Calm organized composition, rich dark tones with luminous warm skin.
 Constraints: one photograph, not a collage or graphic; no floating UI, no slogans, no headlines, no watermark, no stock smile, no launch rocket or hologram. This is an illustrative fictional scene, not documentation of real staff or clients.
+
+## Faixa de diferenciais — 05/11/2026
+
+A pequena faixa entre a abertura e os serviços passou a usar
+`HomeCapabilitiesStrip`: movimento contínuo discreto da direita para a esquerda,
+com ciclo CSS de 38 segundos. Ela mantém os quatro textos existentes e não
+altera as chamadas principais. A intenção visual é conectar as seções com ritmo,
+sem criar outra disputa por atenção com o vídeo e o CTA; não há medição de ganho
+de conversão desta mudança.
+
+O movimento pausa ao passar o ponteiro ou focar a área de leitura. Um controle
+de 44px permite pausar/retomar de forma persistente. As cópias necessárias ao
+loop são ocultadas da árvore acessível. `prefers-reduced-motion` apresenta os
+quatro itens em grade estática, sem repetições nem controle desnecessário.
+Não foram adicionadas dependências ou animações por quadro em JavaScript.
+O controle segue o critério de conteúdo em movimento de
+[WCAG 2.2.2 — Pause, Stop, Hide](https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide.html).
+
+Validação integrada em 05/11/2026: quatro perfis no navegador, incluindo WebKit
+com perfil de iPhone 13 e 320px com movimento reduzido. Movimento, pausa manual,
+hover/foco, grade estática, ausência de overflow e Axe da faixa aprovados.
+Os seis cases da home mantêm a ordem acordada; a contagem usa os 11 projetos
+do catálogo. Evidências e verificação comercial em
+[PORTFOLIO_COMERCIAL.md](PORTFOLIO_COMERCIAL.md).

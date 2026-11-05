@@ -73,7 +73,9 @@ Conclusão e XP passam pela RPC `v3_complete_lesson(text,text,uuid)`, definida n
 019: uma transação, prêmio fixo de 10 XP só na primeira conclusão e sem soma no
 cliente. A fila local preserva a chave antiga e usa journal por aula entre abas.
 Sem RPC, a conclusão durável fica pendente e o XP aguarda o servidor. A 019 foi
-testada apenas localmente; sua aplicação remota ficou para o usuário depois.
+testada localmente; em 05/11/2026, o usuário informou aplicação bem-sucedida no
+Supabase, sem nova validação funcional remota pelos agentes. Veja
+[o registro da 019](ESCALABILIDADE_SEM_CUSTO.md).
 
 Progresso de aulas ou agregado no Supabase não implica sincronização dos saves
 locais. O capítulo **A última luz do bairro**, em
@@ -112,8 +114,9 @@ Detalhes: [STUDIO_E_ORBI_CAPITULO_01.md](STUDIO_E_ORBI_CAPITULO_01.md).
 
 - Migrations atuais: 15 arquivos timestampados em `supabase/migrations`, da
   `005` à `019`. A 019 bloqueia escritas diretas do cliente nas tabelas de
-  progresso e mantém leitura própria por RLS. Nenhuma migration remota foi
-  aplicada nesta rodada; presença no Git não prova aplicação no projeto remoto.
+  progresso e mantém leitura própria por RLS. O usuário informou aplicação da
+  019 em 05/11/2026; presença no Git e esse relato não substituem validação
+  funcional remota autenticada.
 - `academy` contém assets públicos de curso; `avatars` contém avatares e capas
   de portfólio. `academy-materials` era uma referência documental antiga, sem
   implementação correspondente nas migrations atuais.

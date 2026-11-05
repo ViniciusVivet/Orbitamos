@@ -3,6 +3,61 @@ import type { Projeto } from "@/types/projeto";
 /** Projetos reais da Orbitamos usados como portfólio comercial. */
 export const projetos: Projeto[] = [
   {
+    slug: "fast-comunicacao-design",
+    nome: "FAST Comunicação e Design",
+    categoria: "landing-pages",
+    resumo:
+      "Landing page de um estúdio criativo, com identidade autoral, apresentação de serviços e briefing guiado para iniciar a conversa pelo WhatsApp.",
+    tags: ["Design autoral", "Briefing guiado", "WhatsApp", "Comunicação"],
+    status: "publicado",
+    link: "https://fast-site-five.vercel.app/",
+    thumbnail: "/case-fast-comunicacao-design.webp",
+    imagemPrincipal: "/case-fast-comunicacao-design.webp",
+    contexto:
+      "A FAST precisava de um espaço próprio para apresentar seu trabalho em comunicação e design, expressar a identidade do estúdio e receber novos projetos.",
+    problema:
+      "Uma lista de serviços não mostrava, por si só, a personalidade da marca nem ajudava o visitante a explicar o que precisava antes do primeiro contato.",
+    solucao:
+      "Criamos uma landing page com direção visual própria, composição geométrica em movimento e quatro frentes de serviços. Um briefing em três etapas organiza desafio, empresa e contato para preparar uma mensagem de WhatsApp que o visitante decide enviar.",
+    destaques: [
+      "Identidade em preto e violeta, com tipografia expressiva e composição visual autoral",
+      "Serviços de redes sociais, catálogos, comunicação interna e branding organizados por objetivo",
+      "Briefing em três etapas com seleção de serviços e contexto do projeto",
+      "Contato direto e mensagem de WhatsApp preparada a partir das respostas",
+    ],
+    stack: ["HTML5", "CSS3", "JavaScript", "Vercel"],
+    resultado:
+      "Site publicado que reúne posicionamento, serviços e um caminho guiado para o primeiro atendimento, mantendo a personalidade visual da FAST.",
+  },
+  {
+    slug: "palladinos-assessoria",
+    nome: "Palladinos Assessoria",
+    categoria: "sites-institucionais",
+    resumo:
+      "Site comercial para assessoria de marketing e vendas, com identidade medieval, apresentação de planos, resultados e blog estratégico.",
+    tags: ["Marketing e vendas", "Planos", "Blog", "Identidade de marca"],
+    status: "publicado",
+    link: "https://palladinosassessoria.vercel.app/",
+    github: "https://github.com/ViniciusVivet/palladinosassessoria",
+    thumbnail: "/case-palladinos-assessoria.webp",
+    imagemPrincipal: "/case-palladinos-assessoria.webp",
+    contexto:
+      "A Palladinos precisava apresentar sua assessoria para pequenos e médios negócios, conectando posicionamento digital, conteúdo, campanhas e suporte comercial em uma proposta clara.",
+    problema:
+      "O visitante precisava entender as diferenças entre os planos, conhecer o método de trabalho e encontrar um próximo passo de contato sem se perder em serviços apresentados de forma isolada.",
+    solucao:
+      "Construímos um site com linguagem visual medieval e navegação direta entre início, planos, resultados e blog. A apresentação conecta o diagnóstico aos serviços e oferece chamadas de WhatsApp contextualizadas por plano.",
+    destaques: [
+      "Direção de arte em tons escuros e dourados, com identidade própria para a assessoria",
+      "Planos organizados por serviço e momento do negócio, com valores e condições visíveis",
+      "Páginas de resultados e blog para explorar a proposta além da apresentação inicial",
+      "Contato por diagnóstico e mensagens de WhatsApp contextualizadas por plano",
+    ],
+    stack: ["Next.js", "React", "TypeScript", "Tailwind CSS", "Vercel"],
+    resultado:
+      "Presença comercial publicada com planos, método, conteúdo editorial e caminhos de contato reunidos em uma experiência consistente com a marca.",
+  },
+  {
     slug: "mb-multimarcas-infantil",
     nome: "MB Multimarcas Infantil",
     categoria: "ecommerce",

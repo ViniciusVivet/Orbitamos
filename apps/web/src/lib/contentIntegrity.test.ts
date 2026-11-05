@@ -41,7 +41,9 @@ describe("portfolio integrity", () => {
   });
 
   it("keeps the new product cases available across portfolio routes", () => {
-    expect(projetos).toHaveLength(9);
+    expect(projetos).toHaveLength(11);
+    expect(getProjetoBySlug("fast-comunicacao-design")?.link).toBe("https://fast-site-five.vercel.app/");
+    expect(getProjetoBySlug("palladinos-assessoria")?.link).toBe("https://palladinosassessoria.vercel.app/");
     expect(getProjetoBySlug("radar-da-rima")?.link).toBe("https://batalhai.vercel.app/");
     expect(getProjetoBySlug("orbicore-gestao")?.github).toBe(
       "https://github.com/ViniciusVivet/OrbiCore"

@@ -76,6 +76,8 @@
   inset: 0;
   overflow: hidden;
   background: #020307;
+  opacity: 0;
+  visibility: hidden;
   transform-origin: center;
   will-change: transform, opacity, filter, clip-path;
 }
@@ -823,6 +825,8 @@
   translate: -50% -50%;
   text-transform: uppercase;
   pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
 }
 
 .crossing span,
@@ -2015,6 +2019,7 @@
   .portal {
     clip-path: none !important;
     opacity: 0.2 !important;
+    visibility: visible !important;
     transform: none !important;
   }
 

@@ -158,6 +158,23 @@ O contraste de superfície na seção de case estabelece uma pausa visual e dá 
 
 Evidências: 25 cenários comerciais, 12 de mídia, 173 testes unitários, lint e build; teclado, reduced-motion, ausência de overflow e Axe nos novos blocos. Planejamento de sete quadros, referências de pesquisa e limites de medição em PAGINAS_COMERCIAIS.md. Não há nota de conversão ou 10/10 imersivo atribuída a esta intervenção.
 
+## Entrada dos cases e primeira pintura — 05/11/2026
+
+FAST e Palladinos passaram a usar os cases existentes, com capturas reais e
+paletas próprias. Essa extensão não representa uma nova nota 10/10 de imersão.
+
+A inspeção no WebKit encontrou dois problemas de entrada: a animação global do
+template podia manter toda a página transparente enquanto o título já existia
+no DOM; antes da hidratação, a frase de travessia e o portal também apareciam
+sobre o hero. Os cases agora dispensam a animação global e começam com portal e
+frase ocultos em CSS. A timeline continua controlando sua aparição durante o
+scroll. O modo de movimento reduzido mantém seu portal estático visível.
+
+Aprendizado: um assert `toBeVisible()` não garante que os ancestrais tenham
+opacidade diferente de zero. Conferir a primeira pintura, a opacidade da árvore,
+o estado pronto da cena e a captura real; não desativar animações na screenshot
+para mascarar um defeito da experiência normal.
+
 ## Regra de encerramento
 
 Não concluir uma iteração porque o código está sofisticado. Concluir somente depois de capturar e avaliar começo, pontos intermediários, transições e fim em desktop e mobile. Se o efeito só for impressionante em movimento rápido ou depender de explicação, ainda não está pronto.

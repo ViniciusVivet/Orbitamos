@@ -26,8 +26,10 @@ npm run supabase:stop
 - `stop` encerra os containers locais.
 
 Esses comandos são exclusivos do banco descartável. Nunca executar reset ou seed
-em produção para instalar a nova RPC. O usuário aplicará a migration 019 remota
-depois, seguindo o [procedimento para projeto existente](SUPABASE_NATIVE_MIGRATION.md#instalar-somente-a-nova-019-em-um-projeto-existente).
+em produção para instalar a nova RPC. Em 05/11/2026, o usuário informou aplicação
+da 019 com sucesso no Supabase; isso é separado dos testes locais e não equivale
+a validação funcional remota pelos agentes. Ver
+[o registro da 019](ESCALABILIDADE_SEM_CUSTO.md).
 
 O teste em `supabase/tests/database/rls.test.sql` cria identidades fictícias
 dentro de uma transação e termina com `rollback`. Ele verifica, entre outros:
@@ -73,7 +75,8 @@ A stack completa teve timeout do pg-delta e essa tentativa não foi contada como
 sucesso. A validação efetiva usou `node scripts/supabase-local.mjs db start`
 para Postgres isolado, 005–019 e reaplicação da versão final de 019 apenas nesse
 banco descartável. O ambiente local foi encerrado com volumes preservados.
-Nenhum SQL remoto foi executado; ver
+Nenhum SQL remoto foi executado pelos agentes nessa validação local. A aplicação
+posterior foi informada pelo usuário em 05/11/2026; ver
 [ESCALABILIDADE_SEM_CUSTO.md](ESCALABILIDADE_SEM_CUSTO.md) para escopo e limites.
 
 ## Endereços locais padrão

@@ -1,11 +1,13 @@
 # Supabase nativo
 
 Revisão documental: **05/11/2026**. Nomes e comportamento conferidos no repositório.
-A migration 019 está pronta e testada em banco local descartável; o usuário
-decidiu aplicar o SQL depois. Nenhuma migration remota foi aplicada nesta rodada.
+A migration 019 foi testada em banco local descartável. Em 05/11/2026, o usuário
+informou execução bem-sucedida do SQL no Supabase. Não houve nova validação
+funcional remota autenticada pelos agentes; ver
+[o registro da 019](ESCALABILIDADE_SEM_CUSTO.md).
 
-Este documento descreve o estado implementado no repositório. Ele não afirma
-que uma migration foi aplicada no banco remoto sem verificação no Supabase.
+Este documento distingue implementação, evidência local e relato do usuário;
+o relato de aplicação não substitui verificação funcional no Supabase remoto.
 
 ## Pré-requisitos
 
@@ -53,7 +55,8 @@ por elas, como `v3_get_my_profile`, `v3_is_staff`,
 
 ## Instalar somente a nova 019 em um projeto existente
 
-Quando o usuário decidir aplicar: conferir o projeto e o backup, comprovar os
+Procedimento de referência, preservado após o relato de sucesso de 05/11/2026.
+Para uma instalação: conferir o projeto e o backup, comprovar os
 pré-requisitos 005–018 e executar no SQL Editor somente o conteúdo integral de
 [20260619001900_atomic_lesson_completion.sql](../supabase/migrations/20260619001900_atomic_lesson_completion.sql).
 O arquivo já inclui transação e recarga do schema do PostgREST. Não usar reset,

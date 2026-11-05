@@ -7,9 +7,11 @@ ou planos pagos. O objetivo é reduzir consultas e dados transferidos usando
 Next.js, Supabase e armazenamento local já existentes; não há medição nova de
 custo, capacidade máxima ou tráfego de produção.
 
-**O usuário decidiu aplicar o SQL depois. Nenhuma migration remota foi aplicada
-nesta rodada.** A migration 019 está pronta e testada localmente; o cliente
-expõe sincronização pendente enquanto a RPC não estiver disponível.
+**Aplicação da 019 informada pelo usuário em 05/11/2026:** ele relatou execução
+do SQL com sucesso no Supabase. Não houve nova validação funcional remota pelos
+agentes em uma sessão autenticada. Na rodada iniciada em 04/11, o usuário havia
+adiado a aplicação; os agentes executaram SQL apenas no banco local descartável.
+O cliente continua expondo sincronização pendente caso a RPC não esteja disponível.
 
 ## Catálogo e progresso de aulas
 
@@ -93,14 +95,20 @@ Resultados antigos não são aplicados a outra conta ou curso.
 Esse mecanismo sincroniza conclusões de aulas. Saves de jogos, código, C# e SQL
 continuam locais; não ganharam sincronização entre dispositivos nesta rodada.
 
-## Aplicar depois: somente a 019 no projeto existente
+<a id="aplicar-depois-somente-a-019-no-projeto-existente"></a>
+
+## Instalar somente a 019 no projeto existente
+
+Procedimento preservado como referência. A execução bem-sucedida foi informada
+pelo usuário em 05/11/2026; não é uma solicitação para reaplicar o SQL. Ainda
+falta a validação funcional remota autenticada pelos agentes.
 
 Pré-requisitos: migrations 005–018 já aplicadas, tabelas e funções esperadas
 presentes, perfil da conta provisionado e curso/aulas correspondentes publicados.
 A sequência e as verificações gerais estão em
 [SUPABASE_NATIVE_MIGRATION.md](SUPABASE_NATIVE_MIGRATION.md).
 
-Quando o usuário for aplicar a mudança no SQL Editor do projeto correto:
+Para uma instalação da mudança no SQL Editor do projeto correto:
 
 1. Preservar o backup do banco existente.
 2. Executar somente o conteúdo integral de

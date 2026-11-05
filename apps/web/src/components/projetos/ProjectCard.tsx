@@ -2,100 +2,30 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import type { Projeto } from "@/types/projeto";
-import { CATEGORIAS, STATUS_LABELS } from "@/types/projeto";
-import { Button } from "@/components/ui/button";
-import { ExternalLink } from "lucide-react";
+import { ArrowRight, ArrowUpRight, ExternalLink } from "lucide-react";
+import { CATEGORIAS, STATUS_LABELS, type Projeto } from "@/types/projeto";
+import s from "./ProjectCatalog.module.css";
 
-interface ProjectCardProps {
-  projeto: Projeto;
-  onOpenCase?: (projeto: Projeto) => void;
-}
-
-function getCategoriaLabel(slug: string) {
-  return CATEGORIAS.find((c) => c.slug === slug)?.label ?? slug;
-}
-
-export default function ProjectCard({ projeto }: ProjectCardProps) {
-  const caseHref = `/projetos/${projeto.slug}`;
+export default function ProjectCard({ projeto, featured = false }: { projeto: Projeto; featured?: boolean }) {
+  const category = CATEGORIAS.find((item) => item.slug === projeto.categoria)?.label;
+  const summaryId = `project-${projeto.slug}-summary`;
 
   return (
-    <article className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm transition-all duration-500 hover:border-orbit-electric/30 hover:bg-white/[0.08] hover:shadow-[0_0_40px_theme(colors.orbit-electric/.12)] hover:-translate-y-1">
-      {/* Hologram scanline on hover */}
-      <div className="pointer-events-none absolute inset-0 z-20 opacity-0 transition-opacity duration-500 group-hover:opacity-100" style={{
-        background: "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,212,255,0.03) 3px, rgba(0,212,255,0.03) 4px)",
-      }} />
-
-      <Link href={caseHref} className="block" aria-label={`Ver case completo ${projeto.nome}`}>
-        <div className="relative aspect-video w-full overflow-hidden">
-          <Image
-            src={projeto.thumbnail}
-            alt={projeto.nome}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-110"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-          {/* Chromatic aberration effect on hover */}
-          <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 mix-blend-screen" style={{
-            background: "linear-gradient(135deg, rgba(0,212,255,0.06) 0%, transparent 50%, rgba(139,92,246,0.06) 100%)",
-          }} />
-          <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-            <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
-              {getCategoriaLabel(projeto.categoria)}
-            </span>
-            <span className="rounded-full border border-white/20 bg-black/40 px-2.5 py-1 text-xs text-white/90">
-              {STATUS_LABELS[projeto.status]}
-            </span>
-          </div>
+    <article className={`${s.card} ${featured ? s.featured : ""}`} data-project-card={projeto.slug}>
+      <Link href={`/projetos/${projeto.slug}`} className={s.primary} aria-label={`Explorar case ${projeto.nome}`} aria-describedby={summaryId}>
+        <div className={s.image}>
+          <Image src={projeto.thumbnail} alt={`Prévia de ${projeto.nome}`} fill sizes={featured ? "(max-width: 639px) 100vw, (max-width: 1280px) 50vw, 610px" : "(max-width: 639px) 100vw, (max-width: 1023px) 50vw, (max-width: 1280px) 33vw, 390px"} />
         </div>
-
-        <div className="p-5 pb-0">
-          <h3 className="text-lg font-semibold text-white transition-colors duration-300 group-hover:text-orbit-electric">{projeto.nome}</h3>
-          <p className="mt-2 line-clamp-2 text-sm text-white/70">{projeto.resumo}</p>
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {projeto.tags.slice(0, 4).map((tag) => (
-              <span
-                key={tag}
-                className="rounded bg-white/10 px-2 py-0.5 text-xs text-white/80 transition-colors duration-300 group-hover:bg-orbit-electric/10 group-hover:text-orbit-electric/80"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
+        <div className={s.body}>
+          <div className={s.meta}><span>{category}</span><span className={s.status} data-status={projeto.status}>{STATUS_LABELS[projeto.status]}</span></div>
+          <h3 className={s.title}>{projeto.nome}<ArrowUpRight aria-hidden="true" /></h3>
+          <p id={summaryId} className={s.summary}>{projeto.resumo}</p>
+          <span className={s.caseLink}>Explorar case<ArrowRight aria-hidden="true" /></span>
         </div>
       </Link>
-
-      <div className="p-5 pt-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <Button asChild size="sm" className="bg-orbit-electric/20 text-orbit-electric hover:bg-orbit-electric/30 border border-orbit-electric/40">
-            <Link href={caseHref}>
-              Ver case completo
-            </Link>
-          </Button>
-
-          {projeto.link && (
-            <Button asChild size="sm" variant="ghost" className="group/live relative text-white/70 hover:text-orbit-electric hover:bg-orbit-electric/10 gap-2">
-              <a href={projeto.link} target="_blank" rel="noreferrer">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-                </span>
-                Ir para o site
-                <ExternalLink className="size-3.5 opacity-60" />
-              </a>
-            </Button>
-          )}
-
-          {projeto.github && (
-            <Button asChild size="sm" variant="ghost" className="text-white/70 hover:text-white hover:bg-white/10">
-              <a href={projeto.github} target="_blank" rel="noreferrer">
-                GitHub
-              </a>
-            </Button>
-          )}
-        </div>
-      </div>
+      {projeto.link && <div className={s.cardFooter}>
+        <a href={projeto.link} target="_blank" rel="noreferrer" aria-label={`Visitar site de ${projeto.nome} (abre em outra aba)`}>Visitar site<ExternalLink aria-hidden="true" /></a>
+      </div>}
     </article>
   );
 }

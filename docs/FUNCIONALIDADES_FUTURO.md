@@ -16,11 +16,11 @@ presentes ficam documentadas em [ARCHITECTURE.md](ARCHITECTURE.md).
   um backend descartável. Já há auditorias de navegador; os cenários de auth
   usam respostas interceptadas e os previews não comprovam gravações reais.
 - Confirmar no Supabase remoto a aplicação das migrations `005` a `018`.
-- Aplicar somente a nova `019` quando o usuário decidir, após conferir os
-  pré-requisitos existentes; depois verificar assinatura/grants e o fluxo
-  autenticado. O SQL está pronto e testado localmente, sem aplicação remota nesta
-  rodada. Não usar reset ou seed de produção; seguir
-  [o procedimento](SUPABASE_NATIVE_MIGRATION.md#instalar-somente-a-nova-019-em-um-projeto-existente).
+- Verificar assinatura/grants e o fluxo autenticado da `019` no Supabase remoto.
+  Em 05/11/2026, o usuário informou que executou o SQL com sucesso; falta a
+  validação funcional remota pelos agentes. Não usar reset ou seed de produção;
+  seguir as verificações do
+  [procedimento](SUPABASE_NATIVE_MIGRATION.md#instalar-somente-a-nova-019-em-um-projeto-existente).
 - Confirmar e registrar o cron anti-pausa citado na documentação anterior.
 
 ## Consolidação

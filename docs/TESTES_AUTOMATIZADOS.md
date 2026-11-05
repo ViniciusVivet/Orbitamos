@@ -101,8 +101,10 @@ fixtures no `finally`.
 
 A tentativa de iniciar a stack completa teve timeout no pg-delta; o teste
 efetivo usou Postgres isolado. O ambiente local foi encerrado com volumes
-preservados. A 019 está pronta e testada localmente, mas o usuário decidiu aplicar
-o SQL depois: **nenhuma migration remota foi aplicada nesta rodada**.
+preservados. Nessa rodada local, o usuário havia adiado a aplicação e nenhum SQL
+remoto foi executado pelos agentes. Em **05/11/2026**, o usuário informou que
+executou a 019 com sucesso no Supabase; não houve nova validação funcional remota
+autenticada pelos agentes.
 Detalhes em [SUPABASE_LOCAL.md](SUPABASE_LOCAL.md) e
 [ESCALABILIDADE_SEM_CUSTO.md](ESCALABILIDADE_SEM_CUSTO.md). Este registro não
 substitui uma checagem global de TypeScript/build nem auditoria de navegador.
@@ -211,6 +213,21 @@ O WebKit pode emitir avisos de acesso a requisições HTTP da fixture interrompi
 durante navegação. O relatório os guarda em `fixtureAccessControlWarnings`,
 separados das exceções JavaScript que reprovam o roteiro. Os asserts funcionais
 continuam exigindo login, leitura, envio, retomada e troca de conta corretos.
+
+## Auditoria da home e portfólio comercial
+
+Com o servidor local 3015 em execução, use
+`node scripts/audit-commercial-portfolio.mjs` em `apps/web`. A variável
+`PORTFOLIO_AUDIT_URL` permite outro endereço. O roteiro verifica a faixa em
+movimento e seus controles, seis cases da home, 11 projetos sem repetição,
+imagens, busca, filtros e recuperação da lista vazia. Abre os dois novos cases
+e exige título realmente opaco no viewport e cena inicial pronta.
+
+São quatro perfis sequenciais: desktop, notebook baixo, WebKit com perfil de
+iPhone 13 e celular de 320px com movimento reduzido. Axe cobre somente os novos
+blocos, não o site inteiro. Capturas e relatório ficam em
+`apps/web/test-results/commercial-portfolio/`, ignorados pelo Git. O roteiro
+não envia formulários nem mensagens e não substitui teste em iPhone físico.
 
 ## Limites restantes
 

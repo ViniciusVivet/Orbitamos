@@ -1,0 +1,113 @@
+.strip {
+  overflow: hidden;
+  border-block: 1px solid #ffffff14;
+  background: #070a12;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  max-width: 1280px;
+  min-height: 66px;
+  margin-inline: auto;
+  padding-right: 12px;
+}
+
+.viewport {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  padding-block: 20px;
+  mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+}
+
+.viewport:focus-visible {
+  outline: 1px solid #00d4ff80;
+  outline-offset: -4px;
+}
+
+.track {
+  display: flex;
+  width: max-content;
+  animation: drift 38s linear infinite;
+}
+
+.group {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: clamp(40px, 6vw, 86px);
+  margin: 0;
+  padding-inline: clamp(20px, 3vw, 40px);
+  list-style: none;
+}
+
+.group li {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  color: #ffffff94;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.group svg {
+  flex-shrink: 0;
+  color: #00d4ff;
+}
+
+.track[data-paused="true"],
+.viewport:hover .track,
+.viewport:focus .track {
+  animation-play-state: paused;
+}
+
+.control {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #ffffff14;
+  border-radius: 50%;
+  color: #ffffff8f;
+  background: #ffffff03;
+  transition: color 160ms, background 160ms, border-color 160ms;
+}
+
+.control:hover {
+  color: #fff;
+  border-color: #00d4ff70;
+  background: #00d4ff0a;
+}
+
+.control:focus-visible {
+  outline: 2px solid #00d4ff;
+  outline-offset: 3px;
+}
+
+@keyframes drift {
+  to { transform: translate3d(-33.3333333333%, 0, 0); }
+}
+
+@media (max-width: 639px) {
+  .inner { min-height: 58px; padding-right: 8px; }
+  .viewport { padding-block: 17px; }
+  .group li { gap: 9px; font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inner { padding-right: 0; }
+  .viewport { padding: 18px 20px; mask-image: none; }
+  .track { display: block; width: auto; animation: none; transform: none; }
+  .group { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding: 0; }
+  .group[aria-hidden="true"], .control { display: none; }
+  .group li { white-space: normal; }
+}
+
+@media (prefers-reduced-motion: reduce) and (max-width: 767px) {
+  .group { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; }
+  .group li { align-items: flex-start; }
+  .group svg { margin-top: 1px; }
+}
