@@ -1,7 +1,10 @@
 # Arquitetura da Orbitamos
 
-Última revisão documental: 2026-11-04, comparada ao código de `3643a04`.
-A revisão não executou novamente build ou testes. Evidências de publicação
+Última revisão documental: 2026-11-05. A base histórica é `3643a04`; as mudanças
+posteriores de catálogo, chat, sessão e XP estão em
+[ESCALABILIDADE_SEM_CUSTO.md](ESCALABILIDADE_SEM_CUSTO.md), com testes focais e de
+banco local separados dos resultados históricos, além da auditoria isolada de
+cursos/chat em desktop e WebKit. Evidências de publicação
 ficam registradas separadamente em [INFRA_ATUAL.md](INFRA_ATUAL.md).
 
 ## Visão geral
@@ -55,6 +58,23 @@ EmailJS, quando configurado para contato, são integrações externas.
 | Local ao navegador e à conta | Rascunhos, retomada e evidências de atividades práticas/jogos; capítulo novo do Orbi; edição não salva do portfólio |
 | Repositório | Portfólio público em `src/data/projetos.ts`, conteúdo-base e mídia em `public` |
 
+O catálogo acadêmico consulta resumos e metadados de aulas; conteúdo, quiz e
+materiais completos são buscados somente para o slug aberto. A leitura de
+conclusões combina UUIDs e aliases por curso em lotes de até 100 referências,
+com usuário esperado e validação de sessão antes/depois da rede.
+
+Conversas usam relações embutidas e uma última mensagem por conversa; o histórico
+usa cursor `(created_at, id)`, 50 mensagens por página e máximo de 100. O cliente
+combina páginas/envios por ID e mantém estado por conta/conversa, sem adicionar
+polling ou Realtime. `AuthContext` observa os eventos do SDK Supabase e invalida
+respostas antigas após troca de conta ou logout.
+
+Conclusão e XP passam pela RPC `v3_complete_lesson(text,text,uuid)`, definida na
+019: uma transação, prêmio fixo de 10 XP só na primeira conclusão e sem soma no
+cliente. A fila local preserva a chave antiga e usa journal por aula entre abas.
+Sem RPC, a conclusão durável fica pendente e o XP aguarda o servidor. A 019 foi
+testada apenas localmente; sua aplicação remota ficou para o usuário depois.
+
 Progresso de aulas ou agregado no Supabase não implica sincronização dos saves
 locais. O capítulo **A última luz do bairro**, em
 `/estudante/jogos/entregas-do-orbi`, carrega Phaser sob demanda e mantém física,
@@ -90,8 +110,10 @@ Detalhes: [STUDIO_E_ORBI_CAPITULO_01.md](STUDIO_E_ORBI_CAPITULO_01.md).
 
 ## Decisões vigentes e fontes
 
-- Migrations atuais: 14 arquivos timestampados em `supabase/migrations`, da
-  `005` à `018`. Sua presença no Git não prova aplicação no projeto remoto.
+- Migrations atuais: 15 arquivos timestampados em `supabase/migrations`, da
+  `005` à `019`. A 019 bloqueia escritas diretas do cliente nas tabelas de
+  progresso e mantém leitura própria por RLS. Nenhuma migration remota foi
+  aplicada nesta rodada; presença no Git não prova aplicação no projeto remoto.
 - `academy` contém assets públicos de curso; `avatars` contém avatares e capas
   de portfólio. `academy-materials` era uma referência documental antiga, sem
   implementação correspondente nas migrations atuais.

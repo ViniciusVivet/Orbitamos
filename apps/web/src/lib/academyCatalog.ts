@@ -1,4 +1,4 @@
-import type { Curso } from "./cursos";
+import type { CursoResumo } from "./cursos";
 import { academyPreviewHref } from "./portalNavigation";
 
 export type AcademyCatalogEntry = {
@@ -10,7 +10,7 @@ export type AcademyCatalogEntry = {
   boundary?: string;
   href: string;
   tone: "mint" | "sand" | "blue";
-  courses: Curso[];
+  courses: CursoResumo[];
 };
 
 const videoSubjects = [
@@ -22,8 +22,8 @@ const videoSubjects = [
 ];
 
 /** A subject has one main entry; related videos are supporting material, not a duplicate track. */
-export function getAcademyCatalog(courses: Curso[]): AcademyCatalogEntry[] {
-  const unique = new Map<string, Curso>();
+export function getAcademyCatalog(courses: CursoResumo[]): AcademyCatalogEntry[] {
+  const unique = new Map<string, CursoResumo>();
   for (const course of courses) if (!unique.has(course.slug)) unique.set(course.slug, course);
   const take = (slugs: string[]) => slugs.flatMap(slug => {
     const course = unique.get(slug);

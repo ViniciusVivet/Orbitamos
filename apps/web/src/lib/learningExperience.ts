@@ -1,4 +1,4 @@
-import type { Aula, Curso } from "@/lib/cursos";
+import type { Aula, AulaResumo, Curso, CursoResumo } from "@/lib/cursos";
 
 export type LessonGuide = {
   kind: LessonKind;
@@ -40,15 +40,19 @@ export function getLessonKind(aula: Aula): LessonKind {
   return "video";
 }
 
-export type FlatLesson = {
-  curso: Curso;
+export type FlatLessonResumo = {
+  curso: CursoResumo;
   moduloTitulo: string;
-  aula: Aula;
+  aula: AulaResumo;
   index: number;
   total: number;
 };
 
-export function flattenCourseLessons(curso: Curso): FlatLesson[] {
+export type FlatLesson = FlatLessonResumo & { curso: Curso; aula: Aula };
+
+export function flattenCourseLessons(curso: Curso): FlatLesson[];
+export function flattenCourseLessons(curso: CursoResumo): FlatLessonResumo[];
+export function flattenCourseLessons(curso: CursoResumo): FlatLessonResumo[] {
   const aulas = curso.modulos.flatMap((modulo) =>
     modulo.aulas.map((aula) => ({ moduloTitulo: modulo.titulo, aula }))
   );
@@ -62,8 +66,10 @@ export function flattenCourseLessons(curso: Curso): FlatLesson[] {
   }));
 }
 
-export function flattenAllLessons(cursos: Curso[]): FlatLesson[] {
-  return cursos.flatMap(flattenCourseLessons);
+export function flattenAllLessons(cursos: Curso[]): FlatLesson[];
+export function flattenAllLessons(cursos: CursoResumo[]): FlatLessonResumo[];
+export function flattenAllLessons(cursos: CursoResumo[]): FlatLessonResumo[] {
+  return cursos.flatMap((curso) => flattenCourseLessons(curso));
 }
 
 function inferArea(curso: Curso, aula: Aula): "web" | "csharp" | "sql" | "github" | "dados" | "hardware" | "logica" | "geral" {
@@ -415,7 +421,9 @@ export function getLessonGuide(curso: Curso, aula: Aula, lessonIndex = 0): Lesso
   };
 }
 
-export function getNextIncompleteLesson(cursos: Curso[], completedLessonIds: Set<string>): FlatLesson | null {
+export function getNextIncompleteLesson(cursos: Curso[], completedLessonIds: Set<string>): FlatLesson | null;
+export function getNextIncompleteLesson(cursos: CursoResumo[], completedLessonIds: Set<string>): FlatLessonResumo | null;
+export function getNextIncompleteLesson(cursos: CursoResumo[], completedLessonIds: Set<string>): FlatLessonResumo | null {
   const lessons = flattenAllLessons(cursos);
   return lessons.find((item) => !completedLessonIds.has(item.aula.id)) ?? lessons[0] ?? null;
 }

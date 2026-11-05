@@ -2,13 +2,11 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useChat } from "@/contexts/ChatContext";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   getChatConversations,
-  getChatMessages,
-  sendChatMessage,
   getChatUsers,
   createDirectConversation,
   createGroupConversation,
@@ -28,7 +26,8 @@ import AvatarWithPresence from "@/components/chat/AvatarWithPresence";
 import GroupInfoModal from "@/components/chat/GroupInfoModal";
 import NewDirectChatModal from "@/components/chat/NewDirectChatModal";
 import NewGroupChatModal from "@/components/chat/NewGroupChatModal";
-import { defaultPortalDestination, readPortalArea, rememberPortalArea, rememberedPortalArea, type PortalArea } from "@/lib/authNavigation";
+import { defaultPortalDestination, loginPathFor, readPortalArea, rememberPortalArea, rememberedPortalArea, type PortalArea } from "@/lib/authNavigation";
+import { useChatHistory, useChatScroll } from "@/hooks/useChatHistory";
 
 // ─── helpers locais ───────────────────────────────────────────────────────────
 
@@ -86,6 +85,15 @@ function groupMessagesByDay(messages: ChatMessageItem[]) {
 // ─── página ───────────────────────────────────────────────────────────────────
 
 export default function MensagensPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  useEffect(() => {
+    if (!loading && !user) router.replace(loginPathFor(window.location.pathname + window.location.search));
+  }, [loading, router, user]);
+  return <MensagensSession key={user?.id ?? "anonymous"} />;
+}
+
+function MensagensSession() {
   const { user, token } = useAuth();
   const { setActiveConversation, clearUnread, unreadByConv } = useChat();
   const searchParams = useSearchParams();
@@ -105,14 +113,12 @@ export default function MensagensPage() {
   // Estado de conversas e mensagens
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [messages, setMessages] = useState<ChatMessageItem[]>([]);
   const [loadingConvs, setLoadingConvs] = useState(true);
-  const [loadingMessages, setLoadingMessages] = useState(false);
-  const [sending, setSending] = useState(false);
-  const [input, setInput] = useState("");
+  const history = useChatHistory(user?.id ?? null, token, selectedId);
+  const { messages, loading: loadingMessages, sending, draft: input } = history;
+  const { containerRef, onScroll } = useChatScroll(selectedId, messages, `${history.loadingOlder}:${loadingMessages}`);
   const [clickedMessageId, setClickedMessageId] = useState<number | null>(null);
   const [otherUserLastSeen, setOtherUserLastSeen] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Estado de modais
   const [newChatOpen, setNewChatOpen] = useState(false);
@@ -138,10 +144,6 @@ export default function MensagensPage() {
     ? selectedConv.participants.find((p) => p.id !== user?.id)
     : null;
 
-  // Ref para evitar stale closure no WebSocket
-
-  // ─── callbacks WebSocket ───────────────────────────────────────────────────
-
   // ─── efeitos ──────────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -153,10 +155,12 @@ export default function MensagensPage() {
 
   useEffect(() => {
     if (!token) return;
+    let active = true;
     getChatConversations(token)
-      .then(setConversations)
-      .catch(() => setConversations([]))
-      .finally(() => setLoadingConvs(false));
+      .then((items) => { if (active) setConversations(items); })
+      .catch(() => { if (active) setConversations([]); })
+      .finally(() => { if (active) setLoadingConvs(false); });
+    return () => { active = false; };
   }, [token]);
 
   useEffect(() => {
@@ -168,61 +172,61 @@ export default function MensagensPage() {
 
   // Abre conversa direta via query param ?openUserId=...
   const openUserId = searchParams.get("openUserId");
+  const handledOpenUser = useRef<string | null>(null);
+  const pendingOpenUser = useRef<{ userId: string; token: string; promise: ReturnType<typeof createDirectConversation> } | null>(null);
+  const requestedConversationId = conversations.find(
+    (conversation) => conversation.type === "DIRECT" && conversation.participants.some((participant) => participant.id === openUserId)
+  )?.id;
   useEffect(() => {
+    if (!openUserId) { handledOpenUser.current = null; return; }
     if (!token || !openUserId || loadingConvs) return;
+    if (handledOpenUser.current === openUserId) return;
     const uid = openUserId;
-    const existing = conversations.find(
-      (c) => c.type === "DIRECT" && c.participants.some((p) => p.id === uid)
-    );
-    if (existing) { setSelectedId(existing.id); return; }
-    createDirectConversation(token, uid)
+    if (requestedConversationId != null) {
+      handledOpenUser.current = uid;
+      setSelectedId(requestedConversationId);
+      return;
+    }
+    let active = true;
+    if (pendingOpenUser.current?.userId !== uid || pendingOpenUser.current?.token !== token) {
+      pendingOpenUser.current = { userId: uid, token, promise: createDirectConversation(token, uid) };
+    }
+    pendingOpenUser.current.promise
       .then(({ conversation }) => {
+        if (!active) return;
+        handledOpenUser.current = uid;
         setConversations((prev) => [conversation, ...prev.filter((c) => c.id !== conversation.id)]);
         setSelectedId(conversation.id);
       })
-      .catch(() => {});
-  }, [token, openUserId, loadingConvs, conversations]);
+      .catch(() => { if (active) pendingOpenUser.current = null; });
+    return () => { active = false; };
+  }, [token, openUserId, loadingConvs, requestedConversationId]);
 
   useEffect(() => {
     if (!token || !otherParticipant?.id) { setOtherUserLastSeen(null); return; }
-    getPublicProfile(token, otherParticipant.id).then((p) =>
-      setOtherUserLastSeen(p?.lastSeenAt ?? null)
-    );
+    let active = true;
+    setOtherUserLastSeen(null);
+    getPublicProfile(token, otherParticipant.id)
+      .then((p) => { if (active) setOtherUserLastSeen(p?.lastSeenAt ?? null); })
+      .catch(() => { if (active) setOtherUserLastSeen(null); });
+    return () => { active = false; };
   }, [token, otherParticipant?.id]);
 
   useEffect(() => {
-    if (!token || selectedId == null) { setMessages([]); return; }
-    setLoadingMessages(true);
-    getChatMessages(token, selectedId)
-      .then(setMessages)
-      .catch(() => setMessages([]))
-      .finally(() => setLoadingMessages(false));
-  }, [token, selectedId]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  useEffect(() => {
     if (!token || (!newChatOpen && !newGroupOpen && !groupInfoOpen)) return;
-    getChatUsers(token).then(setUsers).catch(() => setUsers([]));
+    let active = true;
+    getChatUsers(token).then((items) => { if (active) setUsers(items); }).catch(() => { if (active) setUsers([]); });
+    return () => { active = false; };
   }, [token, newChatOpen, newGroupOpen, groupInfoOpen]);
 
   // ─── handlers ─────────────────────────────────────────────────────────────
 
   const handleSend = async () => {
-    const text = input.trim();
-    if (!text || !token || selectedId == null || sending) return;
-    setSending(true);
-    setInput("");
-    try {
-      const msg = await sendChatMessage(token, selectedId, text);
-      setMessages((prev) => [...prev, msg]);
-    } catch {
-      setInput(text);
-    } finally {
-      setSending(false);
-    }
+    const conversationId = selectedId;
+    const message = await history.send();
+    if (message) setConversations((previous) => previous.map((conversation) => conversation.id === conversationId
+      ? { ...conversation, lastMessage: { content: message.content, senderId: message.senderId, createdAt: message.createdAt } }
+      : conversation));
   };
 
   const startDirect = async () => {
@@ -511,8 +515,10 @@ export default function MensagensPage() {
               )}
 
               {/* Lista de mensagens */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                {loadingMessages ? (
+              <div ref={containerRef} onScroll={onScroll} className="flex-1 overflow-y-auto p-6 space-y-4" style={{ overflowAnchor: "none" }}>
+                {history.error && <p role="alert" className="text-sm text-amber-200">{history.error}{!history.loaded && <button type="button" onClick={history.retry} className="ml-2 underline">Tentar novamente</button>}</p>}
+                {history.nextCursor && <button type="button" disabled={history.loadingOlder} onClick={history.loadOlder} className="block mx-auto min-h-11 px-4 text-sm text-orbit-electric disabled:opacity-50">{history.loadingOlder ? "Carregando..." : "Carregar mensagens anteriores"}</button>}
+                {loadingMessages && messages.length === 0 ? (
                   <div className="flex justify-center py-12">
                     <div className="h-10 w-10 animate-spin rounded-full border-2 border-orbit-electric border-t-transparent" />
                   </div>
@@ -528,6 +534,7 @@ export default function MensagensPage() {
                         return (
                           <div
                             key={m.id}
+                            data-chat-message-id={m.id}
                             className={cn("flex gap-3 max-w-[80%]", isMe ? "ml-auto flex-row-reverse" : "")}
                           >
                             {!isMe && (
@@ -573,7 +580,6 @@ export default function MensagensPage() {
                     </div>
                   ))
                 )}
-                <div ref={messagesEndRef} />
               </div>
 
               {/* Input de envio */}
@@ -584,13 +590,15 @@ export default function MensagensPage() {
                 >
                   <Input
                     value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={(e) => history.setDraft(e.target.value)}
                     placeholder="Digite sua mensagem..."
+                    aria-label="Sua mensagem"
                     className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/40 rounded-xl py-6"
                     disabled={sending}
                   />
                   <Button
                     type="submit"
+                    aria-label="Enviar mensagem"
                     size="icon"
                     className="shrink-0 h-12 w-12 rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple text-black hover:opacity-90"
                     disabled={sending || !input.trim()}
@@ -637,6 +645,7 @@ export default function MensagensPage() {
 
       {groupInfoOpen && selectedConv?.type === "GROUP" && selectedId != null && token && (
         <GroupInfoModal
+          key={`${user.id}:${selectedId}`}
           token={token}
           conversation={selectedConv}
           currentUserId={user?.id}
@@ -646,7 +655,7 @@ export default function MensagensPage() {
           onLeave={() => {
             setGroupInfoOpen(false);
             setSelectedId(null);
-            getChatConversations(token).then(setConversations);
+            setConversations((previous) => previous.filter((conversation) => conversation.id !== selectedId));
           }}
         />
       )}

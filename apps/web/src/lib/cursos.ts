@@ -4,6 +4,8 @@
  */
 
 import { isSupabaseConfigured, requireSupabase } from "@/lib/supabase";
+import { addProgressLesson, type LessonCompletionResult } from "@/lib/api";
+import { readCompletedAcademyLessons, type AcademyLessonProgressRef } from "@/lib/academyLessonProgress";
 
 export interface QuizPergunta {
   question: string;
@@ -11,10 +13,16 @@ export interface QuizPergunta {
   answer: string;
 }
 
-export interface Aula {
+/** Metadados usados no catálogo e no progresso, sem carregar o conteúdo da aula. */
+export interface AulaResumo {
   id: string;
+  /** Alias estável para conciliar o progresso do fallback com IDs do banco. */
+  slug?: string;
   titulo: string;
   tipo?: "video" | "leitura" | "exercicio_guiado" | "desafio" | "projeto" | "quiz_revisao";
+}
+
+export interface Aula extends AulaResumo {
   /** ID do video no YouTube (ex.: dQw4w9WgXcQ) para embed */
   youtubeVideoId: string;
   /** Texto opcional ao lado do video */
@@ -31,17 +39,25 @@ export interface MaterialAula {
   url: string;
 }
 
-export interface Modulo {
+export interface ModuloResumo {
   id: string;
   titulo: string;
+  aulas: AulaResumo[];
+}
+
+export interface Modulo extends ModuloResumo {
   aulas: Aula[];
 }
 
-export interface Curso {
+export interface CursoResumo {
   id: string;
   slug: string;
   titulo: string;
   descricao?: string;
+  modulos: ModuloResumo[];
+}
+
+export interface Curso extends CursoResumo {
   modulos: Modulo[];
 }
 
@@ -105,13 +121,13 @@ export const courseTracks: CourseTrack[] = [
   },
 ];
 
-export function getCourseTrackGroups(cursosList: Curso[]) {
+export function getCourseTrackGroups<TCurso extends CursoResumo>(cursosList: TCurso[]) {
   const usedSlugs = new Set<string>();
   const groups = courseTracks
     .map((track) => {
       const cursos = track.slugs
         .map((slug) => cursosList.find((curso) => curso.slug === slug))
-        .filter((curso): curso is Curso => Boolean(curso));
+        .filter((curso): curso is TCurso => Boolean(curso));
       cursos.forEach((curso) => usedSlugs.add(curso.slug));
       return { ...track, cursos };
     })
@@ -574,7 +590,7 @@ export const cursos: Curso[] = [
   },
 ];
 /** Total de aulas de um curso */
-export function totalAulas(curso: Curso): number {
+export function totalAulas(curso: CursoResumo): number {
   return curso.modulos.reduce((acc, m) => acc + m.aulas.length, 0);
 }
 
@@ -609,14 +625,16 @@ export function proximaAulaId(curso: Curso, aulaId: string): string | null {
   return null;
 }
 
-type SupabaseLessonRow = {
+type SupabaseLessonSummaryRow = {
   id: string;
-  slug: string;
+  slug?: string;
   title: string;
-  description: string | null;
+  position: number | null;
+};
+
+type SupabaseLessonRow = SupabaseLessonSummaryRow & {
   youtube_video_id: string | null;
   content: string | null;
-  position: number | null;
   quiz?: unknown;
   lesson_materials?: Array<{
     id: string;
@@ -628,23 +646,56 @@ type SupabaseLessonRow = {
   }>;
 };
 
-type SupabaseModuleRow = {
+type SupabaseModuleRow<TLesson = SupabaseLessonRow> = {
   id: string;
   slug: string;
   title: string;
-  description: string | null;
   position: number | null;
-  lessons?: SupabaseLessonRow[];
+  lessons?: TLesson[];
 };
 
-type SupabaseCourseRow = {
+type SupabaseCourseRow<TLesson = SupabaseLessonRow> = {
   id: string;
   slug: string;
   title: string;
   description: string | null;
   position: number | null;
-  course_modules?: SupabaseModuleRow[];
+  course_modules?: SupabaseModuleRow<TLesson>[];
 };
+
+/** O fallback do catálogo também expõe apenas os metadados necessários. */
+export const cursosResumo: CursoResumo[] = cursos.map((curso) => ({
+  id: curso.id,
+  slug: curso.slug,
+  titulo: curso.titulo,
+  descricao: curso.descricao,
+  modulos: curso.modulos.map((modulo) => ({
+    id: modulo.id,
+    titulo: modulo.titulo,
+    aulas: modulo.aulas.map((aula) => ({ id: aula.id, ...(aula.slug ? { slug: aula.slug } : {}), titulo: aula.titulo, ...(aula.tipo ? { tipo: aula.tipo } : {}) })),
+  })),
+}));
+
+const catalogSelect = `
+  id, slug, title, description, position,
+  course_modules (
+    id, slug, title, position,
+    lessons (id, slug, title, position)
+  )
+`;
+
+function detailSelect(withQuiz: boolean) {
+  return `
+    id, slug, title, description, position,
+    course_modules (
+      id, slug, title, position,
+      lessons (
+        id, slug, title, youtube_video_id, content, position,${withQuiz ? "quiz," : ""}
+        lesson_materials (id, title, kind, file_url, external_url, position)
+      )
+    )
+  `;
+}
 
 function parseLessonQuiz(raw: unknown): QuizPergunta[] | undefined {
   if (!Array.isArray(raw)) return undefined;
@@ -662,11 +713,11 @@ function parseLessonQuiz(raw: unknown): QuizPergunta[] | undefined {
   return questions.length > 0 ? questions : undefined;
 }
 
-function mapSupabaseCourse(row: SupabaseCourseRow): Curso {
+function courseSourceModules<TLesson extends SupabaseLessonSummaryRow>(row: SupabaseCourseRow<TLesson>) {
   const allModules = row.course_modules ?? [];
   const generatedModulePattern = new RegExp(`^${row.slug.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}-m\\d+$`);
   const generatedModules = allModules.filter((module) => generatedModulePattern.test(module.slug));
-  const fallback = cursos.find((course) => course.slug === row.slug);
+  const fallback = cursosResumo.find((course) => course.slug === row.slug);
   const generatedLessonCount = generatedModules.reduce(
     (total, module) => total + (module.lessons?.length ?? 0),
     0
@@ -678,14 +729,39 @@ function mapSupabaseCourse(row: SupabaseCourseRow): Curso {
   // O seed de julho/2026 criou uma estrutura canônica com slugs curso-mN,
   // mas deixou as aulas como não publicadas e manteve módulos legados no banco.
   // Enquanto a correção SQL não estiver aplicada, a RLS devolve esses módulos
-  // sem aulas. Nesse caso usamos o catálogo local completo, que contém os vídeos.
+  // sem aulas. Resumo e detalhe usam a mesma sequência local para preservar IDs,
+  // contagens e retomada enquanto essa estrutura não estiver publicada.
   if (fallback && generatedLessonCount < fallbackLessonCount) {
-    return fallback;
+    return null;
   }
 
   // Quando a estrutura nova estiver publicada, ignore módulos legados duplicados.
   const sourceModules = generatedModules.length > 0 ? generatedModules : allModules;
-  const modules = [...sourceModules].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+  return [...sourceModules].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+}
+
+function mapSupabaseCourseSummary(row: SupabaseCourseRow<SupabaseLessonSummaryRow>): CursoResumo {
+  const modules = courseSourceModules(row);
+  if (!modules) return cursosResumo.find((course) => course.slug === row.slug)!;
+
+  return {
+    id: row.id,
+    slug: row.slug,
+    titulo: row.title,
+    descricao: row.description ?? undefined,
+    modulos: modules.map((modulo) => ({
+      id: modulo.id,
+      titulo: modulo.title,
+      aulas: [...(modulo.lessons ?? [])]
+        .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+        .map((lesson) => ({ id: lesson.id, ...(lesson.slug ? { slug: lesson.slug } : {}), titulo: lesson.title })),
+    })),
+  };
+}
+
+function mapSupabaseCourse(row: SupabaseCourseRow): Curso {
+  const modules = courseSourceModules(row);
+  if (!modules) return cursoPorSlug(row.slug)!;
   return {
     id: row.id,
     slug: row.slug,
@@ -698,6 +774,7 @@ function mapSupabaseCourse(row: SupabaseCourseRow): Curso {
         .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
         .map((lesson) => ({
           id: lesson.id,
+          ...(lesson.slug ? { slug: lesson.slug } : {}),
           titulo: lesson.title,
           youtubeVideoId: lesson.youtube_video_id ?? "",
           conteudo: lesson.content ?? undefined,
@@ -716,112 +793,69 @@ function mapSupabaseCourse(row: SupabaseCourseRow): Curso {
   };
 }
 
-export async function listarCursosAcademy(): Promise<Curso[]> {
-  if (!isSupabaseConfigured) return cursos;
+/** Catálogo para navegação, busca por metadados e contagens de progresso. */
+export async function listarCursosAcademy(): Promise<CursoResumo[]> {
+  if (!isSupabaseConfigured) return cursosResumo;
 
-  // A coluna `quiz` so existe apos a migration 016. Tentamos com ela e, se falhar,
-  // repetimos sem — assim o catalogo do banco continua funcionando antes da migration.
-  const buildSelect = (withQuiz: boolean) => `
-      id,
-      slug,
-      title,
-      description,
-      position,
-      course_modules (
-        id,
-        slug,
-        title,
-        description,
-        position,
-        lessons (
-          id,
-          slug,
-          title,
-          description,
-          youtube_video_id,
-          content,
-          position,${withQuiz ? "\n          quiz," : ""}
-          lesson_materials (
-            id,
-            title,
-            kind,
-            file_url,
-            external_url,
-            position
-          )
-        )
-      )
-    `;
-
-  const client = requireSupabase();
-  let { data, error } = await client
+  const { data, error } = await requireSupabase()
     .from("courses")
-    .select(buildSelect(true))
+    .select(catalogSelect)
     .eq("is_published", true)
     .order("position", { ascending: true });
 
   if (error) {
-    ({ data, error } = await client
-      .from("courses")
-      .select(buildSelect(false))
-      .eq("is_published", true)
-      .order("position", { ascending: true }));
-  }
-
-  if (error) {
     if (process.env.NODE_ENV !== "production") console.error("[cursos] erro ao carregar cursos:", error);
-    return cursos;
+    return cursosResumo;
   }
 
-  const mapped = ((data ?? []) as unknown as SupabaseCourseRow[]).map(mapSupabaseCourse);
-  return mapped.length > 0 ? mapped : cursos;
+  const mapped = ((data ?? []) as unknown as SupabaseCourseRow<SupabaseLessonSummaryRow>[]).map(mapSupabaseCourseSummary);
+  return mapped.length > 0 ? mapped : cursosResumo;
 }
 
+/** Conteúdo completo somente do curso aberto pelo estudante. */
 export async function buscarCursoAcademyPorSlug(slug: string): Promise<Curso | undefined> {
   if (!isSupabaseConfigured) return cursoPorSlug(slug);
-  const all = await listarCursosAcademy();
-  return all.find((curso) => curso.slug === slug);
-}
 
-export async function listarAulasConcluidas(lessonIds: string[]): Promise<string[]> {
-  if (!isSupabaseConfigured || lessonIds.length === 0) return [];
+  const client = requireSupabase();
+  const query = (withQuiz: boolean) => client
+    .from("courses")
+    .select(detailSelect(withQuiz))
+    .eq("is_published", true)
+    .eq("slug", slug)
+    .maybeSingle();
 
-  const { data: sessionData } = await requireSupabase().auth.getSession();
-  const userId = sessionData.session?.user.id;
-  if (!userId) return [];
-
-  const { data, error } = await requireSupabase()
-    .from("lesson_progress")
-    .select("lesson_id")
-    .eq("user_id", userId)
-    .in("lesson_id", lessonIds)
-    .not("completed_at", "is", null);
-
-  if (error) {
-    if (process.env.NODE_ENV !== "production") console.error("[cursos] erro ao carregar progresso:", error);
-    return [];
+  let { data, error } = await query(true);
+  // Compatibilidade com bancos anteriores à migration que adiciona quiz.
+  if (error && (error.code === "42703" || error.code === "PGRST204") && error.message?.includes("quiz")) {
+    ({ data, error } = await query(false));
   }
-
-  return (data ?? []).map((item: { lesson_id: string }) => item.lesson_id);
+  if (error) {
+    if (process.env.NODE_ENV !== "production") console.error("[cursos] erro ao carregar curso:", error);
+    return cursoPorSlug(slug);
+  }
+  return data ? mapSupabaseCourse(data as unknown as SupabaseCourseRow) : cursoPorSlug(slug);
 }
 
-export async function marcarAulaAcademyConcluida(lessonId: string): Promise<void> {
-  if (!isSupabaseConfigured) return;
+export function listarAulasConcluidas(lessons: AcademyLessonProgressRef[], expectedUserId: string | number | undefined): Promise<string[]>;
+export function listarAulasConcluidas(lessonIds: string[], courseSlug?: string, expectedUserId?: string | number): Promise<string[]>;
+export async function listarAulasConcluidas(
+  identifiers: string[] | AcademyLessonProgressRef[],
+  courseSlugOrOwner?: string | number,
+  expectedUserId?: string | number,
+): Promise<string[]> {
+  if (!isSupabaseConfigured || !identifiers.length) return [];
+  const legacy = typeof identifiers[0] === "string";
+  const references = identifiers.map((lesson) => typeof lesson === "string"
+    ? { id: lesson, courseSlug: typeof courseSlugOrOwner === "string" ? courseSlugOrOwner : "" }
+    : lesson);
+  return readCompletedAcademyLessons(references, legacy ? expectedUserId : courseSlugOrOwner);
+}
 
-  const { data: sessionData } = await requireSupabase().auth.getSession();
-  const userId = sessionData.session?.user.id;
-  if (!userId) return;
-
-  const { error } = await requireSupabase()
-    .from("lesson_progress")
-    .upsert(
-      {
-        user_id: userId,
-        lesson_id: lessonId,
-        completed_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id,lesson_id" }
-    );
-
-  if (error) throw new Error(error.message);
+export async function marcarAulaAcademyConcluida(
+  lessonId: string,
+  courseSlug: string,
+  expectedUserId?: string | number
+): Promise<LessonCompletionResult> {
+  if (!isSupabaseConfigured) throw new Error("A sincronização de aulas ainda não está configurada.");
+  return addProgressLesson("", { lessonId, courseSlug, expectedUserId });
 }

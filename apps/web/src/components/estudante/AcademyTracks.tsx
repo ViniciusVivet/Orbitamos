@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowRight, BookOpen, Compass, Play } from "lucide-react";
 import { academyCatalogDestination, getAcademyCatalog } from "@/lib/academyCatalog";
-import type { Curso } from "@/lib/cursos";
+import type { CursoResumo } from "@/lib/cursos";
 import estudo from "../../../public/images/orbitamos/estudo-v1.png";
 import criacao from "../../../public/images/orbitamos/criacao-v1.png";
 import dados from "../../../public/images/orbitamos/dados-v1.png";
@@ -14,7 +14,7 @@ import projetoCSharp from "../../../public/images/academy/projeto-csharp-v1.webp
 import s from "./AcademyTracks.module.css";
 import AcademyStudyPathPicker from "./AcademyStudyPathPicker";
 
-type Props = { courses?: Curso[]; preview?: boolean; children?: ReactNode; loading?: boolean; error?: boolean; userId?: string | number | null };
+type Props = { courses?: CursoResumo[]; preview?: boolean; children?: ReactNode; loading?: boolean; error?: boolean; userId?: string | number | null };
 type TrackVisual = { image: StaticImageData; title: string; description: string; mark: string; steps: string[]; position: string };
 const trackVisuals: Record<string, TrackVisual> = {
   fundamentals: { image: estudo, title: "Primeiros passos", description: "Escreva seu primeiro programa, uma etapa por vez.", mark: "JS", steps: ["Dados", "Contas", "Decisões", "Orçamento"], position: "59% 45%" },

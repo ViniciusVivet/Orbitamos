@@ -8,11 +8,12 @@ import { coursePhotoKind } from "@/components/brand/orbitamosPhotography";
 import { useAuth } from "@/contexts/AuthContext";
 import { defaultProgress, useProgress } from "@/contexts/ProgressContext";
 import { getDashboardSummary, type DashboardSummary } from "@/lib/api";
-import { listarAulasConcluidas, listarCursosAcademy, totalAulas, type Curso } from "@/lib/cursos";
+import { listarAulasConcluidas, listarCursosAcademy, totalAulas, type CursoResumo } from "@/lib/cursos";
+import { academyLessonProgressRefs } from "@/lib/academyLessonProgress";
 import AcademyActivityProgress from "@/components/estudante/AcademyActivityProgress";
 
 type CourseProgress = {
-  course: Curso;
+  course: CursoResumo;
   completed: number;
   total: number;
 };
@@ -33,10 +34,8 @@ export default function EstudanteProgresso() {
           token ? getDashboardSummary(token) : Promise.resolve(null),
           listarCursosAcademy(),
         ]);
-        const lessonIds = courses.flatMap((course) =>
-          course.modulos.flatMap((module) => module.aulas.map((lesson) => lesson.id))
-        );
-        const completedIds = new Set(await listarAulasConcluidas(lessonIds));
+        if (!active) return;
+        const completedIds = new Set(await listarAulasConcluidas(academyLessonProgressRefs(courses), user?.id));
         const stats = courses.map((course) => {
           const ids = course.modulos.flatMap((module) => module.aulas.map((lesson) => lesson.id));
           return {

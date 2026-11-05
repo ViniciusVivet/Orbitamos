@@ -1,12 +1,9 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useChat } from "@/contexts/ChatContext";
 import {
-  getChatMessages,
-  sendChatMessage,
   getDisplayAvatarUrl,
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -14,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { cn, formatChatTime } from "@/lib/utils";
 import { MessageCircle, Minus, X, Send, GripVertical } from "lucide-react";
 import { useDraggablePosition } from "@/hooks/useDraggablePosition";
+import { useChatHistory, useChatScroll } from "@/hooks/useChatHistory";
 
 export default function FloatingChat() {
   const { user, token } = useAuth();
@@ -23,44 +21,16 @@ export default function FloatingChat() {
     floatingMinimized,
     floatingVisible,
     unreadByConv,
-    floatingMessages,
     setFloatingMinimized,
     closeFloating,
     clearUnread,
-    appendFloatingMessage,
-    setFloatingMessages,
   } = useChat();
-  const [loading, setLoading] = useState(false);
-  const [sending, setSending] = useState(false);
-  const [input, setInput] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!token || activeConversationId == null) return;
-    setLoading(true);
-    getChatMessages(token, activeConversationId)
-      .then(setFloatingMessages)
-      .catch(() => setFloatingMessages([]))
-      .finally(() => setLoading(false));
-  }, [token, activeConversationId, setFloatingMessages]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [floatingMessages]);
+  const history = useChatHistory(user?.id ?? null, token, activeConversationId, floatingVisible && !floatingMinimized);
+  const { messages: floatingMessages, loading, sending, draft: input } = history;
+  const { containerRef, onScroll } = useChatScroll(activeConversationId, floatingMessages, `${floatingMinimized}:${history.loadingOlder}:${loading}`);
 
   const handleSend = async () => {
-    const text = input.trim();
-    if (!text || !token || activeConversationId == null || sending) return;
-    setSending(true);
-    setInput("");
-    try {
-      const msg = await sendChatMessage(token, activeConversationId, text);
-      appendFloatingMessage(msg);
-    } catch {
-      setInput(text);
-    } finally {
-      setSending(false);
-    }
+    await history.send();
   };
 
   const unread = activeConversationId != null ? (unreadByConv[activeConversationId] ?? 0) : 0;
@@ -110,7 +80,13 @@ export default function FloatingChat() {
   }
 
   return (
-    <div className="fixed z-[100] flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-gray-900/95 shadow-2xl backdrop-blur-xl" style={{ ...positionStyle, width: 380, height: 520 }}>
+    <div role="dialog" aria-label={`Conversa com ${displayName}`} className="fixed z-[100] flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-gray-900/95 shadow-2xl backdrop-blur-xl" style={{
+      ...positionStyle,
+      width: "min(380px, calc(100vw - 32px))",
+      height: "min(520px, calc(100dvh - 32px))",
+      right: `clamp(16px, ${positionStyle.right}px, max(16px, calc(100vw - 396px)))`,
+      bottom: `clamp(16px, ${positionStyle.bottom}px, max(16px, calc(100dvh - 536px)))`,
+    }}>
       {/* Header — arrastar pelo grip para reposicionar */}
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/10 bg-black/40 px-2 py-3">
         <button
@@ -159,8 +135,10 @@ export default function FloatingChat() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
-        {loading ? (
+      <div ref={containerRef} onScroll={onScroll} className="flex-1 overflow-y-auto p-3 space-y-2" style={{ overflowAnchor: "none" }}>
+        {history.error && <p role="alert" className="text-xs text-amber-200">{history.error}{!history.loaded && <button type="button" onClick={history.retry} className="ml-2 underline">Tentar novamente</button>}</p>}
+        {history.nextCursor && <button type="button" disabled={history.loadingOlder} onClick={history.loadOlder} className="block mx-auto min-h-11 px-3 text-xs text-orbit-electric disabled:opacity-50">{history.loadingOlder ? "Carregando..." : "Carregar mensagens anteriores"}</button>}
+        {loading && floatingMessages.length === 0 ? (
           <div className="flex justify-center py-8">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-orbit-electric border-t-transparent" />
           </div>
@@ -170,6 +148,7 @@ export default function FloatingChat() {
             return (
               <div
                 key={m.id}
+                data-chat-message-id={m.id}
                 className={cn("flex gap-2 max-w-[90%]", isMe ? "ml-auto flex-row-reverse" : "")}
               >
                 {!isMe && (
@@ -201,7 +180,6 @@ export default function FloatingChat() {
             );
           })
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
@@ -215,13 +193,15 @@ export default function FloatingChat() {
         >
           <Input
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => history.setDraft(e.target.value)}
             placeholder="Mensagem..."
+            aria-label="Sua mensagem"
             className="flex-1 border-white/20 bg-white/5 text-white placeholder:text-white/40"
             disabled={sending}
           />
           <Button
             type="submit"
+            aria-label="Enviar mensagem"
             size="icon"
             className="shrink-0 bg-orbit-electric text-black hover:bg-orbit-electric/90"
             disabled={sending || !input.trim()}

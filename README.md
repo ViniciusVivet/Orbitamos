@@ -3,7 +3,7 @@
 Estúdio digital na entrada; plataforma de tecnologia, educação e colaboração
 na área autenticada.
 
-Revisão documental: **04/11/2026**. Código de referência: `3643a04`;
+Revisão documental: **05/11/2026**. Última entrega de referência: `3643a04`;
 padrão de qualidade aprovado registrado em `5b34877`.
 Resultados de testes e verificações de produção são registros datados, não uma
 afirmação de execução nova a cada leitura.
@@ -15,6 +15,8 @@ afirmação de execução nova a cada leitura.
 - [Organização do repositório](docs/ORGANIZACAO_REPOSITORIO.md): onde guardar código,
   artes, exemplos, documentação e arquivos locais.
 - [Contribuição](CONTRIBUTING.md) e [orientações para agentes](AGENTS.md).
+- [Escalabilidade com a infraestrutura atual](docs/ESCALABILIDADE_SEM_CUSTO.md):
+  catálogo resumido, chat paginado, sessão e conclusão/XP; SQL 019 pendente de aplicação remota pelo usuário.
 
 ## Produto e arquitetura
 
@@ -43,7 +45,7 @@ apps/web/                  aplicação principal, dependências e configuração
   scripts/                 auditorias e utilitários de desenvolvimento
   examples/                experimentos isolados, fora do aplicativo
 supabase/
-  migrations/              migrations atuais timestampadas (005 a 018)
+  migrations/              migrations atuais timestampadas (005 a 019)
   tests/database/          testes locais de RLS
 docs/
   migrations/              migrations históricas 001 a 004
@@ -74,8 +76,11 @@ ajudam a testar interface sem gravar fixtures em contas reais.
 
 Para verificações, consulte [o guia de testes](docs/TESTES_AUTOMATIZADOS.md).
 Pare o servidor de desenvolvimento antes de executar `npm run build`.
-A última entrega registrou 450 testes em 48 arquivos e build aprovado; esse número
+A entrega de referência registrou 450 testes em 48 arquivos e build aprovado; esse número
 não substitui executar as verificações adequadas à próxima alteração.
+A rodada de escalabilidade passou com 517 testes em 56 arquivos, TypeScript e
+9 contratos; os testes focais, de navegador e de banco local estão registrados
+separadamente no [guia da rodada](docs/ESCALABILIDADE_SEM_CUSTO.md).
 
 ## Produção e banco
 
@@ -87,6 +92,12 @@ A ordem e os nomes reais das migrations estão em
 [Supabase nativo](docs/SUPABASE_NATIVE_MIGRATION.md). Um SQL no Git não prova que
 ele foi aplicado remotamente. Testes locais de RLS usam ambiente descartável,
 conforme [Supabase local](docs/SUPABASE_LOCAL.md).
+
+A migration 019 de conclusão e XP está pronta e testada localmente. O usuário
+decidiu aplicar o SQL depois; nenhuma migration remota foi aplicada nesta rodada.
+Em um projeto com 005–018 já aplicadas, instalar somente a 019 conforme o
+[procedimento](docs/ESCALABILIDADE_SEM_CUSTO.md#aplicar-depois-somente-a-019-no-projeto-existente),
+sem reset ou seed de produção.
 
 Limites de planos, estado dos serviços e diferenças entre evidência local e
 produção estão em [infraestrutura](docs/INFRA_ATUAL.md).

@@ -464,10 +464,6 @@ async function ensureSupabaseProfile(params: {
 
   if (error) throw new Error(error.message);
 
-  await client
-    .from("v3_user_progress")
-    .upsert({ user_id: params.id }, { onConflict: "user_id" });
-
   // Retorna o perfil completo pela funcao definer (evita SELECT * nas colunas privadas).
   return getSupabaseProfile(params.id);
 }
@@ -675,15 +671,13 @@ export async function getDashboardSummary(_token: string): Promise<DashboardSumm
     if (!userId) throw new Error("Sessão não encontrada");
 
     const user = await getSupabaseProfile(userId);
-    const { data: progressRow } = await client
+    const { data: progressRow, error: progressError } = await client
       .from("v3_user_progress")
-      .select("*")
+      .select("percent,phase,next_goal,level,xp,streak_days,last_lesson")
       .eq("user_id", userId)
       .maybeSingle();
 
-    if (!progressRow) {
-      await client.from("v3_user_progress").upsert({ user_id: userId }, { onConflict: "user_id" });
-    }
+    if (progressError) throw new Error(progressError.message);
 
     return {
       success: true,
@@ -709,52 +703,65 @@ export async function getDashboardSummary(_token: string): Promise<DashboardSumm
   }
 
 export interface AddProgressLessonBody {
-  xpGained?: number;
-  lessonTitle?: string;
+  lessonId: string;
+  courseSlug: string;
+  expectedUserId?: UserId;
+}
+
+export interface LessonCompletionResult {
+  success: true;
+  lessonId: string;
+  newlyCompleted: boolean;
+  xpAwarded: number;
+  progress: DashboardProgress;
+}
+
+export class LessonCompletionError extends Error {
+  constructor(public readonly code: "missing_rpc" | "session" | "unavailable", message: string) {
+    super(message);
+    this.name = "LessonCompletionError";
+  }
 }
 
 /**
- * Registra conclusão de aula: adiciona XP e opcionalmente atualiza lastLesson.
- * Reflete em todos os pontos que usam getDashboardSummary (progresso real por usuário).
+ * Uma RPC registra a aula e o premio fixo no banco. Repetir a chamada e seguro,
+ * inclusive apos perder a resposta. Nao ha fallback read+soma+upsert no cliente.
  */
 export async function addProgressLesson(
-  token: string,
-  body: AddProgressLessonBody = {}
-): Promise<{ success: boolean; progress: DashboardProgress }> {
-      const client = requireSupabase();
+  _token: string,
+  body: AddProgressLessonBody
+): Promise<LessonCompletionResult> {
+    const client = requireSupabase();
     const { data: sessionData } = await client.auth.getSession();
     const userId = sessionData.session?.user.id;
-    if (!userId) throw new Error("Sessão não encontrada");
-
-    const { data: current } = await client
-      .from("v3_user_progress")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    const previous = progressRowToDashboardProgress(current as SupabaseProgressRow | null);
-    let xp = previous.xp + (body.xpGained ?? 10);
-    let level = previous.level;
-    while (xp >= 100) {
-      xp -= 100;
-      level += 1;
+    if (!userId || (body.expectedUserId && body.expectedUserId !== userId)) {
+      throw new LessonCompletionError("session", "Entre novamente para sincronizar a conclusão na sua conta.");
     }
 
-    const payload = {
-      user_id: userId,
-      xp,
-      level,
-      last_lesson: body.lessonTitle ?? previous.lastLesson ?? null,
+    const { data, error } = await client.rpc("v3_complete_lesson", {
+      p_lesson_id: body.lessonId,
+      p_course_slug: body.courseSlug,
+      p_expected_user_id: userId,
+    });
+    if (error) {
+      if (error.code === "PGRST202" || error.code === "42883") {
+        throw new LessonCompletionError("missing_rpc", "A sincronização de aulas ainda não está disponível no servidor. Tente novamente mais tarde.");
+      }
+      throw new LessonCompletionError("unavailable", "Não foi possível confirmar a conclusão e o XP na sua conta. Tente sincronizar novamente.");
+    }
+
+    if (!data || typeof data.lesson_id !== "string" || typeof data.newly_completed !== "boolean"
+      || ![0, 10].includes(data.xp_awarded) || !data.progress
+      || typeof data.progress.xp !== "number" || typeof data.progress.level !== "number") {
+      throw new LessonCompletionError("unavailable", "O servidor não confirmou a conclusão. Tente sincronizar novamente.");
+    }
+    return {
+      success: true,
+      lessonId: data.lesson_id,
+      newlyCompleted: data.newly_completed,
+      xpAwarded: data.xp_awarded,
+      progress: progressRowToDashboardProgress(data.progress as SupabaseProgressRow),
     };
-
-    const { data: updated, error } = await client
-      .from("v3_user_progress")
-      .upsert(payload, { onConflict: "user_id" })
-      .select("*")
-      .single();
-
-    if (error) throw new Error(error.message);
-    return { success: true, progress: progressRowToDashboardProgress(updated as SupabaseProgressRow) };
   }
 
 /**
@@ -1061,6 +1068,33 @@ export interface ChatMessageItem {
   readAt?: string | null;
 }
 
+export interface ChatMessageCursor {
+  createdAt: string;
+  id: number;
+}
+
+export interface ChatMessagePage {
+  /** Ordem cronológica, da mensagem mais antiga à mais recente da página. */
+  messages: ChatMessageItem[];
+  nextCursor: ChatMessageCursor | null;
+}
+
+export const CHAT_MESSAGE_PAGE_SIZE = 50;
+
+const CHAT_CONVERSATION_SELECT = `
+  id,type,name,avatar_url,created_by_user_id,created_at,
+  participants:v3_conversation_participants(profiles:v3_profiles(id,name,avatar_url,role)),
+  last_message:v3_chat_messages(id,content,sender_id,created_at)
+`;
+
+function chatConversationQuery() {
+  return requireSupabase().from("v3_conversations")
+    .select(CHAT_CONVERSATION_SELECT)
+    .order("created_at", { ascending: false, referencedTable: "last_message" })
+    .order("id", { ascending: false, referencedTable: "last_message" })
+    .limit(1, { referencedTable: "last_message" });
+}
+
 async function getCurrentSupabaseUserId(): Promise<string> {
   const { data } = await requireSupabase().auth.getSession();
   const userId = data.session?.user.id;
@@ -1082,26 +1116,14 @@ function profileToChatUser(profile: any): ChatUser {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function buildSupabaseConversation(conversation: any): Promise<ChatConversation> {
-  const client = requireSupabase();
-  const currentUserId = await getCurrentSupabaseUserId();
-  const { data: participantRows } = await client
-    .from("v3_conversation_participants")
-    .select("user_id, profiles:v3_profiles(id,name,avatar_url,role)")
-    .eq("conversation_id", conversation.id);
-  const participants = (participantRows ?? [])
+function mapChatConversation(conversation: any, currentUserId: string): ChatConversation {
+  const participants: ChatUser[] = (conversation.participants ?? [])
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .map((row: any) => row.profiles)
+    .map((row: any) => Array.isArray(row.profiles) ? row.profiles[0] : row.profiles)
     .filter(Boolean)
     .map(profileToChatUser);
   const other = participants.find((participant) => participant.id !== currentUserId);
-  const { data: lastMessage } = await client
-    .from("v3_chat_messages")
-    .select("content,sender_id,created_at")
-    .eq("conversation_id", conversation.id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const lastMessage = conversation.last_message?.[0];
 
   return {
     id: conversation.id,
@@ -1124,61 +1146,95 @@ async function buildSupabaseConversation(conversation: any): Promise<ChatConvers
   };
 }
 
+// Usado nas mutações, que retornam apenas a linha da conversa.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function buildSupabaseConversation(conversation: any): Promise<ChatConversation> {
+  const result = await getChatConversation("", conversation.id);
+  if (!result) throw new Error("Conversa não encontrada");
+  return result;
+}
+
 export async function getChatConversations(_token: string): Promise<ChatConversation[]> {
-      const client = requireSupabase();
-    const userId = await getCurrentSupabaseUserId();
-    const { data: mine, error } = await client
-      .from("v3_conversation_participants")
-      .select("conversation_id")
-      .eq("user_id", userId);
-    if (error) throw new Error(error.message);
-    const ids = (mine ?? []).map((row) => row.conversation_id);
-    if (ids.length === 0) return [];
-    const { data: conversations, error: convError } = await client
-      .from("v3_conversations")
-      .select("*")
-      .in("id", ids)
-      .order("created_at", { ascending: false });
-    if (convError) throw new Error(convError.message);
-    return Promise.all((conversations ?? []).map(buildSupabaseConversation));
-  }
+  const userId = await getCurrentSupabaseUserId();
+  // RLS restringe a consulta às conversas da sessão. O limite embedded vale
+  // para cada conversa: nenhum histórico completo trafega nesta listagem.
+  const { data, error } = await chatConversationQuery()
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((conversation) => mapChatConversation(conversation, userId));
+}
 
-export async function getChatConversation(token: string, id: number): Promise<ChatConversation | null> {
-      const { data, error } = await requireSupabase()
-      .from("v3_conversations")
-      .select("*")
-      .eq("id", id)
-      .maybeSingle();
-    if (error || !data) return null;
-    return buildSupabaseConversation(data);
-  }
+export async function getChatConversation(_token: string, id: number): Promise<ChatConversation | null> {
+  const userId = await getCurrentSupabaseUserId();
+  const { data, error } = await chatConversationQuery().eq("id", id).maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? mapChatConversation(data, userId) : null;
+}
 
+/** Compatibilidade para consumidores que precisam apenas da primeira página. */
 export async function getChatMessages(token: string, conversationId: number): Promise<ChatMessageItem[]> {
-      const { data, error } = await requireSupabase()
-      .from("v3_chat_messages")
-      .select("id,content,sender_id,created_at, profiles:v3_profiles(name,avatar_url)")
-      .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: true });
-    if (error) throw new Error(error.message);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (data ?? []).map((message: any) => ({
+  return (await getChatMessagePage(token, conversationId)).messages;
+}
+
+export async function getChatMessagePage(
+  _token: string,
+  conversationId: number,
+  options: { before?: ChatMessageCursor | null; limit?: number } = {}
+): Promise<ChatMessagePage> {
+  const requestedLimit = options.limit ?? CHAT_MESSAGE_PAGE_SIZE;
+  const limit = Number.isFinite(requestedLimit)
+    ? Math.max(1, Math.min(100, Math.floor(requestedLimit)))
+    : CHAT_MESSAGE_PAGE_SIZE;
+  let query = requireSupabase().from("v3_chat_messages")
+    .select("id,content,sender_id,created_at, profiles:v3_profiles(name,avatar_url)")
+    .eq("conversation_id", conversationId)
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(limit + 1);
+  if (options.before) {
+    const { createdAt, id } = options.before;
+    // Valida antes de interpolar o cursor na gramática de filtros PostgREST.
+    if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(createdAt)
+      || !Number.isFinite(Date.parse(createdAt)) || !Number.isSafeInteger(id) || id < 1) {
+      throw new Error("Cursor de mensagens inválido");
+    }
+    query = query.or(`created_at.lt.${createdAt},and(created_at.eq.${createdAt},id.lt.${id})`);
+  }
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  const rows = data ?? [];
+  const messages = rows.slice(0, limit).reverse().map((message) => {
+    const profile = Array.isArray(message.profiles) ? message.profiles[0] : message.profiles;
+    return {
       id: message.id,
       content: message.content,
       senderId: message.sender_id,
-      senderName: message.profiles?.name ?? "Usuário",
-      senderAvatarUrl: message.profiles?.avatar_url ?? "",
+      senderName: profile?.name ?? "Usuário",
+      senderAvatarUrl: profile?.avatar_url ?? "",
       createdAt: message.created_at,
       readAt: null,
-    }));
-  }
+    };
+  });
+  return {
+    messages,
+    nextCursor: rows.length > limit && messages[0]
+      ? { createdAt: messages[0].createdAt, id: messages[0].id }
+      : null,
+  };
+}
 
 export async function sendChatMessage(
-  token: string,
+  _token: string,
   conversationId: number,
-  content: string
+  content: string,
+  expectedAccountId?: UserId
 ): Promise<ChatMessageItem> {
       const client = requireSupabase();
     const userId = await getCurrentSupabaseUserId();
+    if (expectedAccountId != null && String(expectedAccountId) !== userId) {
+      throw new Error("A conta mudou. Entre novamente antes de enviar a mensagem.");
+    }
     const { data, error } = await client
       .from("v3_chat_messages")
       .insert({

@@ -10,14 +10,15 @@ import { Button } from "@/components/ui/button";
 import CourseRow from "@/components/estudante/CourseRow";
 import { useAuth } from "@/contexts/AuthContext";
 import type { UserId } from "@/lib/api";
+import { academyLessonProgressRefs } from "@/lib/academyLessonProgress";
 import {
-  cursos as cursosFallback,
+  cursosResumo as cursosFallback,
   getCourseTrackGroups,
   listarAulasConcluidas,
   listarCursosAcademy,
   totalAulas,
-  type Aula,
-  type Curso,
+  type AulaResumo,
+  type CursoResumo,
 } from "@/lib/cursos";
 
 const STORAGE_KEY = "orbitacademy-progress";
@@ -70,8 +71,8 @@ function getProgress(cursoSlug: string, userId: UserId | undefined) {
 }
 
 type LessonResult = {
-  aula: Aula;
-  curso: Curso;
+  aula: AulaResumo;
+  curso: CursoResumo;
   modulo: string;
   completed: boolean;
 };
@@ -79,7 +80,7 @@ type LessonResult = {
 export default function AcademyLessons({ preview = false }: { preview?: boolean } = {}) {
   const { user } = useAuth();
   const userId = preview ? "academy-preview" : user?.id;
-  const [cursos, setCursos] = useState<Curso[]>(cursosFallback);
+  const [cursos, setCursos] = useState<CursoResumo[]>(cursosFallback);
   const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(!preview);
   const [query, setQuery] = useState("");
@@ -91,10 +92,7 @@ export default function AcademyLessons({ preview = false }: { preview?: boolean 
       .then(async (items) => {
         if (!active) return;
         setCursos(items);
-        const lessonIds = items.flatMap((curso) =>
-          curso.modulos.flatMap((modulo) => modulo.aulas.map((aula) => aula.id))
-        );
-        const completed = await listarAulasConcluidas(lessonIds);
+        const completed = await listarAulasConcluidas(academyLessonProgressRefs(items), userId);
         if (active) setCompletedLessonIds(new Set(completed));
       })
       .catch(() => {
@@ -157,7 +155,7 @@ export default function AcademyLessons({ preview = false }: { preview?: boolean 
     if (!query.trim()) return [];
     return allLessons.filter(({ aula, curso, modulo }) =>
       matchesSearch(
-        [aula.titulo, aula.conteudo, curso.titulo, curso.descricao, modulo].filter(Boolean).join(" "),
+        [aula.titulo, curso.titulo, curso.descricao, modulo].filter(Boolean).join(" "),
         query
       )
     );
@@ -189,7 +187,7 @@ export default function AcademyLessons({ preview = false }: { preview?: boolean 
     [matchingCourses, allowedSlugs]
   );
 
-  function courseCard(curso: Curso, compact = false) {
+  function courseCard(curso: CursoResumo, compact = false) {
     const total = totalAulas(curso);
     const completed = progressByCourse.get(curso.slug) ?? 0;
     const percent = total ? Math.round((completed / total) * 100) : 0;
@@ -312,7 +310,7 @@ export default function AcademyLessons({ preview = false }: { preview?: boolean 
                 <h2 className="mt-1 text-2xl font-black text-white">
                   {filteredSearchResults.length} {filteredSearchResults.length === 1 ? "aula encontrada" : "aulas encontradas"}
                 </h2>
-                <p className="mt-1 text-sm text-white/45">Resultados relacionados a “{query}”</p>
+                <p className="mt-1 text-sm text-white/45">Busca nos títulos de aulas, módulos e cursos e nas descrições dos cursos.</p>
               </div>
               <Button variant="ghost" onClick={() => setQuery("")} className="text-white/60 hover:bg-white/10 hover:text-white">
                 Ver tudo

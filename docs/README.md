@@ -1,6 +1,6 @@
 # Documentação da Orbitamos
 
-Índice revisado em **04/11/2026**.
+Índice revisado em **05/11/2026**.
 
 Os guias abaixo separam o estado implementado, as decisões de produto,
 a operação e os registros históricos. Datas antigas em auditorias são mantidas
@@ -19,6 +19,7 @@ quando descrevem uma execução específica.
 | Documento | Finalidade |
 | --- | --- |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Arquitetura executada, domínios e persistência |
+| [ESCALABILIDADE_SEM_CUSTO.md](ESCALABILIDADE_SEM_CUSTO.md) | Catálogo resumido, chat por cursor, proteção de sessão e XP transacional; 019 pronta localmente, aplicação remota adiada pelo usuário |
 | [INFRA_ATUAL.md](INFRA_ATUAL.md) | Provedores, publicação, custos e evidências datadas |
 | [VARIAVEIS_AMBIENTE.md](VARIAVEIS_AMBIENTE.md) | Nomes das variáveis lidas pelo código e exposição |
 | [SUPABASE_NATIVE_MIGRATION.md](SUPABASE_NATIVE_MIGRATION.md) | Nomes reais, ordem das migrations e Storage |

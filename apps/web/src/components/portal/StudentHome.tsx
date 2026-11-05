@@ -3,8 +3,8 @@ import OrbitPhoto from "@/components/brand/OrbitPhoto";
 import { coursePhotoKind } from "@/components/brand/orbitamosPhotography";
 import { ArrowRight, ArrowUpRight, BookOpen, Check, Circle, Code2, Gamepad2, GraduationCap } from "lucide-react";
 import type { DashboardProgress, DashboardSummary } from "@/lib/api";
-import { totalAulas, type Curso } from "@/lib/cursos";
-import { type FlatLesson } from "@/lib/learningExperience";
+import { totalAulas, type CursoResumo } from "@/lib/cursos";
+import { type FlatLessonResumo } from "@/lib/learningExperience";
 import AcademyContinue from "@/components/estudante/AcademyContinue";
 import { academyPreviewHref } from "@/lib/portalNavigation";
 import { EmptyState, LoadingRows, SectionHead } from "./PortalPrimitives";
@@ -12,8 +12,8 @@ import { courseEdition } from "./portalPresentation";
 import s from "./PortalExperience.module.css";
 
 export type StudentHomeProps = {
-  name: string; progress: DashboardProgress; progressLoading: boolean; courses: Curso[];
-  nextLesson: FlatLesson | null; completedLessons: number; loading: boolean;
+  name: string; progress: DashboardProgress; progressLoading: boolean; courses: CursoResumo[];
+  nextLesson: FlatLessonResumo | null; completedLessons: number; loading: boolean;
   error: string; summary: DashboardSummary | null; retry: () => void;
   userId?: string | number | null; preview?: boolean;
 };

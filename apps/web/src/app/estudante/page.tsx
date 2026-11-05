@@ -4,16 +4,17 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { defaultProgress, useProgress } from "@/contexts/ProgressContext";
 import { getDashboardSummary, type DashboardSummary } from "@/lib/api";
-import { getNextIncompleteLesson, type FlatLesson } from "@/lib/learningExperience";
-import { listarAulasConcluidas, listarCursosAcademy, type Curso } from "@/lib/cursos";
+import { getNextIncompleteLesson, type FlatLessonResumo } from "@/lib/learningExperience";
+import { listarAulasConcluidas, listarCursosAcademy, type CursoResumo } from "@/lib/cursos";
+import { academyLessonProgressRefs } from "@/lib/academyLessonProgress";
 import StudentHome from "@/components/portal/StudentHome";
 
 export default function EstudanteInicio() {
   const { user, token } = useAuth();
   const { progress, loading: progressLoading, refetchProgress } = useProgress();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
-  const [courses, setCourses] = useState<Curso[]>([]);
-  const [nextLesson, setNextLesson] = useState<FlatLesson | null>(null);
+  const [courses, setCourses] = useState<CursoResumo[]>([]);
+  const [nextLesson, setNextLesson] = useState<FlatLessonResumo | null>(null);
   const [completedLessons, setCompletedLessons] = useState(0);
   const [loading, setLoading] = useState(true);
   const [courseError, setCourseError] = useState("");
@@ -38,8 +39,10 @@ export default function EstudanteInicio() {
       setCourseError("");
       try {
         const items = await listarCursosAcademy();
-        const ids = items.flatMap(c => c.modulos.flatMap(m => m.aulas.map(a => a.id)));
-        const completed = new Set(await listarAulasConcluidas(ids));
+        if (!active) return;
+        const references = academyLessonProgressRefs(items);
+        const ids = references.map((lesson) => lesson.id);
+        const completed = new Set(await listarAulasConcluidas(references, user?.id));
         if (!active) return;
         setCourses(items);
         setCompletedLessons(ids.filter(id => completed.has(id)).length);

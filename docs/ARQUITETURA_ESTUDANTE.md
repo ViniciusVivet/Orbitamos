@@ -1,6 +1,6 @@
 # Arquitetura da área do estudante
 
-Última conferência documental no código: 04/11/2026.
+Última conferência documental no código: 05/11/2026.
 
 ## Proteção e navegação
 
@@ -63,7 +63,12 @@ experiências da central não equivalem a uma formação profissional completa.
 
 ## Dados
 
-- Catálogo-base: `src/lib/cursos.ts`.
+- Catálogo-base: `src/lib/cursos.ts`; `CursoResumo` para biblioteca/contagens e
+  detalhe completo consultado por slug ao abrir o curso. Busca usa metadados,
+  sem baixar conteúdo/quiz/materiais de todas as aulas.
+- Leitura de conclusões: `academyLessonProgress.ts`, em lotes de até 100
+  referências UUID ou curso/slug, sem consulta por curso. A conta esperada é
+  validada antes e depois da rede.
 - Experiência de aprendizado: `src/lib/learningExperience.ts`.
 - Catálogo de trilhas e escolha local: `academyCatalog.ts` e `academyStudyPath.ts`.
 - Desafios: `desafios.ts`; percurso inicial: `practiceExperience.ts` e
@@ -79,6 +84,10 @@ experiências da central não equivalem a uma formação profissional completa.
 - Cursos persistidos: tabelas `courses`, `course_modules`, `lessons` e
   `lesson_materials`.
 - Progresso de aulas e métricas da conta: `lesson_progress` e `v3_user_progress`.
+  Conclusão/XP usam `v3_complete_lesson(text,text,uuid)` da migration 019,
+  transacional e idempotente; o servidor concede 10 XP apenas na primeira
+  conclusão. A 019 está pronta e testada localmente, com aplicação remota adiada
+  pelo usuário. Sem RPC, o cliente mantém a conclusão local pendente.
   Essas tabelas não sincronizam os saves dos jogos e do laboratório.
 - Notificações: `v3_notifications`.
 
@@ -101,6 +110,14 @@ com parâmetros restritos e data; não aceita URLs externas nem concede conclus�
 A escolha em `orbitamos-academy-study-path-v1-<userId>` tem prioridade na Home,
 sem apagar a atividade recente fora da trilha. Saves antigos sem horário são
 apresentados sem inventar cronologia.
+
+Conclusões de aulas preservam `orbitacademy-progress-<conta>-<curso>` e um
+journal com chave por aula. `courseProgress.ts` concilia slugs legados/UUIDs,
+preserva conquistas entre abas e mantém fila pendente até a confirmação da RPC.
+Há retry ao abrir o curso, voltar online ou tocar em sincronizar; falha simultânea
+de storage e servidor é informada como conclusão não salva. Guards de conta/curso
+impedem aplicar respostas antigas em outra sessão. Os eventos de auth são
+observados no cliente Supabase existente, sem recarregar perfil em todo refresh.
 
 O capítulo atual usa `orbitamos-orbi-chapter-v2-<userId>`; conclusão exige três
 entregas com código adequado e chegada física. O save v1 fica intacto como
@@ -139,5 +156,7 @@ identificador local `academy-preview`; não concedem acesso aos dados privados.
 - [Fluxo unificado](ACADEMY_FLUXO_UNIFICADO.md),
   [mapa da experiência](MAPA_EXPERIENCIA_ACADEMY.md) e
   [revisão pedagógica](REVISAO_PEDAGOGICA_ACADEMY.md) distinguem estado atual,
-  auditorias anteriores e próximas etapas. Nenhuma verificação foi reexecutada
-  nesta atualização documental.
+  auditorias anteriores e próximas etapas. Os testes focais e SQL locais da
+  rodada atual e a auditoria isolada de cursos/chat em desktop/WebKit estão em
+  [ESCALABILIDADE_SEM_CUSTO.md](ESCALABILIDADE_SEM_CUSTO.md). Não equivalem a uma
+  revisão visual completa da Academy nem a validação de contas no banco remoto.

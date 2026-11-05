@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   updateGroupConversation,
   removeGroupParticipant,
@@ -40,6 +40,11 @@ export default function GroupInfoModal({
   const [addUserOpen, setAddUserOpen] = useState(false);
   const [removingId, setRemovingId] = useState<UserId | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   const isCreator = currentUserId != null && conversation.createdByUserId === currentUserId;
   const participantIds = conversation.participants.map((p) => p.id);
@@ -53,11 +58,12 @@ export default function GroupInfoModal({
         name: editName.trim() || undefined,
         avatarUrl: editAvatarUrl.trim() || null,
       });
+      if (!mounted.current) return;
       onUpdate(updated);
     } catch (e) {
       if (process.env.NODE_ENV !== "production") console.error("[GroupInfoModal] Erro ao salvar grupo:", e);
     } finally {
-      setSaving(false);
+      if (mounted.current) setSaving(false);
     }
   };
 
@@ -67,6 +73,7 @@ export default function GroupInfoModal({
     if (!userToAdd) return;
     try {
       await addGroupParticipant(token, conversation.id, userId);
+      if (!mounted.current) return;
       const updated: ChatConversation = {
         ...conversation,
         participants: [...conversation.participants, userToAdd],
@@ -83,6 +90,7 @@ export default function GroupInfoModal({
     setRemovingId(userId);
     try {
       await removeGroupParticipant(token, conversation.id, userId);
+      if (!mounted.current) return;
       if (userId === currentUserId) {
         onLeave();
         return;
@@ -95,7 +103,7 @@ export default function GroupInfoModal({
     } catch (e) {
       if (process.env.NODE_ENV !== "production") console.error("[GroupInfoModal] Erro ao remover participante:", e);
     } finally {
-      setRemovingId(null);
+      if (mounted.current) setRemovingId(null);
     }
   };
 
@@ -130,12 +138,15 @@ export default function GroupInfoModal({
                   setUploadingAvatar(true);
                   try {
                     const { conversation: updated } = await uploadGroupAvatar(token, conversation.id, file);
+                    if (!mounted.current) return;
                     onUpdate(updated);
                   } catch (err) {
                     if (process.env.NODE_ENV !== "production") console.error("[GroupInfoModal] Erro ao enviar foto:", err);
                   } finally {
-                    setUploadingAvatar(false);
-                    e.target.value = "";
+                    if (mounted.current) {
+                      setUploadingAvatar(false);
+                      e.target.value = "";
+                    }
                   }
                 }}
               />

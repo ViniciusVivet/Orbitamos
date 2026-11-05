@@ -3,6 +3,14 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(14);
 
+-- A base 005--018 foi criada quando o Supabase dava grants de tabela por padrao.
+-- Em CLI recente eles nao existem. Modelar aqui os grants legados necessarios
+-- para exercitar as policies (somente nesta transacao, revertidos no rollback).
+-- Os grants de progresso e bloqueios de escrita continuam vindo da migration 019.
+grant select on public.v3_contacts, public.v3_jobs, public.v3_account_requests to authenticated;
+grant insert on public.v3_jobs to authenticated;
+grant select (id, name) on public.v3_profiles to authenticated;
+
 -- Stable, fake identities used only inside this rolled-back transaction.
 insert into auth.users (
   id, instance_id, aud, role, email, encrypted_password,
@@ -13,7 +21,8 @@ insert into auth.users (
   ('10000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'staff@local.test', '', '{"provider":"email","providers":["email"]}', '{"name":"Staff","role":"FREELANCER"}', now(), now()),
   ('10000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'admin@local.test', '', '{"provider":"email","providers":["email"]}', '{"name":"Admin","role":"FREELANCER"}', now(), now());
 
-update public.v3_profiles set admin_role = 'staff' where id = '10000000-0000-0000-0000-000000000003';
+-- Contatos usam is_internal (007); vagas usam admin_role (012).
+update public.v3_profiles set admin_role = 'staff', is_internal = true where id = '10000000-0000-0000-0000-000000000003';
 update public.v3_profiles set admin_role = 'admin' where id = '10000000-0000-0000-0000-000000000004';
 
 insert into public.v3_contacts (name, email, message)
@@ -38,32 +47,26 @@ select is(
   0::bigint,
   'student cannot read another progress'
 );
-select is(
-  (with changed as (
-    update public.v3_user_progress set xp = 50
-    where user_id = '10000000-0000-0000-0000-000000000001'
-    returning 1
-  ) select count(*) from changed),
-  1::bigint,
-  'student updates own progress'
+select throws_ok(
+  $$ update public.v3_user_progress set xp = 50 where user_id = '10000000-0000-0000-0000-000000000001' $$,
+  '42501', null,
+  'student cannot bypass completion RPC to update own XP'
 );
-select is(
-  (with changed as (
-    update public.v3_user_progress set xp = 50
-    where user_id = '10000000-0000-0000-0000-000000000002'
-    returning 1
-  ) select count(*) from changed),
-  0::bigint,
+select throws_ok(
+  $$ update public.v3_user_progress set xp = 50 where user_id = '10000000-0000-0000-0000-000000000002' $$,
+  '42501', null,
   'student cannot update another progress'
 );
 select is((select count(*) from public.v3_contacts), 0::bigint, 'student cannot list contacts');
 select throws_ok(
   $$ select phone from public.v3_profiles limit 1 $$,
+  '42501', null,
   'student cannot select protected PII columns'
 );
 select is((select count(*) from public.v3_jobs where status = 'open'), 1::bigint, 'student reads open jobs');
 select throws_ok(
   $$ insert into public.v3_jobs (title, status) values ('Forbidden', 'open') $$,
+  '42501', null,
   'student cannot create jobs'
 );
 select is((select count(*) from public.v3_account_requests), 1::bigint, 'student reads own account request');

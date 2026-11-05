@@ -13,11 +13,27 @@ test("local Supabase is isolated from production", async () => {
 
 test("all v3 migrations have ordered Supabase filenames", async () => {
   const files = (await readdir(new URL("supabase/migrations/", root))).sort();
-  assert.equal(files.length, 14);
+  assert.equal(files.length, 15);
   assert.deepEqual(
     files.map((name) => name.match(/(\d{3})00_/u)?.[1]),
-    Array.from({ length: 14 }, (_, index) => String(index + 5).padStart(3, "0"))
+    Array.from({ length: 15 }, (_, index) => String(index + 5).padStart(3, "0"))
   );
+});
+
+test("lesson completion is atomic, authenticated and preserves legacy achievements", async () => {
+  const sql = await read("supabase/migrations/20260619001900_atomic_lesson_completion.sql");
+  assert.match(sql, /v_user_id uuid := auth\.uid\(\)/);
+  assert.match(sql, /security definer\s+set search_path = ''/);
+  assert.match(sql, /where public\.lesson_progress\.completed_at is null/);
+  assert.match(sql, /set xp = \(xp \+ 10\) % 100/);
+  assert.match(sql, /c\.is_published and l\.is_published/);
+  assert.match(sql, /revoke insert, update, delete, truncate, references, trigger/);
+  assert.doesNotMatch(sql, /drop policy|truncate table|delete from/iu);
+  const suite = await read("supabase/tests/database/lesson_completion.test.sql");
+  assert.match(suite, /preexisting completed row never invents retroactive XP/);
+  assert.match(suite, /failed transaction leaves no completed lesson/);
+  assert.match(suite, /lesson history isolated by account/);
+  assert.match(suite, /rollback;/);
 });
 
 test("RLS suite covers negative and privileged access", async () => {

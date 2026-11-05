@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
-import type { ChatConversation, ChatMessageItem } from "@/lib/api";
+import type { ChatConversation } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ChatContextType {
   activeConversationId: number | null;
@@ -10,58 +11,66 @@ interface ChatContextType {
   floatingMinimized: boolean;
   floatingVisible: boolean;
   unreadByConv: Record<number, number>;
-  floatingMessages: ChatMessageItem[];
   setActiveConversation: (id: number | null, conv?: ChatConversation | null) => void;
   setFloatingMinimized: (minimized: boolean) => void;
   closeFloating: () => void;
   addUnread: (conversationId: number) => void;
   clearUnread: (conversationId: number) => void;
-  appendFloatingMessage: (msg: ChatMessageItem) => void;
-  setFloatingMessages: (msgs: ChatMessageItem[]) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const pathname = usePathname();
-  const [activeConversationId, setActiveConversationIdState] = useState<number | null>(null);
-  const [activeConversation, setActiveConversationData] = useState<ChatConversation | null>(null);
-  const [floatingMinimized, setFloatingMinimized] = useState(true);
-  const [floatingVisible, setFloatingVisible] = useState(false);
-  const [unreadByConv, setUnreadByConv] = useState<Record<number, number>>({});
-  const [floatingMessages, setFloatingMessages] = useState<ChatMessageItem[]>([]);
+  const accountId = user?.id ?? null;
+  const emptySession = (owner: typeof accountId) => ({
+    accountId: owner,
+    activeConversationId: null as number | null,
+    activeConversation: null as ChatConversation | null,
+    floatingMinimized: true,
+    floatingVisible: false,
+    unreadByConv: {} as Record<number, number>,
+  });
+  const [session, setSession] = useState(() => emptySession(accountId));
+  // Ajusta somente o estado do chat antes de renderizar a nova conta. Os
+  // demais filhos do provider mantêm seu ciclo de vida normal.
+  if (session.accountId !== accountId) setSession(emptySession(accountId));
+  const { activeConversationId, activeConversation, floatingMinimized, floatingVisible, unreadByConv } = session;
 
   const setActiveConversation = useCallback((id: number | null, conv?: ChatConversation | null) => {
-    setActiveConversationIdState(id);
-    setActiveConversationData(conv ?? null);
-    setFloatingVisible(id != null);
-    if (id != null) setFloatingMessages([]);
-    if (id != null) setUnreadByConv((prev) => ({ ...prev, [id]: 0 }));
-  }, []);
+    setSession((previous) => previous.accountId !== accountId ? previous : {
+      ...previous, activeConversationId: id, activeConversation: conv ?? null,
+      floatingVisible: id != null,
+      unreadByConv: id == null ? previous.unreadByConv : { ...previous.unreadByConv, [id]: 0 },
+    });
+  }, [accountId]);
+
+  const setFloatingMinimized = useCallback((minimized: boolean) => {
+    setSession((previous) => previous.accountId !== accountId ? previous : { ...previous, floatingMinimized: minimized });
+  }, [accountId]);
 
   const closeFloating = useCallback(() => {
-    setActiveConversationIdState(null);
-    setActiveConversationData(null);
-    setFloatingVisible(false);
-    setFloatingMinimized(true);
-    setFloatingMessages([]);
-  }, []);
+    setSession((previous) => previous.accountId !== accountId ? previous : {
+      ...previous, activeConversationId: null, activeConversation: null,
+      floatingVisible: false, floatingMinimized: true,
+    });
+  }, [accountId]);
 
   const addUnread = useCallback((conversationId: number) => {
-    setUnreadByConv((prev) => ({ ...prev, [conversationId]: (prev[conversationId] ?? 0) + 1 }));
-  }, []);
+    setSession((previous) => previous.accountId !== accountId ? previous : {
+      ...previous, unreadByConv: { ...previous.unreadByConv, [conversationId]: (previous.unreadByConv[conversationId] ?? 0) + 1 },
+    });
+  }, [accountId]);
 
   const clearUnread = useCallback((conversationId: number) => {
-    setUnreadByConv((prev) => {
-      const next = { ...prev };
+    setSession((previous) => {
+      if (previous.accountId !== accountId) return previous;
+      const next = { ...previous.unreadByConv };
       delete next[conversationId];
-      return next;
+      return { ...previous, unreadByConv: next };
     });
-  }, []);
-
-  const appendFloatingMessage = useCallback((msg: ChatMessageItem) => {
-    setFloatingMessages((prev) => [...prev, msg]);
-  }, []);
+  }, [accountId]);
 
   const isOnMessagesPage = pathname === "/mensagens";
 
@@ -73,14 +82,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         floatingMinimized,
         floatingVisible: isOnMessagesPage ? false : floatingVisible,
         unreadByConv,
-        floatingMessages,
         setActiveConversation,
         setFloatingMinimized,
         closeFloating,
         addUnread,
         clearUnread,
-        appendFloatingMessage,
-        setFloatingMessages,
       }}
     >
       {children}

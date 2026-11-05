@@ -1,6 +1,6 @@
-import type { Curso } from "@/lib/cursos";
+import type { CursoResumo } from "@/lib/cursos";
 
-export function courseEdition(course: Curso) {
+export function courseEdition(course: CursoResumo) {
   const text = (course.slug + " " + course.titulo).toLowerCase();
   if (/github|\bgit\b/.test(text)) return { mark: "Git", field: "Versionamento", tone: "clay" };
   if (/html|css|javascript/.test(text)) return { mark: "Web", field: "Desenvolvimento web", tone: "violet" };

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { listarAulasConcluidas, listarCursosAcademy, totalAulas } from "@/lib/cursos";
+import { academyLessonProgressRefs } from "@/lib/academyLessonProgress";
 import { getTotalSkills, roadmaps, type CareerRoadmap, type RoadmapCategory } from "@/lib/roadmaps";
 import criacao from "../../../public/images/orbitamos/criacao-v1.png";
 import estudo from "../../../public/images/orbitamos/estudo-v1.png";
@@ -75,10 +76,8 @@ function useJourneyProgress(userId: string | number | undefined) {
 
     listarCursosAcademy()
       .then(async (courses) => {
-        const lessonIds = courses.flatMap((course) =>
-          course.modulos.flatMap((module) => module.aulas.map((lesson) => lesson.id))
-        );
-        const completed = new Set(await listarAulasConcluidas(lessonIds));
+        if (!active) return;
+        const completed = new Set(await listarAulasConcluidas(academyLessonProgressRefs(courses), userId));
         const nextProgress: Record<string, number> = {};
 
         courses.forEach((course) => {

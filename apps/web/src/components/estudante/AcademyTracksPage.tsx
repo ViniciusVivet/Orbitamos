@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import AcademyTracks from "./AcademyTracks";
-import { cursos as fallbackCourses, listarCursosAcademy, type Curso } from "@/lib/cursos";
+import { cursosResumo as fallbackCourses, listarCursosAcademy, type CursoResumo } from "@/lib/cursos";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function AcademyTracksPage() {
   const { user } = useAuth();
-  const [courses, setCourses] = useState<Curso[]>(fallbackCourses);
+  const [courses, setCourses] = useState<CursoResumo[]>(fallbackCourses);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   useEffect(() => {

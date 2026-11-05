@@ -1,8 +1,9 @@
 # Testes e validações
 
-Última revisão documental: 2026-11-04, comparada ao código de `3643a04`.
-Os resultados abaixo preservam execuções anteriores; esta revisão documental
-não executou testes, typecheck, lint, build, servidor ou auditorias de navegador.
+Última revisão documental: 2026-11-05. Os resultados de `3643a04` permanecem
+históricos. A rodada de escalabilidade abaixo distingue testes focais, integração
+unitária, auditoria isolada de navegador de 05/11 e banco local. As fixtures
+não comprovam dados/autorização do projeto remoto.
 
 ## Suítes e comandos atuais
 
@@ -33,6 +34,7 @@ inspecionam arquivos; não iniciam Postgres nem executam policies RLS.
 | --- | --- |
 | Contato e materiais | validação, rate limiter, rota, headers, MIME types, fallback e traversal |
 | Autenticação e proxy | redirects, retorno seguro, rotas públicas e sessão |
+| Escalabilidade | catálogo resumido/detalhe por slug, progresso bulk, cursores de chat, respostas atrasadas, troca de conta e fila de conclusão/XP |
 | Conteúdo e navegação | catálogos, atividades, trilhas, próximo passo, progresso e integridade |
 | Prática e laboratório | execução em worker, rascunhos, validações, narrativas, feedback, SQL e C# |
 | Jogos | regras, colisões, gramática, saves, legado, preservação de conquistas e capítulo Orbi |
@@ -42,6 +44,67 @@ inspecionam arquivos; não iniciam Postgres nem executam policies RLS.
 A existência desses testes não comprova aprovação de uma execução nova nem
 cobertura visual. O Vitest inclui `src/**/*.test.ts`; não há ambiente DOM
 configurado para testes React de componentes/formulários.
+
+## Rodada de escalabilidade iniciada em 2026-11-04
+
+Validações locais comprovadas pelos agentes, em execuções focais independentes.
+Há arquivos em comum entre as suítes abaixo; não somar esses totais como uma
+nova execução global:
+
+| Execução focal | Resultado |
+| --- | --- |
+| `cursos`, `contentIntegrity`, `learningExperience`, `academyCatalog`, `courseMaterials`, `csharpTrack` | 61 testes, 6 arquivos |
+| `academyLessonProgress` e `lessonCompletion` | 15 testes, 2 arquivos, um worker |
+| `courseProgress` e `lessonCompletion`, versão final da fila | 16 testes, 2 arquivos |
+| `authSessionGuard`, `chatApi` e `chatHistory` | 26 testes, 3 arquivos |
+| `scripts/test-supabase-local.mjs` | 4 contratos |
+| `supabase/tests/database/lesson_completion.test.sql` | 32/32 asserções pgTAP |
+| `supabase/tests/database/rls.test.sql` | 14/14 asserções pgTAP |
+| `scripts/test-lesson-completion-concurrency.mjs` | aprovado, com concorrência real observada |
+
+Na integração final de **05/11/2026**, `npm run test:coverage -- --maxWorkers=1`
+foi aprovado com **517 testes em 56 arquivos**. É uma execução separada, não a
+soma das suítes focais. O relatório V8 dessa execução enumerou os dois módulos de
+jogos configurados; não representa cobertura percentual de todo o aplicativo.
+
+A auditoria isolada `audit-scaling.mjs` passou em Chromium desktop e
+WebKit/iPhone 13: conclusão pendente/reload/retry, prêmio único, chat 50→100 com
+âncora, erro/retry, envio, logout entre abas, restauração e XP da conta B. O
+chat flutuante foi conferido em 320 px e não consultou histórico minimizado.
+Dois avisos de acesso a requisições HTTP locais interrompidas foram preservados
+separadamente no relatório WebKit; nenhuma outra exceção de página foi registrada.
+As origens externas foram bloqueadas e a CSP foi contornada somente no teste.
+
+TypeScript, build de produção (71 páginas), 9 contratos estáticos e lint completo
+foram aprovados. Os avisos anteriores de Browserslist e tracing da rota de
+materiais permanecem. O lint local
+registrou 31 avisos e zero erros, incluindo roteiros antigos ignorados em
+`test-results`; esse total não é o número de avisos de um clone limpo no CI.
+Lint focal e `git diff --check` dos escopos modificados foram aprovados. Exemplo
+da execução com menor concorrência usada para o leitor de progresso:
+
+```powershell
+node node_modules/vitest/vitest.mjs run --maxWorkers=1 --no-file-parallelism src/lib/academyLessonProgress.test.ts src/lib/lessonCompletion.test.ts
+```
+
+As suítes SQL foram executadas via `psql` no container descartável com
+`ON_ERROR_STOP=1`, TAP sem `not ok` e rollback. Os 14 casos RLS usam grants
+legados mínimos somente na fixture transacional; isso modela permissões que o
+CLI recente não criou implicitamente, sem acrescentá-las às migrations de
+produção. Os 32 casos da 019 exercitam os grants de progresso da própria 019.
+
+O teste de concorrência observou duas sessões esperando locks enquanto a
+primeira transação continuava aberta. Confirmou prêmios `[10, 0, 10]`, duas
+conclusões, XP `90 -> 10`/nível `3 -> 4` e outra conta inalterada; removeu as
+fixtures no `finally`.
+
+A tentativa de iniciar a stack completa teve timeout no pg-delta; o teste
+efetivo usou Postgres isolado. O ambiente local foi encerrado com volumes
+preservados. A 019 está pronta e testada localmente, mas o usuário decidiu aplicar
+o SQL depois: **nenhuma migration remota foi aplicada nesta rodada**.
+Detalhes em [SUPABASE_LOCAL.md](SUPABASE_LOCAL.md) e
+[ESCALABILIDADE_SEM_CUSTO.md](ESCALABILIDADE_SEM_CUSTO.md). Este registro não
+substitui uma checagem global de TypeScript/build nem auditoria de navegador.
 
 ## Registro verificado de 2026-11-04
 
@@ -95,8 +158,10 @@ desenvolvimento. Esses roteiros não são executados pelo workflow atual de CI.
 
 Esses números descrevem a versão de agosto e não são totais atuais. Os limites
 mínimos atuais em `apps/web/vitest.config.mts` são statements 80%, branches 70%,
-functions 80% e lines 80%. O percentual considera somente `contact.ts`,
-`courseMaterials.ts`, `jogoGuiaOrbi.ts` e `jogoMonteCodigo.ts`, não todo o app.
+functions 80% e lines 80%. A configuração inclui `contact.ts`,
+`courseMaterials.ts`, `jogoGuiaOrbi.ts` e `jogoMonteCodigo.ts`; confira quais
+arquivos o relatório de cada execução efetivamente instrumentou. Esses limites
+focais não medem todo o app.
 
 ## CI e Supabase local
 
@@ -105,9 +170,11 @@ alteram `apps/web`, `supabase` ou o próprio workflow, com Node 20 e seis etapas
 bloqueantes: instalação, typecheck, lint, cobertura, contratos e build.
 O build normaliza o caminho real no Windows antes de iniciar o Next.js.
 
-Existe uma suíte pgTAP com 14 verificações em
-`supabase/tests/database/rls.test.sql`, com identidades fictícias e rollback.
-Ela cobre isolamento de progresso, PII, contatos, vagas e solicitações de conta.
+Existem duas suítes pgTAP: 14 verificações em
+`supabase/tests/database/rls.test.sql` e 32 em
+`supabase/tests/database/lesson_completion.test.sql`, com identidades fictícias e
+rollback. Cobrem isolamento de progresso, PII, contatos, vagas, solicitações de
+conta e a RPC de conclusão/XP. O runner de concorrência é separado do pgTAP.
 A execução é separada, com Docker e banco local descartável:
 
 ```powershell
@@ -120,6 +187,24 @@ npm run supabase:stop
 `supabase:reset` recria o banco local; o procedimento completo está em
 [SUPABASE_LOCAL.md](SUPABASE_LOCAL.md). O CI atual executa apenas os contratos
 estáticos desse ambiente, sem iniciar Docker ou pgTAP.
+
+## Auditoria isolada de catálogo, chat e XP
+
+A auditoria `node scripts/audit-scaling.mjs` inicia seu próprio Next na porta
+3016 e um backend HTTP fictício em loopback. Usa o formulário de login e as
+páginas protegidas reais, sem alterar `.env`, SQL remoto ou contas reais. Requer
+Chromium e WebKit do Playwright instalados e nenhum outro Next usando a mesma
+pasta `.next`. Capturas e relatório ficam em `apps/web/test-results/scaling/`.
+
+Para permitir o backend HTTP fictício, o browser Chromium usa `bypassCSP` e o
+WebKit recebe documentos interceptados sem o header CSP. Todas as origens
+externas são bloqueadas pelo roteiro. Isso testa os fluxos da aplicação com
+dados isolados; não verifica a CSP de produção nem um iPhone físico.
+
+O WebKit pode emitir avisos de acesso a requisições HTTP da fixture interrompidas
+durante navegação. O relatório os guarda em `fixtureAccessControlWarnings`,
+separados das exceções JavaScript que reprovam o roteiro. Os asserts funcionais
+continuam exigindo login, leitura, envio, retomada e troca de conta corretos.
 
 ## Limites restantes
 

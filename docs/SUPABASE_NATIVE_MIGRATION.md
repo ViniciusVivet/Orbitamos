@@ -1,7 +1,8 @@
 # Supabase nativo
 
-Revisão documental: **04/11/2026**. Nomes e comportamento conferidos no repositório;
-nenhuma migration foi executada nesta revisão.
+Revisão documental: **05/11/2026**. Nomes e comportamento conferidos no repositório.
+A migration 019 está pronta e testada em banco local descartável; o usuário
+decidiu aplicar o SQL depois. Nenhuma migration remota foi aplicada nesta rodada.
 
 Este documento descreve o estado implementado no repositório. Ele não afirma
 que uma migration foi aplicada no banco remoto sem verificação no Supabase.
@@ -20,7 +21,8 @@ substitui backup e revisão.
 
 As migrations `001` a `004` em `docs/migrations` pertencem ao schema anterior.
 As migrations atuais ficam em `supabase/migrations` e são aplicadas da `005` à
-`018`, em ordem:
+`019`, em ordem em uma instalação nova. A tabela é o inventário; um projeto
+existente com 005–018 aplicadas recebe somente a nova 019, sem reaplicar seeds:
 
 | Arquivo | Responsabilidade |
 | --- | --- |
@@ -38,8 +40,9 @@ As migrations atuais ficam em `supabase/migrations` e são aplicadas da `005` à
 | [20260619001600_academy_admin.sql](../supabase/migrations/20260619001600_academy_admin.sql) | Policies administrativas da academia |
 | [20260619001700_academy_storage.sql](../supabase/migrations/20260619001700_academy_storage.sql) | Bucket e policies de materiais |
 | [20260619001800_avatars_bucket_fix.sql](../supabase/migrations/20260619001800_avatars_bucket_fix.sql) | Correção do bucket e MIME types de avatar |
+| [20260619001900_atomic_lesson_completion.sql](../supabase/migrations/20260619001900_atomic_lesson_completion.sql) | Conclusão e XP transacionais/idempotentes, leitura própria e bloqueio de escritas diretas de progresso |
 
-Os números 005–018 são identificadores de sequência usados nos guias; o CLI usa
+Os números 005–019 são identificadores de sequência usados nos guias; o CLI usa
 os nomes timestampados acima. Comentários em SQL histórico podem citar caminhos
 anteriores em `docs/migrations`; isso não é motivo para renomear arquivos ou
 reescrever migrations já aplicadas.
@@ -47,6 +50,20 @@ reescrever migrations já aplicadas.
 Não pule as migrations de endurecimento. O frontend usa funções introduzidas
 por elas, como `v3_get_my_profile`, `v3_is_staff`,
 `v3_withdraw_application` e `v3_contact_rate_check`.
+
+## Instalar somente a nova 019 em um projeto existente
+
+Quando o usuário decidir aplicar: conferir o projeto e o backup, comprovar os
+pré-requisitos 005–018 e executar no SQL Editor somente o conteúdo integral de
+[20260619001900_atomic_lesson_completion.sql](../supabase/migrations/20260619001900_atomic_lesson_completion.sql).
+O arquivo já inclui transação e recarga do schema do PostgREST. Não usar reset,
+seed ou reaplicação de 005–018 em produção para instalar essa função.
+
+A RPC exige perfil provisionado, curso e aula publicados e sessão da conta
+esperada. Aceita UUID ou slug legado no curso; não recalcula XP nem premia
+conclusões anteriores. O cliente conserva a fila local enquanto a função estiver
+ausente. Detalhes e evidência local:
+[ESCALABILIDADE_SEM_CUSTO.md](ESCALABILIDADE_SEM_CUSTO.md).
 
 ## Como verificar aplicação
 
@@ -66,6 +83,8 @@ select to_regclass('public.v3_contact_attempts') as contact_attempts;
 Confira funções:
 
 ```sql
+select to_regprocedure('public.v3_complete_lesson(text,text,uuid)') as completion_rpc;
+
 select routine_name
 from information_schema.routines
 where routine_schema = 'public'
@@ -78,6 +97,19 @@ where routine_schema = 'public'
   )
 order by routine_name;
 ```
+
+Após instalar a 019, `completion_rpc` deve ser não nulo. Verifique os grants
+sem gravar conclusões reais:
+
+```sql
+select
+  has_function_privilege('authenticated', 'public.v3_complete_lesson(text,text,uuid)', 'EXECUTE') as authenticated_can_execute,
+  has_function_privilege('anon', 'public.v3_complete_lesson(text,text,uuid)', 'EXECUTE') as anon_can_execute;
+```
+
+Esperado: `true` para `authenticated`, `false` para `anon`. Presença e grants
+não substituem validação funcional autenticada. Nenhuma dessas verificações foi
+executada no projeto remoto nesta rodada.
 
 Confira RLS:
 

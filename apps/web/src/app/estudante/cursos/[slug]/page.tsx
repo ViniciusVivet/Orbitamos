@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -26,8 +26,8 @@ import {
 import LessonQuickQuiz from "@/components/estudante/LessonQuickQuiz";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProgress } from "@/contexts/ProgressContext";
-import { addProgressLesson } from "@/lib/api";
 import type { UserId } from "@/lib/api";
+import { getBrowserStorage, queueCourseLesson, readCourseProgress, reconcileCourseProgress, syncPendingCourseProgress, writeCourseProgress } from "@/lib/courseProgress";
 import {
   aulaNoCurso,
   buscarCursoAcademyPorSlug,
@@ -40,7 +40,6 @@ import {
 } from "@/lib/cursos";
 import { flattenCourseLessons, getLessonGuide, getLessonKind, lessonKindLabels } from "@/lib/learningExperience";
 
-const PROGRESS_STORAGE_KEY = "orbitacademy-progress";
 const NOTES_STORAGE_KEY = "orbitacademy-notes";
 const YOUTUBE_VIDEO_ID_PATTERN = /^[a-zA-Z0-9_-]{6,20}$/;
 
@@ -53,29 +52,13 @@ function materialDownloadUrl(material: MaterialAula) {
   return `${material.url}${material.url.includes("?") ? "&" : "?"}download=1`;
 }
 
-type StoredCourseProgress = {
-  completed: string[];
-  lastLessonId: string | null;
-};
-
-function getStoredProgress(courseSlug: string, userId: UserId | undefined): StoredCourseProgress {
-  if (typeof window === "undefined" || !userId) return { completed: [], lastLessonId: null };
-  try {
-    const parsed = JSON.parse(localStorage.getItem(`${PROGRESS_STORAGE_KEY}-${userId}-${courseSlug}`) ?? "{}");
-    return {
-      completed: Array.isArray(parsed.concluidas) ? parsed.concluidas : [],
-      lastLessonId: typeof parsed.ultimaAulaId === "string" ? parsed.ultimaAulaId : null,
-    };
-  } catch {
-    return { completed: [], lastLessonId: null };
-  }
+function getStoredProgress(courseSlug: string, userId: UserId | undefined) {
+  return readCourseProgress(getBrowserStorage(), userId, courseSlug);
 }
 
 function storeProgress(courseSlug: string, userId: UserId, completed: string[], lastLessonId: string) {
-  localStorage.setItem(
-    `${PROGRESS_STORAGE_KEY}-${userId}-${courseSlug}`,
-    JSON.stringify({ concluidas: completed, ultimaAulaId: lastLessonId })
-  );
+  const current = getStoredProgress(courseSlug, userId);
+  writeCourseProgress(getBrowserStorage(), userId, courseSlug, { ...current, completed: [...new Set([...current.completed, ...completed])], lastLessonId });
 }
 
 function MaterialCard({ material }: { material: MaterialAula }) {
@@ -231,7 +214,7 @@ function Curriculum({
 export default function CourseLearningRoom() {
   const params = useParams();
   const slug = params.slug as string;
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const { refetchProgress } = useProgress();
   const userId = user?.id;
 
@@ -241,6 +224,11 @@ export default function CourseLearningRoom() {
   const [quizScore, setQuizScore] = useState<{ correct: number; total: number } | null>(null);
   const [curriculumOpen, setCurriculumOpen] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [pendingSync, setPendingSync] = useState<string[]>([]);
+  const [completionNotice, setCompletionNotice] = useState<string | null>(null);
+  const progressOwner = useRef("");
+  progressOwner.current = `${userId ?? ""}:${slug}`;
   const [notes, setNotes] = useState("");
   const [notesSaved, setNotesSaved] = useState(false);
 
@@ -251,7 +239,9 @@ export default function CourseLearningRoom() {
         if (!active) return;
         setCourse(result ?? null);
         setLessonId((current) => {
-          const storedLessonId = getStoredProgress(slug, userId).lastLessonId;
+          const storedLessonId = result
+            ? reconcileCourseProgress(getBrowserStorage(), userId, slug, result.modulos.flatMap((module) => module.aulas)).lastLessonId
+            : getStoredProgress(slug, userId).lastLessonId;
           if (storedLessonId && result && aulaNoCurso(result, storedLessonId)) return storedLessonId;
           if (current && result && aulaNoCurso(result, current)) return current;
           return result?.modulos[0]?.aulas[0]?.id ?? null;
@@ -267,25 +257,70 @@ export default function CourseLearningRoom() {
 
   useEffect(() => {
     if (!course) return;
+    if (!userId) {
+      queueMicrotask(() => { setCompleted([]); setPendingSync([]); setCompleting(false); });
+      return;
+    }
     let active = true;
     const lessonIds = course.modulos.flatMap((module) => module.aulas.map((lesson) => lesson.id));
-    const stored = getStoredProgress(slug, userId);
-    listarAulasConcluidas(lessonIds)
+    const stored = reconcileCourseProgress(getBrowserStorage(), userId, slug, course.modulos.flatMap((module) => module.aulas));
+    queueMicrotask(() => {
+      if (!active) return;
+      setPendingSync(stored.pending.filter((id) => lessonIds.includes(id)));
+      setCompletionNotice(null);
+      setCompleting(false);
+    });
+    listarAulasConcluidas(lessonIds, slug, userId)
       .then((result) => {
         if (active) {
+          const latest = getStoredProgress(slug, userId);
           const validCompleted = new Set(
-            [...stored.completed, ...result].filter((lessonId) => lessonIds.includes(lessonId))
+            [...latest.completed, ...result].filter((lessonId) => lessonIds.includes(lessonId))
           );
           setCompleted([...validCompleted]);
         }
       })
       .catch(() => {
-        if (active) setCompleted(stored.completed.filter((lessonId) => lessonIds.includes(lessonId)));
+        if (active) setCompleted(getStoredProgress(slug, userId).completed.filter((lessonId) => lessonIds.includes(lessonId)));
       });
     return () => {
       active = false;
     };
   }, [course, slug, userId]);
+
+  const syncPending = useCallback(async () => {
+    if (!course || !userId) return;
+    const owner = `${userId}:${slug}`;
+    setSyncing(true);
+    try {
+      const result = await syncPendingCourseProgress({
+        storage: getBrowserStorage(),
+        userId,
+        courseSlug: slug,
+        lessonIds: course.modulos.flatMap((module) => module.aulas.map((aula) => aula.id)),
+        complete: (id) => marcarAulaAcademyConcluida(id, slug, userId),
+      });
+      if (progressOwner.current !== owner) return;
+      setPendingSync(result.pending);
+      if (result.error) {
+        setCompletionNotice(`Conclusão salva neste aparelho, com sincronização pendente. ${result.error} O XP será confirmado pelo servidor.`);
+      } else if (result.synced > 0) {
+        setCompletionNotice("Conclusões sincronizadas. O XP foi confirmado pelo servidor.");
+      }
+      if (result.synced > 0) await refetchProgress();
+    } finally {
+      if (progressOwner.current === owner) setSyncing(false);
+    }
+  }, [course, refetchProgress, slug, userId]);
+
+  useEffect(() => {
+    if (!course || !userId) return;
+    // Tentar ao abrir o curso e quando a conexao voltar; sem polling.
+    queueMicrotask(() => { void syncPending(); });
+    const retry = () => { void syncPending(); };
+    window.addEventListener("online", retry);
+    return () => window.removeEventListener("online", retry);
+  }, [course, syncPending, userId]);
 
   const lesson = useMemo(
     () => (course && lessonId ? aulaNoCurso(course, lessonId) : undefined),
@@ -309,7 +344,9 @@ export default function CourseLearningRoom() {
     let active = true;
     queueMicrotask(() => {
       if (!active) return;
-      setNotes(notesKey ? localStorage.getItem(notesKey) ?? "" : "");
+      let savedNotes = "";
+      try { savedNotes = notesKey ? getBrowserStorage()?.getItem(notesKey) ?? "" : ""; } catch { /* Storage bloqueado: manter editor utilizavel. */ }
+      setNotes(savedNotes);
       setNotesSaved(false);
     });
     return () => {
@@ -344,36 +381,57 @@ export default function CourseLearningRoom() {
 
   const saveNotes = () => {
     if (!notesKey) return;
-    localStorage.setItem(notesKey, notes);
+    try {
+      const storage = getBrowserStorage();
+      if (!storage) return;
+      storage.setItem(notesKey, notes);
+    } catch {
+      return;
+    }
     setNotesSaved(true);
     window.setTimeout(() => setNotesSaved(false), 1800);
   };
 
   const completeLesson = useCallback(async () => {
     if (!lessonId || !course || !userId || completing) return;
-    setCompleting(true);
+    const owner = `${userId}:${slug}`;
     const nextId = proximaAulaId(course, lessonId);
-    const nextCompleted = completed.includes(lessonId) ? completed : [...completed, lessonId];
-    setCompleted(nextCompleted);
-    storeProgress(slug, userId, nextCompleted, nextId ?? lessonId);
-
-    if (token && lesson) {
-      try {
-        await marcarAulaAcademyConcluida(lessonId);
-        if (!lessonDone) await addProgressLesson(token, { xpGained: 10, lessonTitle: lesson.titulo });
-        await refetchProgress();
-      } catch {
-        // O progresso local continua disponível mesmo com falha de rede.
-      }
+    if (completed.includes(lessonId) && !pendingSync.includes(lessonId)) {
+      if (nextId) selectLesson(nextId);
+      return;
     }
-
-    setCompleting(false);
+    setCompleting(true);
+    const queued = queueCourseLesson(getBrowserStorage(), userId, slug, lessonId, nextId ?? lessonId);
+    const nextCompleted = [...new Set([...completed, ...queued.progress.completed])];
+    setCompleted(nextCompleted);
+    setPendingSync(queued.progress.pending);
+    try {
+      if (queued.stored) {
+        await syncPending();
+      } else {
+        // Storage pode estar cheio/bloqueado. A tentativa remota continua valida.
+        await marcarAulaAcademyConcluida(lessonId, slug, userId);
+        if (progressOwner.current !== owner) return;
+        setPendingSync((current) => current.filter((id) => id !== lessonId));
+        setCompletionNotice("Conclusão e XP confirmados na sua conta.");
+        await refetchProgress();
+      }
+    } catch {
+      if (progressOwner.current !== owner) return;
+      setCompleted(completed);
+      setPendingSync(getStoredProgress(slug, userId).pending);
+      setCompletionNotice("Não foi possível confirmar a conclusão nem salvar neste aparelho. Tente novamente antes de sair.");
+      return;
+    } finally {
+      if (progressOwner.current === owner) setCompleting(false);
+    }
+    if (progressOwner.current !== owner) return;
     if (nextId) {
       setLessonId(nextId);
       setCurriculumOpen(false);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }, [completed, completing, course, lesson, lessonDone, lessonId, refetchProgress, slug, token, userId]);
+  }, [completed, completing, course, lessonId, pendingSync, refetchProgress, selectLesson, slug, syncPending, userId]);
 
   if (course === undefined) {
     return (
@@ -659,7 +717,7 @@ export default function CourseLearningRoom() {
               <SectionHeading
                 number={4}
                 title="Conclua a aula"
-                subtitle={lessonDone ? "Aula registrada no seu progresso." : "Marque como concluída para registrar o progresso e ganhar XP."}
+                subtitle={lessonDone ? (pendingSync.includes(lessonId!) ? "Concluída neste aparelho; sincronização pendente." : "Aula registrada no seu progresso.") : "Marque como concluída para registrar o progresso e ganhar XP."}
                 done={lessonDone}
               />
               <div className="mt-5 flex max-w-3xl flex-col gap-3 rounded-2xl bg-white/[0.035] p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -676,13 +734,19 @@ export default function CourseLearningRoom() {
                 <button
                   type="button"
                   onClick={completeLesson}
-                  disabled={completing || (lessonDone && !nextLesson)}
+                  disabled={completing || (lessonDone && !nextLesson && !pendingSync.includes(lessonId!))}
                   className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orbit-electric to-orbit-purple px-5 text-sm font-black text-black disabled:opacity-50"
                 >
-                  {completing ? "Salvando..." : lessonDone ? "Ir para próxima aula" : "Concluir e continuar"}
+                  {completing ? "Salvando..." : lessonDone ? (nextLesson ? "Ir para próxima aula" : "Tentar sincronizar") : "Concluir e continuar"}
                   {!completing && (lessonDone ? <ArrowRight className="size-4" /> : <Check className="size-4" />)}
                 </button>
               </div>
+              {completionNotice && <p role="status" className="mt-3 max-w-3xl text-xs leading-5 text-white/60">{completionNotice}</p>}
+              {pendingSync.length > 0 && (
+                <button type="button" onClick={() => { void syncPending(); }} disabled={syncing || completing} className="mt-3 min-h-11 text-xs font-bold text-orbit-electric disabled:opacity-50">
+                  {syncing ? "Sincronizando..." : `Sincronizar ${pendingSync.length} ${pendingSync.length === 1 ? "aula pendente" : "aulas pendentes"}`}
+                </button>
+              )}
             </section>
           </div>
         </main>

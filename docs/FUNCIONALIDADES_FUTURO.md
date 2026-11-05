@@ -1,6 +1,6 @@
 # Roadmap de produto e engenharia
 
-Última revisão do código: 2026-11-04
+Última revisão do código: 2026-11-05
 
 Este arquivo contém somente trabalho futuro ou incompleto. Funcionalidades já
 presentes ficam documentadas em [ARCHITECTURE.md](ARCHITECTURE.md).
@@ -16,6 +16,11 @@ presentes ficam documentadas em [ARCHITECTURE.md](ARCHITECTURE.md).
   um backend descartável. Já há auditorias de navegador; os cenários de auth
   usam respostas interceptadas e os previews não comprovam gravações reais.
 - Confirmar no Supabase remoto a aplicação das migrations `005` a `018`.
+- Aplicar somente a nova `019` quando o usuário decidir, após conferir os
+  pré-requisitos existentes; depois verificar assinatura/grants e o fluxo
+  autenticado. O SQL está pronto e testado localmente, sem aplicação remota nesta
+  rodada. Não usar reset ou seed de produção; seguir
+  [o procedimento](SUPABASE_NATIVE_MIGRATION.md#instalar-somente-a-nova-019-em-um-projeto-existente).
 - Confirmar e registrar o cron anti-pausa citado na documentação anterior.
 
 ## Consolidação
@@ -25,6 +30,11 @@ presentes ficam documentadas em [ARCHITECTURE.md](ARCHITECTURE.md).
 - Consolidar os dados editoriais locais e remotos do catálogo acadêmico.
   A composição das entradas já passa por `src/lib/academyCatalog.ts`, que reúne
   os vídeos de apoio às trilhas C# e SQL sem duplicar sua entrada principal.
+- Medir payload, consultas e tempo em dispositivos reais após catálogo resumido
+  e chat por cursor. Essas otimizações, os guards de conta e a fila de conclusão
+  já estão implementados; ver [ESCALABILIDADE_SEM_CUSTO.md](ESCALABILIDADE_SEM_CUSTO.md).
+- Planejar sincronização dos saves de jogos e código entre dispositivos com
+  tratamento de conflitos. A outbox atual cobre somente conclusões de aulas.
 - Otimizar vídeos, imagens e cenas 3D com métricas de dispositivos reais.
 - Medir erros e disponibilidade dos fluxos críticos em produção.
 
@@ -32,6 +42,7 @@ presentes ficam documentadas em [ARCHITECTURE.md](ARCHITECTURE.md).
 
 - Certificados quando houver regra verificável de conclusão.
 - Supabase Realtime no chat quando o uso justificar presença e sincronização.
+  A paginação atual não introduz Realtime nem polling novo.
 - CMS dos cases do site comercial se a edição no código virar gargalo. O
   portfólio do colaborador já possui editor e upload; é outro domínio.
 - Automações de email/WhatsApp com consentimento e rotina operacional.

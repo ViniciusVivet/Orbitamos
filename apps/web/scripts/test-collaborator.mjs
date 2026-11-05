@@ -6,6 +6,17 @@ const root=resolve(import.meta.dirname,"../../..");
 const read=(path)=>readFile(resolve(root,path),"utf8");
 test("candidato nao pode alterar livremente o status",async()=>{const sql=await read("supabase/migrations/20260619001200_admin_operations_security.sql");assert.match(sql,/drop policy if exists "update own applications"/);assert.match(sql,/v3_withdraw_application/);assert.match(sql,/staff update applications/);});
 test("rotas administrativas estao protegidas",async()=>{const proxy=await read("apps/web/src/proxy.ts");const layout=await read("apps/web/src/app/admin/layout.tsx");assert.match(proxy,/"\/admin"/);assert.match(layout,/adminRole/);});
-test("troca mobile entre aprender e trabalhar permanece visivel",async()=>{const layout=await read("apps/web/src/app/estudante/layout.tsx");assert.match(layout,/aria-label="Ir para a área do colaborador"/);assert.match(layout,/>\s*Trabalhar\s*</);});
+test("troca entre aprender e trabalhar permanece acessivel no menu mobile", async () => {
+  const layout = await read("apps/web/src/app/estudante/layout.tsx");
+  const header = await read("apps/web/src/components/portal/PortalHeader.tsx");
+  const studentSidebar = await read("apps/web/src/components/estudante/EstudanteSidebar.tsx");
+  const sidebar = await read("apps/web/src/components/portal/PortalSidebar.tsx");
+  assert.match(layout, /mobileOpen=\{mobileMenuOpen\}/);
+  assert.match(layout, /onOpenMenu=\{\(\) => setMobileMenuOpen\(true\)\}/);
+  assert.match(header, /aria-label="Abrir menu"/);
+  assert.match(studentSidebar, /mode="student"/);
+  assert.match(sidebar, /href=\{work \? "\/estudante" : "\/colaborador"\}/);
+  assert.match(sidebar, /"Ir para a Academy" : "Área do colaborador"/);
+});
 test("area do colaborador nao contem dados mockados",async()=>{const files=["apps/web/src/app/colaborador/candidaturas/page.tsx","apps/web/src/app/colaborador/squad/page.tsx","apps/web/src/components/colaborador/NotificacoesPanel.tsx"];for(const file of files)assert.doesNotMatch(await read(file),/mock|Colaborador A|Colaborador B/i,file);});
 test("operacao cobre vagas candidaturas projetos e notificacoes",async()=>{for(const file of ["apps/web/src/app/admin/vagas/page.tsx","apps/web/src/app/admin/candidaturas/page.tsx","apps/web/src/app/admin/projetos/page.tsx","apps/web/src/components/colaborador/NotificacoesPanel.tsx"]){assert.ok((await read(file)).length>200,`${file} deve existir`);}});
