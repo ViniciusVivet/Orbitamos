@@ -1,6 +1,109 @@
-# Home e portfólio comercial — 05/11/2026
+# Home e portfólio comercial
 
-## Critério de design
+## Direção atual — 07/11/2026
+
+A prioridade comercial é definida pelo trabalho que o visitante precisa
+conhecer primeiro. A data de entrada no catálogo não determina o destaque.
+Os 11 projetos continuam acessíveis, com os mesmos slugs e páginas de case.
+
+### Curadoria informada pelo usuário
+
+- **Sabrina Lashes / SA Lashes:** o usuário confirmou que esse era o projeto
+  citado como “Celeste” na conversa. Informou uso real no atendimento e relação
+  recorrente; por isso ele abre o catálogo. Não foram conferidos faturamento,
+  quantidade de clientes, leads ou ROI.
+- **Radar da Rima:** prioridade pelo potencial de produto e de escala da
+  comunidade, conforme avaliação do usuário. Potencial não é crescimento,
+  adoção ou retorno financeiro já comprovado.
+- **YUME:** compõe a seleção principal pela apresentação da marca e do produto.
+- **MB Multimarcas Infantil:** vem depois da seleção principal como referência
+  de catálogo. Segundo o usuário, ainda não está vendendo.
+- **Destaque Multimarcas:** fica ao final; o usuário informou que o parceiro
+  ainda não usa o site. Publicação de uma página não equivale a uso operacional.
+
+Esses relatos orientam a curadoria e não devem virar estatísticas ou alegações
+de desempenho na copy pública. Os demais projetos demonstram entregáveis; sua
+posição não implica vendas, tráfego ou adoção verificados.
+
+### Seleção e apresentação
+
+- **Home:** exatamente YUME, Sabrina Lashes e Radar da Rima, nessa ordem. A
+  composição tem imagens e texto direto, sem molduras externas ou chips de
+  benefícios com bordas.
+- **Catálogo:** Sabrina abre como case principal, com imagem e narrativa
+  lateral. Radar e YUME aparecem a seguir em apresentações amplas. Os outros
+  oito usam linhas com miniatura e resumo: duas colunas no desktop e uma no
+  tablet/celular, reduzindo a repetição de grandes cartões.
+- **Ordem completa:** Sabrina, Radar, YUME, MB, Sensimilla, Orbitamos Portal
+  Tech, OrbiCore, Palladinos, FAST, KitCerto e Destaque Multimarcas.
+- **Controles:** filtros em abas sem caixas contornadas, foco de teclado
+  visível, busca combinada e seletor nativo no celular. Os controles mobile
+  mantêm fonte de 16px. O resultado vazio continua oferecendo recuperação.
+- **Ação por case:** um único link abre sua narrativa. O acesso ao site
+  publicado continua disponível dentro do case. As imagens ajudam a comparar
+  as entregas sem criar uma segunda ação concorrente em cada item da lista.
+- **Encerramento:** depois dos cases e depoimentos, a página segue para o
+  contato. A grade adicional de serviços foi retirada desse percurso; os
+  serviços continuam na home. O convite final trata de escopo, prazo e
+  investimento, sem prometer uma semana para qualquer tipo de projeto.
+
+Sabrina demonstra atendimento em uso segundo o responsável; Radar, um produto
+de comunidade; YUME, uma marca autoral. Sensimilla acrescenta direção visual e
+os produtos próprios mostram amplitude de implementação. A capa de login do
+OrbiCore não é uma demonstração suficiente para receber o maior destaque.
+Palladinos e FAST seguem como referências secundárias de presença comercial.
+
+### Uma ordem compartilhada
+
+[`projectCatalog.ts`](../apps/web/src/lib/projectCatalog.ts) centraliza a
+curadoria: `orderProjectsForPortfolio` ordena o catálogo sem modificar os dados
+de entrada; projetos novos sem avaliação entram ao final, na ordem recebida.
+`getHomeFeaturedProjects` mantém a seleção própria da home. Busca e filtros
+preservam a ordem comercial; o modal legado e o próximo case usam a mesma
+sequência. Uma seleção ausente não é substituída automaticamente por outro
+projeto.
+
+Os dados e slugs continuam em
+[`projetos.ts`](../apps/web/src/data/projetos.ts). A home apresenta a seleção em
+[`HomeProjectSelection.tsx`](../apps/web/src/components/home/HomeProjectSelection.tsx).
+O layout compartilhado fica em
+[`ProjectCard.tsx`](../apps/web/src/components/projetos/ProjectCard.tsx) e
+[`ProjectCatalog.module.css`](../apps/web/src/components/projetos/ProjectCatalog.module.css).
+Qualquer mudança futura de prioridade deve atualizar essa curadoria e conferir
+home, catálogo, busca, filtros, modal e próxima página, preservando os URLs.
+
+### Validação local — 07/11/2026
+
+- Auditoria integrada aprovada em 1440×1000, notebook 1280×600, WebKit com
+  perfil de iPhone 13 em 390×844 e 320×740 com movimento reduzido.
+- Três cases da home, os 11 projetos na ordem comercial, todas as imagens,
+  filtros/busca combinados, recuperação do resultado vazio e as três páginas
+  principais com próximo case correto aprovados.
+- Sem overflow horizontal ou exceções de página. Zero violações Axe na faixa,
+  seleção da home e catálogo auditados; não é certificação do site inteiro.
+- Conferência adicional em tablet 820×1180: layout, alinhamento das chamadas
+  da home, ausência da grade duplicada de serviços e navegação do modal legado
+  de Sabrina para Radar pelo teclado aprovados.
+- 26 testes focais em dois arquivos aprovados, incluindo preservação da ordem
+  com entrada invertida, busca/filtro, projetos sem curadoria, seleção da home,
+  ausência de mutação e integridade dos conteúdos.
+- ESLint focal sem erros, com quatro avisos de imagens preexistentes na home.
+  `next typegen`, TypeScript e build de produção aprovados; 73 páginas
+  geradas, mantendo os 11 slugs dos cases.
+
+Capturas e relatório ficam em `apps/web/test-results/commercial-portfolio/`;
+logs locais em `docs/local/2026-11-07-portfolio-*.log`. As capturas da composição
+anterior ficam em `apps/web/test-results/portfolio-curation-20261107/`.
+O WebKit usa um perfil simulado, sem teste nesta rodada em iPhone físico.
+Esta direção não promete aumento de conversão ou ROI.
+
+## Histórico — 05/11/2026
+
+Os registros abaixo descrevem a implementação e as verificações daquela data.
+A seleção de seis cases e a abertura com FAST/Palladinos foram substituídas
+pela direção de 07/11 acima.
+
+### Critério de design
 
 A home funciona como uma seleção do trabalho da Orbitamos. O catálogo completo
 permite comparar referências por tipo e objetivo. Aumentar o catálogo não aumenta
@@ -27,7 +130,7 @@ objetivos comerciais. Busca e categorias continuam funcionando a partir dos
 dados. Paginação pode ser acrescentada quando o volume justificar; 11 projetos
 não exigem rolagem infinita ou um carrossel obrigatório para acessar todos.
 
-## Faixa da home
+### Faixa da home
 
 Os quatro diferenciais continuam em uma faixa estreita, com movimento contínuo
 à esquerda, em CSS, de 38 segundos por ciclo. Hover e foco na área de leitura
@@ -38,7 +141,7 @@ de tela. Não há requisição de rede nem atualização por frame em JavaScript
 O objetivo do movimento é criar ritmo secundário entre seções. Cases e chamadas
 de contato permanecem disponíveis para leitura e comparação no próprio ritmo.
 
-## Novos cases e capturas reais
+### Novos cases e capturas reais
 
 | Projeto | Publicação conferida | Capa entregue |
 | --- | --- | --- |
@@ -55,7 +158,7 @@ inventados números de faturamento, leads, satisfação, preço pago ou retorno
 comercial. A contagem pública deriva de `projetos.length`, com o rótulo
 “projetos no portfólio”; ela não representa onze clientes pagantes.
 
-## Onde atualizar
+### Onde atualizar
 
 1. Dados e links: `apps/web/src/data/projetos.ts`.
 2. Capa e imagem principal: assets otimizados em `apps/web/public/`.
@@ -64,7 +167,7 @@ comercial. A contagem pública deriva de `projetos.length`, com o rótulo
 5. Cor e perfil de cena: `CASE_THEMES` em `ImmersiveCaseStudy.tsx`.
 6. Conferir a página própria, catálogo, metadados e links; preservar os slugs.
 
-## Referências e verificação
+### Referências e verificação
 
 - [W3C — Pause, Stop, Hide](https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide.html): controle de movimento automático.
 - [NN/G — Progressive Disclosure](https://www.nngroup.com/articles/progressive-disclosure/): hierarquia de informação e detalhes secundários sob demanda.

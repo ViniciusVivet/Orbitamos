@@ -105,7 +105,7 @@ export default function ProjetosCTA({ variant = "section" }: ProjetosCTAProps) {
 
         <ScrollReveal from={{ opacity: 0, y: 15 }} to={{ duration: 0.6, delay: 0.3 }}>
           <p className="mx-auto mt-5 max-w-md text-sm text-white/70 drop-shadow-md">
-            Orçamento sem compromisso - Resposta em 24h - Entrega em até 1 semana
+            Vamos conversar sobre o escopo, o prazo e o investimento para o seu projeto.
           </p>
         </ScrollReveal>
 
@@ -136,7 +136,7 @@ export default function ProjetosCTA({ variant = "section" }: ProjetosCTAProps) {
                 className="w-full sm:w-auto text-center rounded-xl border px-8 py-4 text-sm font-semibold text-white/75 transition-all duration-150 hover:border-white/30 hover:text-white"
                 style={{ borderColor: "rgba(255,255,255,0.15)" }}
               >
-                Preencher formulario
+                Preencher formulário
               </Link>
             </MagneticButton>
           </div>

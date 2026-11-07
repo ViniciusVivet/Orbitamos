@@ -50,7 +50,7 @@ quando descrevem uma execução específica.
 | [METODO_ORBITA_IMERSIVA.md](METODO_ORBITA_IMERSIVA.md) | Processo, decisões e iterações de imersão |
 | [INICIO_PROCESSO_ENGENHARIA.md](INICIO_PROCESSO_ENGENHARIA.md) | Seções de engenharia/processo da home e verificações |
 | [PAGINAS_COMERCIAIS.md](PAGINAS_COMERCIAIS.md) | Páginas de serviços, estratégia e registros de entrega |
-| [PORTFOLIO_COMERCIAL.md](PORTFOLIO_COMERCIAL.md) | Seleção da home, catálogo com busca, faixa em movimento e capturas reais dos cases |
+| [PORTFOLIO_COMERCIAL.md](PORTFOLIO_COMERCIAL.md) | Curadoria comercial de 07/11, três cases da home, catálogo editorial com busca e histórico das capturas e da faixa |
 
 ## Planejamento e histórico
 

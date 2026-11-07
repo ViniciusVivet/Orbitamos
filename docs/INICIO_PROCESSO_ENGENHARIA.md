@@ -98,6 +98,33 @@ O controle segue o critério de conteúdo em movimento de
 Validação integrada em 05/11/2026: quatro perfis no navegador, incluindo WebKit
 com perfil de iPhone 13 e 320px com movimento reduzido. Movimento, pausa manual,
 hover/foco, grade estática, ausência de overflow e Axe da faixa aprovados.
-Os seis cases da home mantêm a ordem acordada; a contagem usa os 11 projetos
-do catálogo. Evidências e verificação comercial em
+Naquela rodada, os seis cases da home mantiveram a seleção então acordada; a
+contagem usou os 11 projetos do catálogo. Evidências e verificação comercial em
 [PORTFOLIO_COMERCIAL.md](PORTFOLIO_COMERCIAL.md).
+
+## Seleção comercial da home — 07/11/2026
+
+A home passou a exibir três cases: YUME, Sabrina Lashes / SA Lashes e Radar da
+Rima. A seleção sai de `getHomeFeaturedProjects`, compartilhando os dados e
+slugs do catálogo. A composição usa imagens e textos diretos, com uma ação para
+abrir cada case; molduras externas e chips de benefícios foram retirados.
+
+A mudança responde à curadoria do usuário: Sabrina tem uso no atendimento e
+relação recorrente informados por ele; Radar é uma aposta de produto com
+potencial de escala; YUME apresenta a marca autoral. Não há medição nova de ROI
+ou conversão nesta escolha. O catálogo completo continua com os 11 projetos e
+uma ordem comercial compartilhada por filtros, busca, modal e próximo case.
+
+A faixa de diferenciais e as seções de processo/engenharia preservam seus
+comportamentos. A revisão dos cases e suas regras atuais estão em
+[PORTFOLIO_COMERCIAL.md](PORTFOLIO_COMERCIAL.md).
+
+### Validação de 07/11/2026
+
+Seleção, imagens e ausência de overflow aprovadas em desktop, notebook baixo,
+WebKit com perfil de iPhone 13 e 320px com movimento reduzido; zero violações
+Axe nos blocos auditados. Conferência adicional em tablet 820px aprovou o
+alinhamento das três chamadas de case. Os 26 testes focais passaram.
+Capturas, limites da verificação e demais checks desta rodada estão em
+[PORTFOLIO_COMERCIAL.md](PORTFOLIO_COMERCIAL.md). A aprovação de 05/11 acima
+continua sendo um registro da composição anterior.

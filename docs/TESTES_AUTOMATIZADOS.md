@@ -219,9 +219,11 @@ continuam exigindo login, leitura, envio, retomada e troca de conta corretos.
 Com o servidor local 3015 em execução, use
 `node scripts/audit-commercial-portfolio.mjs` em `apps/web`. A variável
 `PORTFOLIO_AUDIT_URL` permite outro endereço. O roteiro verifica a faixa em
-movimento e seus controles, seis cases da home, 11 projetos sem repetição,
-imagens, busca, filtros e recuperação da lista vazia. Abre os dois novos cases
-e exige título realmente opaco no viewport e cena inicial pronta.
+movimento e seus controles, três cases da home, 11 projetos sem repetição e
+na ordem comercial, imagens, busca, filtros e recuperação da lista vazia.
+Abre Sabrina, Radar e YUME, exige título realmente opaco no viewport, cena
+inicial pronta e o próximo case na ordem acordada. Antes de aguardar o decode,
+coloca cada imagem lazy no viewport para iniciar seu carregamento no WebKit.
 
 São quatro perfis sequenciais: desktop, notebook baixo, WebKit com perfil de
 iPhone 13 e celular de 320px com movimento reduzido. Axe cobre somente os novos

@@ -8,7 +8,6 @@ import {
   Bot,
   CheckCircle2,
   Code2,
-  ExternalLink,
   Layers3,
   MessageCircle,
   Plus,
@@ -28,6 +27,7 @@ import LazyVideo from "@/components/LazyVideo";
 import HomeProcess from "@/components/home/HomeProcess";
 import HomeEngineering from "@/components/home/HomeEngineering";
 import HomeCapabilitiesStrip from "@/components/home/HomeCapabilitiesStrip";
+import HomeProjectSelection from "@/components/home/HomeProjectSelection";
 import useWarpCTAScene from "@/components/three/WarpCTAScene";
 import usePerformanceProfile from "@/hooks/usePerformanceProfile";
 import { projetos } from "@/data/projetos";
@@ -121,64 +121,6 @@ const services = [
     points: ["Correções", "Atualizações", "Pequenas melhorias"],
   },
 ];
-
-const featuredProjects = [
-  {
-    name: "YUME",
-    category: "Marca autoral",
-    href: "/projetos/yume-moda-disruptiva",
-    image: "/case-yume.png",
-    description:
-      "Vitrine digital com identidade forte para apresentar coleções, editoriais e evoluir para vendas.",
-    outcomes: ["Catálogo visual", "Branding premium", "Mobile-first"],
-  },
-  {
-    name: "Sensimilla Records",
-    category: "Música e entretenimento",
-    href: "/projetos/sensimilla-records",
-    image: "/case-sensimilla-records.png",
-    description:
-      "Hub oficial da gravadora para reunir artistas, lançamentos, agenda, merch e presença nas plataformas.",
-    outcomes: ["Identidade autoral", "Lançamentos", "Experiência imersiva"],
-  },
-  {
-    name: "MB Multimarcas Infantil",
-    category: "Moda infantil",
-    href: "/projetos/mb-multimarcas-infantil",
-    image: "/case-mb-multimarcas-infantil.png",
-    description:
-      "Catálogo digital com produtos filtráveis e atendimento direto pelo WhatsApp.",
-    outcomes: ["Catálogo filtrável", "WhatsApp direto", "Mobile-first"],
-  },
-  {
-    name: "Sabrina Lashes",
-    category: "Beleza e atendimento",
-    href: "/projetos/sabrina-lashes",
-    image: "/case-sabrina-lashes.png",
-    description:
-      "Site profissional para apresentar serviços, reforçar confiança e levar clientes direto ao agendamento.",
-    outcomes: ["WhatsApp direto", "Serviços organizados", "Presença profissional"],
-  },
-  {
-    name: "KitCerto",
-    category: "Catálogo e e-commerce",
-    href: "/projetos/kitcerto",
-    image: "/case-kitcerto.png",
-    description:
-      "Vitrine digital para organizar kits e produtos com uma experiência de compra clara no celular.",
-    outcomes: ["Kits organizados", "Vitrine comercial", "Mobile-first"],
-  },
-  {
-    name: "Radar da Rima",
-    category: "Cultura, comunidade e eventos",
-    href: "/projetos/radar-da-rima",
-    image: "/case-radar-da-rima.jpg",
-    description:
-      "Mapa nacional de batalhas de rima com ranking de MCs e operação completa das edições para organizadores.",
-    outcomes: ["Mapa geolocalizado", "Ranking nacional", "Gestão de eventos"],
-  },
-];
-
 
 function OrbiMascot() {
   const ref = useRef<HTMLDivElement>(null);
@@ -502,7 +444,7 @@ export default function Home() {
                 as="h2"
                 className="mt-4 max-w-2xl text-4xl font-black leading-tight text-white sm:text-5xl"
               >
-                Cases reais para mostrar o que você pode vender melhor.
+                Um negócio. Uma marca. Uma plataforma.
               </TextReveal>
             </div>
             <ScrollReveal from={{ opacity: 0, x: 20 }} to={{ duration: 0.5 }}>
@@ -521,46 +463,7 @@ export default function Home() {
           </div>
 
           <ScrollReveal selectChildren stagger={0.15} from={{ opacity: 0, y: 60, scale: 0.93 }}>
-            <div className="mt-10 grid gap-5 lg:grid-cols-3">
-              {featuredProjects.map((project) => (
-                <article
-                  key={project.name}
-                  className="orbit-tilt-card group overflow-hidden border border-white/[0.08] bg-[#070a12] transition duration-300 hover:-translate-y-2 hover:border-orbit-electric/25"
-                >
-                  <Link href={project.href} className="block">
-                    <div className="relative aspect-[16/10] overflow-hidden bg-white/[0.04]">
-                      <img
-                        src={project.image}
-                        alt={`Case ${project.name}`}
-                        className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#070a12] via-transparent to-transparent" />
-                    </div>
-                    <div className="p-5">
-                      <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/34">
-                        {project.category}
-                      </p>
-                      <h3 className="mt-2 text-2xl font-black text-white">{project.name}</h3>
-                      <p className="mt-3 text-sm leading-6 text-white/52">{project.description}</p>
-                      <div className="mt-5 flex flex-wrap gap-2">
-                        {project.outcomes.map((outcome) => (
-                          <span
-                            key={outcome}
-                            className="border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 text-xs text-white/52"
-                          >
-                            {outcome}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="mt-6 flex items-center gap-2 text-sm font-bold text-orbit-electric">
-                        Ver case
-                        <ExternalLink className="size-4" />
-                      </div>
-                    </div>
-                  </Link>
-                </article>
-              ))}
-            </div>
+            <HomeProjectSelection />
           </ScrollReveal>
         </div>
       </section>

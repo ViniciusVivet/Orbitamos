@@ -23,6 +23,7 @@ for (const { name, type, ...options } of views) {
   try {
     const context = await browser.newContext(options);
     page = await context.newPage();
+    page.setDefaultTimeout(30000);
     page.on("pageerror", (error) => errors.push(error.message));
     await page.goto(base, { waitUntil: "load", timeout: 120000 });
     await page.bringToFront();
@@ -60,10 +61,25 @@ for (const { name, type, ...options } of views) {
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false, `Home overflow ${name}`);
     await strip.screenshot({ path: path.join(output, `${name}-strip.png`) });
     const homeCases = page.locator("section").filter({ has: page.getByRole("link", { name: "Ver portfólio completo", exact: true }) });
-    assert.deepEqual(await homeCases.locator("article h3").allTextContents(), ["YUME", "Sensimilla Records", "MB Multimarcas Infantil", "Sabrina Lashes", "KitCerto", "Radar da Rima"]);
+    assert.deepEqual(await homeCases.locator("article h3").allTextContents(), ["YUME", "Sabrina Lashes", "Radar da Rima"]);
+    for (const img of await homeCases.locator("article img").all()) {
+      await img.scrollIntoViewIfNeeded();
+      await img.evaluate((el) => el.decode());
+    }
+    await homeCases.evaluate((el) => scrollTo({ top: el.getBoundingClientRect().top + scrollY - 80, behavior: "instant" }));
+    await expect.poll(() => homeCases.locator("article").first().evaluate((el) => {
+      for (let node = el; node; node = node.parentElement) {
+        if (Number(getComputedStyle(node).opacity) < 0.98) return false;
+      }
+      return true;
+    })).toBe(true);
+    await expect.poll(() => homeCases.locator("h2").evaluate((el) => [el, ...el.querySelectorAll("span")].every((node) => Number(getComputedStyle(node).opacity) >= 0.98))).toBe(true);
+    await page.screenshot({ path: path.join(output, `${name}-home-selection.png`) });
+    const homeAxe = await new AxeBuilder({ page }).include("[data-home-projects]").withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
+    assert.deepEqual(homeAxe.violations, []);
     const stripAxe = await new AxeBuilder({ page }).include("[data-home-capabilities]").withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
     assert.deepEqual(stripAxe.violations, []);
-    console.log(`${name}: strip and six curated home cases passed`);
+    console.log(`${name}: strip and three curated home cases passed`);
 
     await page.goto(`${base}/projetos`, { waitUntil: "load", timeout: 120000 });
     await page.bringToFront();
@@ -74,7 +90,9 @@ for (const { name, type, ...options } of views) {
     await expect(cards).toHaveCount(11);
     const slugs = await cards.evaluateAll((items) => items.map((el) => el.dataset.projectCard));
     assert.equal(new Set(slugs).size, 11);
-    assert.deepEqual(slugs.slice(0, 2), ["fast-comunicacao-design", "palladinos-assessoria"]);
+    assert.deepEqual(slugs, ["sabrina-lashes", "radar-da-rima", "yume-moda-disruptiva", "mb-multimarcas-infantil", "sensimilla-records", "orbitamos-portal-tech", "orbicore-gestao", "palladinos-assessoria", "fast-comunicacao-design", "kitcerto", "destaque-multimarcas"]);
+    await expect(catalog.locator('[data-project-variant="lead"]')).toHaveCount(1);
+    await expect(catalog.locator('[data-project-variant="feature"]')).toHaveCount(2);
     for (const card of await cards.all()) {
       await card.scrollIntoViewIfNeeded();
       await card.locator("img").evaluate((img) => img.decode());
@@ -83,6 +101,8 @@ for (const { name, type, ...options } of views) {
     await catalog.evaluate((el) => el.scrollIntoView({ block: "start", behavior: "instant" }));
     await page.screenshot({ path: path.join(output, `${name}-catalog.png`) });
     if (name === "desktop") await catalog.screenshot({ path: path.join(output, "desktop-catalog-full.png") });
+    await catalog.locator('[data-project-variant="compact"]').first().evaluate((el) => scrollTo({ top: el.getBoundingClientRect().top + scrollY - 120, behavior: "instant" }));
+    await page.screenshot({ path: path.join(output, `${name}-other-projects.png`) });
     const search = page.getByLabel("Buscar projeto ou objetivo", { exact: true });
     if (options.viewport.width < 640) {
       assert.equal(await search.evaluate((el) => getComputedStyle(el).fontSize), "16px");
@@ -114,7 +134,7 @@ for (const { name, type, ...options } of views) {
     assert.deepEqual(catalogAxe.violations, []);
     console.log(`${name}: catalog, images, search, category and empty state passed`);
 
-    for (const [slug, title, live] of [["fast-comunicacao-design", "FAST Comunicação e Design", "https://fast-site-five.vercel.app/"], ["palladinos-assessoria", "Palladinos Assessoria", "https://palladinosassessoria.vercel.app/"]]) {
+    for (const [slug, title, live, next] of [["sabrina-lashes", "Sabrina Lashes", "https://salashes-whatsapp-funnel.vercel.app/", "radar-da-rima"], ["radar-da-rima", "Radar da Rima", "https://batalhai.vercel.app/", "yume-moda-disruptiva"], ["yume-moda-disruptiva", "YUME – Moda Disruptiva", "https://yume-atelier.vercel.app/", "mb-multimarcas-infantil"]]) {
       await page.goto(`${base}/projetos/${slug}`, { waitUntil: "load", timeout: 120000 });
       await page.bringToFront();
       if (options.reducedMotion !== "reduce") {
@@ -134,15 +154,16 @@ for (const { name, type, ...options } of views) {
         return rect.top >= 0 && rect.bottom < innerHeight;
       })).toBe(true);
       await expect(page.getByRole("link", { name: "Explorar projeto", exact: true }).first()).toHaveAttribute("href", live);
-      const heroImage = page.locator(`img[src*="case-${slug}"]`).first();
+      const heroImage = page.locator(`img[alt="Interface real do projeto ${title}"]`).first();
       await heroImage.evaluate((img) => img.decode());
+      await expect(page.locator(`a[href="/projetos/${next}"]`)).not.toHaveCount(0);
       await page.evaluate(() => document.fonts.ready);
       await page.waitForTimeout(800);
       if (name === "desktop" || name === "iphone") await page.screenshot({ path: path.join(output, `${name}-${slug}.png`) });
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false, `Case overflow ${name} ${slug}`);
     }
     assert.deepEqual(errors, []);
-    results.push({ name, ticker: true, curatedHome: 6, catalogProjects: 11, uniqueProjects: true, images: true, searchAndCategories: true, emptyRecovery: true, newCases: 2, overflow: false, axeViolations: 0, errors });
+    results.push({ name, ticker: true, curatedHome: 3, catalogProjects: 11, commercialOrder: slugs, uniqueProjects: true, images: true, searchAndCategories: true, emptyRecovery: true, primaryCases: 3, nextCaseOrder: true, overflow: false, axeViolations: 0, errors });
     await context.close();
   } catch (error) {
     if (page && !page.isClosed()) await page.screenshot({ path: path.join(output, `${name}-failure.png`), fullPage: true }).catch(() => {});

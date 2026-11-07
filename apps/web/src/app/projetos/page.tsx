@@ -8,13 +8,14 @@ import ProjetosStats from "@/components/projetos/ProjetosStats";
 import ProjetosFilters from "@/components/projetos/ProjetosFilters";
 import ProjectCard from "@/components/projetos/ProjectCard";
 import ProjetosTestimonials from "@/components/projetos/ProjetosTestimonials";
-import WhatWeBuild from "@/components/projetos/WhatWeBuild";
 import ProjetosCTA from "@/components/projetos/ProjetosCTA";
 import HologramModal from "@/components/projetos/HologramModal";
 import { projetos } from "@/data/projetos";
 import { CATEGORIAS, type Projeto } from "@/types/projeto";
-import { filterProjectCatalog, projectCatalogPresentation, projectCategoryCounts, type ProjectFilter } from "@/lib/projectCatalog";
+import { filterProjectCatalog, orderProjectsForPortfolio, projectCatalogPresentation, projectCategoryCounts, type ProjectFilter } from "@/lib/projectCatalog";
 import s from "@/components/projetos/ProjectCatalog.module.css";
+
+const orderedProjects = orderProjectsForPortfolio(projetos);
 
 function ProjetosContent() {
   const searchParams = useSearchParams();
@@ -57,8 +58,8 @@ function ProjetosContent() {
       <section id="projetos-grid" className={s.catalog} aria-labelledby="project-catalog-title">
         <div className={s.inner}>
           <div className={s.heading}>
-            <h2 id="project-catalog-title">Projetos em detalhe.</h2>
-            <p>Encontre uma referência para o que você quer construir.</p>
+            <h2 id="project-catalog-title">Cada projeto, um contexto.</h2>
+            <p>Conheça o trabalho por trás de um negócio, de uma marca e de uma plataforma.</p>
           </div>
           <div className={s.tools}>
             <label className={s.searchLabel} htmlFor="project-search">Buscar projeto ou objetivo</label>
@@ -71,13 +72,13 @@ function ProjetosContent() {
           </div>
           <div className={s.resultMeta}>
             <p role="status" aria-live="polite"><strong>{filtered.length} {filtered.length === 1 ? "projeto" : "projetos"}</strong>{query || activeFilter !== "todos" ? " encontrados" : " para explorar"}</p>
-            {featured.length > 0 && <span>Novos no portfólio</span>}
+            {featured.length > 0 && <span>Seleção Orbitamos</span>}
           </div>
           <div id="projetos-resultados">
             {featured.length > 0 && <div className={s.featuredGrid} role="group" aria-label="Seleção de projetos">
-              {featured.map((projeto) => <ProjectCard key={projeto.slug} projeto={projeto} featured />)}
+              {featured.map((projeto, index) => <ProjectCard key={projeto.slug} projeto={projeto} variant={index === 0 ? "lead" : "feature"} />)}
             </div>}
-            {featured.length > 0 && remaining.length > 0 && <h3 className={s.collectionHeading}>Mais projetos</h3>}
+            {featured.length > 0 && remaining.length > 0 && <h3 className={s.collectionHeading}>Outras referências</h3>}
             {remaining.length > 0 && <div className={s.grid}>
               {remaining.map((projeto) => <ProjectCard key={projeto.slug} projeto={projeto} />)}
             </div>}
@@ -94,10 +95,7 @@ function ProjetosContent() {
       {/* 4. Depoimentos de clientes */}
       <ProjetosTestimonials />
 
-      {/* 5. Capacidade técnica */}
-      <WhatWeBuild />
-
-      {/* 6. CTA final */}
+      {/* Próximo passo após os cases e depoimentos */}
       <ProjetosCTA />
 
       {/* Hologram overlay */}
@@ -105,7 +103,7 @@ function ProjetosContent() {
         <HologramModal
           key={selectedProjeto.slug}
           projeto={selectedProjeto}
-          projetos={projetos}
+          projetos={orderedProjects}
           onClose={handleCloseModal}
         />
       )}
