@@ -28,6 +28,12 @@ for (const { name, type, ...options } of views) {
     await page.goto(base, { waitUntil: "load", timeout: 120000 });
     await page.bringToFront();
     await page.evaluate(() => document.fonts.ready);
+    const hero = page.locator("main > section").first();
+    await expect(hero.getByRole("heading", { level: 2 })).toHaveText(["Sabrina Lashes", "YUME", "Radar da Rima"]);
+    await expect(hero.locator('a[href="/projetos/destaque-multimarcas"]')).toHaveCount(0);
+    const heroRadar = hero.locator('a[href="/projetos/radar-da-rima"]');
+    await expect(heroRadar).toHaveCount(2);
+    for (const link of await heroRadar.all()) await expect(link.locator("img")).toHaveAttribute("src", "/case-radar-da-rima.jpg");
     const strip = page.locator("[data-home-capabilities]");
     await strip.scrollIntoViewIfNeeded();
     await page.waitForTimeout(1200);

@@ -62,11 +62,11 @@ const heroCases = [
     accent: "from-violet-300 to-fuchsia-300",
   },
   {
-    name: "Destaque Multimarcas",
-    type: "Estoque digital",
-    result: "Filtros e leads",
-    href: "/projetos/destaque-multimarcas",
-    image: "/case-destaque-multimarcas.png",
+    name: "Radar da Rima",
+    type: "Plataforma de eventos",
+    result: "Mapa e gestão de batalhas",
+    href: "/projetos/radar-da-rima",
+    image: "/case-radar-da-rima.jpg",
     accent: "from-amber-200 to-orange-300",
   },
 ];

@@ -27,7 +27,10 @@ posição não implica vendas, tráfego ou adoção verificados.
 
 ### Seleção e apresentação
 
-- **Home:** exatamente YUME, Sabrina Lashes e Radar da Rima, nessa ordem. A
+- **Topo da home:** Sabrina Lashes, YUME e Radar da Rima, nessa ordem. O terceiro
+  card substitui Destaque Multimarcas; `heroCases` em `page.tsx` alimenta as
+  apresentações desktop e mobile. Essa área é distinta da galeria abaixo.
+- **Galeria da home:** exatamente YUME, Sabrina Lashes e Radar da Rima. A
   composição tem imagens e texto direto, sem molduras externas ou chips de
   benefícios com bordas.
 - **Catálogo:** Sabrina abre como case principal, com imagem e narrativa
@@ -58,7 +61,7 @@ Palladinos e FAST seguem como referências secundárias de presença comercial.
 [`projectCatalog.ts`](../apps/web/src/lib/projectCatalog.ts) centraliza a
 curadoria: `orderProjectsForPortfolio` ordena o catálogo sem modificar os dados
 de entrada; projetos novos sem avaliação entram ao final, na ordem recebida.
-`getHomeFeaturedProjects` mantém a seleção própria da home. Busca e filtros
+`getHomeFeaturedProjects` mantém a seleção própria da galeria da home. Busca e filtros
 preservam a ordem comercial; o modal legado e o próximo case usam a mesma
 sequência. Uma seleção ausente não é substituída automaticamente por outro
 projeto.
@@ -90,6 +93,10 @@ home, catálogo, busca, filtros, modal e próxima página, preservando os URLs.
 - ESLint focal sem erros, com quatro avisos de imagens preexistentes na home.
   `next typegen`, TypeScript e build de produção aprovados; 73 páginas
   geradas, mantendo os 11 slugs dos cases.
+- Correção focal após o print do usuário: troca do terceiro card do topo
+  confirmada em 1366×768, WebKit/iPhone 390×844 e 320×740. Ambas as versões
+  do hero usam imagem e link do Radar, sem card de carros ou overflow. A
+  auditoria integrada agora verifica o hero além da galeria.
 
 Capturas e relatório ficam em `apps/web/test-results/commercial-portfolio/`;
 logs locais em `docs/local/2026-11-07-portfolio-*.log`. As capturas da composição

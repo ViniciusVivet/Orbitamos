@@ -104,10 +104,16 @@ contagem usou os 11 projetos do catálogo. Evidências e verificação comercial
 
 ## Seleção comercial da home — 07/11/2026
 
-A home passou a exibir três cases: YUME, Sabrina Lashes / SA Lashes e Radar da
+A galeria de cases da home passou a exibir YUME, Sabrina Lashes / SA Lashes e Radar da
 Rima. A seleção sai de `getHomeFeaturedProjects`, compartilhando os dados e
 slugs do catálogo. A composição usa imagens e textos diretos, com uma ação para
 abrir cada case; molduras externas e chips de benefícios foram retirados.
+
+O topo da home tem outra composição: Sabrina, YUME e Radar. O Radar substitui
+o card de carros na terceira posição, mantendo o mesmo visual e as duas
+primeiras posições. O array `heroCases` alimenta desktop e mobile; a auditoria
+deve verificar essa área além da galeria para não deixar uma seleção antiga
+na primeira dobra.
 
 A mudança responde à curadoria do usuário: Sabrina tem uso no atendimento e
 relação recorrente informados por ele; Radar é uma aposta de produto com
