@@ -56,6 +56,26 @@ os produtos próprios mostram amplitude de implementação. A capa de login do
 OrbiCore não é uma demonstração suficiente para receber o maior destaque.
 Palladinos e FAST seguem como referências secundárias de presença comercial.
 
+### Cenários por categoria — 07/11/2026
+
+A seleção de categoria passa a dirigir o ambiente do topo e do catálogo.
+Órbita, foco, identidade, arquitetura, vitrine e fluxo têm materiais e
+composições próprios, com vídeos de fundo locais e posters de segurança.
+O cenário permanece atrás da lista; a prova comercial continua nas capturas
+reais dos projetos. A [direção dos seis cenários](CENARIOS_CATEGORIAS.md)
+registra os prompts e a procedência das mídias.
+
+O seletor fica acessível sob a navegação principal; há pausa manual, movimento
+reduzido, economia de dados e versões com enquadramento mobile. A escolha
+persiste no URL e funciona com Voltar/Avançar. Busca e categoria combinam-se
+sem reiniciar o cenário. Não há rolagem presa, modal novo ou WebGL concorrendo
+com o vídeo do ambiente.
+
+Cada categoria oferece uma ação ligada ao serviço correspondente. Automações
+continua com zero cases públicos e explica essa ausência, com acesso ao
+serviço. Não há métricas inventadas, promessa de ROI nem conclusão de que a
+animação aumenta conversão. A ordem comercial e os 11 slugs são preservados.
+
 ### Uma ordem compartilhada
 
 [`projectCatalog.ts`](../apps/web/src/lib/projectCatalog.ts) centraliza a

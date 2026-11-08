@@ -175,6 +175,38 @@ opacidade diferente de zero. Conferir a primeira pintura, a opacidade da árvore
 o estado pronto da cena e a captura real; não desativar animações na screenshot
 para mascarar um defeito da experiência normal.
 
+## Cenários de navegação do portfólio — 07/11/2026
+
+A escolha de categoria em `/projetos` muda a matéria e o ambiente completo do
+topo e da lista de cases. Foram dirigidas seis composições: órbita de metal e
+vidro, lâminas convergentes, monólito, módulos conectados, vitrine e fibras de
+automação. O contexto comercial e a ação mudam com a seleção. O plano de sete
+quadros, prompts e procedência estão em [CENARIOS_CATEGORIAS.md](CENARIOS_CATEGORIAS.md).
+
+O objetivo desta aplicação é orientação e exploração, sem prender a rolagem
+ou repetir a travessia longa de um case. Não há nota 10/10 atribuída pela
+presença de vídeo. A avaliação estética final e qualquer ganho comercial
+dependem da experiência do usuário e de medição posterior.
+
+Aprendizados aplicados:
+
+- A categoria precisa chegar ao topo e ao fundo da lista. Alterar somente
+  cards ou miniaturas não atende ao pedido de mudar o ambiente da página.
+- Silhueta, matéria e luz distinguem os temas antes da leitura dos títulos;
+  trocar apenas o gradiente mantém a experiência repetitiva.
+- Um motivo colocado à direita em 16:9 desaparece ao aplicar `cover` central
+  numa tela estreita. A versão retrato precisa de recorte focal próprio;
+  selecionar esse recorte por RAM de um desktop produz proporção errada.
+- Um poster rápido resolve a pintura inicial e a ausência de autoplay. Na
+  troca, manter o último poster carregado até o novo estar pronto evita
+  buracos em conexão lenta; cliques rápidos não devem criar fila de cenas.
+- Proteger a leitura com área negativa e velaturas mantém o movimento
+  visível. Escurecer todo o material até quase preto também perde a direção
+  de arte; a captura real decide o equilíbrio.
+- Um só loop leve e mudo substitui vídeo e WebGL simultâneos. Pausa manual,
+  preferência de movimento reduzido, economia de dados e suspensão fora da
+  área útil fazem parte do acabamento da experiência.
+
 ## Regra de encerramento
 
 Não concluir uma iteração porque o código está sofisticado. Concluir somente depois de capturar e avaliar começo, pontos intermediários, transições e fim em desktop e mobile. Se o efeito só for impressionante em movimento rápido ou depender de explicação, ainda não está pronto.

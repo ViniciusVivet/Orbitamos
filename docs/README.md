@@ -1,6 +1,6 @@
 # Documentação da Orbitamos
 
-Índice revisado em **05/11/2026**.
+Índice revisado em **07/11/2026**.
 
 Os guias abaixo separam o estado implementado, as decisões de produto,
 a operação e os registros históricos. Datas antigas em auditorias são mantidas
@@ -51,6 +51,7 @@ quando descrevem uma execução específica.
 | [INICIO_PROCESSO_ENGENHARIA.md](INICIO_PROCESSO_ENGENHARIA.md) | Seções de engenharia/processo da home e verificações |
 | [PAGINAS_COMERCIAIS.md](PAGINAS_COMERCIAIS.md) | Páginas de serviços, estratégia e registros de entrega |
 | [PORTFOLIO_COMERCIAL.md](PORTFOLIO_COMERCIAL.md) | Curadoria comercial de 07/11, três cases da home, catálogo editorial com busca e histórico das capturas e da faixa |
+| [CENARIOS_CATEGORIAS.md](CENARIOS_CATEGORIAS.md) | Seis cenários do portfólio, direção de arte, prompts, mídia, contexto comercial e validação |
 
 ## Planejamento e histórico
 

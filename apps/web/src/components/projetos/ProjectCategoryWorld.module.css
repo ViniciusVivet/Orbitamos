@@ -1,0 +1,191 @@
+.worldScope {
+  --world-accent: #54d9eb;
+  --world-accent-rgb: 84 217 235;
+  --world-secondary: #9278d8;
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  min-height: 100svh;
+  background: #03070d;
+}
+
+.stage {
+  --world-stage-height: max(380px, calc(100svh - 64px));
+  position: sticky;
+  z-index: 0;
+  top: 64px;
+  height: var(--world-stage-height);
+  margin-bottom: calc(-1 * var(--world-stage-height));
+  overflow: clip;
+  pointer-events: none;
+  background: #03070d;
+}
+
+.content { position: relative; z-index: 1; }
+.frame, .poster, .video, .veil, .edgeFade, .colorField { position: absolute; inset: 0; }
+.frame { overflow: hidden; }
+.poster {
+  display: block;
+  background:
+    radial-gradient(ellipse at 82% 44%, rgb(var(--world-accent-rgb) / .22), transparent 52%),
+    linear-gradient(140deg, #03070d, #111727 65%, #03070d);
+}
+.poster img, .video { width: 100%; height: 100%; object-fit: cover; object-position: var(--world-object-position, 62% 50%); }
+.poster img { display: block; }
+.previous { z-index: 0; }
+.frame:not(.previous) { z-index: 1; }
+.frame[data-poster-pending="true"] { opacity: 0; }
+.frame[data-poster-failed="true"] .poster img { visibility: hidden; }
+.frame[data-entering="true"] { animation: arrive 900ms cubic-bezier(.2,.65,.2,1) both; }
+.video { opacity: 0; transition: opacity 600ms ease; }
+.video[data-ready="true"] { opacity: 1; }
+
+.colorField {
+  z-index: 2;
+  opacity: .2;
+  background: radial-gradient(ellipse at 90% 44%, rgb(var(--world-accent-rgb) / .44), transparent 48%);
+  transition: background 500ms ease;
+}
+
+.motifOne, .motifTwo {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  transform-origin: center;
+}
+
+.motifOne {
+  top: 20%;
+  right: -15%;
+  width: 68vmax;
+  height: 46vmax;
+  border: 1px solid rgb(var(--world-accent-rgb) / .17);
+  border-radius: 50%;
+  transform: rotate(-28deg);
+  animation: orbit 24s ease-in-out infinite alternate;
+}
+
+.motifTwo {
+  right: -18%;
+  bottom: -35%;
+  width: 70vmax;
+  height: 70vmax;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgb(var(--world-accent-rgb) / .1), transparent 65%);
+  animation: breathe 17s ease-in-out infinite alternate;
+}
+
+.worldScope[data-world-category="landing-pages"] .motifOne {
+  top: 3%;
+  right: -14%;
+  height: 64%;
+  width: 90%;
+  border: 0;
+  border-radius: 0;
+  clip-path: polygon(0 44%, 100% 0, 100% 100%, 0 56%);
+  background: linear-gradient(100deg, transparent 8%, rgb(var(--world-accent-rgb) / .09));
+  animation: flow 16s ease-in-out infinite alternate;
+}
+
+.worldScope[data-world-category="sites-institucionais"] .motifOne {
+  top: -10%;
+  right: 9%;
+  width: 28%;
+  height: 125%;
+  border: 1px solid rgb(var(--world-accent-rgb) / .12);
+  border-radius: 42% 42% 8% 8%;
+  background: linear-gradient(115deg, rgb(var(--world-accent-rgb) / .05), transparent 55%);
+  transform: rotate(14deg);
+  animation: breathe 21s ease-in-out infinite alternate;
+}
+
+.worldScope[data-world-category="sistemas-dashboards"] .motifOne {
+  top: 32%;
+  right: -8%;
+  width: 61%;
+  height: 43%;
+  border: 1px solid rgb(var(--world-accent-rgb) / .14);
+  border-radius: 3px;
+  background: linear-gradient(145deg, rgb(var(--world-accent-rgb) / .04), transparent 60%);
+  transform: perspective(900px) rotateX(56deg) rotateZ(-16deg);
+  animation: flow 22s ease-in-out infinite alternate;
+}
+
+.worldScope[data-world-category="ecommerce"] .motifOne {
+  top: 60%;
+  right: -18%;
+  width: 90%;
+  height: 30%;
+  border-color: rgb(var(--world-accent-rgb) / .14);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgb(var(--world-accent-rgb) / .06), transparent 70%);
+  transform: rotate(-14deg);
+  animation: breathe 19s ease-in-out infinite alternate;
+}
+
+.worldScope[data-world-category="automacoes"] .motifOne {
+  top: 15%;
+  right: -14%;
+  width: 82%;
+  height: 72%;
+  border: 1px solid rgb(var(--world-accent-rgb) / .16);
+  border-left-color: transparent;
+  border-bottom-color: transparent;
+  border-radius: 42% 58% 34% 66%;
+  transform: rotate(-18deg);
+  animation: flow 13s ease-in-out infinite alternate;
+}
+
+.veil {
+  z-index: 4;
+  background:
+    linear-gradient(90deg, #03070eea 0%, #03070ec9 28%, #03070e91 61%, #03070e54 100%),
+    linear-gradient(180deg, #03070e24, #03070e14 44%, #03070e96 100%);
+}
+
+.edgeFade {
+  z-index: 5;
+  background: linear-gradient(180deg, #03070d36, transparent 12%, transparent 88%, #03070d);
+}
+
+.worldScope[data-world-motion="paused"] :is(.motifOne, .motifTwo),
+.worldScope[data-world-motion="static"] :is(.motifOne, .motifTwo) { animation-play-state: paused; }
+.worldScope[data-world-motion="static"] [data-world-pause-control] { display: none; }
+
+@keyframes arrive {
+  from { opacity: 0; transform: scale(1.035) translate3d(1.2%, 0, 0); }
+  to { opacity: 1; transform: scale(1) translate3d(0, 0, 0); }
+}
+@keyframes orbit {
+  from { translate: 0 0; rotate: -3deg; }
+  to { translate: -2.4% 2%; rotate: 4deg; }
+}
+@keyframes flow {
+  from { translate: 0 -1%; opacity: .5; }
+  to { translate: -3% 2%; opacity: 1; }
+}
+@keyframes breathe {
+  from { translate: 0 -1%; scale: .98; opacity: .55; }
+  to { translate: -1% 2%; scale: 1.03; opacity: 1; }
+}
+
+@media (max-width: 767px) {
+  .stage { --world-stage-height: max(340px, calc(100svh - 64px)); }
+  .poster img, .video { object-position: 50% 50%; }
+  .motifOne { width: 94vmax; right: -76%; }
+  .motifTwo { width: 94vmax; right: -78%; bottom: -20%; }
+  .veil {
+    background:
+      linear-gradient(180deg, #03070e69 0%, #03070e8c 42%, #03070eb8 100%),
+      linear-gradient(90deg, #03070eb3, #03070e45);
+  }
+  .worldScope[data-world-category="sites-institucionais"] .motifOne { width: 62%; right: -15%; }
+  .worldScope[data-world-category="sistemas-dashboards"] .motifOne { width: 95%; right: -22%; }
+  .worldScope[data-world-category="ecommerce"] .motifOne { width: 125%; right: -40%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame[data-entering="true"] { animation: none; }
+  .motifOne, .motifTwo { animation: none; }
+  .video, .colorField { transition: none; }
+}
