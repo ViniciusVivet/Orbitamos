@@ -19,6 +19,7 @@ const categories = [
 const profiles = [
   { name: "desktop", type: chromium, viewport: { width: 1440, height: 1000 }, reducedMotion: "no-preference" },
   { name: "notebook", type: chromium, viewport: { width: 1280, height: 600 }, reducedMotion: "no-preference" },
+  { name: "notebook-1366", type: chromium, viewport: { width: 1366, height: 600 }, reducedMotion: "no-preference" },
   { name: "iphone", type: webkit, ...devices["iPhone 13"], viewport: { width: 390, height: 844 }, reducedMotion: "no-preference" },
   { name: "tablet", type: chromium, viewport: { width: 820, height: 1180 }, reducedMotion: "no-preference" },
   { name: "compact-reduced", type: chromium, viewport: { width: 320, height: 740 }, reducedMotion: "reduce" },
@@ -44,6 +45,21 @@ for (const { name, type, ...options } of profiles.filter(profile => !selectedPro
     if (options.viewport.width < 1024) await page.getByLabel("Tipo de projeto", { exact: true }).selectOption(id);
     else await page.getByRole("group", { name: "Filtrar projetos por tipo" }).getByRole("button", { name: label, exact: true }).click();
   };
+  const foldGeometry = async locator => locator.evaluate(el => {
+    const rect = el.getBoundingClientRect();
+    const dockBottom = document.querySelector("[data-project-category-dock]")?.getBoundingClientRect().bottom ?? 0;
+    let opaque = true;
+    for (let node = el; node; node = node.parentElement) {
+      const style = getComputedStyle(node);
+      if (Number(style.opacity) < .98 || style.visibility === "hidden") opaque = false;
+    }
+    const inside = rect.top >= dockBottom - 1 && rect.bottom <= innerHeight + 1 && rect.left >= -1 && rect.right <= innerWidth + 1;
+    const unobstructed = inside && [.1, .5, .9].every(fraction => {
+      const hit = document.elementFromPoint(rect.left + rect.width * fraction, rect.top + rect.height / 2);
+      return Boolean(hit && (hit === el || el.contains(hit)));
+    });
+    return { top: rect.top, bottom: rect.bottom, height: rect.height, dockBottom, viewport: innerHeight, opaque, inside, unobstructed };
+  });
   try {
     await page.goto(`${base}/projetos`, { waitUntil: "load", timeout: 120000 });
     await page.bringToFront();
@@ -64,6 +80,10 @@ for (const { name, type, ...options } of profiles.filter(profile => !selectedPro
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
       if (count !== undefined) await expect(cards).toHaveCount(count);
       await expect.poll(() => world.locator("[data-world-frame]").count()).toBe(1);
+      // Category choice must reveal actual work in the initial viewport, not
+      // merely shorten a CSS min-height or move a hidden anchor.
+      await page.evaluate(() => scrollTo({ top: 0, behavior: "instant" }));
+      await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
       await expect(world.locator("picture img")).toHaveCount(1);
       await world.locator("picture img").evaluate(img => img.decode());
       assert.ok(await world.locator("picture img").evaluate(img => img.naturalWidth > 0));
@@ -76,15 +96,38 @@ for (const { name, type, ...options } of profiles.filter(profile => !selectedPro
         await expect(world).toHaveAttribute("data-world-resource", options.viewport.width < 768 ? "mobile" : "desktop");
       }
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false, `Overflow ${name}/${id}`);
-      const headingGeometry = await page.getByRole("heading", { level: 1 }).evaluate(el => {
-        const r = el.getBoundingClientRect();
-        let opaque = true;
-        for (let node = el; node; node = node.parentElement) if (Number(getComputedStyle(node).opacity) < .98) opaque = false;
-        return { top: r.top, bottom: r.bottom, opaque, viewport: innerHeight };
-      });
-      assert.ok(headingGeometry.opaque && headingGeometry.top >= 64 && headingGeometry.bottom < headingGeometry.viewport, `Heading clipped ${name}/${id}`);
+      await expect.poll(() => page.locator("[data-project-category-hero]").evaluate(el => el.getAnimations({ subtree: true }).every(animation => animation.playState !== "running"))).toBe(true);
+      const headingGeometry = await foldGeometry(page.getByRole("heading", { level: 1 }));
+      assert.ok(headingGeometry.opaque && headingGeometry.inside && headingGeometry.unobstructed, `Heading obstructed ${name}/${id}: ${JSON.stringify(headingGeometry)}`);
+      const ctaGeometry = await foldGeometry(page.locator("[data-project-category-hero]").getByRole("link").first());
+      assert.ok(ctaGeometry.opaque && ctaGeometry.inside && ctaGeometry.unobstructed, `Primary action obstructed ${name}/${id}: ${JSON.stringify(ctaGeometry)}`);
+      let firstProof;
+      if (id === "automacoes") {
+        assert.ok(!new URL(page.url()).searchParams.get("q"), "The no-case category is checked before any search");
+        const empty = page.locator("[data-automation-empty]");
+        await expect(empty.getByRole("heading", { name: "Ainda não há um case público de automação nesta seleção.", exact: true })).toBeVisible();
+        const bandGeometry = await foldGeometry(empty);
+        const recoveryGeometry = await foldGeometry(empty.getByRole("button", { name: "Ver todos os projetos", exact: true }));
+        assert.ok(bandGeometry.opaque && bandGeometry.inside, `Automation explanation below first fold ${name}: ${JSON.stringify(bandGeometry)}`);
+        assert.ok(recoveryGeometry.opaque && recoveryGeometry.inside && recoveryGeometry.unobstructed, `Automation recovery below first fold ${name}: ${JSON.stringify(recoveryGeometry)}`);
+        firstProof = { emptyState: bandGeometry, recovery: recoveryGeometry };
+      } else {
+        const firstCard = cards.first();
+        const preview = firstCard.locator("img");
+        await preview.evaluate(img => img.decode());
+        assert.ok(await preview.evaluate(img => img.naturalWidth > 0), `First project image failed ${name}/${id}`);
+        const previewGeometry = await foldGeometry(preview);
+        const visiblePixels = Math.max(0, Math.min(previewGeometry.bottom, previewGeometry.viewport) - Math.max(previewGeometry.top, previewGeometry.dockBottom));
+        // Large previews must expose meaningful media. A smaller editorial
+        // thumbnail must be fully visible rather than enlarged just for a test.
+        const requiredPixels = Math.min(options.viewport.width < 768 ? 80 : 100, previewGeometry.height);
+        assert.ok(previewGeometry.opaque && visiblePixels + 1 >= requiredPixels, `First project needs scrolling ${name}/${id}: ${JSON.stringify({ ...previewGeometry, visiblePixels, requiredPixels })}`);
+        const titleGeometry = await foldGeometry(firstCard.getByRole("heading", { level: 3 }));
+        assert.ok(titleGeometry.opaque && titleGeometry.inside && titleGeometry.unobstructed, `First project title needs scrolling ${name}/${id}: ${JSON.stringify(titleGeometry)}`);
+        firstProof = { preview: previewGeometry, visiblePixels, requiredPixels, title: titleGeometry };
+      }
       await page.screenshot({ path: path.join(output, `${name}-${id}.png`) });
-      states.push({ category: id, projects: await cards.count(), resource: await world.getAttribute("data-world-resource"), motion: await world.getAttribute("data-world-motion") });
+      states.push({ category: id, projects: await cards.count(), resource: await world.getAttribute("data-world-resource"), motion: await world.getAttribute("data-world-motion"), firstFold: { heading: headingGeometry, action: ctaGeometry, ...firstProof } });
     }
     await expect(page.getByText("Ainda não há um case público de automação nesta seleção.", { exact: true })).toBeVisible();
     if (options.reducedMotion !== "reduce") {

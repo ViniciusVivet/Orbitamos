@@ -1,20 +1,23 @@
 .catalog {
   background: transparent;
-  padding: 32px 0 88px;
-  scroll-margin-top: 164px;
+  padding: 20px 0 88px;
+  scroll-margin-top: 148px;
 }
 .inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
-.heading { display: flex; align-items: end; justify-content: space-between; gap: 32px; margin-bottom: 32px; }
-.heading h2 { max-width: 680px; color: #f2f4f8; font-size: clamp(30px, 3.3vw, 46px); font-weight: 600; line-height: 1.08; letter-spacing: -.045em; text-wrap: balance; }
-.heading > p { max-width: 330px; color: #a6b0bd; font-size: 14px; line-height: 1.7; }
-.tools { padding: 24px 0 18px; }
-.searchLabel { display: block; color: #c0cad7; font-size: 12px; }
-.search { position: relative; max-width: 480px; margin-top: 9px; }
-.search > svg { position: absolute; left: 15px; top: 15px; width: 18px; height: 18px; color: #95a4b7; pointer-events: none; }
-.search input { display: block; width: 100%; min-width: 0; min-height: 48px; padding: 10px 48px 10px 44px; border: 1px solid #ffffff29; border-radius: 6px; background: #ffffff03; color: #f2f4f8; font-size: 14px; }
+.catalogToolbar { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+.catalogToolbar[data-automation-toolbar="true"] { height: 0; margin: 0; }
+.catalogToolbar[data-automation-toolbar="true"] :is(.tools, .resultMeta) { display: none; }
+.catalogToolbar[data-automation-toolbar="true"] h2 { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 18px; }
+.heading h2 { color: #f2f4f8; font-size: 26px; font-weight: 600; line-height: 1.15; letter-spacing: -.035em; }
+.tools { flex: 0 1 340px; min-width: 220px; }
+.searchLabel { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.search { position: relative; }
+.search > svg { position: absolute; left: 15px; top: 13px; width: 18px; height: 18px; color: #95a4b7; pointer-events: none; }
+.search input { display: block; width: 100%; min-width: 0; min-height: 44px; padding: 10px 48px 10px 44px; border: 1px solid #ffffff29; border-radius: 6px; background: #03070d66; color: #f2f4f8; font-size: 14px; }
 .search input::placeholder { color: #8995a7; }
 .search input::-webkit-search-cancel-button { display: none; }
-.search button { position: absolute; right: 2px; top: 2px; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 4px; color: #b9c6d8; }
+.search button { position: absolute; right: 0; top: 0; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 4px; color: #b9c6d8; }
 .search button:hover { background: #ffffff0e; }
 .mobileFilter { display: none; }
 .filters { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 16px; }
@@ -23,7 +26,7 @@
 .filter:hover { color: #f2f4f8; }
 .filter[aria-pressed="true"] { border-color: var(--project-accent, #8fe5ef); color: var(--project-accent, #b2eef4); }
 .filter[aria-pressed="true"] > span { color: #9ac5d1; }
-.resultMeta { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 32px; padding-top: 24px; border-top: 1px solid #ffffff1c; color: #9aabba; font-size: 12px; }
+.resultMeta { color: #a6b6c6; font-size: 12px; line-height: 1.6; }
 .resultMeta strong { color: #e0e8f1; font-weight: 550; }
 .resultMeta > span { color: var(--project-accent, #84bdc8); }
 .featuredGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 60px 40px; }
@@ -81,7 +84,7 @@
 .catalog :is(a, button, input, select):focus-visible, .homeGrid a:focus-visible { outline: 3px solid #98e1ea; outline-offset: 5px; }
 .filterDock .filters { margin-top: 0; gap: 4px 20px; }
 .filterDock .mobileFilter { margin-top: 0; }
-.filterDock .mobileFilter label { display: block; margin-bottom: 6px; color: #c0cad7; font-size: 11px; }
+.filterDock .mobileFilter label { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .filterDock .mobileFilter select { width: 100%; min-height: 44px; padding: 9px 12px; border: 1px solid #ffffff29; border-radius: 6px; background: #101721; color: #e5edf7; font-size: 16px; }
 .filterDock :is(button, select):focus-visible { outline: 3px solid var(--project-accent, #98e1ea); outline-offset: 4px; }
 .facts { border-bottom: 1px solid #ffffff16; background: #070c13; }
@@ -94,8 +97,7 @@
 @media (max-width: 1023px) {
   .filterDock .filters { display: none; }
   .filterDock .mobileFilter { display: block; }
-  .heading { align-items: start; flex-direction: column; gap: 16px; }
-  .heading > p { max-width: 600px; }
+  .heading { gap: 6px 14px; }
   .grid { grid-template-columns: minmax(0, 1fr); }
   .compact .primary { grid-template-columns: 180px minmax(0, 1fr); }
   .compact .summary { max-width: 520px; }
@@ -113,20 +115,23 @@
   .lead .image, .feature .image { aspect-ratio: 16 / 10; }
 }
 @media (max-width: 639px) {
-  .catalog { padding: 28px 0 52px; scroll-margin-top: 178px; }
+  .catalog { padding: 12px 0 52px; scroll-margin-top: 148px; }
   .inner { padding: 0 20px; }
-  .heading { margin-bottom: 16px; }
-  .heading h2 { font-size: 31px; }
-  .heading > p { font-size: 13px; }
-  .tools { padding: 16px 0 20px; }
+  .catalogToolbar { flex-direction: column; align-items: stretch; gap: 10px; margin-bottom: 16px; }
+  .heading { align-items: baseline; justify-content: space-between; gap: 8px; }
+  .heading h2 { font-size: 23px; }
+  .tools { flex: auto; min-width: 0; }
   .filters { display: none; }
   .mobileFilter { display: block; margin-top: 14px; }
   .mobileFilter label { display: block; margin-bottom: 8px; color: #c0cad7; font-size: 12px; }
   .mobileFilter select { width: 100%; min-height: 44px; padding: 9px 12px; border: 1px solid #ffffff29; border-radius: 6px; background: #101721; color: #e5edf7; }
   .search input, .mobileFilter select { font-size: 16px; }
-  .resultMeta { margin-bottom: 28px; padding-top: 18px; }
+  .resultMeta { font-size: 11px; }
   .meta { font-size: 10px; }
   .body { padding-top: 18px; }
+  .lead .body { padding-top: 16px; }
+  .lead .meta { margin-bottom: 8px; }
+  .lead .title { display: inline-flex; max-width: 100%; }
   .feature .title { font-size: 28px; }
   .feature .summary { font-size: 18px; }
   .detail { font-size: 13px; }

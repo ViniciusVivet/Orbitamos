@@ -78,6 +78,14 @@ animação aumenta conversão. A ordem comercial e os 11 slugs são preservados.
 
 ### Uma ordem compartilhada
 
+**Refino de 08/11/2026:** a apresentação das categorias foi compactada para
+expor os cases na primeira dobra. Título e contexto/CTA dividem o desktop;
+busca e contagem ficam numa única faixa de catálogo. No celular, o topo é
+empilhado com menos etapas visuais. Os vídeos, a ordem comercial, as imagens
+reais e os destinos dos serviços permanecem. O estado de Automações sem case
+público foi condensado numa faixa com acesso aos outros projetos. Metas e
+verificação estão em [CENARIOS_CATEGORIAS.md](CENARIOS_CATEGORIAS.md).
+
 [`projectCatalog.ts`](../apps/web/src/lib/projectCatalog.ts) centraliza a
 curadoria: `orderProjectsForPortfolio` ordena o catálogo sem modificar os dados
 de entrada; projetos novos sem avaliação entram ao final, na ordem recebida.

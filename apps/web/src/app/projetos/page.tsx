@@ -1,10 +1,9 @@
 "use client";
 
 import { Suspense, useCallback, useMemo, useRef, useState } from "react";
-import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight, Pause, Play, Search, SearchX, Workflow, X } from "lucide-react";
+import { Pause, Play, Search, SearchX, Workflow, X } from "lucide-react";
 import ProjetosHero from "@/components/projetos/ProjetosHero";
 import ProjetosFilters from "@/components/projetos/ProjetosFilters";
 import ProjectCategoryWorld from "@/components/projetos/ProjectCategoryWorld";
@@ -128,24 +127,23 @@ function ProjetosContent() {
           </div>
         </div>
 
-        <ProjetosHero environment={environment} projectCount={categoryTotals[activeFilter]} />
+        <ProjetosHero environment={environment} />
 
         <section ref={catalogRef} id="projetos-grid" className={s.catalog} aria-labelledby="project-catalog-title">
           <div className={s.inner}>
-            <div className={s.heading}>
-              <h2 id="project-catalog-title">Cada projeto, um contexto.</h2>
-            </div>
-            <div className={s.tools}>
-              <label className={s.searchLabel} htmlFor="project-search">Buscar projeto ou objetivo</label>
-              <div className={s.search}>
-                <Search aria-hidden="true" />
-                <input id="project-search" type="search" value={query} onChange={(event) => handleQuery(event.target.value)} placeholder="Ex.: loja, moda, sistema" autoComplete="off" aria-controls="projetos-resultados" />
-                {query && <button type="button" onClick={() => handleQuery("")} aria-label="Limpar busca"><X size={17} aria-hidden="true" /></button>}
+            <div className={s.catalogToolbar} data-automation-toolbar={automationWithoutPublicCase && !query}>
+              <div className={s.heading}>
+                <h2 id="project-catalog-title">Projetos</h2>
+                <p className={s.resultMeta} role="status" aria-live="polite"><strong>{filtered.length} {filtered.length === 1 ? "projeto" : "projetos"}</strong>{query || activeFilter !== "todos" ? filtered.length === 1 ? " encontrado" : " encontrados" : " para explorar"}</p>
               </div>
-            </div>
-            <div className={s.resultMeta}>
-              <p role="status" aria-live="polite"><strong>{filtered.length} {filtered.length === 1 ? "projeto" : "projetos"}</strong>{query || activeFilter !== "todos" ? filtered.length === 1 ? " encontrado" : " encontrados" : " para explorar"}</p>
-              {featured.length > 0 && <span>Seleção Orbitamos</span>}
+              <div className={s.tools}>
+                <label className={s.searchLabel} htmlFor="project-search">Buscar projeto ou objetivo</label>
+                <div className={s.search}>
+                  <Search aria-hidden="true" />
+                  <input id="project-search" type="search" value={query} onChange={(event) => handleQuery(event.target.value)} placeholder="Buscar projetos" autoComplete="off" aria-controls="projetos-resultados" />
+                  {query && <button type="button" onClick={() => handleQuery("")} aria-label="Limpar busca"><X size={17} aria-hidden="true" /></button>}
+                </div>
+              </div>
             </div>
             <div id="projetos-resultados">
               {featured.length > 0 && <div className={s.featuredGrid} role="group" aria-label="Seleção de projetos">
@@ -157,9 +155,10 @@ function ProjetosContent() {
               </div>}
               {filtered.length === 0 && (automationWithoutPublicCase ? <div className={`${s.empty} ${layout.automationEmpty}`} data-automation-empty>
                 <Workflow aria-hidden="true" />
-                <h3>Ainda não há um case público de automação nesta seleção.</h3>
-                <p>O serviço está disponível. Conte qual rotina você quer conectar para avaliarmos ferramentas, etapas e escopo.</p>
-                <Link href={environment.ctaHref} className={layout.emptyServiceLink}>Conhecer o serviço <ArrowRight size={16} aria-hidden="true" /></Link>
+                <div>
+                  <h3>Ainda não há um case público de automação nesta seleção.</h3>
+                  <p>Conte qual rotina quer conectar pelo botão acima ou conheça os outros projetos.</p>
+                </div>
                 <button type="button" onClick={resetCatalog}>Ver todos os projetos</button>
               </div> : <div className={s.empty}>
                 <SearchX aria-hidden="true" />

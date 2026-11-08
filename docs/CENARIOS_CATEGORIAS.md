@@ -286,3 +286,53 @@ Tamanho dos arquivos e reprodução real foram conferidos; não houve medição
 de FPS ou bateria em aparelho modesto. A conferência remota de deploy ocorre
 após o push, pelos status do GitHub/Vercel e pela página pública; as evidências
 acima descrevem o escopo local.
+
+## Primeira dobra mais curta — 08/11/2026
+
+O usuário aprovou as cenas e o minimalismo, mas pediu acesso mais cedo aos
+projetos. A altura de abertura deixava a prova comercial depois do primeiro
+scroll, sobretudo em notebooks. O cenário continua ocupando o fundo da área
+de exploração; a apresentação deixa de consumir uma tela antes dos cases.
+
+No desktop, título e contexto/CTA dividem uma faixa em duas colunas. No
+celular, continuam empilhados, com título de 32 px, descrição legível e ação
+de pelo menos 44 px. Categoria, título, descrição e destino comercial são os
+mesmos. A contagem foi concentrada junto do catálogo, e a busca ocupa a mesma
+faixa no desktop. Os rótulos de busca e do seletor nativo continuam associados
+aos campos para leitores de tela; os campos mobile mantêm 16 px.
+
+Automações continua sem case público. Um aviso curto e a recuperação dos
+outros projetos aparecem logo após a apresentação; o CTA do serviço permanece
+no topo. Não foram inseridos cases fictícios para preencher essa categoria.
+
+A auditoria de interface agora mede a primeira dobra com scroll zero em cada
+categoria: título e CTA desobstruídos, primeira imagem carregada com área útil
+visível e nome do primeiro case dentro da viewport. Miniaturas compactas
+precisam aparecer inteiras; imagens maiores precisam expor pelo menos 100 px
+no desktop ou 80 px no celular. Em Automações, a explicação e a ação de
+recuperação devem caber na abertura. O perfil 1366×600 reproduz a área útil
+aproximada do print enviado pelo usuário.
+
+Verificação de 08/11 concluída:
+
+- 36 estados de categoria em seis tamanhos: 1440×1000, 1280×600, 1366×600,
+  820×1180, WebKit/iPhone em 390×844 e 320×740 com movimento reduzido.
+  iPhone e 320 px foram repetidos no build de produção local para conferir
+  ordenação do CSS e o encaixe com os controles flutuantes reais, sem a
+  sobreposição das ferramentas do servidor de desenvolvimento.
+- No desktop e nos notebooks, a primeira imagem inicia entre 383 e 411 px;
+  no iPhone simulado, entre 481 e 503 px; em 320 px, entre 481 e 528 px.
+  As cinco categorias com cases exibem imagem e nome do primeiro projeto sem
+  rolar. A faixa de Automações e sua recuperação também cabem na abertura.
+- Busca, URL, Voltar/Avançar, pausa entre categorias, posters de fallback e
+  os links legados continuam aprovados. Os 11 projetos e a curadoria foram
+  preservados. Sem overflow ou erros de página; zero violações Axe no escopo
+  auditado. Não é uma certificação de acessibilidade de todo o site.
+- ESLint focal, TypeScript e build de 73 páginas aprovados. Os mesmos avisos
+  não bloqueantes de Browserslist e tracing dos materiais de curso permanecem
+  fora do escopo desta mudança.
+
+O relatório local desta rodada foi preservado em
+`docs/local/project-fold-20261108/audit-report.json`. As mídias não foram
+regeneradas nem substituídas; esta intervenção altera a composição do topo e
+dos controles, sem adicionar serviços ou requisições ao Supabase.

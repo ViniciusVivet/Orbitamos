@@ -207,6 +207,20 @@ Aprendizados aplicados:
   preferência de movimento reduzido, economia de dados e suspensão fora da
   área útil fazem parte do acabamento da experiência.
 
+## Prova comercial na abertura — 08/11/2026
+
+Depois da aprovação dos cenários de categoria, o usuário pediu que os projetos
+aparecessem antes do primeiro scroll. A composição passou a distribuir título
+e ação horizontalmente no desktop, com um fluxo curto no celular. O cenário
+continua atrás do catálogo: encurtar o texto não exige encerrar o ambiente.
+
+Aprendizado: medir a soma de navegação, filtros, apresentação, heading, busca e
+contagem. Reduzir apenas o `min-height` do hero deixa o catálogo abaixo da
+dobra se os controles continuam empilhados. A primeira captura deve mostrar
+prova real e uma ação clara, com tipografia e alvos de toque preservados.
+O critério de passagem é área visível de uma imagem real e título do case
+legível com scroll zero, incluindo notebook baixo e celular estreito.
+
 ## Regra de encerramento
 
 Não concluir uma iteração porque o código está sofisticado. Concluir somente depois de capturar e avaliar começo, pontos intermediários, transições e fim em desktop e mobile. Se o efeito só for impressionante em movimento rápido ou depender de explicação, ainda não está pronto.
