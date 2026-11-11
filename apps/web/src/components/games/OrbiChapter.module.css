@@ -139,6 +139,24 @@
   color:#a7c2bc;
   margin-top:15px
 }
+.workshopEntry {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-height:44px;
+  margin-top:12px;
+  color:#f0d4a4;
+  font-size:13px;
+  font-weight:650;
+  text-align:left;
+}
+.workshopEntry > span {
+  font-size:8px;
+  letter-spacing:.08em;
+  border:1px solid #e7c88b55;
+  padding:5px;
+  border-radius:4px;
+}
 .intro .history {
   font-size:11px;
   line-height:1.5;

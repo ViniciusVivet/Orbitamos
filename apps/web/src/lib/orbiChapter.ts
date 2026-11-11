@@ -163,11 +163,15 @@ export function chapterPlatforms(mission: ChapterMissionId, program: ChapterProg
 export type ChapterBody = { x: number; y: number; vx: number; vy: number; grounded: boolean; coyote: number; jumpBuffer: number; facing: -1 | 1; support: string | null };
 export const initialChapterBody = (checkpoint = false): ChapterBody => ({ x: checkpoint ? 510 : 100, y: CHAPTER_GROUND - CHAPTER_PLAYER_HEIGHT, vx: 0, vy: 0, grounded: true, coyote: .12, jumpBuffer: 0, facing: 1, support: "start" });
 export type ChapterInput = { direction: -1 | 0 | 1; jump: boolean };
-export function stepChapterBody(body: ChapterBody, input: ChapterInput, mission: ChapterMissionId, program: ChapterProgram | null, time: number, seconds: number): ChapterBody {
+export function stepChapterBody(body: ChapterBody, input: ChapterInput, mission: ChapterMissionId, program: ChapterProgram | null, time: number, seconds: number, platformsOverride?: readonly ChapterPlatform[]): ChapterBody {
   const dt = Math.max(0, Math.min(seconds, 1 / 30)); if (!dt) return body;
   const next = { ...body, coyote: body.grounded ? .13 : Math.max(0, body.coyote - dt), jumpBuffer: input.jump ? .15 : Math.max(0, body.jumpBuffer - dt) };
-  const platforms = chapterPlatforms(mission, program, time);
-  if (body.support === "lift") { const oldLift = chapterPlatforms(mission, program, time - dt).find(item => item.id === "lift"); const lift = platforms.find(item => item.id === "lift"); if (oldLift && lift) next.y += lift.y - oldLift.y; }
+  const platforms = platformsOverride ?? chapterPlatforms(mission, program, time);
+  if (body.support === "lift") {
+    const lift = platforms.find(item => item.id === "lift");
+    const previousY = 500 - (program?.lift ?? 50) * (1 - Math.cos((time - dt) * .92)) / 2;
+    if (lift) next.y += lift.y - previousY;
+  }
   const target = input.direction * 270, acceleration = body.grounded ? 2200 : 1450;
   next.vx += Math.max(-acceleration * dt, Math.min(acceleration * dt, target - next.vx));
   if (input.direction) next.facing = input.direction;

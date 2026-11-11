@@ -30,7 +30,7 @@ for (const profile of profiles) {
   await expect(stage).toHaveAttribute("data-player-x",/\d+/);
   await stage.focus();
   await page.keyboard.down("ArrowRight");
-  try { await expect.poll(x,{timeout:20000,intervals:[30]}).toBeGreaterThanOrEqual(target); }
+  try { await expect.poll(async()=>await x()>=target || await root.getAttribute("data-game-status")==="arrived",{timeout:20000,intervals:[30]}).toBe(true); }
   finally { await page.keyboard.up("ArrowRight"); }
  };
  const jump=async()=>{await stage.focus();await page.keyboard.press("Space");};

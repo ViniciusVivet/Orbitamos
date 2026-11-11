@@ -1,0 +1,44 @@
+.workshop { --mint: #b0e8d6; }
+.intro { min-height: 510px; }
+.introSentinel { position: absolute; right: 3%; top: 12%; width: 300px; height: 300px; background: url('/images/games/orbi-chapter/sentinel-sheet-v1.webp') 0 0 / 1200px 600px no-repeat; filter: drop-shadow(0 20px 22px #071c2c99); }
+.introOrbi { position: absolute; right: 23%; bottom: 3%; width: 180px; height: 180px; background: url('/images/games/orbi-chapter/orbi-sheet-v1.webp') 0 0 / 720px 360px no-repeat; filter: drop-shadow(0 12px 18px #071c2c99); }
+.hud { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 24px; margin-bottom: 12px; padding: 11px 15px; border: 1px solid #a4d4c324; border-radius: 12px; color: #b8d1cb; background: #0c2633; font-size: 12px; }
+.hud > span { display: inline-flex; align-items: center; gap: 7px; }
+.hud strong { color: #f1e9d9; font-weight: 650; }
+.hud .equipment { margin-left: auto; }
+.hud .recharge { display: block; flex: 0 0 90px; height: 6px; overflow: hidden; border-radius: 10px; background: #041822; }
+.recharge i { display: block; height: 100%; background: #b4ead5; transition: width 100ms linear; }
+.controls .fire { padding: 0 20px; background: #caa17c24; border-color: #e5c48c80; color: #ffe3b3; }
+.route { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.orientation { color: #c6bda8; font-size: 12px; line-height: 1.7; margin-top: 0; }
+.codeMap { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; color: #a7c2b8; font-size: 12px; line-height: 1.6; }
+.codeMap span { display: flex; flex-direction: column; gap: 4px; }
+.codeMap strong { font-family: monospace; font-weight: 650; color: #c4eddc; }
+.catalogLink { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 18px; color: #9ccfc0; font-size: 12px; }
+@media(max-width: 900px) {
+  .introSentinel { right: 0; width: 240px; height: 240px; background-size: 960px 480px; }
+  .introOrbi { right: 12%; width: 155px; height: 155px; background-size: 620px 310px; }
+}
+@media(max-width: 700px) {
+  .workshop .intro { min-height: 620px; }
+  .intro > div:last-child { padding-bottom: 230px; }
+  .introSentinel { top: auto; bottom: 6%; right: 0; width: 210px; height: 210px; background-size: 840px 420px; }
+  .introOrbi { right: 39%; bottom: 1%; width: 150px; height: 150px; background-size: 600px 300px; }
+  .hud { gap: 8px 18px; padding: 10px; font-size: 11px; }
+  .hud .equipment { margin-left: 0; }
+  .hud .recharge { flex: 1; min-width: 60px; }
+  .controls { grid-template-columns: auto minmax(52px, 1fr) minmax(54px, 1fr) 44px !important; gap: 7px; }
+  .controls .fire { padding: 0 9px; gap: 5px; }
+  .controls > button:last-child { padding: 0 !important; min-width: 44px; }
+  .controls > button:last-child span { display: none; }
+  .route { grid-template-columns: 1fr; }
+}
+@media(max-width: 380px) {
+  .controls { gap: 5px; grid-template-columns: 93px minmax(48px, 1fr) minmax(48px, 1fr) 44px !important; }
+  .controls .fire { padding: 0 5px; }
+  .controls .fire span { display: none; }
+  .introSentinel { width: 190px; height: 190px; background-size: 760px 380px; }
+  .introOrbi { right: 41%; width: 125px; height: 125px; background-size: 500px 250px; }
+  .codeMap { grid-template-columns: 1fr; gap: 8px; }
+}
+@media(prefers-reduced-motion: reduce) { .recharge i { transition: none; } }

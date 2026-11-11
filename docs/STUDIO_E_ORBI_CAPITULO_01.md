@@ -135,3 +135,34 @@ os PNGs, com alpha e grades preservados. A captura real do catálogo é
 `apps/web/public/images/jogos/entrega-orbi-v2.webp` (~112 KB).
 
 O identificador do commit e o status da publicação ficam no relatório de entrega.
+
+## Continuação de 11/11/2026 — Oficina do Pulso
+
+O registro de 04/11 acima continua descrevendo a entrega original. A rodada
+atual implementa uma aventura opcional dentro da Entrega do Orbi, com duas
+rotas: programar o alcance do pulso de reparo e reduzir a recarga para vencer
+a regeneração do escudo das sentinelas. A consequência aparece no cenário:
+disparos, reparo dos robôs e abertura das passagens.
+
+As três entregas, o save `orbitamos-orbi-chapter-v2-<conta>` e seu contrato de
+conclusão/XP permanecem separados. A Oficina usa
+`orbitamos-orbi-pulse-v1-<conta>`, com rascunhos, tentativas e conquistas locais
+próprios; não premia XP da atividade antiga. Concluir uma rota exige programa
+aplicado, três reparos e chegada física à oficina.
+
+A entrada local é
+`/dev/academy-preview?activity=delivery#oficina-do-pulso`. No fluxo publicado,
+a entrada fica dentro de `/estudante/jogos/entregas-do-orbi`; a implementação
+não comprova que a nova versão já foi publicada.
+
+O plano de evolução por blocos, para 16 ou mais sessões, as decisões de
+compatibilidade, a arte e o ponto de continuidade estão em
+[EVOLUCAO_ENTREGA_ORBI.md](EVOLUCAO_ENTREGA_ORBI.md). Os comandos focais e o
+roteiro `audit-orbi-pulse.mjs` estão em
+[TESTES_AUTOMATIZADOS.md](TESTES_AUTOMATIZADOS.md#oficina-do-pulso--implementação-de-11112026).
+Em 11/11, as duas rotas passaram no desktop, WebKit/iPhone 13 e 320px, com
+três toques simultâneos no perfil estreito. As três entregas antigas foram
+rejogadas no desktop; a suíte geral passou com 555 testes, nove contratos e
+build de produção aprovado. Os experimentos de renderização, seus limites
+e o registro separado de publicação estão no plano de evolução. Isso não
+equivale a medir a fluidez em um iPhone físico.

@@ -46,3 +46,8 @@ inclusive dois toques simultâneos, erros, retomada e preservação das conquist
 Mantenha física e renderização no cliente, mídia otimizada e carregamento sob
 demanda. Sincronizações futuras devem gravar marcos úteis, evitando chamadas ao
 banco por quadro ou tecla. Avalie também desempenho em aparelhos modestos.
+
+Para continuar a evolução da aventura, leia também
+`../../docs/EVOLUCAO_ENTREGA_ORBI.md`: estado da Oficina do Pulso, saves separados,
+plano por blocos e próximo ponto de retomada. Atualize esse registro com evidências
+da rodada; não confunda funcionalidades planejadas com funcionalidades publicadas.

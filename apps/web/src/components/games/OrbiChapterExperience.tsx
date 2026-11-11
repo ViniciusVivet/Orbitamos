@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 import { ArrowLeft, ArrowRight, Check, Code2, Flag, Lightbulb, Pause, Play, RotateCcw, Volume2, VolumeX, X } from "lucide-react";
 import OrbiChapterCanvas, { type ChapterEvent, type OrbiChapterHandle } from "./OrbiChapterCanvas";
@@ -9,9 +10,28 @@ import { deliveryStorageKey, readDeliverySave } from "@/lib/orbiDelivery";
 import s from "./OrbiChapter.module.css";
 
 type Props = { userId: string; onComplete?: () => void; onBackHref?: string };
-export default function OrbiDelivery(props: Props) { return <ChapterExperience key={props.userId} {...props} />; }
+const OrbiPulseExperience = dynamic(() => import("./OrbiPulseExperience"), { ssr: false, loading: () => <p role="status">Preparando a Oficina do Pulso…</p> });
+export default function OrbiDelivery(props: Props) { return <OrbiAdventure key={props.userId} {...props} />; }
 
-function ChapterExperience({ userId, onComplete, onBackHref = "/estudante/jogos" }: Props) {
+function OrbiAdventure(props: Props) {
+  const [workshop, setWorkshop] = useState(false);
+  useEffect(() => {
+    let active = true;
+    const receive = () => { if (active) setWorkshop(window.location.hash === "#oficina-do-pulso"); };
+    queueMicrotask(receive);
+    window.addEventListener("hashchange", receive);
+    return () => { active = false; window.removeEventListener("hashchange", receive); };
+  }, []);
+  const choose = (pulse: boolean) => {
+    setWorkshop(pulse);
+    window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${pulse ? "#oficina-do-pulso" : ""}`);
+  };
+  return workshop
+    ? <OrbiPulseExperience userId={props.userId} onBackHref={props.onBackHref} onReturn={() => choose(false)} />
+    : <ChapterExperience {...props} onWorkshop={() => choose(true)} />;
+}
+
+function ChapterExperience({ userId, onComplete, onBackHref = "/estudante/jogos", onWorkshop }: Props & { onWorkshop: () => void }) {
   const [save, setSave] = useState<ChapterSave>(emptyChapterSave);
   const latest = useRef(save);
   const [hydrated, setHydrated] = useState(false);
@@ -101,7 +121,8 @@ function ChapterExperience({ userId, onComplete, onBackHref = "/estudante/jogos"
     const leave = () => setPaused(true);
     document.addEventListener("visibilitychange", pause);
     window.addEventListener("pagehide", leave);
-    return () => { document.removeEventListener("visibilitychange", pause); window.removeEventListener("pagehide", leave); };
+    window.addEventListener("blur", leave);
+    return () => { document.removeEventListener("visibilitychange", pause); window.removeEventListener("pagehide", leave); window.removeEventListener("blur", leave); };
   }, []);
 
   const closeTerminal = () => { dialog.current?.close(); setTerminalOpen(false); setResetConfirm(false); canvas.current?.focus(); };
@@ -164,6 +185,7 @@ function ChapterExperience({ userId, onComplete, onBackHref = "/estudante/jogos"
         <h1>A última luz<br />do bairro.</h1>
         <p>Uma encomenda, três caminhos. Ajude Orbi a abrir pontes, alcançar telhados e acender o Farol usando código.</p>
         <button className={s.primary} disabled={!hydrated} onClick={() => { setStarted(true); setArrived(false); }}><Play size={18} />{!hydrated ? "Preparando aventura…" : save.completed.length || save.attempts[save.current] ? "Continuar minha aventura" : "Entrar no bairro"}<ArrowRight size={18} /></button>
+        <button className={s.workshopEntry} onClick={onWorkshop}><span>NOVA AVENTURA</span>Oficina do Pulso <ArrowRight size={17} /></button>
         <span className={s.introMeta}>JavaScript do zero · caminhar, explorar e experimentar</span>
         {hydrated && save.attempts[save.current] > 0 && <p className={s.history}>Seu código e suas entregas estão guardados. O caminho recomeça ao entrar.</p>}
         {legacy && <p className={s.history}>Sua aventura anterior está guardada. Este capítulo traz três novas entregas.</p>}

@@ -1,6 +1,6 @@
 # Testes e validações
 
-Última revisão documental: 2026-11-05. Os resultados de `3643a04` permanecem
+Última revisão documental: 2026-11-11. Os resultados de `3643a04` permanecem
 históricos. A rodada de escalabilidade abaixo distingue testes focais, integração
 unitária, auditoria isolada de navegador de 05/11 e banco local. As fixtures
 não comprovam dados/autorização do projeto remoto.
@@ -45,6 +45,61 @@ inspecionam arquivos; não iniciam Postgres nem executam policies RLS.
 A existência desses testes não comprova aprovação de uma execução nova nem
 cobertura visual. O Vitest inclui `src/**/*.test.ts`; não há ambiente DOM
 configurado para testes React de componentes/formulários.
+
+## Oficina do Pulso — implementação de 11/11/2026
+
+A aventura opcional acrescenta duas rotas à experiência do Orbi, sem aumentar
+as três entregas originais nem gerar XP para elas. Seu save local por conta,
+`orbitamos-orbi-pulse-v1-<conta>`, é independente do save do capítulo v2 e do
+legado v1. Decisões e continuidade em
+[EVOLUCAO_ENTREGA_ORBI.md](EVOLUCAO_ENTREGA_ORBI.md).
+
+Verificação focal dos módulos, a partir de `apps/web`:
+
+```powershell
+node node_modules/vitest/vitest.mjs run src/lib/orbiChapter.test.ts src/lib/orbiPulse.test.ts src/components/games/orbi-chapter/audio.test.ts src/components/games/orbi-chapter/pulseCombat.test.ts src/components/games/orbi-chapter/enginePhysics.test.ts --maxWorkers=1 --no-file-parallelism
+```
+
+- `orbiPulse`: gramática restrita, limites numéricos, conclusão sequencial,
+  leitura de save e preservação de conquistas entre abas.
+- `audio`: desbloqueio por gesto, mute/pausa, limites de vozes e limpeza.
+- `pulseCombat`: alcance, colisões, recarga, regeneração, dano, recuperação e
+  barreiras com geometria estável.
+- `enginePhysics`: equivalência do elevador com geometria reutilizada e remoção
+  de barreira sem interferência do portão das entregas antigas.
+- `orbiChapter`: contratos originais de conteúdo, física e progresso.
+
+O novo roteiro de navegador usa entradas reais e diagnósticos públicos da cena;
+não teletransporta Orbi nem escreve uma vitória no estado interno. Requer o
+servidor de desenvolvimento e os navegadores Playwright instalados. Os perfis
+rodam em sequência:
+
+```powershell
+node scripts/audit-orbi-pulse.mjs                  # os três perfis
+node scripts/audit-orbi-pulse.mjs desktop
+node scripts/audit-orbi-pulse.mjs iphone-safari    # WebKit, perfil iPhone 13
+node scripts/audit-orbi-pulse.mjs small-mobile     # Chromium, 320 × 740
+```
+
+O endereço padrão é `http://localhost:3015`; `ORBI_TEST_URL` permite outro.
+A entrada é `/dev/academy-preview?activity=delivery#oficina-do-pulso`.
+Por padrão, o roteiro conserva as animações. Para uma execução adicional com
+movimento reduzido, configure `$env:ORBI_REDUCED_MOTION='1'`; remova essa
+variável com `Remove-Item Env:ORBI_REDUCED_MOTION` após o teste.
+
+O roteiro exige falha com alcance insuficiente e recarga lenta, reparos e
+chegada física, rejeição de código inválido preservando a configuração anterior,
+reset/desfazer, pausa, rascunho retomado sem aplicação automática, isolamento de
+conta e preservação de saves/XP antigos. O perfil de 320 px também exercita três
+toques simultâneos (direção, pulo e pulso) pelo protocolo de entrada do Chromium.
+Inclui axe nos blocos novos, verificação de overflow e screenshots.
+
+Capturas e relatórios ficam em `apps/web/test-results/orbi-pulse/`, fora do Git.
+As métricas da cena são locais e não constituem teste em iPhone físico. Rodar
+esse roteiro não substitui os roteiros originais `audit-orbi-chapter.mjs` e
+`audit-orbi-chapter-resilience.mjs`, nem build, CI ou validação de produção.
+Este registro documenta implementação e comandos; não declara aprovação dessas
+etapas na rodada de 11/11.
 
 ## Rodada de escalabilidade iniciada em 2026-11-04
 
@@ -232,6 +287,14 @@ blocos, não o site inteiro. Capturas e relatório ficam em
 não envia formulários nem mensagens e não substitui teste em iPhone físico.
 
 ## Limites restantes
+
+Para medir o Orbi sem o trabalho de screenshots e Axe na janela de amostragem,
+execute `node scripts/profile-orbi-frames.mjs` sozinho, com o servidor já
+aquecido. Aceita `desktop` ou `iphone-safari` como argumento. Guarda as amostras
+em `test-results/orbi-pulse/frames*.json`; cada amostra do motor resume seus
+últimos 120 quadros. Inclui som, pulos e pulso, soltura com modificador e fixture
+de `window.blur` com documento visível. A fixture não é um teste físico de troca
+de aplicativo, e WebKit no Windows não mede a GPU de um iPhone real.
 
 - Integrar as auditorias de navegador e a suíte pgTAP ao CI.
 - Ampliar testes de componentes/formulários React e integração real de Auth e Storage.
