@@ -45,6 +45,9 @@ quando descrevem uma execução específica.
 | [VILA_DOS_BLOCOS.md](VILA_DOS_BLOCOS.md) | Jogo de símbolos e indentação, saves e continuidade |
 | [STUDIO_E_ORBI_CAPITULO_01.md](STUDIO_E_ORBI_CAPITULO_01.md) | Rodada do Studio e capítulo de plataforma aprovado |
 | [EVOLUCAO_ENTREGA_ORBI.md](EVOLUCAO_ENTREGA_ORBI.md) | Oficina do Pulso, Bloco B implementado em 12/11, compatibilidade, experimentos encerrados e ponto de continuidade/QA |
+| [SIMULADOR_PROFISSOES.md](SIMULADOR_PROFISSOES.md) | Projeto proposto de simulação de trabalho: piloto DevOps, complexidade, motor, custo e plano por etapas |
+| [PESQUISA_ROTINAS_TECH.md](PESQUISA_ROTINAS_TECH.md) | Pesquisa inicial de 12/11: famílias, contextos, tarefas e fontes profissionais; não é catálogo já entregue |
+| [INGLES_FALADO.md](INGLES_FALADO.md) | Viabilidade pesquisada em 12/11: ouvir/repetir, transcrição, limites da avaliação fonética e protótipo sem API contratada |
 
 ## Direção visual e páginas comerciais
 

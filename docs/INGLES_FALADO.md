@@ -1,0 +1,198 @@
+# Inglês falado na Orbitamos
+
+Pesquisa e decisão proposta em **12/11/2026**. Estado: **planejado**.
+Não houve implementação, captura de microfone, instalação de modelo ou ativação
+de serviço de voz nesta rodada. Este documento complementa o
+[Simulador de profissões](SIMULADOR_PROFISSOES.md).
+
+## O que queremos ensinar
+
+O aluno ouve uma frase curta, repete, compara sua tentativa e pode tentar
+novamente com apoio do Orbi. As frases podem aparecer no contexto de trabalho:
+um teste falhou, uma alteração precisa de revisão ou um serviço voltou a funcionar.
+
+Existem três capacidades diferentes:
+
+1. **Síntese/reprodução:** falar a frase de referência.
+2. **Reconhecimento:** transformar a tentativa do aluno em texto.
+3. **Avaliação de pronúncia:** analisar características acústicas e oferecer
+   retorno específico sobre a fala.
+
+Uma transcrição coincidir com a frase não prova boa pronúncia. Uma transcrição
+errada pode refletir ruído, microfone ou o reconhecedor. A Microsoft documenta
+que sua avaliação de pronúncia utiliza um modelo específico, diferente do STT
+comum [V07]. Whisper, sozinho, também é transcrição.
+
+**Recomendação:** iniciar por ouvir, gravar/reproduzir e, onde funcionar, mostrar
+o que o navegador entendeu. Adiar a promessa de correção fonética ou nota de
+pronúncia até existir uma solução validada e compatível com a decisão de custo.
+
+## Opções técnicas e custo
+
+Complexidade relativa ao público mobile da Orbitamos, não orçamento fechado.
+
+| Caminho | Capacidade | Complexidade | Custo e limite |
+| --- | --- | --- | --- |
+| `speechSynthesis` | Ler a referência, repetir e reduzir velocidade | Baixa a média | Sem API de voz contratada pela Orbitamos; vozes dependem do aparelho/navegador |
+| Gravação e reprodução com `MediaRecorder` | Ouvir a própria tentativa e comparar | Baixa a média | Processamento local desenhado sem upload; depende de permissão e formato suportado |
+| `SpeechRecognition`/prefixo do navegador | Mostrar transcrição e diferenças nas palavras | Média | Sem chave de API da Orbitamos; pode usar serviço remoto do navegador e não oferece disponibilidade ilimitada garantida |
+| Whisper/ONNX no navegador | Transcrever localmente após download | Alta para mobile confiável | Modelo, runtime, memória, bateria e latência; ainda não avalia fonemas |
+| Avaliação fonética dedicada em nuvem | Retorno acústico mais específico | Alta | Conta, integração, cota/custo, revisão pedagógica e tratamento de áudio |
+
+### Síntese e gravação
+
+`getVoices()` lista as vozes disponíveis. O produto deve verificar idioma e
+disponibilidade e lidar com carregamento assíncrono [V04]. `localService`
+indica se a voz é fornecida por serviço local ou remoto [V05]; portanto,
+"voz do navegador" não significa automaticamente funcionamento offline.
+Se necessário, planejar áudio de referência autorizado e revisado.
+
+Gravação local é uma funcionalidade de comparação pelo aluno, sem análise
+automática. Verificar suporte e MIME type em execução; não assumir um formato
+de áudio idêntico no Safari e Chromium [V06].
+
+### iPhone/Safari
+
+A WebKit documentou reconhecimento de fala com o motor da Siri em 2021, com
+dependência de Siri habilitada [V02]. Essa fonte histórica não substitui teste
+na versão atual do aparelho. Considerar a interface prefixada quando existir
+e verificar recursos em execução.
+
+Os dados de compatibilidade da MDN consultados em 12/11 não indicam suporte
+a `processLocally`, `available()` e `install()` no Safari/iOS [V03]. Não
+prometer reconhecimento offline nem áudio restrito ao aparelho nesse caminho.
+O guia MDN descreve o reconhecimento padrão baseado em serviço e o modo local
+dependente de suporte/pacotes [V01].
+
+WebKit no Windows é útil para layout e fluxo. Não comprova Siri, permissão,
+microfone, teclado ou comportamento de áudio num iPhone físico.
+
+### Modelos locais e avaliação dedicada
+
+Transformers.js executa modelos no navegador por ONNX, com opções de CPU/WASM,
+WebGPU e quantização [V08]. Isso permite estudar transcrição local, mas não
+elimina o custo de download e processamento no aparelho. Como ilustração, dois
+arquivos quantizados do `whisper-tiny.en` consultados somam aproximadamente
+40,8 MB de pesos; runtime e outros arquivos são adicionais [V09]. Isso não é
+medição de RAM, latência nem download total de uma implementação nossa.
+
+Não carregar um modelo na entrada das aulas. Um futuro experimento deve ser
+opcional, informar o download, ter cancelamento e medir o conjunto realmente
+carregado e seu comportamento após descarte de cache.
+
+A Azure é uma referência de avaliação específica, mas não resolve a premissa
+de serviço ilimitado gratuito: a tabela F0 consultada apresenta cinco horas
+mensais de transcrição em tempo real, compartilhadas entre Standard e Custom
+[V10]; a avaliação segue a cobrança de STT e pode ter recursos adicionais [V07].
+O F0 também tem limite de uma requisição concorrente ao endpoint base [V11].
+Elegibilidade, região, recurso e cota precisam ser conferidos antes de um
+eventual piloto. Não houve criação de conta/recurso nem adesão a plano pago.
+
+## Primeiro protótipo proposto
+
+Uma expansão de **Inglês em cena**, no fluxo atual. Cena, frase, objetivo e
+ação devem estar claros sem criar uma nova página inicial cheia de instruções.
+
+Frases autorais candidatas:
+
+- The build failed.
+- The tests passed.
+- I fixed the bug.
+- Please review this change.
+- The service is running.
+
+Fluxo:
+
+1. Mostrar a situação ilustrada e a frase, com tradução de apoio opcional.
+2. **Ouvir** e **Ouvir devagar**, iniciados por toque, sem reprodução automática.
+3. **Falar** inicia uma tentativa curta após a informação de uso do microfone.
+4. Exibir claramente quando está ouvindo; oferecer **Parar** e **Cancelar**.
+5. Se houver reconhecimento, mostrar **O navegador entendeu: ...** e diferenças
+   de palavras. Permitir ouvir a referência de novo e repetir a tentativa.
+6. Se não houver reconhecimento, manter comparação por gravação/reprodução
+   local, quando suportada, e um caminho de atividade sem microfone.
+
+Normalizar pontuação e caixa para a comparação textual. Diferença de palavras
+não recebe rótulo de erro de fonema. Uma mensagem possível é: "Ouvi outra
+palavra aqui. Vamos ouvir a referência e tentar novamente". Não usar porcentagem
+de pronúncia calculada por semelhança entre strings ou confiança de transcrição.
+
+Falha de permissão ou reconhecimento não bloqueia a trilha nem significa que
+o aluno falou mal. Registrar prática realizada não equivale a certificar
+pronúncia, fluência ou proficiência em inglês.
+
+## Microfone, áudio e dados
+
+- Pedir acesso apenas quando a pessoa iniciar a ação correspondente.
+- Explicar a distinção entre gravação local e reconhecimento que pode utilizar
+  o serviço do navegador. Não prometer confidencialidade local sem verificá-la.
+- Não enviar nem guardar áudio bruto no Supabase por padrão.
+- Na gravação local, manter o áudio temporariamente em memória, permitir
+  descartá-lo e liberar referências/URLs ao terminar. Não gravar blobs em
+  `localStorage` a cada tentativa.
+- Parar captura e reprodução ao cancelar, sair da atividade ou ocorrer uma
+  interrupção que encerre a tentativa. Liberar tracks do microfone e cancelar
+  síntese/reconhecimento; conferir isso no aparelho, não só por estado do React.
+- Não deixar o próprio TTS entrar como resposta durante a captura. Tocar a
+  referência e ouvir a tentativa são estados separados.
+- Não adicionar envio de áudio ou fornecedor pago como fallback silencioso.
+
+## Integração com o projeto existente
+
+Base conferida em 12/11:
+
+- `apps/web/src/components/games/CodeEnglish.tsx`: atividade atual.
+- `apps/web/src/lib/codeEnglish.ts`: oito cenas de vocabulário e compreensão,
+  com escolhas/escrita; save `orbitamos-english-v1-<userId>`.
+- O áudio atual dos jogos usa `AudioContext` para efeitos. Não foi encontrada
+  uma implementação de síntese, reconhecimento ou gravação de fala.
+
+Implementar um adaptador de voz com estados explícitos e detecção de recursos,
+sem espalhar APIs do navegador por todas as cenas. Preservar o save atual.
+Uma futura prática oral pode ter registro próprio, pequeno e versionado, com
+conta, frase, tentativas e apoio utilizado; não armazenar áudio ou conceder XP
+de aulas automaticamente. Não criar novo item da sidebar apenas para isso.
+
+## Critérios para liberar o protótipo
+
+| Verificação | Resultado necessário |
+| --- | --- |
+| Voz inglesa ausente ou atrasada | Alternativa clara; interface continua utilizável |
+| Silêncio, ruído e frase parcialmente reconhecida | Feedback honesto, nova tentativa e cancelamento |
+| Microfone negado ou API indisponível | Caminho de estudo sem microfone |
+| Offline | O produto informa a capacidade disponível; não promete ASR local sem suporte |
+| Chamada, segundo plano e mudança de página | Tentativa encerrada e captura liberada conforme o fluxo |
+| Repetição e toque rápido | Sem filas sobrepostas de voz/captura ou microfone preso |
+| iPhone físico e Android modesto | Permissão, áudio, interrupção, foco e latência conferidos |
+| Compreensão do aluno | Distingue o texto reconhecido de uma avaliação de pronúncia |
+
+Esses critérios estão planejados, não executados nesta rodada.
+
+## Ordem de evolução e continuidade
+
+1. **V0:** cinco frases, referência falada e comparação por gravação/reprodução
+   local, com fallback e teste em aparelho. Sem corretor fonético.
+2. **V1:** reconhecimento opcional nos navegadores aprovados pelo teste;
+   diferenças textuais e repetição contextual. Sem nota fonética.
+3. **V2, adiada:** experimento de transcrição local ou avaliação acústica
+   dedicada, após decisão de custo, validação e compatibilidade.
+
+Próxima ação: protótipo isolado com uma frase e lifecycle completo, antes de
+expandir às cinco ou alterar conquistas. Reabrir esta pesquisa quando mudarem
+browser, APIs, modelo, fornecedor ou proposta de feedback.
+
+## Fontes primárias consultadas em 12/11/2026
+
+| ID | Fonte | Aplicação |
+| --- | --- | --- |
+| V01 | [MDN — Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API/Using_the_Web_Speech_API) | Síntese, reconhecimento e processamento local/remoto |
+| V02 | [WebKit — Safari 14.1](https://webkit.org/blog/11648/new-webkit-features-in-safari-14-1/) | Registro histórico da integração com Siri |
+| V03 | [MDN — compatibilidade SpeechRecognition](https://raw.githubusercontent.com/mdn/browser-compat-data/main/api/SpeechRecognition.json) | Suporte por recurso; dados consultados, não garantia em aparelho |
+| V04 | [MDN — getVoices](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis/getVoices) | Seleção e disponibilidade de vozes |
+| V05 | [MDN — localService](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesisVoice/localService) | Origem local/remota da voz de síntese |
+| V06 | [MDN — MediaRecorder](https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder) | Gravação e suporte a formatos |
+| V07 | [Microsoft — avaliação de pronúncia](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/how-to-pronunciation-assessment) | Modelo específico e condições do recurso |
+| V08 | [Hugging Face — Transformers.js](https://huggingface.co/docs/transformers.js/en/index) | Inferência no navegador e opções de execução |
+| V09 | [Whisper tiny.en — arquivos ONNX](https://huggingface.co/onnx-community/whisper-tiny.en/tree/main/onnx) | Exemplo de tamanho de pesos, sujeito à versão do modelo |
+| V10 | [Azure — preços de Speech](https://azure.microsoft.com/en-us/pricing/details/speech/) | Cota gratuita e recursos cobrados |
+| V11 | [Microsoft — quotas de Speech](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/speech-services-quotas-and-limits) | Limites de concorrência e diferenças entre tiers |
