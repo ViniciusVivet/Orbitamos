@@ -11,20 +11,23 @@ export default function AcademyResumeTracker({ userId }: { userId?: string | num
   useEffect(() => {
     if (userId == null) return;
     let active = true;
+    let request = 0;
     async function record() {
-      const href = canonicalAcademyHref(path, query ? `?${query}` : "");
+      const current = ++request;
+      const href = canonicalAcademyHref(window.location.pathname, window.location.search, window.location.hash);
       if (!href) return;
-      const { academyResumeEntry, resumeStorageKey } = await import("@/lib/academyActivity");
-      if (!active) return;
-      const entry = academyResumeEntry(href);
-      if (!entry) return;
       try {
+        const { academyResumeEntry, resumeStorageKey } = await import("@/lib/academyActivity");
+        if (!active || current !== request) return;
+        const entry = academyResumeEntry(href);
+        if (!entry) return;
         localStorage.setItem(resumeStorageKey(String(userId)), JSON.stringify(entry));
         window.dispatchEvent(new Event("orbitamos-practice-updated"));
       } catch { /* Tracking is optional and must never block a lesson. */ }
     }
     void record();
-    return () => { active = false; };
+    window.addEventListener("hashchange", record);
+    return () => { active = false; window.removeEventListener("hashchange", record); };
   }, [path, query, userId]);
   return null;
 }

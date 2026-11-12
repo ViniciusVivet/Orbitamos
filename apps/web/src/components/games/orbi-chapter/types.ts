@@ -1,6 +1,15 @@
 import type { ChapterMissionId, ChapterProgram } from "@/lib/orbiChapter";
 import type { PulseLessonId, PulseSceneConfig } from "@/lib/orbiPulse";
 
+export type PulseGuideState = {
+  phase: "terminal" | "approach" | "repair" | "workshop";
+  threat: "safe" | "charging" | "incoming";
+  direction: "left" | "right" | "none";
+  target: number | null;
+  breach: boolean;
+  canReturn: boolean;
+};
+
 export type ChapterEvent =
   | { type: "ready" }
   | { type: "error"; message: string }
@@ -10,6 +19,7 @@ export type ChapterEvent =
   | { type: "blocked"; message: string }
   | { type: "arrived"; mission: ChapterMissionId }
   | { type: "pulse-state"; shield: number; cleared: number; total: number; cooldownRemaining: number; cooldownTotal: number }
+  | ({ type: "pulse-guide" } & PulseGuideState)
   | { type: "pulse-arrived"; lesson: PulseLessonId }
   | { type: "pulse-feedback"; message: string }
   | { type: "position"; x: number; zone: string; nearTerminal: boolean };

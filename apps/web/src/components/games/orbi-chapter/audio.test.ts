@@ -42,7 +42,7 @@ class FakeContext {
   createOscillator() { const oscillator = new FakeOscillator(); this.oscillators.push(oscillator); return oscillator; }
 }
 
-const allSounds: ChapterSound[] = ["jump", "land", "terminal", "fall", "arrive", "machine", "checkpoint", "step", "pulse", "pulse-hit", "bug-cleared", "shield-hit", "shield-ready", "code-error"];
+const allSounds: ChapterSound[] = ["jump", "land", "terminal", "fall", "arrive", "machine", "checkpoint", "step", "pulse", "pulse-hit", "bug-cleared", "shield-hit", "shield-ready", "code-error", "sentinel-warning"];
 let audio: ChapterAudio;
 const enable = async () => {
   audio.set(false, false);
@@ -121,7 +121,7 @@ describe("ChapterAudio lifecycle and resource budget", () => {
 
   it("gives each new action an actual audible envelope without allocating external media", async () => {
     const context = await enable();
-    for (const sound of ["pulse", "pulse-hit", "bug-cleared", "shield-hit", "shield-ready", "code-error", "step"] as const) {
+    for (const sound of ["pulse", "pulse-hit", "bug-cleared", "shield-hit", "shield-ready", "code-error", "step", "sentinel-warning"] as const) {
       const before = context.oscillators.length;
       audio.play(sound);
       expect(context.oscillators.length).toBeGreaterThan(before);

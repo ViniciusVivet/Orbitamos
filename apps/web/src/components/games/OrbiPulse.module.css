@@ -10,7 +10,38 @@
 .recharge i { display: block; height: 100%; background: #b4ead5; transition: width 100ms linear; }
 .controls .fire { padding: 0 20px; background: #caa17c24; border-color: #e5c48c80; color: #ffe3b3; }
 .route { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.orientation { color: #c6bda8; font-size: 12px; line-height: 1.7; margin-top: 0; }
+.shieldPips { display: inline-flex; align-items: center; gap: 5px; padding-inline: 2px; }
+.shieldPips i { display: block; width: 8px; height: 10px; border: 1px solid #b0e8d6; border-radius: 2px 2px 5px 5px; background: #b0e8d6; }
+.shieldPips i[data-filled="false"] { background: transparent; border-style: dashed; opacity: .55; }
+.coach { display: flex; gap: 12px; align-items: center; margin: 12px 0 0; padding: 10px 12px; border: 1px solid #b0e8d628; border-radius: 12px; background: #102830; }
+.coachAvatar { display: block; width: 44px; height: 44px; flex: 0 0 44px; background: url('/images/games/orbi-chapter/orbi-sheet-v1.webp') 0 0 / 176px 88px no-repeat; }
+.coach p { margin: 0; flex: 1; font-size: 13px; line-height: 1.55; color: #deece4; }
+.coach strong { display: block; font-size: 11px; color: #a9dbca; margin-bottom: 2px; }
+.coach p svg { display: inline; vertical-align: -3px; margin-right: 6px; }
+.coach[data-threat="charging"], .coach[data-threat="incoming"] { border-color: #e7bf7370; background: #352b21; }
+.coach[data-threat="charging"] strong, .coach[data-threat="incoming"] strong { color: #ffe0a5; }
+.coach button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 9px 13px; border: 1px solid #b0e8d670; border-radius: 9px; color: #e2f6e9; background: #1b4145; font-size: 12px; font-weight: 650; flex-shrink: 0; touch-action: manipulation; }
+.coach button:disabled { opacity: .5; }
+.prediction { margin: 18px 0 12px; padding: 12px 14px 14px; border: 1px solid #a8cbb64a; border-radius: 10px; background: #142d35; }
+.prediction legend { padding-inline: 6px; color: #c3e8d8; font-size: 12px; font-weight: 650; }
+.prediction > p { margin: 0 0 12px; color: #e5eee7; font-size: 13px; line-height: 1.65; }
+.prediction > div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.prediction label { display: flex; align-items: flex-start; gap: 9px; min-height: 48px; padding: 11px; border: 1px solid #aec6be42; border-radius: 8px; background: #0c202a; color: #dbe9e0; font-size: 12px; line-height: 1.55; cursor: pointer; }
+.prediction label[data-selected="true"] { border-color: #9bdac5; background: #1a3c40; }
+.prediction input { flex: 0 0 16px; width: 16px; height: 16px; margin: 2px 0 0; accent-color: #b0e8d6; }
+.prediction small { display: block; font-size: 11px; color: #afc6bb; margin-top: 10px; line-height: 1.6; }
+.editor { min-height: 110px!important; height: 110px; }
+.stickyActions { position: sticky; bottom: 0; z-index: 2; flex-direction: row!important; flex-wrap: nowrap!important; margin-top: 14px; padding: 12px 0 4px; border-top: 1px solid #a6c2b93b; background: #102936; box-shadow: 0 -8px 12px #102936; }
+.stickyActions > button:first-child { flex: 1; width: auto!important; min-width: 0; }
+.stickyActions .hintButton { flex-shrink: 0; }
+.predictionResult { margin-top: 10px; color: #c6dcd1; border-bottom: 1px solid #a0c6b526; }
+.predictionResult summary { display: flex; align-items: center; gap: 8px; min-height: 44px; padding-block: 9px; font-size: 12px; line-height: 1.6; cursor: pointer; list-style: none; }
+.predictionResult summary::-webkit-details-marker { display: none; }
+.predictionResult summary svg { flex-shrink: 0; }
+.predictionResult summary svg:last-child { margin-left: auto; }
+.predictionResult[open] summary svg:last-child { transform: rotate(180deg); }
+.predictionResult > p { font-size: 12px; line-height: 1.8; margin: 0 0 12px 24px; max-width: 76ch; color: #bbd0c5; }
+.coach button:focus-visible, .prediction label:has(input:focus-visible), .predictionResult summary:focus-visible { outline: 3px solid #e8ca8c; outline-offset: 3px; }
 .codeMap { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; color: #a7c2b8; font-size: 12px; line-height: 1.6; }
 .codeMap span { display: flex; flex-direction: column; gap: 4px; }
 .codeMap strong { font-family: monospace; font-weight: 650; color: #c4eddc; }
@@ -20,6 +51,11 @@
   .introOrbi { right: 12%; width: 155px; height: 155px; background-size: 620px 310px; }
 }
 @media(max-width: 700px) {
+  .coach { display: grid; grid-template-columns: 36px minmax(0, 1fr); align-items: start; gap: 8px 10px; }
+  .coachAvatar { width: 36px; height: 36px; background-size: 144px 72px; }
+  .coach p { font-size: 12px; }
+  .coach button { grid-column: 2; justify-self: start; }
+  .prediction > div { grid-template-columns: 1fr; }
   .workshop .intro { min-height: 620px; }
   .intro > div:last-child { padding-bottom: 230px; }
   .introSentinel { top: auto; bottom: 6%; right: 0; width: 210px; height: 210px; background-size: 840px 420px; }
@@ -29,14 +65,20 @@
   .hud .recharge { flex: 1; min-width: 60px; }
   .controls { grid-template-columns: auto minmax(52px, 1fr) minmax(54px, 1fr) 44px !important; gap: 7px; }
   .controls .fire { padding: 0 9px; gap: 5px; }
-  .controls > button:last-child { padding: 0 !important; min-width: 44px; }
-  .controls > button:last-child span { display: none; }
+  .controls > button:last-child { padding: 0 !important; min-width: 44px; flex-direction: column; gap: 2px; }
+  .controls > button:last-child span { display: inline!important; font-size: 9px!important; }
+  .controls > button:last-child span::after { content: none!important; }
   .route { grid-template-columns: 1fr; }
 }
 @media(max-width: 380px) {
+  .stickyActions { gap: 7px; }
+  .stickyActions > button:first-child { padding-inline: 10px; font-size: 11px; gap: 6px; }
+  .stickyActions .hintButton { width: 44px; padding-inline: 0; }
+  .hintButton span { display: none; }
+  .shieldPips { display: none!important; }
   .controls { gap: 5px; grid-template-columns: 93px minmax(48px, 1fr) minmax(48px, 1fr) 44px !important; }
-  .controls .fire { padding: 0 5px; }
-  .controls .fire span { display: none; }
+  .controls .fire { padding: 0 5px; flex-direction: column; gap: 2px; }
+  .controls .fire span { display: inline; font-size: 9px; }
   .introSentinel { width: 190px; height: 190px; background-size: 760px 380px; }
   .introOrbi { right: 41%; width: 125px; height: 125px; background-size: 500px 250px; }
   .codeMap { grid-template-columns: 1fr; gap: 8px; }

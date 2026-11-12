@@ -1,4 +1,7 @@
 export type AcademySection = "home" | "tracks" | "practice" | "progress" | "community" | "account";
+export const ORBI_DELIVERY_HREF = "/estudante/jogos/entregas-do-orbi";
+export const ORBI_PULSE_HASH = "#oficina-do-pulso";
+export const ORBI_PULSE_HREF = ORBI_DELIVERY_HREF + ORBI_PULSE_HASH;
 
 const hasPrefix = (path: string, prefix: string) => path === prefix || path.startsWith(`${prefix}/`);
 
@@ -44,7 +47,7 @@ export function academyPreviewHref(href: string) {
   if (path === "/estudante/trilhas/sql") return `/dev/academy-preview?activity=sql${url.searchParams.get("mode") === "workshop" ? "&mode=workshop" : ""}`;
   const activities: Record<string, string> = { "entregas-do-orbi": "delivery", "ingles-em-cena": "english", revisao: "review", "vila-dos-blocos": "village" };
   const game = path.replace("/estudante/jogos/", "");
-  if (activities[game]) return `/dev/academy-preview?activity=${activities[game]}`;
+  if (activities[game]) return `/dev/academy-preview?activity=${activities[game]}${path === ORBI_DELIVERY_HREF && url.hash === ORBI_PULSE_HASH ? ORBI_PULSE_HASH : ""}`;
   const routePairs = [["/estudante/pratica/", "/dev/ide-preview/"], ["/estudante/jogos/orbi/", "/dev/orbi-preview/"], ["/estudante/jogos/", "/dev/monte-codigo-preview/"]] as const;
   for (const [from, to] of routePairs) {
     if (!path.startsWith(from)) continue;
@@ -56,9 +59,12 @@ export function academyPreviewHref(href: string) {
 }
 
 /** Converts a dev-only view into its real route for the shared local resume index. */
-export function canonicalAcademyHref(path: string, search = ""): string | null {
+export function canonicalAcademyHref(path: string, search = "", hash = ""): string | null {
   const params = new URLSearchParams(search);
-  if (path.startsWith("/estudante/")) return path + search;
+  // Preserve this authored sub-adventure only; unrelated page anchors are not
+  // resume data. academyResumeEntry performs the final route/query allowlist.
+  const withMode = (href: string) => href + (href.split("?")[0] === ORBI_DELIVERY_HREF && hash === ORBI_PULSE_HASH ? ORBI_PULSE_HASH : "");
+  if (path.startsWith("/estudante/")) return withMode(path + search);
   if (path === "/dev/csharp-preview" && params.get("academy") === "1") {
     const moduleKind = params.get("module");
     return `/estudante/trilhas/csharp${moduleKind && ["variables", "conditions", "loops"].includes(moduleKind) ? `?module=${moduleKind}` : ""}`;
@@ -66,7 +72,7 @@ export function canonicalAcademyHref(path: string, search = ""): string | null {
   if (path === "/dev/academy-preview") {
     const activity = params.get("activity");
     const routes: Record<string, string> = { delivery: "/estudante/jogos/entregas-do-orbi", english: "/estudante/jogos/ingles-em-cena", village: "/estudante/jogos/vila-dos-blocos", review: "/estudante/jogos/revisao", sql: "/estudante/trilhas/sql" };
-    return activity && routes[activity] ? routes[activity] + (activity === "sql" && params.get("mode") === "workshop" ? "?mode=workshop" : "") : null;
+    return activity && routes[activity] ? withMode(routes[activity] + (activity === "sql" && params.get("mode") === "workshop" ? "?mode=workshop" : "")) : null;
   }
   if (path.startsWith("/dev/ide-preview/") && params.get("academy") === "1") return path.replace("/dev/ide-preview/", "/estudante/pratica/");
   if (params.get("from") === "academy") {

@@ -3,6 +3,8 @@
 Estado conferido no código em 04/11/2026. Histórico de implementação desde
 26/10/2026. Esta atualização é documental; não repete as verificações de
 navegador, autenticação ou build das rodadas anteriores.
+Adendo de 12/11/2026: identidade de retomada da Oficina do Pulso conferida na
+implementação; verificação atual de navegador/publicação registrada à parte.
 
 Referências: [arquitetura e rotas](ARQUITETURA_ESTUDANTE.md),
 [mapa da experiência](MAPA_EXPERIENCIA_ACADEMY.md) e
@@ -86,6 +88,20 @@ não conclui o capítulo. A atualização entre abas do mesmo navegador não equ
 a sincronização entre aparelhos. Ver detalhes no
 [registro de 04/11](STUDIO_E_ORBI_CAPITULO_01.md).
 
+Desde a implementação de 12/11, a Oficina opcional tem destino próprio de
+retomada na mesma página:
+`/estudante/jogos/entregas-do-orbi#oficina-do-pulso`. Quando ela é a atividade
+recente, a Home mostra **Oficina do Pulso** e a rota corrente do save da conta,
+respeitando a prioridade da trilha selecionada. A troca de subaventura notifica
+o tracker mesmo com `history.replaceState`; a conversão para prévia conserva
+apenas essa âncora permitida.
+
+A Oficina tem duas rotas e save `orbitamos-orbi-pulse-v1-<userId>` separado.
+A retomada não a insere no denominador de atividades da central nem concede
+XP da Entrega. Não aceita hashes arbitrários ou novos redirects. Detalhes do
+guia, previsão opcional, retorno ao terminal e QA de 12/11 em
+[EVOLUCAO_ENTREGA_ORBI.md](EVOLUCAO_ENTREGA_ORBI.md#bloco-b--fatia-implementada-em-12112026).
+
 ## Celular e acessibilidade
 
 O cabeçalho e a sidebar compartilham títulos, destino ativo e contexto. O menu
@@ -119,6 +135,8 @@ As prévias continuam disponíveis apenas em desenvolvimento:
 - `/dev/lab-preview?academy=1`: laboratório integrado à mesma prévia.
 - `/dev/csharp-preview?academy=1`: trilha C# com o mesmo identificador local.
 - `/dev/academy-preview?activity=delivery`: capítulo atual da Entrega do Orbi.
+- `/dev/academy-preview?activity=delivery#oficina-do-pulso`: Oficina opcional,
+  com identidade própria na retomada.
 - `/dev/academy-preview?activity=sql&mode=workshop`: oficina SQL.
 - `/dev/academy-preview?activity=english|village|review`: use um dos valores para
   abrir Inglês em cena, Vila dos Blocos ou Revisão.

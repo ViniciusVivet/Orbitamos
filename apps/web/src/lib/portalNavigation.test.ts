@@ -24,4 +24,14 @@ describe("Academy navigation", () => {
     expect(canonicalAcademyHref("/dev/ide-preview/variaveis-js")).toBeNull();
     expect(canonicalAcademyHref("/dev/academy-preview", "?view=home")).toBeNull();
   });
+  it("round-trips only the authored pulse sub-adventure, without saving arbitrary anchors", () => {
+    const pulse = "/estudante/jogos/entregas-do-orbi#oficina-do-pulso";
+    expect(academyPreviewHref(pulse)).toBe("/dev/academy-preview?activity=delivery#oficina-do-pulso");
+    expect(canonicalAcademyHref("/dev/academy-preview", "?activity=delivery&token=secret", "#oficina-do-pulso")).toBe(pulse);
+    expect(canonicalAcademyHref("/estudante/jogos/entregas-do-orbi", "", "#oficina-do-pulso")).toBe(pulse);
+    expect(canonicalAcademyHref("/dev/academy-preview", "?activity=sql", "#oficina-do-pulso")).toBe("/estudante/trilhas/sql");
+    expect(canonicalAcademyHref("/estudante/jogos/entregas-do-orbi", "", "#redirect=https://evil.test")).toBe("/estudante/jogos/entregas-do-orbi");
+    expect(academyPreviewHref("/estudante/jogos/entregas-do-orbi#unknown")).toBe("/dev/academy-preview?activity=delivery");
+    expect(canonicalAcademyHref("/dev/academy-preview", "?view=home", "#oficina-do-pulso")).toBeNull();
+  });
 });

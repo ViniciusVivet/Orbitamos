@@ -11,6 +11,8 @@ import { csharpProgressKey } from "./csharpTrack";
 import { fasesMonteCodigo, JOGO_STORAGE_PREFIX } from "./jogoMonteCodigo";
 import { chapterMissionIds, emptyChapterSave, orbiChapterKey } from "./orbiChapter";
 import { deliveryMissions, deliveryStorageKey } from "./orbiDelivery";
+import { emptyPulseSave, pulseSaveKey } from "./orbiPulse";
+import { ORBI_PULSE_HREF } from "./portalNavigation";
 
 function store(initial: Record<string, unknown> = {}) { const saves = new Map(Object.entries(initial).map(([key, value]) => [key, JSON.stringify(value)])); return { saves, read: (key: string) => saves.get(key) ?? null }; }
 describe("Academy read-only continuity", () => {
@@ -137,6 +139,40 @@ describe("Academy read-only continuity", () => {
     expect(result.continueItem?.status).toBe("completed");
     expect(result.continueItem?.nextHref).toContain("/estudante/pratica/");
   });
+  it("resumes the pulse workshop independently of an already completed delivery chapter", () => {
+    const data = store({
+      [orbiChapterKey("u")]: { ...emptyChapterSave(), completed: chapterMissionIds },
+      [journalKey("u")]: recordPractice(emptyJournal(), "delivery", "complete", 1000),
+    });
+    const baseline = getAcademyActivity("u", data.read);
+    data.saves.set(resumeStorageKey("u"), JSON.stringify(academyResumeEntry(ORBI_PULSE_HREF, 2000)));
+    const before = [...data.saves];
+    const result = getAcademyActivity("u", data.read);
+    expect(result.continueItem).toMatchObject({ id: "pulse-workshop", href: ORBI_PULSE_HREF, title: "Oficina do Pulso", status: "opened", completedUnits: 0, totalUnits: 2, practiced: false, lastAt: 2000 });
+    expect(result.items.find(item => item.id === "delivery")).toMatchObject({ status: "completed", completedUnits: 3 });
+    expect(result.items.some(item => item.id === "pulse-workshop")).toBe(false);
+    expect(result.summaries).toEqual(baseline.summaries);
+    expect([...data.saves]).toEqual(before);
+    expect(getAcademyActivity("another", data.read).continueItem).toBeNull();
+  });
+  it("reads the pulse route from its own account save and offers code after both real completions", () => {
+    const pulse = { ...emptyPulseSave(), completed: ["alcance"], current: "ritmo", attempts: { alcance: 2, ritmo: 1 } };
+    const data = store({ [pulseSaveKey("u")]: pulse, [resumeStorageKey("u")]: academyResumeEntry(ORBI_PULSE_HREF, 2000) });
+    const before = [...data.saves];
+    const result = getAcademyActivity("u", data.read);
+    expect(result.continueItem).toMatchObject({ id: "pulse-workshop", status: "in-progress", completedUnits: 1, practiced: true });
+    expect(result.continueItem?.detail).toContain("Dois pulsos, um reparo");
+    expect(result.items.find(item => item.id === "delivery")).toMatchObject({ status: "new", completedUnits: 0 });
+    expect(result.summaries.experiences.completed).toBe(0);
+    expect([...data.saves]).toEqual(before);
+    data.saves.set(pulseSaveKey("u"), JSON.stringify({ ...pulse, completed: ["alcance", "ritmo"] }));
+    const finished = getAcademyActivity("u", data.read);
+    expect(finished.continueItem).toMatchObject({ id: "pulse-workshop", status: "completed", completedUnits: 2, nextHref: "/estudante/pratica/variaveis-js?from=delivery" });
+    expect(finished.summaries.experiences.completed).toBe(0);
+    const challenge = desafios[0];
+    data.saves.set(resumeStorageKey("u"), JSON.stringify(academyResumeEntry(`/estudante/pratica/${challenge.slug}`, 3000)));
+    expect(getAcademyActivity("u", data.read).continueItem?.id).toBe(`code:${challenge.slug}`);
+  });
   it("whitelists learning routes and timestamps and strips unrelated or sensitive query data", () => {
     for (const href of ["https://evil.test/estudante/trilhas/sql", "//evil.test", "/estudante", "/estudante/pratica", "/estudante/aulas", "/estudante/jogos", "/estudante/pratica/unknown", "/entrar?password=x"]) expect(academyResumeEntry(href)).toBeNull();
     expect(academyResumeEntry("/estudante/trilhas/sql?mode=workshop&token=secret", 1000)).toEqual({ href: "/estudante/trilhas/sql?mode=workshop", updatedAt: 1000 });
@@ -144,5 +180,9 @@ describe("Academy read-only continuity", () => {
     expect(academyResumeEntry("/estudante/trilhas/sql", Number.NaN)).toBeNull();
     expect(readAcademyResume('{"href":"/estudante/trilhas/sql","updatedAt":999999999999999}')).toBeNull();
     expect(readAcademyResume("corrupt")).toBeNull();
+    expect(academyResumeEntry(ORBI_PULSE_HREF + "?secret=x", 1000)).toBeNull();
+    expect(academyResumeEntry("/estudante/jogos/entregas-do-orbi?token=secret#oficina-do-pulso", 1000)).toEqual({ href: ORBI_PULSE_HREF, updatedAt: 1000 });
+    expect(readAcademyResume(JSON.stringify({ href: ORBI_PULSE_HREF, updatedAt: 1000 }))).toEqual({ href: ORBI_PULSE_HREF, updatedAt: 1000 });
+    for (const href of ["/estudante/trilhas/sql#oficina-do-pulso", "/estudante/jogos/entregas-do-orbi#unknown", "/estudante/jogos/entregas-do-orbi#oficina-do-pulso?redirect=https://evil.test", "https://evil.test/estudante/jogos/entregas-do-orbi#oficina-do-pulso"]) expect(academyResumeEntry(href, 1000)).toBeNull();
   });
 });

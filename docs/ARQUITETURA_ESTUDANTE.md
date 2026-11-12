@@ -1,6 +1,8 @@
 # Arquitetura da área do estudante
 
 Última conferência documental no código: 05/11/2026.
+Adendo de 12/11/2026: Oficina do Pulso e sua retomada; browser/build locais
+registrados no guia de evolução, sem repetir login real ou confundir com deploy.
 
 ## Proteção e navegação
 
@@ -43,6 +45,7 @@ da Entrega do Orbi, os controles próprios têm prioridade sobre as abas de form
 | `/estudante/jogos/orbi` | Entrada do Guia o Orbi |
 | `/estudante/jogos/orbi/[nivel]` | Nível do Guia o Orbi |
 | `/estudante/jogos/entregas-do-orbi` | Capítulo A última luz do bairro, save v2 |
+| `/estudante/jogos/entregas-do-orbi#oficina-do-pulso` | Oficina opcional de alcance/recarga, save separado; subárea na mesma página |
 | `/estudante/jogos/ingles-em-cena` | Oito cenas de inglês aplicado |
 | `/estudante/jogos/vila-dos-blocos` | Dez fases de sintaxe e indentação |
 | `/estudante/jogos/revisao` | Revisão de bolso sobre experiências concluídas |
@@ -81,6 +84,9 @@ experiências da central não equivalem a uma formação profissional completa.
 - Capítulo atual da Entrega: `orbiChapter.ts`, `OrbiChapterExperience.tsx` e engine
   em `src/components/games/orbi-chapter/`. `OrbiDelivery.tsx` é a entrada atual;
   `orbiDelivery.ts` permanece para leitura do histórico v1.
+- Oficina do Pulso: `orbiPulse.ts`, `OrbiPulseExperience.tsx`, combate compartilhado
+  e guia semântico na engine. `orbiPulsePrediction.ts` compara parâmetros para
+  uma hipótese opcional, sem executar código ou gravar progresso.
 - Cursos persistidos: tabelas `courses`, `course_modules`, `lessons` e
   `lesson_materials`.
 - Progresso de aulas e métricas da conta: `lesson_progress` e `v3_user_progress`.
@@ -127,6 +133,19 @@ histórico. O diário `orbitamos-practice-journal-v1-<userId>` identifica novos
 registros da Entrega com `contentVersion=2` e preserva datas/revisões anteriores
 em `legacy*`. Nem abrir o capítulo nem importar conclusão antiga o finalizam.
 
+A Oficina usa `orbitamos-orbi-pulse-v1-<userId>`, sem modificar saves v1/v2,
+journal ou XP da Entrega. A retomada aceita a âncora exata `#oficina-do-pulso`
+apenas na rota da Entrega e mantém a conversão para a prévia. Ao ser a atividade
+recente, sua projeção de continuidade lê a rota/objetivo do save da conta sem
+adicionar outro item ao catálogo ou aos totais. `AcademyResumeTracker` também
+observa `hashchange`, emitido pelo seletor após `replaceState`.
+
+Rascunhos e conquistas de rotas são persistidos; o equipamento não é aplicado
+automaticamente ao recarregar. O retorno rápido dentro da tentativa preserva
+reparos e equipamento e abre o editor. Esses reparos parciais não são um save
+persistido da caminhada. Estado e QA local de 12/11 em
+[EVOLUCAO_ENTREGA_ORBI.md](EVOLUCAO_ENTREGA_ORBI.md#bloco-b--fatia-implementada-em-12112026).
+
 Eventos de atualização e `storage` permitem reler estado entre componentes/abas
 do mesmo navegador. Não existe sincronização desses registros entre celular e
 computador nesta versão. Uma futura sincronização precisa de contrato servidor,
@@ -138,6 +157,8 @@ As páginas `/dev/*` retornam 404 em produção. A central e suas visões usam
 `/dev/academy-preview`; `view=home|tracks|progress|community` seleciona uma visão
 e `activity=delivery|english|village|review|sql` seleciona uma atividade (um valor
 por vez). SQL aceita também `mode=workshop`.
+A Oficina do Pulso abre com
+`/dev/academy-preview?activity=delivery#oficina-do-pulso`.
 Laboratório: `/dev/lab-preview?academy=1`; desafio:
 `/dev/ide-preview/[slug]?academy=1`; C#:
 `/dev/csharp-preview?academy=1&module=conditions`. Monte e Guia o Orbi usam

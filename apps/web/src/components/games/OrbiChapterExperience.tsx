@@ -25,6 +25,7 @@ function OrbiAdventure(props: Props) {
   const choose = (pulse: boolean) => {
     setWorkshop(pulse);
     window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${pulse ? "#oficina-do-pulso" : ""}`);
+    window.dispatchEvent(new Event("hashchange"));
   };
   return workshop
     ? <OrbiPulseExperience userId={props.userId} onBackHref={props.onBackHref} onReturn={() => choose(false)} />
@@ -185,7 +186,7 @@ function ChapterExperience({ userId, onComplete, onBackHref = "/estudante/jogos"
         <h1>A última luz<br />do bairro.</h1>
         <p>Uma encomenda, três caminhos. Ajude Orbi a abrir pontes, alcançar telhados e acender o Farol usando código.</p>
         <button className={s.primary} disabled={!hydrated} onClick={() => { setStarted(true); setArrived(false); }}><Play size={18} />{!hydrated ? "Preparando aventura…" : save.completed.length || save.attempts[save.current] ? "Continuar minha aventura" : "Entrar no bairro"}<ArrowRight size={18} /></button>
-        <button className={s.workshopEntry} onClick={onWorkshop}><span>NOVA AVENTURA</span>Oficina do Pulso <ArrowRight size={17} /></button>
+        <button className={s.workshopEntry} disabled={!hydrated} onClick={onWorkshop}><span>NOVA AVENTURA</span>Oficina do Pulso <ArrowRight size={17} /></button>
         <span className={s.introMeta}>JavaScript do zero · caminhar, explorar e experimentar</span>
         {hydrated && save.attempts[save.current] > 0 && <p className={s.history}>Seu código e suas entregas estão guardados. O caminho recomeça ao entrar.</p>}
         {legacy && <p className={s.history}>Sua aventura anterior está guardada. Este capítulo traz três novas entregas.</p>}

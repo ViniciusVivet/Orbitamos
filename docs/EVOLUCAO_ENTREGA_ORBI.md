@@ -140,6 +140,141 @@ Arquivos principais para continuar:
   disparos, escudo, telegráficos e barreiras.
 - `apps/web/scripts/audit-orbi-pulse.mjs`: percurso real das duas rotas.
 
+## Bloco B — fatia implementada em 12/11/2026
+
+Implementação e validações locais encerradas em **12/11/2026**, conforme os
+resultados abaixo. Os registros de 11/11 continuam sendo históricos. Envio,
+CI e deploy têm conferência separada em
+`docs/local/orbi-guidance-20261112/production-verification.json`; num clone sem
+esse arquivo, conferir o SHA da main e seus checks no GitHub. Build local
+não comprova publicação.
+
+### Orientação ligada ao combate
+
+- O motor deriva a orientação da posição de Orbi, da próxima sentinela ativa,
+  do preparo do ataque, dos disparos que se aproximam e da brecha real do escudo.
+  Ela não usa apenas distância percorrida ou uma sequência de textos por tempo.
+- O guia distingue procurar o terminal, aproximar-se da barreira, testar o
+  alcance/reparar e caminhar até a oficina depois das três passagens livres.
+  Durante um ataque, o perigo tem prioridade sobre essas instruções.
+- A preparação tem sinal visual no cenário e aviso no guia. O disparo que vem
+  na direção de Orbi informa o lado e sugere o pulo; a brecha explica que o
+  segundo pulso precisa chegar antes de o escudo voltar. Ícone, forma e texto
+  mantêm a informação disponível sem depender
+  apenas de cor, animação ou som.
+- O som de aviso é opcional, junto do controle de som existente. Não exige som
+  para desviar ou compreender o ataque. O motor emite mudanças semânticas do
+  guia; não atualiza React ou storage a cada quadro para manter esse texto.
+
+Isso acrescenta leitura de mundo às duas rotas existentes. Novos moradores,
+diálogos e reações mais amplas do bairro continuam sendo evolução futura do
+Bloco B; não são apresentados como parte já entregue.
+
+### Prever, aplicar e comparar
+
+O terminal oferece uma previsão opcional quando um código válido muda alcance,
+recarga ou ambos em relação ao equipamento anterior. A pergunta mostra os
+valores comparados e separa distância percorrida da espera entre disparos;
+também considera diminuir alcance ou aumentar recarga, sem supor que toda
+edição seja uma melhoria.
+
+O aluno pode escolher uma hipótese ou aplicar diretamente. Depois da aplicação,
+uma explicação recolhível compara a hipótese com o efeito dos parâmetros.
+Acertar a previsão não conclui a rota nem comprova que a configuração resolve
+o combate: ainda é necessário testar, reparar e chegar à oficina. Uma resposta
+errada não bloqueia a aplicação. Editar o código, inclusive por atalho, reset
+ou desfazer, limpa a escolha anterior; voltar a um valor antigo não a recupera.
+Código inválido continua com o feedback do parser e não altera o equipamento.
+O editor de duas linhas ocupa menos espaço, e a ação de aplicar permanece
+visível enquanto o terminal rola. No celular, o controle mostra o rótulo
+**Terminal**; a entrada da Oficina aguarda a hidratação para não perder um
+clique rápido. Depois da vitória, a comparação não pede outro disparo.
+
+### Voltar ao terminal sem perder a tentativa
+
+Depois do ponto de retorno, o guia oferece **Voltar ao terminal** durante o
+percurso. A ação reposiciona Orbi no terminal e abre o editor automaticamente,
+com foco no código. Mantém os reparos desta tentativa, o equipamento aplicado
+e o rascunho, inclusive uma edição ainda não aplicada. Não exige refazer uma
+passagem reparada apenas para experimentar outro valor.
+
+Esse retorno dentro da tentativa é diferente de sair da página ou recarregar:
+ao retomar uma sessão, os rascunhos e conquistas das rotas são recuperados, mas
+o rascunho não é executado silenciosamente e os reparos da caminhada não viram
+conquistas persistidas por sentinela.
+
+### A Home reconhece a Oficina
+
+A identidade de retomada é
+`/estudante/jogos/entregas-do-orbi#oficina-do-pulso`. Na prévia, ela volta a
+`/dev/academy-preview?activity=delivery#oficina-do-pulso`. A troca entre as
+Entregas e a Oficina atualiza esse destino mesmo quando a interface usa
+`history.replaceState`, por uma notificação de `hashchange` ao tracker.
+
+Quando a Oficina é a atividade recente, a Home mostra **Oficina do Pulso**,
+a rota corrente e seu objetivo, lidos do save da conta. A projeção é específica
+da retomada: não cria outra atividade no catálogo/denominadores, badges ou XP.
+A escolha de trilha principal mantém sua prioridade existente. A validação de
+URLs aceita apenas essa âncora autoral na rota da Entrega; não libera hashes,
+parâmetros de redirecionamento ou destinos externos arbitrários.
+
+Saves v1/v2, o journal de conclusão da Entrega e seu XP permanecem separados.
+Não há serviço novo, migração ou gravação de combate no Supabase nesta fatia.
+
+Arquivos para continuar este bloco:
+
+- `apps/web/src/components/games/orbi-chapter/PulseCoach.tsx`: guia e retorno.
+- `apps/web/src/components/games/orbi-chapter/PulsePrediction.tsx`: hipótese e
+  comparação opcional depois de aplicar.
+- `apps/web/src/lib/orbiPulsePrediction.ts` e seu teste: comparação segura dos
+  parâmetros, sem efeitos de execução, save ou XP.
+- `apps/web/src/components/games/orbi-chapter/engineGuide.test.ts`: contratos da
+  orientação derivada do combate.
+- `apps/web/src/components/estudante/AcademyResumeTracker.tsx`,
+  `apps/web/src/lib/portalNavigation.ts` e `academyActivity.ts`: destino da
+  subaventura, validação e projeção da retomada, com testes focais dos helpers.
+- `apps/web/scripts/audit-orbi-pulse-guidance.mjs`: roteiro do Bloco B com
+  controles reais; comandos e escopo em
+  [TESTES_AUTOMATIZADOS.md](TESTES_AUTOMATIZADOS.md#bloco-b--orientação-previsão-e-retomada-12112026).
+
+### Ponto de retomada — 12/11/2026
+
+- Novo roteiro aprovado em desktop, WebKit/Windows com perfil iPhone 13 e
+  Chromium 320 px. Verificou ameaças e brecha reais, previsão correta/incorreta
+  ou ignorada, invalidação da escolha por edição, retorno com reparo/rascunho,
+  retomada pela Home e isolamento dos saves/XP. A ação de aplicar permaneceu
+  inteiramente visível com a previsão aberta nos dois perfis móveis.
+- As duas rotas completas foram rejogadas nos três perfis pelo roteiro
+  `audit-orbi-pulse.mjs`, incluindo alcance insuficiente, recarga lenta,
+  código inválido, reset/undo, chegada física e reload sem aplicar o rascunho.
+  No perfil estreito, andar+pular+pulso simultâneos e a soltura passaram.
+- Ponte, elevador e farol foram concluídos novamente no desktop, preservando
+  histórico e journal v2. Nenhum erro de página, overflow ou violação Axe nos
+  escopos desses percursos. Capturas e JSON continuam fora do Git em
+  `apps/web/test-results/orbi-pulse-guidance`, `orbi-pulse` e `orbi-chapter`.
+- Suíte geral: **578 testes em 63 arquivos**, mais **9 contratos** aprovados.
+  Tipos e build de produção aprovados. Lint geral sem erros, com os mesmos
+  29 avisos preexistentes. O build manteve o aviso preexistente de tracing
+  no endpoint de materiais de curso. Logs locais em
+  `docs/local/orbi-guidance-20261112/`.
+- A primeira tentativa expôs um clique perdido antes da hidratação da entrada
+  da Oficina. O botão passou a aguardar a página estar pronta, e o percurso
+  posterior confirmou sua abertura. Um erro de chunk de CSS durante HMR e uma
+  tentativa antes de o servidor reiniciado estar pronto não foram contados
+  como percursos aprovados; as rodadas finais usaram o servidor estável.
+
+**Próximo trabalho:** observar uma pessoa iniciante e conferir em um iPhone
+físico a fluidez, o teclado aberto, o foco do editor e os controles. WebKit no
+Windows não reproduz esse aparelho. As amostras de quadros dos roteiros incluem
+Axe/capturas e não substituem o profiler de 11/11.
+
+Continuar o Bloco B com reações e diálogos curtos ligados aos reparos, sem
+empilhar texto antes de jogar. Depois, projetar o Bloco C de condições como
+aventura separada, com gramática e save explícitos. O critério permanece
+entender o objetivo e explicar o efeito do código, além de concluir um roteiro.
+Conferir o registro remoto separado antes de afirmar que este fechamento foi
+publicado.
+
 ## Arte e origem dos arquivos
 
 Atlas novo: `apps/web/public/images/games/orbi-chapter/sentinel-sheet-v1.webp`,
@@ -302,10 +437,11 @@ continuam coesos no desktop e no celular.
   físico nem declarar que os engasgos acabaram.
 - Baseline isolada preservada em
   `apps/web/test-results/orbi-pulse/frames-canvas-before.json`. O agente do
-  motor prepara uma variante de imagens pré-rasterizadas para a escala da
-  câmera, sem mudar a arte. Comparar usando `profile-orbi-frames.mjs`, um
-  navegador por vez, antes de promover a variante. Não trocar renderer com
-  base apenas em suposição.
+  motor preparou, naquele ponto da investigação, uma variante de imagens
+  pré-rasterizadas para a escala da câmera, sem mudar a arte. **Esse experimento
+  foi encerrado em 11/11**, com comparação por `profile-orbi-frames.mjs` e sem
+  ganho consistente; não foi adotado como padrão. Os resultados finais estão
+  na tabela de renderização abaixo. Não há um bake pendente de promoção.
 - O Next local 3015 foi encerrado durante a suíte geral para liberar memória
   e reiniciado para as comparações e o percurso final. Não rodar navegador
   pesado e build juntos. Atualizar este ponto ao concluir a publicação.
@@ -318,9 +454,11 @@ continuam coesos no desktop e no celular.
   e artefatos locais ignorados. O build manteve um aviso preexistente de tracing
   no endpoint de materiais de curso; os dois ajustes de tipos das variantes
   gráficas foram corrigidos antes do build aprovado.
-- Próxima etapa de produto após a publicação: Bloco B, com leitura dos ataques,
-  previsão antes de aplicar código e retomada que identifique a Oficina.
-  Validar a fluidez no iPhone físico antes de ampliar a carga visual da aventura.
+- Próxima etapa de produto registrada em 11/11 após a publicação: Bloco B,
+  com leitura dos ataques, previsão antes de aplicar código e retomada que
+  identifique a Oficina.
+  A fatia implementada em 12/11 e suas verificações locais estão no registro
+  próprio acima. Validar a fluidez no iPhone físico antes de ampliar a carga visual.
 
 ### Comparação de renderização — 11/11
 

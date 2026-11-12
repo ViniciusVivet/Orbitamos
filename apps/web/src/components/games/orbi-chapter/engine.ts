@@ -3,7 +3,7 @@ import { CHAPTER_HEIGHT, CHAPTER_PLAYER_HEIGHT, CHAPTER_PLAYER_WIDTH, CHAPTER_WO
 import { ChapterAudio } from "./audio";
 import { defaultPulseProgram, type PulseProgram } from "@/lib/orbiPulse";
 import { advancePulseCombat, createPulseCombat, firePulseCombat, pulseCombatPlatforms, recoverPulseCombat, type PulseCombatState } from "./pulseCombat";
-import type { ChapterRuntime, ChapterSceneOptions } from "./types";
+import type { ChapterRuntime, ChapterSceneOptions, PulseGuideState } from "./types";
 
 const ART_ROOT = "/images/games/orbi-chapter";
 const night = { ink: 0x0d2433, deep: 0x103345, mint: 0xb6ead2, gold: 0xf4ce86, water: 0x1b5362 };
@@ -11,6 +11,36 @@ const FIXED_STEP = 1 / 120;
 const STATIC_TEXTURE = "orbi-chapter-static-geometry";
 const BACKDROP_TEXTURE = "orbi-chapter-viewport-backdrop";
 type EffectDot = { active: boolean; x: number; y: number; toX: number; toY: number; born: number; duration: number; tint: number; radius: number };
+
+/** Read on the HUD cadence, not on every physics tick; combat remains authoritative. */
+export function readPulseGuide(state: Readonly<PulseCombatState>, body: Readonly<ChapterBody>, programApplied: boolean, checkpoint = false): PulseGuideState {
+  const playerX = body.x + CHAPTER_PLAYER_WIDTH / 2;
+  let target: PulseCombatState["enemies"][number] | undefined;
+  for (const enemy of state.enemies) if (enemy.active && (!target || enemy.baseX < target.baseX)) target = enemy;
+  const atTerminal = Math.abs(body.x - chapterTerminal("farol").x) < 110;
+  const barrier = target ? state.barriers.find(item => item.id === `pulse-barrier-${target.id}`) : undefined;
+  const phase: PulseGuideState["phase"] = !target
+    ? programApplied ? "workshop" : "terminal"
+    : !programApplied && body.x < 600 ? "terminal"
+      : (barrier?.x ?? target.baseX) - body.x > 60 ? "approach" : "repair";
+  const destination = phase === "terminal" ? chapterTerminal("farol").x : target?.x ?? chapterGoal("farol").x;
+  let direction: PulseGuideState["direction"] = phase === "terminal" && atTerminal ? "none" : destination > playerX ? "right" : destination < playerX ? "left" : "none";
+  let threat: PulseGuideState["threat"] = "safe";
+  let closest = Infinity;
+  for (const shot of state.shots) {
+    if (!shot.active || !shot.hostile) continue;
+    const distance = shot.x - playerX;
+    // A shot behind Orbi or passing below his jump is not an imminent hit.
+    if (shot.direction * distance >= 0 || Math.abs(distance) > 440 || Math.abs(shot.y - (body.y + CHAPTER_PLAYER_HEIGHT / 2)) > CHAPTER_PLAYER_HEIGHT / 2 + 10) continue;
+    if (Math.abs(distance) > closest || Math.abs(distance) === closest && distance < 0) continue;
+    closest = Math.abs(distance); threat = "incoming"; direction = distance > 0 ? "right" : "left";
+  }
+  if (threat === "safe") for (const enemy of state.enemies) {
+    if (!enemy.active || enemy.charge <= 0 || enemy.x <= playerX || enemy.x - playerX >= closest) continue;
+    closest = enemy.x - playerX; threat = "charging"; direction = "right";
+  }
+  return { phase, threat, direction, target: target ? target.id + 1 : null, breach: Boolean(target && target.hp < target.maxHp), canReturn: checkpoint && !atTerminal };
+}
 
 export async function createChapterGame(parent: HTMLElement, initialOptions: ChapterSceneOptions): Promise<ChapterRuntime> {
   // Phaser is loaded only when this game is mounted in the browser.
@@ -55,6 +85,7 @@ export async function createChapterGame(parent: HTMLElement, initialOptions: Cha
     private pulse: PulseCombatState | null = options.pulse ? createPulseCombat(options.pulse.lesson) : null;
     private pulseProgram: PulseProgram = options.pulse?.program ?? defaultPulse[options.pulse?.lesson ?? "alcance"];
     private pulseHudAt = -Infinity;
+    private pulseGuide: PulseGuideState | null = null;
     private pulseCleared = 0;
     private pulseHintAt = -Infinity;
     private pulseGraphics!: PhaserTypes.GameObjects.Graphics;
@@ -279,8 +310,9 @@ export async function createChapterGame(parent: HTMLElement, initialOptions: Cha
       keys.left = keys.right = keys.jump = keys.fire = false; requestInteraction = requestFire = false;
       if (this.pulse) { recoverPulseCombat(this.pulse); this.pulse.events.length = 0; this.pulse.cooldownTotal = this.pulseProgram.cooldown; }
       else {
-        for (const key of ["pulseLesson", "pulseShield", "pulseCleared", "pulseRange", "pulseCooldown", "pulseCooldownRemaining", "pulseShots", "pulsePlayerShots", "pulseHostileShots"]) delete parent.dataset[key];
+        for (const key of ["pulseLesson", "pulseShield", "pulseCleared", "pulseRange", "pulseCooldown", "pulseCooldownRemaining", "pulseShots", "pulsePlayerShots", "pulseHostileShots", "pulseGuidePhase", "pulseThreat", "pulseGuideDirection", "pulseTarget", "pulseBreach", "pulseCanReturn"]) delete parent.dataset[key];
       }
+      this.pulseGuide = null;
       this.pulseCleared = this.pulse?.cleared ?? 0; this.pulseHudAt = this.pulseHintAt = -Infinity;
       this.actor.setAlpha(1).clearTint(); this.actor.setFlipX(false);
       this.scenery.removeAll(true);
@@ -489,7 +521,7 @@ export async function createChapterGame(parent: HTMLElement, initialOptions: Cha
         if (sprite) {
           const frame = !enemy.active ? "7" : enemy.hitFlash > 0 ? "5" : enemy.charge > 0 ? "3" : reducedMotion ? "0" : Math.sin(state.time * 4 + index) > 0 ? "1" : "2";
           if (sprite.frame.name !== frame) sprite.setFrame(frame);
-          sprite.setPosition(enemy.x, enemy.y - 8).setAlpha(enemy.active ? 1 : .8);
+          sprite.setPosition(enemy.x, enemy.y - 8).setAlpha(1);
         } else {
           // A network/image failure must leave the workshop fully playable.
           const tint = enemy.active ? 0xbc8c6b : night.mint;
@@ -508,18 +540,35 @@ export async function createChapterGame(parent: HTMLElement, initialOptions: Cha
             graphics.fillRoundedRect(barX + hp * 50 / enemy.maxHp, barY, 48 / enemy.maxHp - 2, 6, 2);
           }
           if (enemy.charge > 0) {
-            graphics.lineStyle(2 + enemy.charge * 2, 0xefa5d5, .35 + enemy.charge * .5);
-            graphics.strokeCircle(enemy.x - 15, enemy.y - 4, 13 + enemy.charge * 10);
+            // A warning shape and left-pointing arrow remain readable without
+            // distinguishing magenta from cyan or enabling decorative motion.
+            const warningX = enemy.x - 43, warningY = enemy.y - 59;
+            graphics.fillStyle(night.gold, .98);
+            graphics.fillTriangle(warningX, warningY - 12, warningX + 12, warningY + 9, warningX - 12, warningY + 9);
+            graphics.lineStyle(2.5, night.ink, 1); graphics.lineBetween(warningX, warningY - 5, warningX, warningY + 1);
+            graphics.fillStyle(night.ink, 1); graphics.fillCircle(warningX, warningY + 5, 1.5);
+            graphics.lineStyle(3, night.gold, .95);
+            graphics.lineBetween(enemy.x - 33, enemy.y, enemy.x - 64, enemy.y);
+            graphics.lineBetween(enemy.x - 64, enemy.y, enemy.x - 55, enemy.y - 7);
+            graphics.lineBetween(enemy.x - 64, enemy.y, enemy.x - 55, enemy.y + 7);
+            graphics.lineStyle(reducedMotion ? 3 : 2 + enemy.charge * 2, 0xefa5d5, .65);
+            graphics.strokeCircle(enemy.x - 15, enemy.y - 4, reducedMotion ? 22 : 13 + enemy.charge * 10);
           }
         } else {
-          graphics.lineStyle(3, night.mint, .85); graphics.lineBetween(enemy.x - 8, enemy.y - 49, enemy.x - 2, enemy.y - 43); graphics.lineBetween(enemy.x - 2, enemy.y - 43, enemy.x + 10, enemy.y - 56);
+          graphics.fillStyle(night.ink, .95); graphics.fillCircle(enemy.x, enemy.y - 51, 15);
+          graphics.lineStyle(1.5, night.mint, .7); graphics.strokeCircle(enemy.x, enemy.y - 51, 15);
+          graphics.lineStyle(3, night.mint, 1); graphics.lineBetween(enemy.x - 8, enemy.y - 51, enemy.x - 2, enemy.y - 45); graphics.lineBetween(enemy.x - 2, enemy.y - 45, enemy.x + 9, enemy.y - 57);
         }
       }
       for (const shot of state.shots) {
         if (!shot.active || shot.x < left || shot.x > right) continue;
         const tint = shot.hostile ? 0xe8a4d6 : night.mint;
         graphics.lineStyle(shot.hostile ? 4 : 5, tint, .28); graphics.lineBetween(shot.x - shot.direction * 20, shot.y, shot.x, shot.y);
-        graphics.fillStyle(tint, .95); graphics.fillCircle(shot.x, shot.y, shot.hostile ? 5 : 4);
+        graphics.fillStyle(tint, .95);
+        if (shot.hostile) {
+          graphics.fillTriangle(shot.x - 8, shot.y, shot.x, shot.y - 6, shot.x + 8, shot.y);
+          graphics.fillTriangle(shot.x - 8, shot.y, shot.x, shot.y + 6, shot.x + 8, shot.y);
+        } else graphics.fillCircle(shot.x, shot.y, 4);
         graphics.fillStyle(0xf4f1d5, .95); graphics.fillCircle(shot.x, shot.y, 2);
       }
     }
@@ -528,12 +577,25 @@ export async function createChapterGame(parent: HTMLElement, initialOptions: Cha
       if (!state || (!force && this.elapsed - this.pulseHudAt < .1)) return;
       this.pulseHudAt = this.elapsed;
       emit({ type: "pulse-state", shield: state.shield, cleared: state.cleared, total: state.total, cooldownRemaining: state.cooldown, cooldownTotal: state.cooldownTotal });
+      this.emitPulseGuide();
       parent.dataset.pulseLesson = state.lesson; parent.dataset.pulseShield = String(state.shield); parent.dataset.pulseCleared = String(state.cleared);
       parent.dataset.pulseRange = String(this.pulseProgram.range); parent.dataset.pulseCooldown = String(this.pulseProgram.cooldown);
       parent.dataset.pulseCooldownRemaining = state.cooldown.toFixed(2);
       let playerShots = 0, hostileShots = 0;
       for (const shot of state.shots) if (shot.active) { if (shot.hostile) hostileShots++; else playerShots++; }
       parent.dataset.pulseShots = String(playerShots + hostileShots); parent.dataset.pulsePlayerShots = String(playerShots); parent.dataset.pulseHostileShots = String(hostileShots);
+    }
+    private emitPulseGuide() {
+      if (!this.pulse) return;
+      const next = readPulseGuide(this.pulse, this.bodyState, Boolean(options.pulse?.program), this.checkpoint);
+      const previous = this.pulseGuide;
+      if (previous && previous.phase === next.phase && previous.threat === next.threat && previous.direction === next.direction && previous.target === next.target && previous.breach === next.breach && previous.canReturn === next.canReturn) return;
+      if (next.threat === "charging" && previous && (previous.threat !== "charging" || previous.target !== next.target)) audio.play("sentinel-warning");
+      this.pulseGuide = next;
+      parent.dataset.pulseGuidePhase = next.phase; parent.dataset.pulseThreat = next.threat;
+      parent.dataset.pulseGuideDirection = next.direction; parent.dataset.pulseTarget = next.target === null ? "" : String(next.target); parent.dataset.pulseBreach = String(next.breach);
+      parent.dataset.pulseCanReturn = String(next.canReturn);
+      emit({ type: "pulse-guide", ...next });
     }
     private consumePulseEvents() {
       const state = this.pulse; if (!state || !state.events.length) return;
@@ -554,6 +616,7 @@ export async function createChapterGame(parent: HTMLElement, initialOptions: Cha
           emit({ type: "pulse-feedback", message: "A proteção voltou antes do segundo pulso. Diminua o tempo de recarga no terminal para disparar mais rápido." });
         } else if (event.type === "damaged") {
           audio.play("shield-hit"); this.burst(event.x, event.y, 0xe8a4d6, 8); changed = true;
+          emit({ type: "pulse-feedback", message: "O escudo segurou o ruído. O triângulo avisa antes do disparo; pule sobre a próxima onda." });
           if (!reducedMotion) this.cameras.main.flash(100, 119, 74, 115, false);
         } else if (event.type === "respawn") {
           recoverPulseCombat(state); audio.play("shield-ready"); changed = true;

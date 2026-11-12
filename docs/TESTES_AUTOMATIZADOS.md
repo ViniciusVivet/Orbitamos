@@ -1,6 +1,7 @@
 # Testes e validações
 
-Última revisão documental: 2026-11-11. Os resultados de `3643a04` permanecem
+Última revisão documental: 2026-11-12, com o roteiro do Bloco B acrescentado.
+Os resultados de `3643a04` permanecem
 históricos. A rodada de escalabilidade abaixo distingue testes focais, integração
 unitária, auditoria isolada de navegador de 05/11 e banco local. As fixtures
 não comprovam dados/autorização do projeto remoto.
@@ -100,6 +101,71 @@ esse roteiro não substitui os roteiros originais `audit-orbi-chapter.mjs` e
 `audit-orbi-chapter-resilience.mjs`, nem build, CI ou validação de produção.
 Este registro documenta implementação e comandos; não declara aprovação dessas
 etapas na rodada de 11/11.
+
+### Bloco B — orientação, previsão e retomada (12/11/2026)
+
+O novo roteiro complementa o percurso das duas rotas; não o substitui. A
+implementação adiciona orientação derivada do combate, aviso visual com som
+opcional, previsão sobre os parâmetros editados, retorno rápido ao editor e
+retomada específica da Oficina pela Home. Os três perfis do novo roteiro e
+das duas rotas completas passaram em 12/11; as três entregas antigas também
+passaram no desktop. Suíte geral: 578 testes em 63 arquivos, nove contratos,
+tipos e build aprovados; lint sem erros e com 29 avisos preexistentes.
+Escopos, correções, limites e conferência remota separada estão no
+[ponto de continuidade](EVOLUCAO_ENTREGA_ORBI.md#ponto-de-retomada--12112026).
+
+Verificações focais acrescentadas, a partir de `apps/web`:
+
+```powershell
+node node_modules/vitest/vitest.mjs run src/lib/orbiPulsePrediction.test.ts src/components/games/orbi-chapter/engineGuide.test.ts src/components/games/orbi-chapter/audio.test.ts src/lib/portalNavigation.test.ts src/lib/academyActivity.test.ts --maxWorkers=1 --no-file-parallelism
+node --check scripts/audit-orbi-pulse-guidance.mjs
+```
+
+Os testes de previsão cobrem aumento/diminuição de alcance, aumento/diminuição
+da recarga e edição dos dois parâmetros; a comparação não aplica código nem
+concede progresso. O guia recebe estado real de ataque, direção e brecha. Os
+helpers de navegação/retomada verificam âncora permitida, conversão real/prévia,
+isolamento por conta e compatibilidade dos registros antigos.
+
+Com o servidor local já em execução, rode um perfil por vez e sem build em
+paralelo:
+
+```powershell
+node scripts/audit-orbi-pulse-guidance.mjs                  # três perfis em sequência
+node scripts/audit-orbi-pulse-guidance.mjs desktop
+node scripts/audit-orbi-pulse-guidance.mjs iphone-safari    # WebKit, perfil iPhone 13
+node scripts/audit-orbi-pulse-guidance.mjs small-mobile     # Chromium, 320 × 740
+```
+
+Aceita `ORBI_TEST_URL` (ou `BASE_URL`) para trocar `http://localhost:3015`.
+Movimento normal é o padrão; `ORBI_REDUCED_MOTION=1` permite uma rodada adicional.
+Capturas e JSON, incluindo um resultado parcial caso um assert falhe, ficam em
+`apps/web/test-results/orbi-pulse-guidance/`, fora do Git.
+
+O roteiro verifica:
+
+- Entrada na Oficina pelo seletor e atualização da retomada mesmo com
+  `replaceState`; a Home mostra o nome e a rota corrente e retorna com a âncora.
+- Previsão opcional, resposta correta/incorreta e comparação após aplicar.
+  Uma configuração válida mas insuficiente é aplicada; não há bloqueio por quiz.
+  Editar e voltar ao valor anterior não restaura uma escolha antiga.
+- Preparação e aproximação de ataques, direção e brecha observadas durante
+  combate real. Usa controles e diagnósticos públicos, sem teleporte ou vitória
+  escrita no estado interno do jogo.
+- **Voltar ao terminal** abre e focaliza o editor; mantém o primeiro reparo,
+  equipamento aplicado e rascunho ainda não aplicado. Retomar pela Home conserva
+  o rascunho sem executá-lo automaticamente.
+- Saves v1/v2, journal/XP anterior e save de outra conta permanecem intactos.
+  As fixtures representam histórico de contas; a primeira rota da Oficina é
+  concluída por movimento e disparos reais.
+- Overflow e Axe nos blocos testados, screenshots de editor/guia/Home e ausência
+  de exceções de página. Avisos de ataque/brecha têm capturas próprias; esses
+  estados transitórios não são uma medição de fluidez.
+
+WebKit no Windows com perfil iPhone não comprova Safari em um iPhone físico.
+Este roteiro também não repete o teste de três toques simultâneos do roteiro
+`audit-orbi-pulse.mjs`, nem substitui a validação de áudio/mute, o profiler,
+as regressões antigas, os checks de build/CI ou o percurso publicado.
 
 ## Rodada de escalabilidade iniciada em 2026-11-04
 

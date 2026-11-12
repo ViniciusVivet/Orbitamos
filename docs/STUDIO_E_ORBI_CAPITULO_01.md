@@ -166,3 +166,24 @@ rejogadas no desktop; a suíte geral passou com 555 testes, nove contratos e
 build de produção aprovado. Os experimentos de renderização, seus limites
 e o registro separado de publicação estão no plano de evolução. Isso não
 equivale a medir a fluidez em um iPhone físico.
+
+## Continuação de 12/11/2026 — leitura do combate e retomada
+
+A fatia implementada do Bloco B acrescenta um guia ligado ao estado real das
+sentinelas, aviso visual de ataque com som opcional e previsão opcional sobre
+alcance/recarga. A comparação aparece depois de aplicar; responder não é uma
+condição para testar o código. O retorno **Voltar ao terminal** abre o editor e
+preserva reparos da tentativa, equipamento e rascunho.
+
+A Home identifica **Oficina do Pulso** pela âncora autoral
+`#oficina-do-pulso`, preservada na conversão entre rota autenticada e prévia.
+Isso não cria outra fonte de XP ou conclusão para as três entregas. Rascunhos
+e conquistas seguem locais por conta; reload não aplica código automaticamente.
+
+O estado implementado, o restante do Bloco B e o fechamento local de QA
+estão em [EVOLUCAO_ENTREGA_ORBI.md](EVOLUCAO_ENTREGA_ORBI.md#bloco-b--fatia-implementada-em-12112026).
+O novo `audit-orbi-pulse-guidance.mjs` está descrito no
+[guia de testes](TESTES_AUTOMATIZADOS.md#bloco-b--orientação-previsão-e-retomada-12112026).
+Browser nos três perfis, tipos e build locais foram aprovados em 12/11; envio,
+CI e deploy têm registro separado. Resultados de 04/11 e 11/11 permanecem
+históricos; perfil WebKit não comprova o desempenho de um iPhone físico.

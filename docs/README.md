@@ -2,6 +2,9 @@
 
 Índice revisado em **07/11/2026**.
 Plano de evolução e registro da Oficina do Pulso acrescentados em **11/11/2026**.
+Bloco B e roteiro de orientação/previsão/retomada documentados em **12/11/2026**;
+validações locais e limites registrados no guia de evolução. A conferência
+remota de SHA, CI e deploy permanece separada dos resultados locais.
 
 Os guias abaixo separam o estado implementado, as decisões de produto,
 a operação e os registros históricos. Datas antigas em auditorias são mantidas
@@ -41,7 +44,7 @@ quando descrevem uma execução específica.
 | [SQL_COM_ORBI.md](SQL_COM_ORBI.md) | Aventura SQL, oficina e retomada |
 | [VILA_DOS_BLOCOS.md](VILA_DOS_BLOCOS.md) | Jogo de símbolos e indentação, saves e continuidade |
 | [STUDIO_E_ORBI_CAPITULO_01.md](STUDIO_E_ORBI_CAPITULO_01.md) | Rodada do Studio e capítulo de plataforma aprovado |
-| [EVOLUCAO_ENTREGA_ORBI.md](EVOLUCAO_ENTREGA_ORBI.md) | Oficina do Pulso, compatibilidade, plano de evolução e ponto de continuidade do jogo |
+| [EVOLUCAO_ENTREGA_ORBI.md](EVOLUCAO_ENTREGA_ORBI.md) | Oficina do Pulso, Bloco B implementado em 12/11, compatibilidade, experimentos encerrados e ponto de continuidade/QA |
 
 ## Direção visual e páginas comerciais
 

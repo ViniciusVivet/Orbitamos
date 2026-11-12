@@ -1,6 +1,6 @@
 export type ChapterSound =
   | "jump" | "land" | "terminal" | "fall" | "arrive" | "machine" | "checkpoint"
-  | "step" | "pulse" | "pulse-hit" | "bug-cleared" | "shield-hit" | "shield-ready" | "code-error";
+  | "step" | "pulse" | "pulse-hit" | "bug-cleared" | "shield-hit" | "shield-ready" | "code-error" | "sentinel-warning";
 
 type Voice = { oscillator: OscillatorNode; gain: GainNode };
 const MAX_VOICES = 12;
@@ -8,7 +8,7 @@ const AMBIENT_NOTES = [130.81, 0, 196, 0, 164.81, 0, 220, 0, 130.81, 0, 164.81, 
 const CUE_GAP: Record<ChapterSound, number> = {
   jump: .08, land: .1, terminal: .2, fall: .3, arrive: .8, machine: .25, checkpoint: .4,
   step: .18, pulse: .11, "pulse-hit": .08, "bug-cleared": .14, "shield-hit": .25,
-  "shield-ready": .3, "code-error": .25,
+  "shield-ready": .3, "code-error": .25, "sentinel-warning": .8,
 };
 
 /** Original browser-synthesized cues; no downloads, microphones or sound before a gesture. */
@@ -145,6 +145,7 @@ export class ChapterAudio {
       case "shield-hit": this.tone(164, .18, 0, .13, "triangle", 74); this.tone(73.42, .16, .02, .11); break;
       case "shield-ready": this.tone(392, .2, 0, .1); this.tone(523.25, .3, .09, .09); break;
       case "code-error": this.tone(246.94, .12, 0, .1, "triangle"); this.tone(196, .18, .08, .09, "triangle"); break;
+      case "sentinel-warning": this.tone(440, .1, 0, .09, "triangle"); this.tone(587.33, .14, .12, .09, "triangle"); break;
     }
   }
 
