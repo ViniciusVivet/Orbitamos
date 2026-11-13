@@ -377,6 +377,17 @@ Esses testes não usam uma conta autenticada de produção nem substituem valida
 com iniciante. Escopo, assets e continuidade:
 [SIMULADOR_PROFISSOES.md](SIMULADOR_PROFISSOES.md).
 
+## Auditoria da esteira de homologação
+
+A esteira tem auditoria própria: `node scripts/audit-work-delivery.mjs`, com os
+mesmos argumentos `desktop`, `iphone-safari` e `small-mobile`, executados em série.
+Ela prepara apenas os pré-requisitos dos dois casos anteriores; o arquivo, as
+verificações, a publicação, a conferência e a conquista nova são feitos pela
+interface. Confere teste verde incompleto, versão errada, erro de JSON, evidência
+antiga, cancelamento, recuperação, retomada e isolamento dos saves anteriores.
+Relatórios e capturas ficam em `apps/web/test-results/work-delivery/`. Não valida
+GitHub Actions real, hospedagem externa ou uma conta autenticada de produção.
+
 ## Limites restantes
 
 Para medir o Orbi sem o trabalho de screenshots e Axe na janela de amostragem,

@@ -352,11 +352,26 @@ for (const profile of profiles) {
     await expect(chat).toBeVisible();
     await expect(chat).toContainText("Você encontrou a relação entre o endereço e o serviço.");
     await assertCompleted(["checkout-staging", "checkout-transfer"]);
+    const deliveredSave = await readRaw(keys.work);
+    await expect(chat.getByRole("link", { name: "Preparar a entrega", exact: true })).toHaveAttribute("href", "#esteira");
     await shot("transfer-review", 'dialog[aria-labelledby="work-person-title"][open]');
     await chat.getByRole("button", { name: "Voltar ao escritório", exact: true }).click();
-    await expect(root.getByRole("heading", { name: "Você investigou e verificou uma mudança.", exact: true })).toBeVisible();
+    await expect(root.getByRole("heading", { name: "A correção está pronta. E a entrega?", exact: true })).toBeVisible();
+    await expect(root.getByRole("link", { name: "Continuar: do teste à entrega", exact: true })).toHaveAttribute("href", "#esteira");
+    assert.equal(await readRaw(keys.work), deliveredSave, "A ponte para a esteira preserva os dois casos entregues");
     await shot("both-delivered");
     report.checks.transferRequiresNewPortAndItsOwnTestAndReport = true;
+    report.checks.deliveryBridgePreservesCompletedCases = true;
+    await root.getByRole("link", { name: "Continuar: do teste à entrega", exact: true }).click();
+    const deliveryPhase = page.locator("[data-work-delivery]");
+    await expect(deliveryPhase).toBeVisible();
+    await expect(deliveryPhase.locator("[data-delivery-locked]")).toHaveCount(0);
+    await expect(deliveryPhase.getByRole("heading", { name: "Do teste à entrega.", exact: true })).toBeVisible();
+    assert.equal(await readRaw(keys.work), deliveredSave, "Abrir a esteira não altera os casos que o aluno acabou de concluir");
+    await deliveryPhase.getByRole("link", { name: "Rever os casos de conexão", exact: true }).click();
+    await expect(root).toBeVisible();
+    await expect(root).toHaveAttribute("data-completed", "2");
+    report.checks.deliveryBridgeNavigatesAndReturnsWithoutChangingCases = true;
 
     assert.equal(await readRaw(keys.other), otherBefore, "Concluir ambas as missões não muda a segunda conta");
     const completedBefore = await readRaw(keys.work);

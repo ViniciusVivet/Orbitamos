@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ArrowLeft, ArrowRight, Check, CheckCheck, ChevronRight, ClipboardList, Code2, FileCode2, GitCompareArrows, Lightbulb, Monitor, Network, Package, Pause, Play, RotateCcw, Send, Terminal, Volume2, VolumeX, X } from "lucide-react";
 import OfficeScene, { type OfficeTarget } from "./work-simulation/OfficeScene";
 import { completeWorkCase, emptyWorkSave, getWorkCase, mergeWorkSave, parseWorkConfig, readWorkSave, testWorkCheckout, WORK_CASE_IDS, WORK_CONFIG_LIMIT, workSimulationKey, type WorkCaseId, type WorkConfig, type WorkSave, type WorkTestResult } from "@/lib/workSimulation";
 import s from "./WorkSimulation.module.css";
+import { WORK_DELIVERY_HASH } from "@/lib/portalNavigation";
 
 type Props = { userId: string; preview?: boolean; onBackHref?: string };
 type Panel = "ticket" | "services" | "logs" | "config" | "test" | "report";
@@ -18,7 +20,15 @@ const panels = [
   { id: "report", label: "Entrega", icon: Send },
 ] as const;
 
-export default function WorkSimulation(props: Props) { return <WorkSession key={props.userId} {...props}/>; }
+const WorkDelivery = dynamic(() => import("./WorkDelivery"), { loading: () => <p role="status">Abrindo a esteira de homologação…</p> });
+const subscribePhase = (listener: () => void) => {
+  window.addEventListener("hashchange", listener);
+  return () => window.removeEventListener("hashchange", listener);
+};
+export default function WorkSimulation(props: Props) {
+  const delivery = useSyncExternalStore(subscribePhase, () => window.location.hash === WORK_DELIVERY_HASH, () => false);
+  return delivery ? <WorkDelivery key={props.userId} {...props}/> : <WorkSession key={props.userId} {...props}/>;
+}
 
 function WorkSession({ userId, preview = false, onBackHref }: Props) {
   const [save, setSave] = useState<WorkSave>(emptyWorkSave);
@@ -49,7 +59,6 @@ function WorkSession({ userId, preview = false, onBackHref }: Props) {
   const draftChanged = !parsed.ok || parsed.config.ordersBaseUrl !== applied.ordersBaseUrl;
   const done = save.completed.includes(caseId);
   const back = onBackHref ?? (preview ? "/dev/academy-preview" : "/estudante/jogos");
-  const lab = preview ? "/dev/ide-preview/variaveis-js?academy=1" : "/estudante/pratica/variaveis-js";
 
   const cancelTest = useCallback(() => {
     if (testTimer.current) clearTimeout(testTimer.current);
@@ -146,7 +155,7 @@ function WorkSession({ userId, preview = false, onBackHref }: Props) {
     requestAnimationFrame(() => field?.setSelectionRange(start + text.length, start + text.length));
   }
   const practiced = save.attempts[caseId] > 0 || draft !== ticket.starterCode;
-  const objective = done ? caseId === "checkout-staging" ? "Ticket entregue. Você pode revisar ou tentar a próxima situação." : "Ticket entregue. Leve a ideia ao laboratório ou revise o turno."
+  const objective = done ? caseId === "checkout-staging" ? "Ticket entregue. Você pode revisar ou tentar a próxima situação." : "Ticket entregue. Agora prepare a entrega da mudança na esteira."
     : test?.ok ? "O pedido passou. Registre o teste na entrega para Nina."
       : briefed || practiced ? "Use o computador para investigar, alterar e testar o pedido."
         : "Converse com Nina para conhecer sua primeira tarefa.";
@@ -162,7 +171,7 @@ function WorkSession({ userId, preview = false, onBackHref }: Props) {
     {paused && <div className={s.pauseNotice} role="status">Turno pausado. Seu rascunho está guardado.<button onClick={() => setPaused(false)}><Play size={15}/> Continuar turno</button></div>}
     <footer className={s.sceneFooter}><span>Ambiente simulado · produção segue funcionando</span><details><summary>Como jogar</summary><p>Toque no chão para caminhar ou use as setas e W/A/S/D. Converse com a equipe e abra o computador pelos botões do escritório. No computador, edite, aplique e teste: cada ação tem um resultado próprio.</p><p>Rascunhos e conquistas ficam neste navegador, separados por conta. Reabrir o turno recupera o arquivo, mas a configuração precisa ser aplicada e testada novamente.</p></details></footer>
     <nav className={s.caseNav} aria-label="Situações do primeiro turno">{WORK_CASE_IDS.map((id, index) => <button key={id} aria-current={caseId === id ? "step" : undefined} disabled={!ready || index > save.completed.length} onClick={() => chooseCase(id)}><span>{save.completed.includes(id) ? <Check size={16}/> : "0" + (index + 1)}</span><div>{getWorkCase(id).title}<small>{index === 0 ? "Com apoio do Orbi" : "Uma nova situação, menos ajuda"}</small></div><ChevronRight size={16}/></button>)}</nav>
-    {save.completed.length === WORK_CASE_IDS.length && <div className={s.transfer}><div><p className={s.eyebrow}>DO CENÁRIO PARA SUAS LINHAS</p><h2>Você investigou e verificou uma mudança.</h2><p>Continue praticando valores e variáveis no laboratório. Seu código salvo continua com você.</p></div><Link href={lab}>Praticar no laboratório <Code2 size={17}/></Link></div>}
+    {save.completed.length === WORK_CASE_IDS.length && <div className={s.transfer}><div><p className={s.eyebrow}>PRÓXIMA TAREFA DO TURNO</p><h2>A correção está pronta. E a entrega?</h2><p>Na esteira, descubra o que os testes verificam e publique a mesma versão em homologação.</p></div><a href={WORK_DELIVERY_HASH}>Continuar: do teste à entrega <ArrowRight size={17}/></a></div>}
     {storageError && <p className={s.storageWarning} role="alert">O navegador não conseguiu salvar. Seu trabalho continua nesta tela; copie o arquivo antes de sair.</p>}
 
     <dialog ref={terminal} className={s.computer} onCancel={event => { event.preventDefault(); cancelTest(); setComputer(false); }} aria-labelledby="work-computer-title" data-work-computer>
@@ -185,7 +194,7 @@ function WorkSession({ userId, preview = false, onBackHref }: Props) {
     </dialog>
 
     <dialog ref={conversation} className={s.conversation} onCancel={event => { event.preventDefault(); setChat(null); }} aria-labelledby="work-person-title">
-      <button className={s.closeChat} aria-label="Fechar conversa" onClick={() => setChat(null)}><X size={19}/></button><span className={s.portrait} data-person={chat === "support" ? "support" : "lead"} aria-hidden="true"/><div className={s.dialogueBody}><p className={s.eyebrow}>{chat === "support" ? "ATENDIMENTO" : "RESPONSÁVEL PELO TIME"}</p><h2 id="work-person-title">{chatName}</h2>{chat === "review" ? <><p>Revisei sua entrega. O pedido de teste funciona em homologação, e temos a verificação registrada.</p><p className={s.subtle}>{caseId === "checkout-staging" ? "Agora quero ver você investigar outra instalação. A porta pode mudar; confira as novas evidências." : "Você encontrou a relação entre o endereço e o serviço. No próximo turno, vamos cuidar da entrega dessa mudança."}</p><div className={s.chatActions}>{caseId === "checkout-staging" ? <button className={s.primary} onClick={() => chooseCase("checkout-transfer")}>Investigar a nova situação <ArrowRight size={16}/></button> : <Link className={s.primary} href={lab}>Praticar no laboratório <Code2 size={17}/></Link>}<button className={s.secondary} onClick={() => setChat(null)}>Voltar ao escritório</button></div></> : chat === "support" ? <><p>{test?.ok ? "O pedido de teste terminou! Você pode anexar esse resultado ao ticket para a Nina revisar." : "Estou testando a versão em homologação. A loja abre, mas o pedido não termina. Deixei o relato no computador."}</p><button className={s.primary} onClick={() => openComputer(test?.ok ? "report" : "ticket")}>{test?.ok ? "Preparar a entrega" : "Ler o relato"}<ArrowRight size={16}/></button></> : <><p>{caseId === "checkout-staging" ? "Bem-vindo ao time. Temos um pedido de teste parado em homologação. Pode descobrir onde a conexão se perdeu?" : "Nesta outra instalação, a configuração anterior deixou de funcionar. Descubra o endereço certo pelas evidências."}</p><p className={s.subtle}>Você vai trabalhar só em homologação. Produção está funcionando.</p><button className={s.primary} onClick={() => { setBriefed(true); setChat(null); }}>Vou investigar <ArrowRight size={16}/></button></>}</div>
+      <button className={s.closeChat} aria-label="Fechar conversa" onClick={() => setChat(null)}><X size={19}/></button><span className={s.portrait} data-person={chat === "support" ? "support" : "lead"} aria-hidden="true"/><div className={s.dialogueBody}><p className={s.eyebrow}>{chat === "support" ? "ATENDIMENTO" : "RESPONSÁVEL PELO TIME"}</p><h2 id="work-person-title">{chatName}</h2>{chat === "review" ? <><p>Revisei sua entrega. O pedido de teste funciona em homologação, e temos a verificação registrada.</p><p className={s.subtle}>{caseId === "checkout-staging" ? "Agora quero ver você investigar outra instalação. A porta pode mudar; confira as novas evidências." : "Você encontrou a relação entre o endereço e o serviço. Agora vamos voltar à primeira instalação e preparar a entrega."}</p><div className={s.chatActions}>{caseId === "checkout-staging" ? <button className={s.primary} onClick={() => chooseCase("checkout-transfer")}>Investigar a nova situação <ArrowRight size={16}/></button> : <a className={s.primary} href={WORK_DELIVERY_HASH}>Preparar a entrega <ArrowRight size={17}/></a>}<button className={s.secondary} onClick={() => setChat(null)}>Voltar ao escritório</button></div></> : chat === "support" ? <><p>{test?.ok ? "O pedido de teste terminou! Você pode anexar esse resultado ao ticket para a Nina revisar." : "Estou testando a versão em homologação. A loja abre, mas o pedido não termina. Deixei o relato no computador."}</p><button className={s.primary} onClick={() => openComputer(test?.ok ? "report" : "ticket")}>{test?.ok ? "Preparar a entrega" : "Ler o relato"}<ArrowRight size={16}/></button></> : <><p>{caseId === "checkout-staging" ? "Bem-vindo ao time. Temos um pedido de teste parado em homologação. Pode descobrir onde a conexão se perdeu?" : "Nesta outra instalação, a configuração anterior deixou de funcionar. Descubra o endereço certo pelas evidências."}</p><p className={s.subtle}>Você vai trabalhar só em homologação. Produção está funcionando.</p><button className={s.primary} onClick={() => { setBriefed(true); setChat(null); }}>Vou investigar <ArrowRight size={16}/></button></>}</div>
     </dialog>
   </section>;
 }

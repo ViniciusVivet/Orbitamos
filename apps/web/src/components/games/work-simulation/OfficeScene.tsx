@@ -14,6 +14,7 @@ export interface OfficeSceneProps {
   briefed?: boolean;
   paused: boolean;
   muted: boolean;
+  speech?: string;
   onReady?: () => void;
 }
 
@@ -36,7 +37,7 @@ const floorPoint = (point: Point): Point => ({ x: clamp(point.x, FLOOR.left, FLO
 const movementKeys = new Set(["w", "a", "s", "d", "arrowup", "arrowleft", "arrowdown", "arrowright"]);
 
 /** A small office runtime. Positions and camera never enter React's render cycle. */
-export default function OfficeScene({ onInteract, activeTarget = null, repaired, briefed = false, paused, muted, onReady }: OfficeSceneProps) {
+export default function OfficeScene({ onInteract, activeTarget = null, repaired, briefed = false, paused, muted, speech, onReady }: OfficeSceneProps) {
   const sceneRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
@@ -344,7 +345,7 @@ export default function OfficeScene({ onInteract, activeTarget = null, repaired,
         </div>
         <div className={styles.sceneTop}>
           <span className={styles.location}><span />Escritório · homologação</span>
-          {assetsReady && <p className={styles.speech}>{repaired ? "Jo: O pedido de teste passou!" : briefed ? "Nina: As pistas estão no computador. Pode contar com a gente." : "Nina: Oi, Orbi! Vem conversar."}</p>}
+          {assetsReady && <p className={styles.speech}>{speech ?? (repaired ? "Jo: O pedido de teste passou!" : briefed ? "Nina: As pistas estão no computador. Pode contar com a gente." : "Nina: Oi, Orbi! Vem conversar.")}</p>}
         </div>
         {!assetsReady && <div className={styles.loading} role="status">{loadError ? "A cena não carregou. Atualize a página para tentar de novo." : "Abrindo o escritório…"}</div>}
         <div className={styles.controls} role="group" aria-label="Destinos no escritório">

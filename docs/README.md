@@ -10,6 +10,10 @@ dois casos conferidos em desktop, WebKit/iPhone e tela de 320 px. QA local e
 verificação remota de publicação têm registros separados no documento principal.
 O projeto de inglês falado continua separado e não foi implementado nesta entrega.
 
+Em **13/11/2026**, a fase seguinte do simulador foi implementada: verificações,
+publicação do pacote em homologação e conferência do pedido. O fechamento de QA
+e publicação da rodada fica em [SIMULADOR_PROFISSOES.md](SIMULADOR_PROFISSOES.md).
+
 Os guias abaixo separam o estado implementado, as decisões de produto,
 a operação e os registros históricos. Datas antigas em auditorias são mantidas
 quando descrevem uma execução específica.
@@ -49,7 +53,7 @@ quando descrevem uma execução específica.
 | [VILA_DOS_BLOCOS.md](VILA_DOS_BLOCOS.md) | Jogo de símbolos e indentação, saves e continuidade |
 | [STUDIO_E_ORBI_CAPITULO_01.md](STUDIO_E_ORBI_CAPITULO_01.md) | Rodada do Studio e capítulo de plataforma aprovado |
 | [EVOLUCAO_ENTREGA_ORBI.md](EVOLUCAO_ENTREGA_ORBI.md) | Oficina do Pulso, Bloco B implementado em 12/11, compatibilidade, experimentos encerrados e ponto de continuidade/QA |
-| [SIMULADOR_PROFISSOES.md](SIMULADOR_PROFISSOES.md) | Protótipo DevOps: dois casos, artefatos, saves, retomada e QA local; pesquisa e plano de expansão preservados |
+| [SIMULADOR_PROFISSOES.md](SIMULADOR_PROFISSOES.md) | Protótipo DevOps: dois casos de conexão e fase de esteira/publicação, saves separados, retomada, QA e plano de expansão |
 | [PESQUISA_ROTINAS_TECH.md](PESQUISA_ROTINAS_TECH.md) | Pesquisa inicial de 12/11: famílias, contextos, tarefas e fontes profissionais; não é catálogo já entregue |
 | [INGLES_FALADO.md](INGLES_FALADO.md) | Viabilidade pesquisada em 12/11: ouvir/repetir, transcrição, limites da avaliação fonética e protótipo sem API contratada |
 

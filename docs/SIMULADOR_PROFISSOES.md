@@ -11,6 +11,88 @@ Este é o documento principal para retomar o projeto. Fontes e catálogo inicial
 [PESQUISA_ROTINAS_TECH.md](PESQUISA_ROTINAS_TECH.md). Projeto complementar de
 voz: [INGLES_FALADO.md](INGLES_FALADO.md).
 
+## Incremento da esteira — 13/11/2026
+
+Depois dos dois casos de conexão, **Do teste à entrega** abre em
+`/estudante/jogos/simulador#esteira`. O escritório e a equipe são os mesmos;
+o computador passa a oferecer Tarefa, Arquivo, Esteira e Publicação. O objetivo
+é investigar o que uma verificação verde realmente demonstra e levar a mesma
+versão verificada para homologação. Nesta seção, código implementado e resultados
+de verificação são registrados separadamente.
+
+O jogador edita `smoke.config.json`, um formato educativo próprio do cenário,
+com `environment: "staging"` e uma lista `checks`. Não é um arquivo de workflow
+GitHub Actions. `home` representa abrir a loja; `checkout`, concluir um pedido.
+O arquivo inicial contém somente `home`: esse check passa até na versão com
+defeito, enquanto o pedido permanece **Não testado**. Isso não autoriza publicar.
+
+Há dois pacotes imutáveis: `loja-014` usa `orders:3001` e falha no pedido;
+`loja-015` usa `orders:3000` e o conclui. O endereço relevante permanece visível
+para o aluno comparar, não apenas escolher pelo número da versão. Selecionar
+um pacote não muda a instalação. A missão distingue:
+
+1. Escrever e executar verificações de home e pedido da versão escolhida.
+2. Publicar o mesmo pacote aprovado em homologação.
+3. Conferir o pedido depois da publicação.
+4. Enviar a evidência atual para Nina.
+
+Home verde, publicação isolada e teste de outra seleção não concluem a tarefa.
+Alterar o plano ou a versão invalida a autorização de publicar/enviar, mas não
+desinstala uma versão já publicada nesta sessão. Escape/fechar/trocar de fase
+cancela a ação pendente. Resultado em andamento não se transforma em conquista.
+
+O save `orbitamos-work-delivery-v1-{tipo}-{identificação}` é independente: guarda
+rascunho, seleção, tentativas e conquista histórica por conta. Não altera o save
+v1 dos dois casos, o diário dos seis jogos nem XP. Resultado da esteira,
+publicação ativa e conferência não voltam no reload. O Início pode retomar a
+âncora exata com o título **A esteira de homologação**, fora dos contadores dos
+seis jogos. A entrada exige os dois casos anteriores concluídos.
+
+Arquivos novos: `apps/web/src/lib/workDelivery.ts`, seus testes e
+`apps/web/src/components/games/WorkDelivery.tsx`/`WorkDelivery.module.css`.
+A fase é carregada sob demanda. Reutiliza as artes existentes; a nova fala da
+cena é opcional e preserva o comportamento dos casos anteriores. O sucesso no
+escritório só aparece com verificações e conferência da publicação atuais.
+
+Base técnica conferida em 13/11: a documentação do GitHub explica
+[artefatos produzidos e compartilhados entre jobs](https://docs.github.com/en/actions/concepts/workflows-and-actions/workflow-artifacts)
+e [jobs que dependem da conclusão bem-sucedida de outros](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-jobs).
+A missão adapta essas relações a um modelo determinístico local, sem executar
+Actions, baixar pacotes do aluno, acessar `orders` ou publicar infraestrutura real.
+Uma futura prática em repositório deverá trabalhar o YAML e as ferramentas reais.
+
+### Verificação da esteira — 13/11/2026
+
+O roteiro `audit-work-delivery.mjs` passou em desktop, WebKit/iPhone 13 e tela
+de 320 px: **19 verificações e 15 estados capturados por perfil**, com Axe dos
+blocos exercitados e checagem de limites horizontais. Foram conferidos o bloqueio
+por pré-requisito, verde incompleto, JSON/ambiente/chaves/checks inválidos,
+recuperar/desfazer, falha da versão 014, cancelamento dos três timers por Escape,
+troca de versão sem reutilizar autorização, publicação sem concluir, conferência
+e envio, retomada exata, duas contas e preservação dos saves/XP anteriores.
+Não houve exceções JavaScript, requisições ao endereço representado ou escrita RPC.
+
+Na revisão visual, o retorno à primeira instalação foi explicitado no enredo.
+A barra de fechar do computador passou a acompanhar a rolagem; trocar de painel
+retorna às suas instruções. Um smoke adicional em WebKit/iPhone e 320 px confirmou
+fechar acessível depois de rolar e painel começando no topo. Arquivo não salvo
+mostra aviso dentro do editor; autorização atual também é exigida no botão de
+conferir/enviar, mesmo que uma publicação anterior continue instalada.
+
+Os **621 testes da suíte geral passaram em 65 arquivos**, incluindo modelo,
+contas, persistência e navegação. Os **9 contratos estáticos** passaram; lint
+terminou com **0 erros e os 29 avisos anteriores**. Build e verificação remota
+ficam separados: o **build local de produção passou, incluindo TypeScript**;
+a conferência de SHA, GitHub Actions e Vercel é registrada em
+`production-verification.json`. Logs e registro remoto desta
+rodada ficam em `docs/local/work-delivery-20261113/`; capturas e relatórios em
+`apps/web/test-results/work-delivery/`, fora do Git.
+A regressão desktop dos dois casos anteriores também passou, incluindo a ida
+pela âncora nativa `#esteira` e a volta ao escritório anterior sem reescrever
+as conquistas. O Início agora sugere a esteira depois dos dois casos de conexão.
+WebKit com perfil de iPhone não substitui o aparelho físico, teclado virtual,
+áudio audível nem validação pedagógica com uma pessoa iniciante.
+
 ## Protótipo implementado — 12/11/2026
 
 O recorte implementado é o episódio **Primeiro turno**, papel **DevOps**, na
@@ -465,9 +547,10 @@ um episódio vertical evita transformar o tamanho do catálogo em promessa.
 2. Preservar o arquivo pessoal `apps/web/CLAUDE.md` sem ler ou incluir em commits;
    material sincronizado em `sources/` continua somente leitura.
 3. O recorte **`checkout-staging`** e a variação **`checkout-transfer`** têm
-   implementação registrada acima. Retomar pela seção de fechamento: conferir
-   correções e o percurso real antes de ampliar o turno. As demais missões e
-   famílias do catálogo continuam como planejamento.
+   implementação registrada acima. A fase **`#esteira`**, de 13/11, tem modelo,
+   interface e save independentes. Retomar pelos dois fechamentos: conferir
+   resultados, evidências e publicação da rodada antes de ampliar o turno.
+   As demais missões e famílias do catálogo continuam como planejamento.
 4. Registrar decisão, problema observado, causa, alteração, teste e pendência.
    Marcar separadamente código implementado, QA local e publicação verificada.
 5. Validar com uma pessoa iniciante e em iPhone/Safari físico. Conferir toque,

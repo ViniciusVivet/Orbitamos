@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { academyPreviewHref, academySection, academySections, canonicalAcademyHref, isWorkspacePath, practiceMode, WORK_SIMULATION_HREF } from "./portalNavigation";
+import { academyPreviewHref, academySection, academySections, canonicalAcademyHref, isWorkspacePath, practiceMode, WORK_DELIVERY_HASH, WORK_DELIVERY_HREF, WORK_SIMULATION_HREF } from "./portalNavigation";
 
 describe("Academy navigation", () => {
   it("separates marketing from workspace with exact path boundaries", () => {
@@ -39,10 +39,24 @@ describe("Academy navigation", () => {
     expect(practiceMode(WORK_SIMULATION_HREF)).toBe("games");
     expect(academyPreviewHref(WORK_SIMULATION_HREF)).toBe("/dev/work-simulation-preview?from=academy");
     expect(academyPreviewHref(WORK_SIMULATION_HREF + "?token=secret#unknown")).toBe("/dev/work-simulation-preview?from=academy");
-    expect(canonicalAcademyHref("/dev/work-simulation-preview", "?from=academy&token=secret", "#unknown")).toBe(WORK_SIMULATION_HREF);
+    expect(canonicalAcademyHref("/dev/work-simulation-preview", "?from=academy&token=secret")).toBe(WORK_SIMULATION_HREF);
     expect(canonicalAcademyHref("/dev/work-simulation-preview")).toBeNull();
     expect(canonicalAcademyHref("/dev/work-simulation-preview", "?from=other")).toBeNull();
     expect(canonicalAcademyHref("/dev/monte-codigo-preview/simulador", "?from=academy")).toBeNull();
     expect(academySections).toHaveLength(5);
+  });
+  it("round-trips only the authored delivery phase in the simulator", () => {
+    expect(academyPreviewHref(WORK_DELIVERY_HREF)).toBe("/dev/work-simulation-preview?from=academy#esteira");
+    expect(academyPreviewHref(WORK_SIMULATION_HREF + "?token=secret" + WORK_DELIVERY_HASH)).toBe("/dev/work-simulation-preview?from=academy#esteira");
+    expect(canonicalAcademyHref(WORK_SIMULATION_HREF, "", WORK_DELIVERY_HASH)).toBe(WORK_DELIVERY_HREF);
+    expect(canonicalAcademyHref("/dev/work-simulation-preview", "?from=academy&token=secret", WORK_DELIVERY_HASH)).toBe(WORK_DELIVERY_HREF);
+    expect(canonicalAcademyHref("/dev/work-simulation-preview", "", WORK_DELIVERY_HASH)).toBeNull();
+    for (const hash of ["#unknown", "#Esteira", "#%65steira", "#esteira?token=secret", "#esteira&redirect=https://evil.test", "#esteira#other"]) {
+      expect(canonicalAcademyHref(WORK_SIMULATION_HREF, "", hash)).toBeNull();
+      expect(canonicalAcademyHref("/dev/work-simulation-preview", "?from=academy", hash)).toBeNull();
+      expect(academyPreviewHref(WORK_SIMULATION_HREF + hash)).toBe("/dev/work-simulation-preview?from=academy");
+    }
+    expect(canonicalAcademyHref("/dev/monte-codigo-preview/simulador", "?from=academy", WORK_DELIVERY_HASH)).toBeNull();
+    expect(canonicalAcademyHref("/dev/academy-preview", "?activity=delivery", WORK_DELIVERY_HASH)).toBe("/estudante/jogos/entregas-do-orbi");
   });
 });
