@@ -20,9 +20,14 @@ fechamento estão no mesmo registro.
 
 O piloto de inglês falado, de **13/11**, acrescenta 12 itens de palavras e frases
 em `ingles-em-cena#falar`, com síntese no cliente e participação declarada,
-sem microfone ou nota automática. A análise da referência e o método de cinco
-partes estão em [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md). O fechamento de
-QA e a verificação de publicação permanecem separados da implementação.
+sem microfone ou nota automática. Foi publicado no commit `d798868`, com QA
+histórico preservado. A etapa seguinte, **Usar o inglês no código**, acrescenta
+12 verificações opcionais das mesmas expressões, com três alternativas e
+feedback específico. Escolhas corretas são registradas separadamente da fala,
+sem XP ou afirmação de domínio. A análise da referência, o método de cinco
+partes, os fundamentos pedagógicos e os saves estão em
+[METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md). O QA local deste incremento contextual está registrado no método; a verificação
+remota da publicação tem evidência separada após o push.
 
 Os guias abaixo separam o estado implementado, as decisões de produto,
 a operação e os registros históricos. Datas antigas em auditorias são mantidas
@@ -65,8 +70,8 @@ quando descrevem uma execução específica.
 | [EVOLUCAO_ENTREGA_ORBI.md](EVOLUCAO_ENTREGA_ORBI.md) | Oficina do Pulso, Bloco B implementado em 12/11, compatibilidade, experimentos encerrados e ponto de continuidade/QA |
 | [SIMULADOR_PROFISSOES.md](SIMULADOR_PROFISSOES.md) | Protótipo DevOps: dois casos de conexão e fase de esteira/publicação, saves separados, retomada, QA e plano de expansão |
 | [PESQUISA_ROTINAS_TECH.md](PESQUISA_ROTINAS_TECH.md) | Pesquisa inicial de 12/11: famílias, contextos, tarefas e fontes profissionais; não é catálogo já entregue |
-| [INGLES_FALADO.md](INGLES_FALADO.md) | Pesquisa de 12/11 preservada e decisão de 13/11: síntese e participação, com captura/transcrição adiadas |
-| [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md) | Referência analisada, cinco partes PT/EN, 12 itens, voz do aparelho, saves separados, custo e QA em preparação |
+| [INGLES_FALADO.md](INGLES_FALADO.md) | Pesquisa de 12/11 preservada; piloto de síntese/participação e nova etapa opcional de escolhas em contexto, sem captura/transcrição |
+| [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md) | Cinco partes PT/EN, 12 expressões e verificações contextuais, evidências e limites pedagógicos, saves separados, custo e QA histórico/novo |
 
 ## Direção visual e páginas comerciais
 

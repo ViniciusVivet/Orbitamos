@@ -17,6 +17,7 @@ import { emptyWorkSave, getWorkCase, WORK_CASE_IDS, workSimulationKey } from "./
 import { emptyWorkDeliverySave, WORK_DELIVERY_STARTER_CODE, workDeliveryKey } from "./workDelivery";
 import { emptyIncidentSave, getIncidentCase, INCIDENT_CASE_IDS, incidentSaveKey } from "./workIncident";
 import { emptySpeakingSave, englishSpeakingLessons, speakingSaveKey } from "./spokenEnglish";
+import { emptyEnglishUseSave, englishUseKey, englishUseQuestions } from "./englishUse";
 
 function store(initial: Record<string, unknown> = {}) { const saves = new Map(Object.entries(initial).map(([key, value]) => [key, JSON.stringify(value)])); return { saves, read: (key: string) => saves.get(key) ?? null }; }
 describe("Academy read-only continuity", () => {
@@ -425,6 +426,90 @@ describe("Academy read-only continuity", () => {
     const before = [...data.saves];
     expect(getAcademyActivity("u", data.read).continueItem).toMatchObject({ status: "opened", completedUnits: 0, practiced: false });
     expect([...data.saves]).toEqual(before);
+  });
+  it("resumes an active use check with zero correct choices even after all speaking participation", () => {
+    const current = englishUseQuestions[0];
+    const data = store({
+      [speakingSaveKey("u")]: { ...emptySpeakingSave(), completed: englishSpeakingLessons.map(lesson => lesson.id) },
+      [englishUseKey("u")]: { ...emptyEnglishUseSave(), active: true, attempts: { [current.lessonId]: 2 } },
+    });
+    const baseline = getAcademyActivity("u", data.read);
+    data.saves.set(resumeStorageKey("u"), JSON.stringify(academyResumeEntry(ENGLISH_SPEAKING_HREF, 2000)));
+    const before = [...data.saves];
+    const keys: string[] = [];
+    const result = getAcademyActivity("u", key => { keys.push(key); return data.read(key); });
+    expect(result.continueItem).toMatchObject({ id: "english-use", title: "Use o inglês no código", group: "experience", href: ENGLISH_SPEAKING_HREF, status: "in-progress", completedUnits: 0, totalUnits: 12, unit: "respostas corretas", practiced: true, reviewed: 0, lastAt: 2000, nextHref: ENGLISH_SPEAKING_HREF });
+    expect(result.continueItem?.detail).toBe(`${current.target} · ${current.context}`);
+    expect(keys).toContain(englishUseKey("u"));
+    expect(keys).not.toContain(speakingSaveKey("u"));
+    expect(result.items).toEqual(baseline.items);
+    expect(result.summaries).toEqual(baseline.summaries);
+    expect([...data.saves]).toEqual(before);
+  });
+  it("continues the exact active use question and keeps its correct choices scoped to the account", () => {
+    const current = englishUseQuestions[8];
+    const data = store({
+      [resumeStorageKey("u")]: academyResumeEntry(ENGLISH_SPEAKING_HREF, 2000),
+      [englishUseKey("u")]: { ...emptyEnglishUseSave(), active: true, current: current.lessonId, completed: englishUseQuestions.slice(0, 2).map(question => question.lessonId) },
+    });
+    const before = [...data.saves];
+    const result = getAcademyActivity("u", data.read);
+    expect(result.continueItem).toMatchObject({ id: "english-use", status: "in-progress", completedUnits: 2, totalUnits: 12, practiced: true, nextHref: ENGLISH_SPEAKING_HREF });
+    expect(result.continueItem?.detail).toBe(`${current.target} · ${current.context}`);
+    expect([...data.saves]).toEqual(before);
+    data.saves.set(resumeStorageKey("another"), JSON.stringify(academyResumeEntry(ENGLISH_SPEAKING_HREF, 3000)));
+    expect(getAcademyActivity("another", data.read).continueItem).toMatchObject({ id: "spoken-english", status: "opened", completedUnits: 0, practiced: false });
+  });
+  it("preserves speaking continuation when the optional use check is inactive or unreadable", () => {
+    const current = englishSpeakingLessons[2];
+    const data = store({
+      [resumeStorageKey("u")]: academyResumeEntry(ENGLISH_SPEAKING_HREF, 2000),
+      [speakingSaveKey("u")]: { ...emptySpeakingSave(), current: current.id, completed: [englishSpeakingLessons[0].id] },
+    });
+    const baseline = getAcademyActivity("u", data.read);
+    for (const use of [
+      { ...emptyEnglishUseSave(), active: false, current: englishUseQuestions[8].lessonId, completed: englishUseQuestions.map(question => question.lessonId) },
+      { version: 1, current: englishUseQuestions[8].lessonId, completed: englishUseQuestions.map(question => question.lessonId), attempts: {} },
+    ]) {
+      data.saves.set(englishUseKey("u"), JSON.stringify(use));
+      expect(getAcademyActivity("u", data.read)).toEqual(baseline);
+    }
+    data.saves.set(englishUseKey("u"), "corrupt");
+    const before = [...data.saves];
+    expect(getAcademyActivity("u", data.read)).toEqual(baseline);
+    expect(baseline.continueItem).toMatchObject({ id: "spoken-english", completedUnits: 1, totalUnits: 12, nextHref: ENGLISH_SPEAKING_HREF });
+    expect(baseline.continueItem?.detail).toBe(`Ler, ouvir e repetir · ${current.pt} / ${current.en}`);
+    expect([...data.saves]).toEqual(before);
+  });
+  it("keeps all twelve correct use choices outside catalog counts and existing English evidence", () => {
+    const data = store({
+      [englishStorageKey("u")]: { version: 1, current: englishLessons.length - 1, completed: englishLessons.map(scene => scene.id), finished: true, draft: "" },
+      [englishUseKey("u")]: { ...emptyEnglishUseSave(), active: true, completed: englishUseQuestions.map(question => question.lessonId) },
+    });
+    const baseline = getAcademyActivity("u", data.read);
+    data.saves.set(resumeStorageKey("u"), JSON.stringify(academyResumeEntry(ENGLISH_SPEAKING_HREF, 2000)));
+    const before = [...data.saves];
+    const result = getAcademyActivity("u", data.read);
+    expect(result.continueItem).toMatchObject({ id: "english-use", status: "completed", completedUnits: 12, totalUnits: 12, practiced: true, reviewed: 0, nextHref: ENGLISH_SPEAKING_HREF });
+    expect(result.items).toEqual(baseline.items);
+    expect(result.items.some(item => item.id === "english-use")).toBe(false);
+    expect(result.summaries).toEqual(baseline.summaries);
+    expect(result.summaries.experiences).toMatchObject({ total: 6, completed: 1, practiced: 1 });
+    expect([...data.saves]).toEqual(before);
+  });
+  it("reads optional use progress only for the exact speaking continuation", () => {
+    const data = store({ [englishUseKey("u")]: { ...emptyEnglishUseSave(), active: true, completed: englishUseQuestions.map(question => question.lessonId) } });
+    const keys: string[] = [];
+    const read = (key: string) => { keys.push(key); return data.read(key); };
+    getAcademyActivity("u", read);
+    expect(keys).not.toContain(englishUseKey("u"));
+    for (const href of ["/estudante/jogos/ingles-em-cena", ORBI_PULSE_HREF, WORK_INCIDENT_HREF, "/estudante/pratica/variaveis-js", "/estudante/jogos/ingles-em-cena#Falar"]) {
+      data.saves.set(resumeStorageKey("u"), JSON.stringify(academyResumeEntry(href, 2000)));
+      keys.length = 0;
+      const result = getAcademyActivity("u", read);
+      expect(keys).not.toContain(englishUseKey("u"));
+      expect(result.continueItem?.id).not.toBe("english-use");
+    }
   });
   it("accepts only the exact speaking fragment and strips query data before it", () => {
     const english = "/estudante/jogos/ingles-em-cena";

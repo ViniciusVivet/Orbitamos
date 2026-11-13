@@ -111,9 +111,36 @@ agregados. Não grava conclusão do jogo antigo nem XP.
 As vozes dependem do navegador/aparelho e podem usar serviço local ou remoto;
 síntese no cliente não garante áudio offline ou qualidade uniforme. A ausência
 de API de voz contratada tampouco altera a restrição do Vercel Hobby a uso
-pessoal ou não comercial. Fontes, método, limites e fechamento de QA em
-preparação: [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md). Nenhuma verificação
-remota de publicação é afirmada nesta adição.
+pessoal ou não comercial. Fontes, método, limites e fechamento de QA ficam em
+[METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md). O piloto foi publicado no commit
+`d798868`; o incremento contextual tem registro próprio de verificação.
+
+### Inglês em contexto — incremento de 13/11/2026
+
+Depois de registrar a repetição, o aluno pode abrir `EnglishUseCheck.tsx` na
+mesma rota `#falar`. A tela usa 12 situações escritas em `englishUse.ts`, uma
+para cada expressão do piloto. Mostra a expressão, uma cena de editor ou terminal
+e três escolhas. O cartão português/inglês anterior sai da tela durante a pergunta.
+O feedback distingue as escolhas; uma resposta correta registra apenas este item
+contextual. Não avalia fala, retenção, proficiência ou produção de código.
+
+O save `englishUseKey(conta)` é separado da participação falada e da atividade
+antiga. Guarda `version`, `current`, `active`, IDs concluídos e tentativas. O
+leitor limita payload e contagens, aceita apenas itens conhecidos e normaliza
+flags inválidas. Merge preserva as conquistas e a decisão de navegação ativa do
+chamador. Erros não retiram acertos prévios.
+
+Abrir uma situação cancela a voz e grava `active: true`; voltar ou seguir para
+a fala do próximo item grava `false`. A recarga com estado ativo reabre a mesma
+pergunta sem selecionar resposta nem reproduzir áudio. Na Home, somente uma
+retomada exata de `#falar` lê essa chave: um check ativo projeta `english-use`,
+com escolhas corretas de 0/12 a 12/12; com estado inativo, permanece a projeção
+`spoken-english`. Ambos ficam fora do catálogo de seis experiências e de seus
+agregados/XP. Nenhum endpoint ou serviço pago novo foi adicionado.
+
+Estado, fundamentos e fechamento da rodada estão em
+[METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md). Evidência local e publicação
+remota devem ser conferidas separadamente.
 
 ## Autorização
 

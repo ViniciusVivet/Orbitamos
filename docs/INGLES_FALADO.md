@@ -1,8 +1,10 @@
 # Inglês falado na Orbitamos
 
 Pesquisa inicial em **12/11/2026**, preservada abaixo. O piloto de ouvir e
-repetir foi implementado no repositório em **13/11/2026**, com fluxo e layout
-verificados localmente em desktop e mobile. Microfone, gravação, transcrição e avaliação de pronúncia
+repetir, de **13/11/2026**, teve fluxo e layout verificados localmente e foi
+publicado no commit `d798868`. A etapa seguinte, **Usar o inglês no código**,
+está implementada no repositório, com QA local e verificação de publicação
+registrados separadamente. Microfone, gravação, transcrição e avaliação de pronúncia
 continuam fora desta implementação. Este documento complementa o
 [Simulador de profissões](SIMULADOR_PROFISSOES.md).
 
@@ -33,6 +35,38 @@ de texto mantém a prática utilizável sem voz. O custo de síntese no cliente
 também não altera as condições da hospedagem: Vercel Hobby tem restrição de uso
 pessoal ou não comercial. As fontes atuais e os limites constam no
 [método](METODO_INGLES_ORBI.md#voz-custo-e-limites-do-aparelho).
+
+## Continuidade de 13/11 — Usar o inglês no código
+
+A nova etapa acrescenta uma verificação opcional depois da repetição de cada
+item, com acesso também pela tela final das 12 práticas. Reutiliza as mesmas
+seis palavras e seis frases, sem ampliar o vocabulário. O aluno vê a expressão
+inglesa numa cena própria de editor, arquivos ou terminal e escolhe entre
+três alternativas em português sobre significado ou ação. O cartão de estudo
+com tradução e seu contexto ficam fora da tela durante a verificação.
+
+Cada escolha recebe feedback específico. O erro permite tentar outra opção
+e preserva os acertos já registrados. O contador registra situações em que
+houve uma escolha correta, inclusive após uma pista: é reconhecimento guiado
+de sentido, sem nota de fala, comprovação de retenção ou certificação de domínio.
+
+O save `orbitamos-english-use-v1-<tipo>-<conta codificada>` é separado da
+participação na fala e da atividade antiga de leitura/imagens. Guarda versão,
+item atual, estado `active`, IDs com escolha correta e contagem de tentativas;
+não altera journal ou XP. `active` permite reabrir a situação depois de
+recarregar e pela retomada exata em `ingles-em-cena#falar`. Voltar à fala ou
+seguir para o próximo item encerra esse estado. Não há sincronização entre
+aparelhos, nova API, microfone ou serviço pago nesta etapa.
+
+A decisão acrescenta uma tentativa de reconhecer o significado e receber
+feedback, orientada por estudos de
+[recuperação de vocabulário](https://doi.org/10.1126/science.1152408),
+[aplicação em perguntas novas](https://pubmed.ncbi.nlm.nih.gov/20804289/) e
+[feedback em múltipla escolha](https://pubmed.ncbi.nlm.nih.gov/18491500/),
+conferidos em 13/11. Aplicar esses princípios ao Orbi é uma inferência de
+desenho: os estudos não validam o anúncio nem este piloto e não demonstram
+que a etapa supera a repetição oral. O método detalha essas diferenças, o
+contrato dos saves e o [QA separado do incremento](METODO_INGLES_ORBI.md).
 
 ## Leitura da pesquisa histórica
 
@@ -205,7 +239,8 @@ de aulas automaticamente. Não criar novo item da sidebar apenas para isso.
 
 Esses critérios da proposta com captura/reconhecimento não foram executados
 na rodada de pesquisa. O QA do piloto sem microfone é tratado separadamente
-em [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md#qa-da-rodada--em-preparação).
+em [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md), com os resultados históricos
+do piloto separados do registro próprio da etapa contextual.
 
 ## Ordem proposta em 12/11 e continuidade
 
@@ -220,8 +255,10 @@ A próxima ação registrada em 12/11 era um protótipo isolado com uma frase e
 lifecycle completo. A decisão de 13/11 implementou outro recorte: 12 itens com
 síntese e participação declarada, sem captura ou correção. Gravação,
 reconhecimento e avaliação dedicada permanecem possibilidades futuras, sem
-data de entrega. Reabrir esta pesquisa quando mudarem navegador, APIs, modelo,
-fornecedor ou proposta de feedback.
+data de entrega. A etapa seguinte de 13/11 acrescenta escolhas de sentido em
+contexto para o mesmo conteúdo, sem reabrir o escopo de captura ou correção.
+Reabrir esta pesquisa quando mudarem navegador, APIs, modelo, fornecedor ou
+proposta de feedback.
 
 ## Fontes primárias consultadas em 12/11/2026
 

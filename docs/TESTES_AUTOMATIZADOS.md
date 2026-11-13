@@ -103,6 +103,41 @@ modesto, uso offline, aprendizagem com iniciante, CI ou publicação. Estado,
 limites e evidência remota separada em
 [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md#qa-da-rodada--13112026).
 
+## Inglês em contexto — incremento de 13/11/2026
+
+O módulo `englishUse.test.ts` verifica conteúdo, escolha correta, feedback,
+normalização, limites, isolamento por conta, erro seguido de acerto, preservação
+de conquistas e `active`. A retomada `english-use` está coberta em
+`academyActivity.test.ts`, com save ativo, zero acertos, conta, atividade inativa,
+conclusão e leitura lazy somente na rota exata `#falar`.
+
+```powershell
+node node_modules/vitest/vitest.mjs run src/lib/englishUse.test.ts src/lib/academyActivity.test.ts --maxWorkers=1 --no-file-parallelism
+node scripts/audit-english-use.mjs desktop
+node scripts/audit-english-use.mjs iphone
+node scripts/audit-english-use.mjs small
+```
+
+A auditoria usa perfis em série e síntese simulada. As participações e as 12
+situações são obtidas pela interface, sem semear conquistas novas no storage.
+Verifica pergunta sem o cartão de tradução anterior, três escolhas, feedback,
+erro/retry, próxima ação, interrupção de voz e callbacks atrasados, retomada da
+Home com zero acertos, recarga ativa e separação dos saves/XP. Há caminho sem
+API de síntese e guarda contra chamadas de microfone. Capturas/Axe/overflow
+ficam em `apps/web/test-results/english-use/`, fora do Git.
+
+Fechamento local: **697 testes em 69 arquivos** e **9 contratos** aprovados;
+lint focado nos sete arquivos TS/TSX/MJS alterados sem erros ou avisos. Os três
+perfis passaram com **11 verificações e 5 estados por perfil**, sem violações Axe
+no escopo novo, overflow, erros de página ou chamadas proibidas. A regressão da
+prática de voz no desktop passou com **12 verificações/7 estados**. As capturas
+foram inspecionadas e o espaçamento mobile refinado após a primeira falha no
+limite da dobra. Tipos gerados danificados foram regenerados com Next parado;
+`next typegen` e `tsc --noEmit` passaram. O build de produção, incluindo
+TypeScript, passou. Os logs estão no diretório local da rodada.
+CI e publicação devem ser conferidos após o push. Esses checks não comprovam
+áudio audível ou aprendizagem em aparelho físico.
+
 ## Oficina do Pulso — implementação de 11/11/2026
 
 A aventura opcional acrescenta duas rotas à experiência do Orbi, sem aumentar

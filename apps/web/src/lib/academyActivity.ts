@@ -20,6 +20,7 @@ import { getWorkCase, readWorkSave, WORK_CASE_IDS, workSimulationKey } from "./w
 import { readWorkDeliverySave, WORK_DELIVERY_STARTER_CODE, workDeliveryKey } from "./workDelivery";
 import { getIncidentCase, INCIDENT_CASE_IDS, incidentSaveKey, readIncidentSave } from "./workIncident";
 import { englishSpeakingLessons, getSpeakingLesson, readSpeakingSave, speakingSaveKey } from "./spokenEnglish";
+import { englishUseKey, englishUseQuestions, getEnglishUseQuestion, readEnglishUseSave } from "./englishUse";
 
 export type AcademyActivityItem = {
   id: string; title: string; group: "experience" | "code" | "csharp" | "sql-workshop";
@@ -186,20 +187,35 @@ export function getAcademyActivity(userId: string, read: ReadSave): AcademyActiv
   let separateContinuation: AcademyActivityItem | null = null;
   if (resume) {
     if (resume.href === ENGLISH_SPEAKING_HREF) {
-      const speaking = readSpeakingSave(get(speakingSaveKey(userId)));
-      const current = getSpeakingLesson(speaking.current) ?? englishSpeakingLessons[0];
-      const practiced = speaking.completed.length > 0 || englishSpeakingLessons.some(lesson => speaking.attempts[lesson.id] > 0);
-      const finished = speaking.completed.length === englishSpeakingLessons.length;
-      // Participation in speaking stays separate from the eight-scene quiz,
-      // the six catalog activities and their aggregate completion/XP.
-      separateContinuation = {
-        id: "spoken-english", title: "Fale inglês com o Orbi", group: "experience", href: ENGLISH_SPEAKING_HREF,
-        status: finished ? "completed" : practiced ? "in-progress" : "opened",
-        completedUnits: speaking.completed.length, totalUnits: englishSpeakingLessons.length, unit: "itens praticados", practiced, reviewed: 0, lastAt: resume.updatedAt,
-        detail: `Ler, ouvir e repetir · ${current.pt} / ${current.en}`,
-        nextHref: finished ? "/estudante/jogos/ingles-em-cena" : ENGLISH_SPEAKING_HREF,
-        nextLabel: finished ? "Praticar nas cenas de inglês" : "Continuar ouvindo e repetindo",
-      };
+      const use = readEnglishUseSave(get(englishUseKey(userId)));
+      if (use.active) {
+        const current = getEnglishUseQuestion(use.current) ?? englishUseQuestions[0];
+        const practiced = use.completed.length > 0 || englishUseQuestions.some(question => (use.attempts[question.lessonId] ?? 0) > 0);
+        const finished = use.completed.length === englishUseQuestions.length;
+        // Contextual choices stay separate from speaking participation and catalog completion/XP.
+        separateContinuation = {
+          id: "english-use", title: "Use o inglês no código", group: "experience", href: ENGLISH_SPEAKING_HREF,
+          status: finished ? "completed" : practiced ? "in-progress" : "opened",
+          completedUnits: use.completed.length, totalUnits: englishUseQuestions.length, unit: "respostas corretas", practiced, reviewed: 0, lastAt: resume.updatedAt,
+          detail: `${current.target} · ${current.context}`,
+          nextHref: ENGLISH_SPEAKING_HREF, nextLabel: "Continuar o uso no código",
+        };
+      } else {
+        const speaking = readSpeakingSave(get(speakingSaveKey(userId)));
+        const current = getSpeakingLesson(speaking.current) ?? englishSpeakingLessons[0];
+        const practiced = speaking.completed.length > 0 || englishSpeakingLessons.some(lesson => speaking.attempts[lesson.id] > 0);
+        const finished = speaking.completed.length === englishSpeakingLessons.length;
+        // Participation in speaking stays separate from the eight-scene quiz,
+        // the six catalog activities and their aggregate completion/XP.
+        separateContinuation = {
+          id: "spoken-english", title: "Fale inglês com o Orbi", group: "experience", href: ENGLISH_SPEAKING_HREF,
+          status: finished ? "completed" : practiced ? "in-progress" : "opened",
+          completedUnits: speaking.completed.length, totalUnits: englishSpeakingLessons.length, unit: "itens praticados", practiced, reviewed: 0, lastAt: resume.updatedAt,
+          detail: `Ler, ouvir e repetir · ${current.pt} / ${current.en}`,
+          nextHref: finished ? "/estudante/jogos/ingles-em-cena" : ENGLISH_SPEAKING_HREF,
+          nextLabel: finished ? "Praticar nas cenas de inglês" : "Continuar ouvindo e repetindo",
+        };
+      }
     } else if (resume.href === ORBI_PULSE_HREF) {
       const pulse = readPulseSave(get(pulseSaveKey(userId)));
       const practiced = pulse.completed.length > 0 || pulseLessons.some(lesson => pulse.attempts[lesson.id] > 0 || pulse.drafts[lesson.id] !== lesson.starterCode);
