@@ -15,7 +15,8 @@ import { assemblyDraftKey, orbiDraftKey, readAssemblyDraft, readOrbiDraft, readV
 import { csharpProgressKey, readCSharpProgress } from "./csharpTrack";
 import { csharpModules, readModuleKind, type CSharpModuleKind } from "./csharpModules";
 import { getPulseLesson, pulseLessons, pulseSaveKey, readPulseSave } from "./orbiPulse";
-import { ORBI_DELIVERY_HREF, ORBI_PULSE_HASH, ORBI_PULSE_HREF } from "./portalNavigation";
+import { ORBI_DELIVERY_HREF, ORBI_PULSE_HASH, ORBI_PULSE_HREF, WORK_SIMULATION_HREF } from "./portalNavigation";
+import { getWorkCase, readWorkSave, WORK_CASE_IDS, workSimulationKey } from "./workSimulation";
 
 export type AcademyActivityItem = {
   id: string; title: string; group: "experience" | "code" | "csharp" | "sql-workshop";
@@ -43,7 +44,7 @@ export function academyResumeEntry(href: string, now = Date.now()): AcademyResum
     const code = desafios.some(challenge => path === `/estudante/pratica/${challenge.slug}`);
     const assembly = fasesMonteCodigo.some(phase => path === `/estudante/jogos/${phase.slug}`);
     const orbi = niveisGuiaOrbi.some(level => path === `/estudante/jogos/orbi/${level.slug}`);
-    const standalone = ["/estudante/jogos/entregas-do-orbi", "/estudante/jogos/ingles-em-cena", "/estudante/jogos/vila-dos-blocos", "/estudante/trilhas/csharp", "/estudante/trilhas/sql"].includes(path);
+    const standalone = ["/estudante/jogos/entregas-do-orbi", "/estudante/jogos/ingles-em-cena", "/estudante/jogos/vila-dos-blocos", WORK_SIMULATION_HREF, "/estudante/trilhas/csharp", "/estudante/trilhas/sql"].includes(path);
     if (!code && !assembly && !orbi && !standalone) return null;
     const moduleId = url.searchParams.get("module");
     const query = path === "/estudante/trilhas/sql" && url.searchParams.get("mode") === "workshop" ? "?mode=workshop" : path === "/estudante/trilhas/csharp" && moduleId && ["variables", "conditions", "loops"].includes(moduleId) ? `?module=${moduleId}` : "";
@@ -175,7 +176,7 @@ export function getAcademyActivity(userId: string, read: ReadSave): AcademyActiv
     detail: sqlLessons[workshop.stage].title, nextHref: "/estudante/jogos/revisao", nextLabel: "Revisar as descobertas de SQL",
   });
   const resume = readAcademyResume(get(resumeStorageKey(userId)));
-  let pulseContinuation: AcademyActivityItem | null = null;
+  let separateContinuation: AcademyActivityItem | null = null;
   if (resume) {
     if (resume.href === ORBI_PULSE_HREF) {
       const pulse = readPulseSave(get(pulseSaveKey(userId)));
@@ -183,12 +184,27 @@ export function getAcademyActivity(userId: string, read: ReadSave): AcademyActiv
       const finished = pulse.completed.length === pulseLessons.length;
       // A continuation pointer is not another catalog activity or an XP source.
       // Keep the original delivery item and aggregate summaries unchanged.
-      pulseContinuation = {
+      separateContinuation = {
         id: "pulse-workshop", title: "Oficina do Pulso", group: "experience", href: ORBI_PULSE_HREF,
         status: finished ? "completed" : practiced ? "in-progress" : "opened",
         completedUnits: pulse.completed.length, totalUnits: pulseLessons.length, unit: "rotas", practiced, reviewed: 0, lastAt: resume.updatedAt,
         detail: finished ? "As duas rotas da Oficina estão concluídas. Leve a ideia para o código." : `${getPulseLesson(pulse.current).title} · ${getPulseLesson(pulse.current).objective}`,
         nextHref: "/estudante/pratica/variaveis-js?from=delivery", nextLabel: "Aplicar a descoberta no código",
+      };
+    } else if (resume.href === WORK_SIMULATION_HREF) {
+      // This collection has its own save and appears only when explicitly resumed.
+      // It is not a seventh practice activity or an addition to the XP/counts.
+      const work = readWorkSave(get(workSimulationKey(userId)));
+      const current = getWorkCase(work.current);
+      const practiced = work.completed.length > 0 || WORK_CASE_IDS.some(id => work.attempts[id] > 0 || work.drafts[id] !== getWorkCase(id).starterCode);
+      const finished = work.completed.length === WORK_CASE_IDS.length;
+      separateContinuation = {
+        id: "work-simulation", title: "Simulador de trabalho", group: "experience", href: WORK_SIMULATION_HREF,
+        status: finished ? "completed" : practiced ? "in-progress" : "opened",
+        completedUnits: work.completed.length, totalUnits: WORK_CASE_IDS.length, unit: "casos", practiced, reviewed: 0, lastAt: resume.updatedAt,
+        detail: `Loja do Bairro · ${current.title}`,
+        nextHref: finished ? "/estudante/pratica" : WORK_SIMULATION_HREF,
+        nextLabel: finished ? "Levar a investigação ao laboratório" : "Retomar o turno",
       };
     }
     const matched = items.find(item => item.href === resume.href) ??
@@ -210,5 +226,5 @@ export function getAcademyActivity(userId: string, read: ReadSave): AcademyActiv
     const own = items.filter(item => item.group === group);
     return { completed: own.filter(item => item.status === "completed").length, total: own.length, practiced: own.filter(item => item.practiced).length, reviewed: own.filter(item => item.reviewed > 0).length, unit };
   };
-  return { items, continueItem: chooseAcademyContinuation(pulseContinuation ? [...items, pulseContinuation] : items), summaries: { experiences: summarize("experience", "experiências"), code: summarize("code", "desafios"), csharp: summarize("csharp", "módulos"), sqlWorkshop: summarize("sql-workshop", "oficinas") } };
+  return { items, continueItem: chooseAcademyContinuation(separateContinuation ? [...items, separateContinuation] : items), summaries: { experiences: summarize("experience", "experiências"), code: summarize("code", "desafios"), csharp: summarize("csharp", "módulos"), sqlWorkshop: summarize("sql-workshop", "oficinas") } };
 }

@@ -352,6 +352,31 @@ blocos, não o site inteiro. Capturas e relatório ficam em
 `apps/web/test-results/commercial-portfolio/`, ignorados pelo Git. O roteiro
 não envia formulários nem mensagens e não substitui teste em iPhone físico.
 
+## Auditoria do simulador de trabalho
+
+Com Next local aquecido na porta 3015, execute em `apps/web`:
+
+```powershell
+node scripts/audit-work-simulation.mjs desktop
+node scripts/audit-work-simulation.mjs iphone-safari
+node scripts/audit-work-simulation.mjs small-mobile
+```
+
+Sem argumento, os três perfis rodam em série. `WORK_SIMULATION_TEST_URL` permite
+outro endereço. O roteiro usa a prévia de desenvolvimento, cliques, deslocamento
+e edição real do JSON para concluir os dois casos. Confere erros, recuperação,
+cancelamento, reaplicação, evidência inválida, retomada e isolamento de contas.
+Fixtures dos saves antigos servem apenas para conferir preservação; não concluem
+o simulador. Os endereços digitados não devem receber requisições nem ocorrer
+escrita RPC. Relatórios, capturas e Axe dos blocos exercitados ficam em
+`apps/web/test-results/work-simulation/`, ignorados pelo Git.
+
+WebKit com perfil de iPhone não comprova Safari físico, teclado virtual, áudio
+audível ou desempenho no aparelho. O controle de som é conferido na interface.
+Esses testes não usam uma conta autenticada de produção nem substituem validação
+com iniciante. Escopo, assets e continuidade:
+[SIMULADOR_PROFISSOES.md](SIMULADOR_PROFISSOES.md).
+
 ## Limites restantes
 
 Para medir o Orbi sem o trabalho de screenshots e Axe na janela de amostragem,

@@ -1,0 +1,408 @@
+.office {
+  width: 100%;
+  min-width: 0;
+  color: #eef8f6;
+}
+
+.scene {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: clamp(360px, 48vw, 490px);
+  overflow: hidden;
+  border: 1px solid rgba(183, 224, 217, .22);
+  border-radius: 22px;
+  background: #182e39;
+  outline: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.scene:focus-visible {
+  outline: 3px solid #aae9d6;
+  outline-offset: 4px;
+}
+
+.world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1200px;
+  height: 800px;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.background {
+  position: absolute;
+  inset: 0;
+  background: url("/images/games/work-simulation/office-v1.webp") center / 100% 100% no-repeat;
+}
+
+.world::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  box-shadow: inset 0 0 100px 20px rgba(12, 31, 42, .15);
+  content: "";
+  pointer-events: none;
+}
+
+.player {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 154px;
+  height: 154px;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.playerSprite {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background: url("/images/games/orbi-chapter/orbi-sheet-v1.webp") 0 0 / 400% 200% no-repeat;
+  filter: drop-shadow(0 3px 2px rgba(10, 27, 35, .2));
+  transform-origin: center;
+}
+
+.playerShadow {
+  position: absolute;
+  bottom: 0;
+  left: 25%;
+  width: 50%;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(14, 31, 39, .23);
+  filter: blur(3px);
+}
+
+.playerName {
+  position: absolute;
+  left: 50%;
+  bottom: -22px;
+  padding: 3px 10px;
+  border: 1px solid rgba(186, 237, 220, .45);
+  border-radius: 20px;
+  background: #173d48;
+  color: #d4f5e7;
+  font-size: 17px;
+  font-weight: 700;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.hotspot {
+  position: absolute;
+  top: var(--station-y);
+  left: var(--station-x);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 156px;
+  height: 180px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 24px;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+  transform: translate(-50%, -100%);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hotspot:focus-visible {
+  outline: 4px solid #f6d08d;
+  outline-offset: 8px;
+}
+
+.personSprite {
+  position: absolute;
+  inset: 0 0 24px;
+  display: block;
+  background: url("/images/games/work-simulation/team-v1.webp") 0 0 / 200% 100% no-repeat;
+  filter: drop-shadow(0 4px 2px rgba(9, 30, 39, .22));
+}
+
+.supportSprite {
+  background-position: 100% 0;
+}
+
+.stationLabel {
+  position: relative;
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  justify-content: center;
+  min-height: 39px;
+  padding: 5px 14px;
+  border: 1px solid rgba(226, 243, 238, .5);
+  border-radius: 24px;
+  background: rgba(19, 47, 60, .96);
+  color: #fff8e9;
+  box-shadow: 0 4px 12px rgba(16, 35, 40, .15);
+  font-size: 20px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.hotspot:hover .stationLabel,
+.hotspot:focus-visible .stationLabel {
+  border-color: #ffda95;
+  background: #234c59;
+  color: #ffe2ac;
+}
+
+.hotspot:disabled {
+  cursor: default;
+}
+
+.computerHotspot {
+  width: 310px;
+  height: 225px;
+}
+
+.computerHotspot .stationLabel {
+  transform: translateY(35px);
+}
+
+.destination {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  width: 44px;
+  height: 18px;
+  border: 3px solid rgba(255, 228, 157, .95);
+  border-radius: 50%;
+  background: rgba(255, 220, 146, .14);
+  box-shadow: 0 0 12px rgba(255, 224, 158, .3);
+  pointer-events: none;
+}
+
+.monitorFeedback {
+  position: absolute;
+  top: 205px;
+  left: 960px;
+  z-index: 2;
+  width: 21px;
+  height: 21px;
+  border: 3px solid rgba(255, 213, 161, .5);
+  border-radius: 50%;
+  background: #e3a15f;
+  box-shadow: 0 0 22px rgba(255, 187, 111, .65);
+  pointer-events: none;
+}
+
+.office[data-repaired="true"] .monitorFeedback {
+  border-color: rgba(203, 255, 228, .7);
+  background: #77e6b7;
+  box-shadow: 0 0 26px rgba(130, 255, 200, .75);
+}
+
+.sceneTop {
+  position: absolute;
+  z-index: 1000;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  max-width: calc(100% - 32px);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.location {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 11px;
+  border: 1px solid rgba(181, 218, 210, .3);
+  border-radius: 30px;
+  background: rgba(15, 36, 47, .89);
+  color: #e1eee7;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .03em;
+}
+
+.location > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #9cdec6;
+}
+
+.speech {
+  position: relative;
+  max-width: 280px;
+  margin: 0;
+  padding: 10px 13px;
+  border: 1px solid rgba(255, 243, 215, .65);
+  border-radius: 3px 15px 15px;
+  background: #fff4d9;
+  color: #203c45;
+  box-shadow: 0 4px 18px rgba(14, 30, 39, .1);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.controls {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  left: 16px;
+  z-index: 1100;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.destinationButton {
+  display: inline-flex;
+  min-width: 108px;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid rgba(203, 232, 225, .55);
+  border-radius: 13px;
+  background: rgba(15, 39, 50, .96);
+  color: #f2f7ed;
+  box-shadow: 0 5px 14px rgba(8, 25, 33, .2);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.destinationButton:hover,
+.destinationButton:focus-visible {
+  border-color: #ffdaa3;
+  background: #2c505b;
+  color: #ffe5b5;
+}
+
+.destinationButton:focus-visible {
+  outline: 3px solid #ffdaa3;
+  outline-offset: 3px;
+}
+
+.scene[data-walking-to="lead"] [data-station="lead"],
+.scene[data-walking-to="computer"] [data-station="computer"],
+.scene[data-walking-to="support"] [data-station="support"] {
+  border-color: #f4d18a;
+  background: #395a5c;
+  color: #ffe9b8;
+}
+
+.destinationButton:disabled {
+  cursor: default;
+  opacity: .65;
+}
+
+.loading {
+  position: absolute;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  padding: 30px;
+  place-content: center;
+  background: rgba(14, 34, 44, .85);
+  color: #d7ece3;
+  font-size: 14px;
+  text-align: center;
+}
+
+.hint {
+  display: flex;
+  gap: 7px;
+  align-items: flex-start;
+  margin: 10px 4px 0;
+  color: #aabfba;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.hint > svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 600px) {
+  .scene {
+    height: 330px;
+    border-radius: 16px;
+  }
+
+  .sceneTop {
+    top: 10px;
+    left: 10px;
+    max-width: calc(100% - 20px);
+    gap: 6px;
+  }
+
+  .location {
+    padding: 6px 9px;
+    font-size: 10px;
+  }
+
+  .speech {
+    max-width: 220px;
+    padding: 8px 11px;
+    font-size: 11px;
+  }
+
+  .controls {
+    right: 9px;
+    bottom: 10px;
+    left: 9px;
+    gap: 6px;
+  }
+
+  .destinationButton {
+    min-width: 0;
+    min-height: 46px;
+    flex: 1 1 0;
+    gap: 5px;
+    padding: 8px 6px;
+    border-radius: 11px;
+    font-size: 11px;
+  }
+
+  .destinationButton > svg {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+  }
+
+  .keyboardHint {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .world,
+  .player {
+    will-change: auto;
+  }
+}

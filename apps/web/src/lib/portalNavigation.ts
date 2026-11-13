@@ -2,6 +2,7 @@ export type AcademySection = "home" | "tracks" | "practice" | "progress" | "comm
 export const ORBI_DELIVERY_HREF = "/estudante/jogos/entregas-do-orbi";
 export const ORBI_PULSE_HASH = "#oficina-do-pulso";
 export const ORBI_PULSE_HREF = ORBI_DELIVERY_HREF + ORBI_PULSE_HASH;
+export const WORK_SIMULATION_HREF = "/estudante/jogos/simulador";
 
 const hasPrefix = (path: string, prefix: string) => path === prefix || path.startsWith(`${prefix}/`);
 
@@ -40,6 +41,7 @@ export function academyPreviewHref(href: string) {
     return `/dev/lab-preview?academy=1${language && ["javascript", "python", "csharp", "todas"].includes(language) ? `&linguagem=${language}` : ""}${url.hash}`;
   }
   if (path === "/estudante/jogos") return "/dev/academy-preview";
+  if (path === WORK_SIMULATION_HREF) return "/dev/work-simulation-preview?from=academy";
   if (path === "/estudante/trilhas/csharp") {
     const moduleKind = url.searchParams.get("module");
     return `/dev/csharp-preview?academy=1${moduleKind && ["variables", "conditions", "loops"].includes(moduleKind) ? `&module=${moduleKind}` : ""}`;
@@ -65,6 +67,7 @@ export function canonicalAcademyHref(path: string, search = "", hash = ""): stri
   // resume data. academyResumeEntry performs the final route/query allowlist.
   const withMode = (href: string) => href + (href.split("?")[0] === ORBI_DELIVERY_HREF && hash === ORBI_PULSE_HASH ? ORBI_PULSE_HASH : "");
   if (path.startsWith("/estudante/")) return withMode(path + search);
+  if (path === "/dev/work-simulation-preview" && params.get("from") === "academy") return WORK_SIMULATION_HREF;
   if (path === "/dev/csharp-preview" && params.get("academy") === "1") {
     const moduleKind = params.get("module");
     return `/estudante/trilhas/csharp${moduleKind && ["variables", "conditions", "loops"].includes(moduleKind) ? `?module=${moduleKind}` : ""}`;
@@ -77,7 +80,10 @@ export function canonicalAcademyHref(path: string, search = "", hash = ""): stri
   if (path.startsWith("/dev/ide-preview/") && params.get("academy") === "1") return path.replace("/dev/ide-preview/", "/estudante/pratica/");
   if (params.get("from") === "academy") {
     if (path.startsWith("/dev/orbi-preview/")) return path.replace("/dev/orbi-preview/", "/estudante/jogos/orbi/");
-    if (path.startsWith("/dev/monte-codigo-preview/")) return path.replace("/dev/monte-codigo-preview/", "/estudante/jogos/");
+    if (path.startsWith("/dev/monte-codigo-preview/")) {
+      const href = path.replace("/dev/monte-codigo-preview/", "/estudante/jogos/");
+      return href === WORK_SIMULATION_HREF ? null : href;
+    }
   }
   return null;
 }

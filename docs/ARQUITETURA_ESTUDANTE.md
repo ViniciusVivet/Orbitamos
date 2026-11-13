@@ -46,6 +46,7 @@ da Entrega do Orbi, os controles próprios têm prioridade sobre as abas de form
 | `/estudante/jogos/orbi/[nivel]` | Nível do Guia o Orbi |
 | `/estudante/jogos/entregas-do-orbi` | Capítulo A última luz do bairro, save v2 |
 | `/estudante/jogos/entregas-do-orbi#oficina-do-pulso` | Oficina opcional de alcance/recarga, save separado; subárea na mesma página |
+| `/estudante/jogos/simulador` | Primeiro turno na Loja do Bairro: configuração, teste e evidência em dois casos de homologação |
 | `/estudante/jogos/ingles-em-cena` | Oito cenas de inglês aplicado |
 | `/estudante/jogos/vila-dos-blocos` | Dez fases de sintaxe e indentação |
 | `/estudante/jogos/revisao` | Revisão de bolso sobre experiências concluídas |
@@ -159,6 +160,9 @@ e `activity=delivery|english|village|review|sql` seleciona uma atividade (um val
 por vez). SQL aceita também `mode=workshop`.
 A Oficina do Pulso abre com
 `/dev/academy-preview?activity=delivery#oficina-do-pulso`.
+Simulação de trabalho: `/dev/work-simulation-preview?from=academy`, isolada no
+save da conta da prévia; veja [o registro do protótipo](SIMULADOR_PROFISSOES.md).
+
 Laboratório: `/dev/lab-preview?academy=1`; desafio:
 `/dev/ide-preview/[slug]?academy=1`; C#:
 `/dev/csharp-preview?academy=1&module=conditions`. Monte e Guia o Orbi usam

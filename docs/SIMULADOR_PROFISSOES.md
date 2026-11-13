@@ -1,12 +1,177 @@
 # Simulador de profissões da Orbitamos
 
-Criado em **12/11/2026**. Estado: **projeto proposto, com pesquisa inicial e
-auditoria da base atual**. Esta rodada não implementa um novo jogo, não ativa
-serviços e não acrescenta avaliação de voz ao produto.
+Criado em **12/11/2026**, com pesquisa inicial, proposta e auditoria da base.
+Atualização de implementação em **12/11/2026**: **protótipo implementado, com
+percurso local dos dois casos conferido em três perfis de navegador**. O registro
+de publicação e suas evidências remotas ficam separados do QA local, conforme
+o fechamento abaixo. Não foi implementada avaliação de voz nem
+ativado serviço externo para a simulação.
 
 Este é o documento principal para retomar o projeto. Fontes e catálogo inicial:
 [PESQUISA_ROTINAS_TECH.md](PESQUISA_ROTINAS_TECH.md). Projeto complementar de
 voz: [INGLES_FALADO.md](INGLES_FALADO.md).
+
+## Protótipo implementado — 12/11/2026
+
+O recorte implementado é o episódio **Primeiro turno**, papel **DevOps**, na
+empresa fictícia **Loja do Bairro**. O escritório 2D tem Orbi, Nina, Jo e um
+computador interativo. A experiência conecta relato, mapa dos serviços, log,
+edição de configuração, aplicação, teste do pedido e entrega da evidência.
+
+A cena usa DOM/CSS e um loop de movimento com `requestAnimationFrame`, sem
+adicionar um novo renderer ao bundle. Posição e câmera não atualizam React
+por quadro; o loop dorme sem deslocamento. Pausa, saída da aba e desmontagem
+liberam controles/recursos. Sons opcionais reutilizam `ChapterAudio`, com
+desbloqueio em gesto, mute e pausa. A Entrega mantém sua engine Phaser própria.
+
+| Caso | Situação e ação |
+| --- | --- |
+| `checkout-staging` — O pedido que não chega | O checkout procura `orders:3001`, enquanto pedidos atende em `orders:3000`. O aluno investiga e corrige a configuração de homologação, com pistas graduais. |
+| `checkout-transfer` — Uma nova porta | Uma instalação diferente atende em `orders:4100`; reaproveitar a configuração da porta 3000 não resolve o caso. A variação abre depois da primeira entrega e oferece menos ajuda. |
+
+O artefato editável é `checkout.config.json`, limitado aos campos `environment`
+e `ordersBaseUrl`. Ticket, mapa, log, diff e resultado do pedido representam os
+artefatos de investigação e entrega. JSON inválido permanece editável e não
+substitui a última configuração aplicada. Digitar, aplicar, verificar e concluir
+são ações distintas. A entrega exige um teste aprovado do caso e da configuração
+aplicada; a página inicial abrir sozinha não satisfaz essa condição. Não há shell,
+requisição ao endereço escrito ou alteração em produção.
+
+O save v1 separado por conta guarda seleção do caso, rascunhos, tentativas e
+conquistas. Configuração aplicada e resultado do teste não sobrevivem ao reload:
+retomar o arquivo exige aplicar e verificar novamente. Concluir o primeiro caso
+grava o próximo como ponto de retomada; a conversa de revisão ainda apresenta o
+ticket que acabou de ser entregue. Recuperar o arquivo inicial permite desfazer
+a recuperação e não apaga conquistas.
+
+A entrada única **Simulações de trabalho** fica dentro de Praticar/Jogos, com
+destino canônico `/estudante/jogos/simulador` e prévia exclusiva de desenvolvimento
+`/dev/work-simulation-preview`. A prévia iniciada pela Academy usa
+`?from=academy`, a mesma conta de preview e o mesmo destino canônico de retomada.
+O Início projeta a empresa e o caso do save somente quando esse destino está
+selecionado no índice de retomada. A coleção permanece fora da união fechada de
+seis atividades, dos seus denominadores e do XP existente. Não houve mudança na
+barra lateral nem sincronização de saves entre aparelhos.
+
+Arquivos principais desta implementação:
+
+- `apps/web/src/components/games/WorkSimulation.tsx` e
+  `WorkSimulation.module.css`: interface do turno e computador.
+- `apps/web/src/components/games/work-simulation/OfficeScene.tsx` e
+  `OfficeScene.module.css`: escritório, deslocamento e interações.
+- `apps/web/src/lib/workSimulation.ts` e `workSimulation.test.ts`: conteúdo,
+  validação, teste local, conclusão e persistência.
+- `apps/web/src/lib/academyActivity.ts` e `portalNavigation.ts`: retomada e
+  navegação canônica, sem novo prêmio.
+- `apps/web/src/components/estudante/PracticeStation.tsx`: coleção visual.
+
+Este recorte não implementa as seis missões do turno completo, novos papéis,
+containers reais ou o projeto de inglês falado. A pesquisa e o planejamento
+iniciais abaixo mantêm seu escopo e sua data; não são promessa de conteúdo já
+disponível.
+
+### Arte, origem e prompts
+
+Assets novos gerados com **ImageGen integrado**, no modo builtin, em 12/11.
+São cenário e personagens fictícios para o jogo, não retratos da equipe real.
+Os originais permanecem na pasta de imagens geradas do Codex. Sharp foi usado
+para recorte/exportação do atlas e compressão WebP, preservando transparência.
+
+| Asset no aplicativo | Formato/tamanho | Origem |
+| --- | --- | --- |
+| `apps/web/public/images/games/work-simulation/office-v1.webp` | 1536×1024, 222454 bytes | `exec-ec457707-9937-480a-8d64-e0bff39b774a.png` |
+| `apps/web/public/images/games/work-simulation/team-v1.webp` | 1024×512, 48920 bytes, alpha; Nina/Jo em duas células | `exec-2566f7e4-41aa-44fd-b62f-be8ec2ca62d1.png` |
+| `apps/web/public/images/jogos/simulador-trabalho-v1.webp` | 1200×504, 92388 bytes | Captura real do escritório pelo roteiro desktop, recortada/exportada com Sharp |
+
+O Orbi reutiliza `images/games/orbi-chapter/orbi-sheet-v1.webp`, sem substituir
+o original. A capa da coleção mostra o protótipo real conferido no desktop.
+Áudio usa os sons sintetizados existentes, sem arquivos ou serviço de voz novos.
+
+<details>
+<summary>Prompts finais das duas artes (geração integrada)</summary>
+
+Escritório:
+
+```text
+Use case: stylized-concept. Asset type: production background for an original
+Orbitamos 2D walkable office learning game. Create a polished, charming, richly
+hand-painted game environment, wide landscape 3:2 composition. A small Brazilian
+technology studio helping a neighborhood online shop: warm oak floor, rounded
+teal desks, cream plaster, terracotta accents, plants, shelving, afternoon light
+through a back window with leafy rooftops. Orthographic cutaway interior, gently
+elevated three-quarter near-isometric view like an authored cozy life-sim game,
+sophisticated material shading matching a friendly glossy teal space-robot
+mascot (the mascot will be added by code; DO NOT draw it). Three useful stations
+arranged in the UPPER HALF: a lead's desk at upper-left, a dual-monitor computer
+workstation at upper-middle, and a customer-service desk with a monitor at
+upper-right. Lower half and center must remain a broad continuous uncluttered
+walkable floor with subtle floor texture, inviting enough to move a character
+around; furniture does not obstruct that lower walking area. A small tasteful
+orbit/planet motif on the wall, no lettering. Fine authored details, readable
+silhouettes, cinematic warm/cool balance, premium indie-game art rather than
+generic flat icons or pixel art. Fill the entire canvas with the room, no
+floating diamond room, no border, no UI, no panels or labels, no text, no
+characters, no people, no robots. Do not make a website mockup. This is the
+background layer for an interactive scene, not a static screenshot of a
+completed game.
+```
+
+Personagens, com transparência solicitada:
+
+```text
+Use case: stylized-concept. Asset type: two character sprites for an original
+cozy Orbitamos office learning game. Create a polished character sprite atlas on
+a genuinely transparent background, square canvas. Exactly TWO separate full-body
+friendly adult Brazilian coworkers, equal visual scale, no overlap. LEFT HALF:
+Nina, adult Black Brazilian woman, short natural curly black hair, warm expressive
+face, casual navy blazer over a cream top, terracotta lanyard with plain badge,
+relaxed trousers and white sneakers, holding a slim tablet. RIGHT HALF: Jo, young
+adult Brazilian man, medium brown skin, dark wavy hair, teal overshirt over cream
+T-shirt, charcoal trousers and casual sneakers, one relaxed hand lightly raised
+to talk. Both standing on the same baseline, full bodies including feet visible,
+facing slightly inward in a three-quarter view, softly rounded premium stylized
+3D game character aesthetic with beautiful painted shading, expressive but not
+childish, coherent with a glossy friendly teal space-robot mascot. Each person
+centered in their own half with clear transparent margins; sprite-like even
+lighting, gentle grounded footwear shading only, absolutely no floor, no scene,
+no desk, no furniture, no typography, no labels, no borders, no watermark. Not
+photoreal people, not flat icons, not pixel art. The two halves will be cropped
+as separate sprites for an interactive office scene.
+```
+
+</details>
+
+### Fechamento local — 12/11/2026
+
+O roteiro `scripts/audit-work-simulation.mjs` completou os dois casos por ações
+da interface nos perfis desktop, WebKit/iPhone 13 e celular de 320 px, em série.
+Foram 15 verificações por perfil: falha inicial 502, rejeição de JSON inválido,
+ambiente de produção, endereço externo e chave extra; recuperação/cancelamento/
+desfazer; porta válida errada; cancelamento do teste por Escape; pausa durante
+deslocamento; reload sem reaplicar; retomada pelo Início; isolamento de contas;
+invalidação de evidência antiga; aplicação/teste/envio em cada caso e preservação
+dos saves/XP antigos. Não houve pedido aos hosts digitados nem escrita RPC.
+
+Capturas dos 16 estados, relatórios, exceções JavaScript, limites horizontais e
+Axe dos blocos exercitados ficam em `apps/web/test-results/work-simulation/`,
+ignorados pelo Git. A capa da coleção foi extraída da captura real desktop.
+Foram corrigidos o alvo de interação que mantinha a cena pausada depois de
+fechar uma conversa, a ordem de abertura dos diálogos e o foco do painel do
+computador. O roteiro confere o controle de som; não mede qualidade audível.
+
+A suíte geral passou **598 testes em 64 arquivos**; os contratos estáticos de
+colaborador/Supabase passaram **9 testes**. O build de produção passou, incluindo
+TypeScript. O lint terminou com **0 erros e 29 avisos**, em arquivos anteriores
+à implementação. Logs dos comandos desta rodada ficam
+em `docs/local/work-simulation-20261112/`. A verificação remota de SHA, GitHub
+Actions e Vercel fica em `production-verification.json` nessa mesma pasta;
+resultados locais não comprovam publicação nem uso autenticado em produção.
+
+Restam validação com uma pessoa iniciante, iPhone/Safari físico, teclado virtual,
+áudio e desempenho no aparelho. WebKit no Windows não comprova esses pontos.
+As outras missões do turno, infraestrutura real e inglês falado continuam no
+plano. O próximo incremento deve partir dessa observação, preservando os dois
+casos entregues, a conta e suas conquistas.
 
 ## Produto e experiência pretendida
 
@@ -194,9 +359,10 @@ O conteúdo referencia ações e verificações registradas pelo motor. Arquivos
 missão não recebem JavaScript arbitrário para executar. Um episódio novo deve
 ser validado como conteúdo antes de ganhar novas regras de runtime.
 
-### Contrato de episódio a definir no protótipo
+### Contrato futuro de episódios expansíveis
 
-Campos propostos, ainda não implementados:
+Esquema proposto para expansão, não uma API já implementada. O recorte atual
+usa tipos menores em `workSimulation.ts`; não contém ainda todo este contrato:
 
 ```text
 id, contentVersion, companyContextId, roleIds, responsibilityLevel
@@ -211,7 +377,7 @@ fazem parte do conteúdo. Mudanças incompatíveis exigem uma decisão explícit
 sobre migração do save; não reinterpretar uma conquista antiga como conclusão
 de um episódio novo.
 
-### Base existente conferida em 12/11
+### Base existente conferida no levantamento inicial de 12/11
 
 - `apps/web/src/components/games/OrbiChapterCanvas.tsx` e
   `games/orbi-chapter/engine.ts`: lifecycle, carregamento Phaser, controle e pausa.
@@ -225,7 +391,8 @@ de um episódio novo.
 - `apps/web/src/lib/browserCodeRunner.ts`, `sqlRunner.ts` e workers em
   `apps/web/public/`: referências de cancelamento e execução educativa no cliente.
 
-Essa base oferece partes reutilizáveis. Ainda não contém o motor proposto.
+No levantamento inicial, essa base oferecia partes reutilizáveis e ainda não
+continha o motor proposto. O recorte implementado depois está registrado acima.
 O parser do Pulso aceita duas declarações numéricas; não executa Linux, Docker
 ou Kubernetes. C# também usa um subconjunto educativo, não Roslyn/.NET completo.
 
@@ -237,8 +404,8 @@ Trilhas relacionadas apontam para o mesmo conteúdo, com destino canônico únic
 Publicar primeiro o que é jogável; não criar uma vitrine de dezenas de cursos
 vazios antes do piloto.
 
-Rota candidata: `/estudante/jogos/simulador`, ainda inexistente. Deve ser
-implementada explicitamente: o `[slug]` de jogos hoje pertence ao Monte o Código.
+Na proposta inicial, a rota candidata `/estudante/jogos/simulador` ainda não
+existia. Ela exigia implementação explícita: o `[slug]` de jogos pertence ao Monte o Código.
 Catálogo, resumo, revisão, retomada e preview precisam de registro próprio.
 Há seis atividades numa união fechada e contadores fixos na central; revisar
 esses contratos antes de inserir outra coleção.
@@ -297,8 +464,10 @@ um episódio vertical evita transformar o tamanho do catálogo em promessa.
    registro de evolução da Entrega. Conferir `git status` e instruções aplicáveis.
 2. Preservar o arquivo pessoal `apps/web/CLAUDE.md` sem ler ou incluir em commits;
    material sincronizado em `sources/` continua somente leitura.
-3. Próxima ação de implementação: prototipar **`checkout-staging`**, no recorte
-   descrito acima. Manter o resto do turno e do catálogo como planejamento.
+3. O recorte **`checkout-staging`** e a variação **`checkout-transfer`** têm
+   implementação registrada acima. Retomar pela seção de fechamento: conferir
+   correções e o percurso real antes de ampliar o turno. As demais missões e
+   famílias do catálogo continuam como planejamento.
 4. Registrar decisão, problema observado, causa, alteração, teste e pendência.
    Marcar separadamente código implementado, QA local e publicação verificada.
 5. Validar com uma pessoa iniciante e em iPhone/Safari físico. Conferir toque,

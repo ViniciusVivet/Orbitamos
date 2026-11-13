@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { academyPreviewHref, academySection, academySections, canonicalAcademyHref, isWorkspacePath, practiceMode } from "./portalNavigation";
+import { academyPreviewHref, academySection, academySections, canonicalAcademyHref, isWorkspacePath, practiceMode, WORK_SIMULATION_HREF } from "./portalNavigation";
 
 describe("Academy navigation", () => {
   it("separates marketing from workspace with exact path boundaries", () => {
@@ -33,5 +33,16 @@ describe("Academy navigation", () => {
     expect(canonicalAcademyHref("/estudante/jogos/entregas-do-orbi", "", "#redirect=https://evil.test")).toBe("/estudante/jogos/entregas-do-orbi");
     expect(academyPreviewHref("/estudante/jogos/entregas-do-orbi#unknown")).toBe("/dev/academy-preview?activity=delivery");
     expect(canonicalAcademyHref("/dev/academy-preview", "?view=home", "#oficina-do-pulso")).toBeNull();
+  });
+  it("routes the work collection to its own preview and canonical continuation", () => {
+    expect(academySection(WORK_SIMULATION_HREF)).toBe("practice");
+    expect(practiceMode(WORK_SIMULATION_HREF)).toBe("games");
+    expect(academyPreviewHref(WORK_SIMULATION_HREF)).toBe("/dev/work-simulation-preview?from=academy");
+    expect(academyPreviewHref(WORK_SIMULATION_HREF + "?token=secret#unknown")).toBe("/dev/work-simulation-preview?from=academy");
+    expect(canonicalAcademyHref("/dev/work-simulation-preview", "?from=academy&token=secret", "#unknown")).toBe(WORK_SIMULATION_HREF);
+    expect(canonicalAcademyHref("/dev/work-simulation-preview")).toBeNull();
+    expect(canonicalAcademyHref("/dev/work-simulation-preview", "?from=other")).toBeNull();
+    expect(canonicalAcademyHref("/dev/monte-codigo-preview/simulador", "?from=academy")).toBeNull();
+    expect(academySections).toHaveLength(5);
   });
 });

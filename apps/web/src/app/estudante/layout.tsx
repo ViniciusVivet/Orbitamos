@@ -71,7 +71,7 @@ export default function EstudanteLayout({
           <NotificacaoBadge count={notifications.filter((item) => !item.readAt).length} onClick={() => setNotifOpen(true)} />
         </PortalHeader>
         <div className="container mx-auto px-4 py-4 sm:py-6 lg:px-6 lg:py-8 max-w-full">
-          {academySection(pathname) === "practice" && pathname !== "/estudante/jogos/entregas-do-orbi" && <PracticeNavigation/>}
+          {academySection(pathname) === "practice" && !["/estudante/jogos/entregas-do-orbi", "/estudante/jogos/simulador"].includes(pathname) && <PracticeNavigation/>}
           {children}
         </div>
       </div>
