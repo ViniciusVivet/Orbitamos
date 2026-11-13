@@ -15,10 +15,11 @@ import { assemblyDraftKey, orbiDraftKey, readAssemblyDraft, readOrbiDraft, readV
 import { csharpProgressKey, readCSharpProgress } from "./csharpTrack";
 import { csharpModules, readModuleKind, type CSharpModuleKind } from "./csharpModules";
 import { getPulseLesson, pulseLessons, pulseSaveKey, readPulseSave } from "./orbiPulse";
-import { ORBI_DELIVERY_HREF, ORBI_PULSE_HASH, ORBI_PULSE_HREF, WORK_DELIVERY_HASH, WORK_DELIVERY_HREF, WORK_INCIDENT_HASH, WORK_INCIDENT_HREF, WORK_SIMULATION_HREF } from "./portalNavigation";
+import { ENGLISH_SPEAKING_HASH, ENGLISH_SPEAKING_HREF, ORBI_DELIVERY_HREF, ORBI_PULSE_HASH, ORBI_PULSE_HREF, WORK_DELIVERY_HASH, WORK_DELIVERY_HREF, WORK_INCIDENT_HASH, WORK_INCIDENT_HREF, WORK_SIMULATION_HREF } from "./portalNavigation";
 import { getWorkCase, readWorkSave, WORK_CASE_IDS, workSimulationKey } from "./workSimulation";
 import { readWorkDeliverySave, WORK_DELIVERY_STARTER_CODE, workDeliveryKey } from "./workDelivery";
 import { getIncidentCase, INCIDENT_CASE_IDS, incidentSaveKey, readIncidentSave } from "./workIncident";
+import { englishSpeakingLessons, getSpeakingLesson, readSpeakingSave, speakingSaveKey } from "./spokenEnglish";
 
 export type AcademyActivityItem = {
   id: string; title: string; group: "experience" | "code" | "csharp" | "sql-workshop";
@@ -40,9 +41,12 @@ export function academyResumeEntry(href: string, now = Date.now()): AcademyResum
   if (!href.startsWith("/") || href.startsWith("//") || !Number.isSafeInteger(now) || now <= 0 || now > Date.now() + 300000) return null;
   try {
     const url = new URL(href, "https://academy.invalid");
+    const fragment = href.includes("#") ? href.slice(href.indexOf("#")) : "";
+    if (url.pathname === "/estudante/jogos/ingles-em-cena" && fragment && fragment !== ENGLISH_SPEAKING_HASH) return null;
     const pulse = url.pathname === ORBI_DELIVERY_HREF && url.hash === ORBI_PULSE_HASH;
     const workPhaseHash = url.pathname === WORK_SIMULATION_HREF && [WORK_DELIVERY_HASH, WORK_INCIDENT_HASH].includes(url.hash) ? url.hash : "";
-    if (url.origin !== "https://academy.invalid" || (url.hash && !pulse && !workPhaseHash)) return null;
+    const speaking = url.pathname === "/estudante/jogos/ingles-em-cena" && url.hash === ENGLISH_SPEAKING_HASH && fragment === ENGLISH_SPEAKING_HASH;
+    if (url.origin !== "https://academy.invalid" || (url.hash && !pulse && !workPhaseHash && !speaking)) return null;
     const path = url.pathname;
     const code = desafios.some(challenge => path === `/estudante/pratica/${challenge.slug}`);
     const assembly = fasesMonteCodigo.some(phase => path === `/estudante/jogos/${phase.slug}`);
@@ -51,7 +55,7 @@ export function academyResumeEntry(href: string, now = Date.now()): AcademyResum
     if (!code && !assembly && !orbi && !standalone) return null;
     const moduleId = url.searchParams.get("module");
     const query = path === "/estudante/trilhas/sql" && url.searchParams.get("mode") === "workshop" ? "?mode=workshop" : path === "/estudante/trilhas/csharp" && moduleId && ["variables", "conditions", "loops"].includes(moduleId) ? `?module=${moduleId}` : "";
-    return { href: path + query + (pulse ? ORBI_PULSE_HASH : workPhaseHash), updatedAt: now };
+    return { href: path + query + (pulse ? ORBI_PULSE_HASH : workPhaseHash || (speaking ? ENGLISH_SPEAKING_HASH : "")), updatedAt: now };
   } catch { return null; }
 }
 export function readAcademyResume(raw: string | null): AcademyResumeEntry | null {
@@ -181,7 +185,22 @@ export function getAcademyActivity(userId: string, read: ReadSave): AcademyActiv
   const resume = readAcademyResume(get(resumeStorageKey(userId)));
   let separateContinuation: AcademyActivityItem | null = null;
   if (resume) {
-    if (resume.href === ORBI_PULSE_HREF) {
+    if (resume.href === ENGLISH_SPEAKING_HREF) {
+      const speaking = readSpeakingSave(get(speakingSaveKey(userId)));
+      const current = getSpeakingLesson(speaking.current) ?? englishSpeakingLessons[0];
+      const practiced = speaking.completed.length > 0 || englishSpeakingLessons.some(lesson => speaking.attempts[lesson.id] > 0);
+      const finished = speaking.completed.length === englishSpeakingLessons.length;
+      // Participation in speaking stays separate from the eight-scene quiz,
+      // the six catalog activities and their aggregate completion/XP.
+      separateContinuation = {
+        id: "spoken-english", title: "Fale inglês com o Orbi", group: "experience", href: ENGLISH_SPEAKING_HREF,
+        status: finished ? "completed" : practiced ? "in-progress" : "opened",
+        completedUnits: speaking.completed.length, totalUnits: englishSpeakingLessons.length, unit: "itens praticados", practiced, reviewed: 0, lastAt: resume.updatedAt,
+        detail: `Ler, ouvir e repetir · ${current.pt} / ${current.en}`,
+        nextHref: finished ? "/estudante/jogos/ingles-em-cena" : ENGLISH_SPEAKING_HREF,
+        nextLabel: finished ? "Praticar nas cenas de inglês" : "Continuar ouvindo e repetindo",
+      };
+    } else if (resume.href === ORBI_PULSE_HREF) {
       const pulse = readPulseSave(get(pulseSaveKey(userId)));
       const practiced = pulse.completed.length > 0 || pulseLessons.some(lesson => pulse.attempts[lesson.id] > 0 || pulse.drafts[lesson.id] !== lesson.starterCode);
       const finished = pulse.completed.length === pulseLessons.length;

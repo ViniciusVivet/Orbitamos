@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { ArrowLeft, ArrowRight, Check, Code2, Gamepad2, Play, RotateCcw, Sparkles } from "lucide-react";
 import { activityCompletion, emptyJournal, journalKey, persistPractice, practiceActivities, practiceDestination, readJournal, recommendActivity, reviewQueue, type ActivityId, type PracticeJournal, type ReviewQuestion } from "@/lib/practiceStation";
 import { fasesMonteCodigo } from "@/lib/jogoMonteCodigo";
@@ -11,7 +11,7 @@ import LearningBridge from "./LearningBridge";
 import s from "./PracticeStation.module.css";
 import { useAcademyStudyPath } from "./useAcademyStudyPath";
 import { academyStudyPaths } from "@/lib/academyStudyPath";
-import { academyPreviewHref, WORK_SIMULATION_HREF } from "@/lib/portalNavigation";
+import { academyPreviewHref, ENGLISH_SPEAKING_HASH, WORK_SIMULATION_HREF } from "@/lib/portalNavigation";
 import { activityCovers } from "./activityCovers";
 import codeCover from "../../../public/images/laboratorio/fundamentos-v1.png";
 
@@ -89,12 +89,13 @@ export function PracticeReview({ userId, preview = false }: { userId: string; pr
   return <div className={s.reviewPage} data-practice-review><Link className={s.back} href={back}><ArrowLeft size={16}/> Voltar às práticas</Link>{!ready || !questions ? <p role="status">Preparando sua revisão…</p> : !questions.length ? <><ReviewScene/><h1>Primeiro, uma descoberta.</h1><p>Conclua uma experiência e volte aqui para revisar o que praticou.</p><Link className={s.primary} href={back}>Escolher uma missão <ArrowRight size={16}/></Link></> : done ? <><ReviewScene done/><h1>Você voltou à ideia.</h1><p>Você praticou {questions.length} situação{questions.length > 1 ? "s" : ""} diferente{questions.length > 1 ? "s" : ""}. Pode voltar em outro dia para tentar lembrar de novo.</p><Link className={s.primary} href={back}>Escolher o próximo passo <ArrowRight size={16}/></Link></> : question && <><p className={s.eyebrow}>REVISÃO DE BOLSO · {index + 1} DE {questions.length}</p><h1>{question.prompt}</h1>{question.code && <pre>{question.code}</pre>}<div className={s.reviewChoices}>{question.choices.map(choice => <button key={choice} aria-pressed={answer === choice} onClick={() => setAnswer(choice)}>{choice}{answer === choice && correct && <Check size={17}/>}</button>)}</div>{answer && <div className={s.reviewFeedback} role="status"><strong>{correct ? "Você recuperou essa ideia." : "Vamos conferir o raciocínio."}</strong><p>{question.explanation}</p>{!correct && <p>Use essa pista e faça outra escolha.</p>}</div>}{correct && <button className={s.primary} onClick={next}>{index === questions.length - 1 ? "Concluir revisão" : "Próxima pergunta"}<ArrowRight size={16}/></button>}</>}{storageError && <p role="alert">A revisão terminou, mas o navegador não conseguiu guardar o registro.</p>}</div>;
 }
 export function PracticeActivity({ userId, activity, preview = false }: { userId: string; activity: "delivery" | "english" | "review" | "sql" | "village"; preview?: boolean }) {
+  const spokenEnglish = useSyncExternalStore(listener => { window.addEventListener("hashchange", listener); return () => window.removeEventListener("hashchange", listener); }, () => activity === "english" && window.location.hash === ENGLISH_SPEAKING_HASH, () => false);
   const [done, setDone] = useState(false);
   const { completed } = useStation(userId);
   const [storageError, setStorageError] = useState(false);
   const back = preview ? "/dev/academy-preview" : "/estudante/jogos";
   function finish() { setDone(true); if (activity === "delivery" || activity === "english") if (!persistPractice(userId, activity, "complete")) setStorageError(true); }
-  return <div data-practice-activity>{activity === "delivery" ? <OrbiDelivery userId={userId} onComplete={finish} onBackHref={back}/> : activity === "english" ? <CodeEnglish userId={userId} onComplete={finish} onBackHref={back}/> : activity === "review" ? <PracticeReview userId={userId} preview={preview}/> : activity === "sql" ? <SqlStudio userId={userId}/> : <VillageGame userId={userId} preview={preview}/>}{(activity === "delivery" || activity === "english") && (done || completed[activity]) && <LearningBridge activity={activity} userId={userId} preview={preview}/ >}{storageError && <p role="alert">Missão concluída. O navegador não conseguiu guardar este registro; mantenha a página aberta para continuar.</p>}</div>;
+  return <div data-practice-activity>{activity === "delivery" ? <OrbiDelivery userId={userId} onComplete={finish} onBackHref={back}/> : activity === "english" ? <CodeEnglish userId={userId} onComplete={finish} onBackHref={back}/> : activity === "review" ? <PracticeReview userId={userId} preview={preview}/> : activity === "sql" ? <SqlStudio userId={userId}/> : <VillageGame userId={userId} preview={preview}/>}{!spokenEnglish && (activity === "delivery" || activity === "english") && (done || completed[activity]) && <LearningBridge activity={activity} userId={userId} preview={preview}/ >}{storageError && <p role="alert">Missão concluída. O navegador não conseguiu guardar este registro; mantenha a página aberta para continuar.</p>}</div>;
 }
 export function AcademyPreview() {
   const params = useSearchParams();

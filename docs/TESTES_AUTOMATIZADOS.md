@@ -5,6 +5,8 @@ Os resultados de `3643a04` permanecem
 históricos. A rodada de escalabilidade abaixo distingue testes focais, integração
 unitária, auditoria isolada de navegador de 05/11 e banco local. As fixtures
 não comprovam dados/autorização do projeto remoto.
+O roteiro do piloto de inglês falado foi acrescentado em 13/11/2026; seu
+fechamento de QA local está registrado na seção específica.
 
 ## Suítes e comandos atuais
 
@@ -46,6 +48,60 @@ inspecionam arquivos; não iniciam Postgres nem executam policies RLS.
 A existência desses testes não comprova aprovação de uma execução nova nem
 cobertura visual. O Vitest inclui `src/**/*.test.ts`; não há ambiente DOM
 configurado para testes React de componentes/formulários.
+
+## Inglês falado — roteiro de 13/11/2026
+
+O piloto tem testes focais de conteúdo, roteiro PT → EN → PT → EN → PT,
+save/merge por conta, controlador de síntese, hash `#falar` e retomada da Home.
+Execute em `apps/web`, com Node 24 e um worker:
+
+```powershell
+node node_modules/vitest/vitest.mjs run src/lib/spokenEnglish.test.ts src/lib/spokenSpeech.test.ts src/lib/portalNavigation.test.ts src/lib/academyActivity.test.ts --maxWorkers=1 --no-file-parallelism
+```
+
+Os testes de voz usam dependências simuladas; não emitem áudio nem validam
+pronúncia, vozes instaladas ou rede do aparelho. Os testes de navegação e
+retomada verificam o endereço exato, rejeição de fragmentos contaminados,
+participação de 0/12 a 12/12 e preservação do catálogo de seis experiências,
+save inglês anterior e agregados.
+
+Com Next local aquecido em `http://localhost:3015`, há um roteiro de navegador:
+
+```powershell
+node scripts/audit-spoken-english.mjs desktop
+node scripts/audit-spoken-english.mjs iphone
+node scripts/audit-spoken-english.mjs small
+```
+
+Sem argumento, os perfis rodam em sequência: Chromium desktop, WebKit com
+perfil iPhone 13 e Chromium de 320 × 740. `SPOKEN_ENGLISH_BASE_URL` troca a
+origem e `SPOKEN_ENGLISH_URL` troca a entrada, cujo padrão é
+`/dev/academy-preview?activity=english#falar`.
+
+O roteiro simula somente as capacidades de síntese do navegador e usa ações
+reais da interface para praticar os novos itens. Confere ausência de reprodução
+automática, cinco partes com duas EN/três PT, ritmo/voz, cancelamento, callbacks
+atrasados, falhas, modo texto, conclusão manual, recarga, retomada e preservação
+do save anterior/journal/XP. Faz verificações de overflow e Axe no bloco novo;
+capturas e relatórios ficam em `apps/web/test-results/spoken-english/`, fora
+do Git. A conta fixa da prévia permite conferir chaves distintas preservadas;
+isso não substitui exercitar troca real de `userId` em sessão autenticada.
+
+**Fechamento local em 13/11:** suíte completa com **682 testes em 68 arquivos**
+e **9 contratos** aprovados. Auditorias passaram com **12 verificações no
+desktop**, **11 no WebKit/iPhone** e **11 em 320 px**, sete estados capturados
+por perfil. Os três perfis ficaram sem violações Axe no bloco novo, sem overflow,
+erros de página ou chamadas RPC/API de voz da aplicação. O botão de início foi
+conferido na primeira dobra. O desktop inclui interrupção por atualização em
+outra aba, preservando os 12 registros obtidos pela interface. As capturas
+reais de desktop e celular foram inspecionadas.
+
+Lint completo passou com zero erros e 29 avisos preexistentes. O build de
+produção, incluindo TypeScript, passou. Os logs estão no diretório local da rodada. WebKit emulado e síntese
+simulada não comprovam áudio audível, vozes/latência do Safari físico, Android
+modesto, uso offline, aprendizagem com iniciante, CI ou publicação. Estado,
+limites e evidência remota separada em
+[METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md#qa-da-rodada--13112026).
 
 ## Oficina do Pulso — implementação de 11/11/2026
 

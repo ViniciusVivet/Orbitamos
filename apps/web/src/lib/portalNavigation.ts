@@ -7,6 +7,8 @@ export const WORK_DELIVERY_HASH = "#esteira";
 export const WORK_DELIVERY_HREF = WORK_SIMULATION_HREF + WORK_DELIVERY_HASH;
 export const WORK_INCIDENT_HASH = "#incidente";
 export const WORK_INCIDENT_HREF = WORK_SIMULATION_HREF + WORK_INCIDENT_HASH;
+export const ENGLISH_SPEAKING_HASH = "#falar";
+export const ENGLISH_SPEAKING_HREF = "/estudante/jogos/ingles-em-cena" + ENGLISH_SPEAKING_HASH;
 
 const isWorkPhaseHash = (hash: string) => hash === WORK_DELIVERY_HASH || hash === WORK_INCIDENT_HASH;
 
@@ -55,7 +57,10 @@ export function academyPreviewHref(href: string) {
   if (path === "/estudante/trilhas/sql") return `/dev/academy-preview?activity=sql${url.searchParams.get("mode") === "workshop" ? "&mode=workshop" : ""}`;
   const activities: Record<string, string> = { "entregas-do-orbi": "delivery", "ingles-em-cena": "english", revisao: "review", "vila-dos-blocos": "village" };
   const game = path.replace("/estudante/jogos/", "");
-  if (activities[game]) return `/dev/academy-preview?activity=${activities[game]}${path === ORBI_DELIVERY_HREF && url.hash === ORBI_PULSE_HASH ? ORBI_PULSE_HASH : ""}`;
+  if (activities[game]) {
+    const speaking = game === "ingles-em-cena" && href.slice(href.indexOf("#")) === ENGLISH_SPEAKING_HASH;
+    return `/dev/academy-preview?activity=${activities[game]}${path === ORBI_DELIVERY_HREF && url.hash === ORBI_PULSE_HASH ? ORBI_PULSE_HASH : speaking ? ENGLISH_SPEAKING_HASH : ""}`;
+  }
   const routePairs = [["/estudante/pratica/", "/dev/ide-preview/"], ["/estudante/jogos/orbi/", "/dev/orbi-preview/"], ["/estudante/jogos/", "/dev/monte-codigo-preview/"]] as const;
   for (const [from, to] of routePairs) {
     if (!path.startsWith(from)) continue;
@@ -73,10 +78,12 @@ export function canonicalAcademyHref(path: string, search = "", hash = ""): stri
   // resume data. academyResumeEntry performs the final route/query allowlist.
   const withMode = (href: string) => {
     const base = href.split("?")[0];
-    return href + (base === ORBI_DELIVERY_HREF && hash === ORBI_PULSE_HASH ? ORBI_PULSE_HASH : base === WORK_SIMULATION_HREF && isWorkPhaseHash(hash) ? hash : "");
+    return href + (base === ORBI_DELIVERY_HREF && hash === ORBI_PULSE_HASH ? ORBI_PULSE_HASH : base === WORK_SIMULATION_HREF && isWorkPhaseHash(hash) ? hash : base === "/estudante/jogos/ingles-em-cena" && hash === ENGLISH_SPEAKING_HASH ? ENGLISH_SPEAKING_HASH : "");
   };
   // A mistyped phase must not overwrite the simulator's existing continuation.
   if ([WORK_SIMULATION_HREF, "/dev/work-simulation-preview"].includes(path) && hash && !isWorkPhaseHash(hash)) return null;
+  const speakingRoute = path === "/estudante/jogos/ingles-em-cena" || (path === "/dev/academy-preview" && params.get("activity") === "english");
+  if (speakingRoute && hash && hash !== ENGLISH_SPEAKING_HASH) return null;
   if (path.startsWith("/estudante/")) return withMode(path + search);
   if (path === "/dev/work-simulation-preview" && params.get("from") === "academy") return withMode(WORK_SIMULATION_HREF);
   if (path === "/dev/csharp-preview" && params.get("academy") === "1") {

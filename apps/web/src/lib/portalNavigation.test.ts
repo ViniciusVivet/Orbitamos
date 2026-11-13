@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { academyPreviewHref, academySection, academySections, canonicalAcademyHref, isWorkspacePath, practiceMode, WORK_DELIVERY_HASH, WORK_DELIVERY_HREF, WORK_INCIDENT_HASH, WORK_INCIDENT_HREF, WORK_SIMULATION_HREF } from "./portalNavigation";
+import { academyPreviewHref, academySection, academySections, canonicalAcademyHref, ENGLISH_SPEAKING_HASH, ENGLISH_SPEAKING_HREF, isWorkspacePath, practiceMode, WORK_DELIVERY_HASH, WORK_DELIVERY_HREF, WORK_INCIDENT_HASH, WORK_INCIDENT_HREF, WORK_SIMULATION_HREF } from "./portalNavigation";
 
 describe("Academy navigation", () => {
   it("separates marketing from workspace with exact path boundaries", () => {
@@ -33,6 +33,30 @@ describe("Academy navigation", () => {
     expect(canonicalAcademyHref("/estudante/jogos/entregas-do-orbi", "", "#redirect=https://evil.test")).toBe("/estudante/jogos/entregas-do-orbi");
     expect(academyPreviewHref("/estudante/jogos/entregas-do-orbi#unknown")).toBe("/dev/academy-preview?activity=delivery");
     expect(canonicalAcademyHref("/dev/academy-preview", "?view=home", "#oficina-do-pulso")).toBeNull();
+  });
+  it("round-trips the spoken English branch without adding a navigation section", () => {
+    const english = "/estudante/jogos/ingles-em-cena";
+    expect(ENGLISH_SPEAKING_HASH).toBe("#falar");
+    expect(ENGLISH_SPEAKING_HREF).toBe(english + ENGLISH_SPEAKING_HASH);
+    expect(academyPreviewHref(ENGLISH_SPEAKING_HREF)).toBe("/dev/academy-preview?activity=english#falar");
+    expect(academyPreviewHref(english + "?token=secret#falar")).toBe("/dev/academy-preview?activity=english#falar");
+    expect(academyPreviewHref(english)).toBe("/dev/academy-preview?activity=english");
+    expect(canonicalAcademyHref(english, "", ENGLISH_SPEAKING_HASH)).toBe(ENGLISH_SPEAKING_HREF);
+    expect(canonicalAcademyHref("/dev/academy-preview", "?activity=english&token=secret", ENGLISH_SPEAKING_HASH)).toBe(ENGLISH_SPEAKING_HREF);
+    expect(canonicalAcademyHref("/dev/academy-preview", "?activity=english")).toBe(english);
+    expect(canonicalAcademyHref("/dev/academy-preview", "?activity=sql", ENGLISH_SPEAKING_HASH)).toBe("/estudante/trilhas/sql");
+    expect(canonicalAcademyHref("/dev/academy-preview", "?view=home", ENGLISH_SPEAKING_HASH)).toBeNull();
+    expect(academySection(english)).toBe("practice");
+    expect(practiceMode(english)).toBe("english");
+    expect(academySections).toHaveLength(5);
+  });
+  it("does not save unknown or contaminated spoken English fragments", () => {
+    const english = "/estudante/jogos/ingles-em-cena";
+    for (const hash of ["#unknown", "#Falar", "#%66alar", "#falar?token=secret", "#falar&redirect=https://evil.test", "#falar#other", "#fa\nlar", "#falar "]) {
+      expect(canonicalAcademyHref(english, "", hash)).toBeNull();
+      expect(canonicalAcademyHref("/dev/academy-preview", "?activity=english", hash)).toBeNull();
+      expect(academyPreviewHref(english + hash)).toBe("/dev/academy-preview?activity=english");
+    }
   });
   it("routes the work collection to its own preview and canonical continuation", () => {
     expect(academySection(WORK_SIMULATION_HREF)).toBe("practice");

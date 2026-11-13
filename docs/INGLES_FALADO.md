@@ -1,9 +1,46 @@
 # Inglês falado na Orbitamos
 
-Pesquisa e decisão proposta em **12/11/2026**. Estado: **planejado**.
-Não houve implementação, captura de microfone, instalação de modelo ou ativação
-de serviço de voz nesta rodada. Este documento complementa o
+Pesquisa inicial em **12/11/2026**, preservada abaixo. O piloto de ouvir e
+repetir foi implementado no repositório em **13/11/2026**, com fluxo e layout
+verificados localmente em desktop e mobile. Microfone, gravação, transcrição e avaliação de pronúncia
+continuam fora desta implementação. Este documento complementa o
 [Simulador de profissões](SIMULADOR_PROFISSOES.md).
+
+## Decisão implementada em 13/11
+
+**Fale inglês com o Orbi** tem 12 itens: seis palavras, depois seis frases de
+programação. Usa síntese de fala do navegador, sem API de voz contratada pela
+Orbitamos, microfone ou nota automática. O aluno ouve e repete uma sequência
+de cinco partes: pergunta em português, modelo em inglês, convite em português,
+modelo para repetir junto e convite para tentar sozinho. A confirmação do
+aluno registra participação; não comprova pronúncia ou proficiência.
+
+A análise da referência de 7,546 s identificou **duas** falas inglesas, com
+pergunta e convite em português entre elas. O piloto usa essa organização,
+com conteúdo próprio e turno independente ao final; não usa arte, áudio nem
+aproximação aportuguesada do anúncio. Transcrição, intervalos, conteúdo dos
+12 itens e pausas estão em [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md).
+
+A entrada é `/estudante/jogos/ingles-em-cena#falar`; a prévia é
+`/dev/academy-preview?activity=english#falar`. O modo anterior de oito cenas
+continua na rota-base, com seu save preservado. A prática falada tem save
+próprio por conta e retomada separada na Home, sem aumentar as seis atividades
+ou gerar conclusão/XP da atividade antiga.
+
+Vozes podem ser locais ou remotas, conforme o navegador/aparelho; não há
+garantia de áudio offline, qualidade uniforme ou correção automática. A rota
+de texto mantém a prática utilizável sem voz. O custo de síntese no cliente
+também não altera as condições da hospedagem: Vercel Hobby tem restrição de uso
+pessoal ou não comercial. As fontes atuais e os limites constam no
+[método](METODO_INGLES_ORBI.md#voz-custo-e-limites-do-aparelho).
+
+## Leitura da pesquisa histórica
+
+As propostas e fontes a seguir pertencem à consulta de **12/11/2026**. Naquela
+rodada não houve implementação, captura de microfone, modelo instalado ou
+serviço de voz ativado. As opções de gravação e reconhecimento foram
+pesquisadas, mas não integram o piloto de 13/11. Suas datas e limites não foram
+renovados pela implementação de síntese.
 
 ## O que queremos ensinar
 
@@ -23,7 +60,7 @@ errada pode refletir ruído, microfone ou o reconhecedor. A Microsoft documenta
 que sua avaliação de pronúncia utiliza um modelo específico, diferente do STT
 comum [V07]. Whisper, sozinho, também é transcrição.
 
-**Recomendação:** iniciar por ouvir, gravar/reproduzir e, onde funcionar, mostrar
+**Recomendação registrada em 12/11:** iniciar por ouvir, gravar/reproduzir e, onde funcionar, mostrar
 o que o navegador entendeu. Adiar a promessa de correção fonética ou nota de
 pronúncia até existir uma solução validada e compatível com a decisão de custo.
 
@@ -88,7 +125,7 @@ O F0 também tem limite de uma requisição concorrente ao endpoint base [V11].
 Elegibilidade, região, recurso e cota precisam ser conferidos antes de um
 eventual piloto. Não houve criação de conta/recurso nem adesão a plano pago.
 
-## Primeiro protótipo proposto
+## Primeiro protótipo proposto em 12/11 — histórico
 
 Uma expansão de **Inglês em cena**, no fluxo atual. Cena, frase, objetivo e
 ação devem estar claros sem criar uma nova página inicial cheia de instruções.
@@ -153,7 +190,7 @@ Uma futura prática oral pode ter registro próprio, pequeno e versionado, com
 conta, frase, tentativas e apoio utilizado; não armazenar áudio ou conceder XP
 de aulas automaticamente. Não criar novo item da sidebar apenas para isso.
 
-## Critérios para liberar o protótipo
+## Critérios da proposta de 12/11
 
 | Verificação | Resultado necessário |
 | --- | --- |
@@ -166,9 +203,11 @@ de aulas automaticamente. Não criar novo item da sidebar apenas para isso.
 | iPhone físico e Android modesto | Permissão, áudio, interrupção, foco e latência conferidos |
 | Compreensão do aluno | Distingue o texto reconhecido de uma avaliação de pronúncia |
 
-Esses critérios estão planejados, não executados nesta rodada.
+Esses critérios da proposta com captura/reconhecimento não foram executados
+na rodada de pesquisa. O QA do piloto sem microfone é tratado separadamente
+em [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md#qa-da-rodada--em-preparação).
 
-## Ordem de evolução e continuidade
+## Ordem proposta em 12/11 e continuidade
 
 1. **V0:** cinco frases, referência falada e comparação por gravação/reprodução
    local, com fallback e teste em aparelho. Sem corretor fonético.
@@ -177,9 +216,12 @@ Esses critérios estão planejados, não executados nesta rodada.
 3. **V2, adiada:** experimento de transcrição local ou avaliação acústica
    dedicada, após decisão de custo, validação e compatibilidade.
 
-Próxima ação: protótipo isolado com uma frase e lifecycle completo, antes de
-expandir às cinco ou alterar conquistas. Reabrir esta pesquisa quando mudarem
-browser, APIs, modelo, fornecedor ou proposta de feedback.
+A próxima ação registrada em 12/11 era um protótipo isolado com uma frase e
+lifecycle completo. A decisão de 13/11 implementou outro recorte: 12 itens com
+síntese e participação declarada, sem captura ou correção. Gravação,
+reconhecimento e avaliação dedicada permanecem possibilidades futuras, sem
+data de entrega. Reabrir esta pesquisa quando mudarem navegador, APIs, modelo,
+fornecedor ou proposta de feedback.
 
 ## Fontes primárias consultadas em 12/11/2026
 

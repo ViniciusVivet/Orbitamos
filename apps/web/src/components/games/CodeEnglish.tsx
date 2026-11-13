@@ -2,7 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { ENGLISH_SPEAKING_HASH } from "@/lib/portalNavigation";
 import { emptyEnglishSave, englishLessons, englishStorageKey, evaluateEnglish, readEnglishSave, type EnglishSave, type EnglishScene } from "@/lib/codeEnglish";
 import styles from "./CodeEnglish.module.css";
 
@@ -41,7 +43,14 @@ function WorkshopDrawing({ scene, solved, recall = false }: { scene: EnglishScen
   </svg>;
 }
 
-export default function CodeEnglish({ userId, onComplete, onBackHref = "/estudante/jogos" }: Props) {
+const SpokenEnglish = dynamic(() => import("./SpokenEnglish"), { loading: () => <p role="status">Preparando o inglês falado…</p> });
+const subscribeEnglishMode = (listener: () => void) => { window.addEventListener("hashchange", listener); return () => window.removeEventListener("hashchange", listener); };
+export default function CodeEnglish(props: Props) {
+  const speaking = useSyncExternalStore(subscribeEnglishMode, () => window.location.hash === ENGLISH_SPEAKING_HASH, () => false);
+  return <><nav className={styles.methods} aria-label="Maneiras de praticar inglês"><a href="#" aria-current={!speaking ? "page" : undefined}>Imagens e código</a><a href={ENGLISH_SPEAKING_HASH} aria-current={speaking ? "page" : undefined}>Ouvir e repetir com o Orbi</a></nav>{speaking ? <SpokenEnglish key={props.userId} userId={props.userId} onBackHref={props.onBackHref}/> : <EnglishScenes {...props}/>}</>;
+}
+
+function EnglishScenes({ userId, onComplete, onBackHref = "/estudante/jogos" }: Props) {
   const [save, setSave] = useState<EnglishSave>(emptyEnglishSave);
   const [loadedUser, setLoadedUser] = useState<string | null>(null);
   const [started, setStarted] = useState(false);

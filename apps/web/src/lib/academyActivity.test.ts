@@ -12,10 +12,11 @@ import { fasesMonteCodigo, JOGO_STORAGE_PREFIX } from "./jogoMonteCodigo";
 import { chapterMissionIds, emptyChapterSave, orbiChapterKey } from "./orbiChapter";
 import { deliveryMissions, deliveryStorageKey } from "./orbiDelivery";
 import { emptyPulseSave, pulseSaveKey } from "./orbiPulse";
-import { ORBI_PULSE_HREF, WORK_DELIVERY_HREF, WORK_INCIDENT_HREF, WORK_SIMULATION_HREF } from "./portalNavigation";
+import { ENGLISH_SPEAKING_HREF, ORBI_PULSE_HREF, WORK_DELIVERY_HREF, WORK_INCIDENT_HREF, WORK_SIMULATION_HREF } from "./portalNavigation";
 import { emptyWorkSave, getWorkCase, WORK_CASE_IDS, workSimulationKey } from "./workSimulation";
 import { emptyWorkDeliverySave, WORK_DELIVERY_STARTER_CODE, workDeliveryKey } from "./workDelivery";
 import { emptyIncidentSave, getIncidentCase, INCIDENT_CASE_IDS, incidentSaveKey } from "./workIncident";
+import { emptySpeakingSave, englishSpeakingLessons, speakingSaveKey } from "./spokenEnglish";
 
 function store(initial: Record<string, unknown> = {}) { const saves = new Map(Object.entries(initial).map(([key, value]) => [key, JSON.stringify(value)])); return { saves, read: (key: string) => saves.get(key) ?? null }; }
 describe("Academy read-only continuity", () => {
@@ -368,5 +369,75 @@ describe("Academy read-only continuity", () => {
       WORK_SIMULATION_HREF + "#Incidente", WORK_SIMULATION_HREF + "#%69ncidente", "/estudante/trilhas/sql#incidente",
       "/estudante/jogos/entregas-do-orbi#incidente", "/dev/work-simulation-preview?from=academy#incidente", "https://evil.test" + WORK_INCIDENT_HREF,
     ]) expect(academyResumeEntry(href, 1000)).toBeNull();
+  });
+  it("projects spoken English separately from completed scenes and the six catalog experiences", () => {
+    const data = store({
+      [englishStorageKey("u")]: { version: 1, current: englishLessons.length - 1, completed: englishLessons.map(scene => scene.id), finished: true, draft: "" },
+    });
+    const baseline = getAcademyActivity("u", data.read);
+    data.saves.set(resumeStorageKey("u"), JSON.stringify(academyResumeEntry(ENGLISH_SPEAKING_HREF, 2000)));
+    const before = [...data.saves];
+    const result = getAcademyActivity("u", data.read);
+    expect(result.continueItem).toMatchObject({ id: "spoken-english", title: "Fale inglês com o Orbi", group: "experience", href: ENGLISH_SPEAKING_HREF, status: "opened", completedUnits: 0, totalUnits: 12, unit: "itens praticados", practiced: false, reviewed: 0, lastAt: 2000, nextHref: ENGLISH_SPEAKING_HREF });
+    expect(result.continueItem?.detail).toBe(`Ler, ouvir e repetir · ${englishSpeakingLessons[0].pt} / ${englishSpeakingLessons[0].en}`);
+    expect(result.items).toEqual(baseline.items);
+    expect(result.items.some(item => item.id === "spoken-english")).toBe(false);
+    expect(result.summaries).toEqual(baseline.summaries);
+    expect(result.summaries.experiences).toMatchObject({ total: 6, completed: 1 });
+    expect([...data.saves]).toEqual(before);
+  });
+  it("reads speaking participation only for its exact continuation and current account", () => {
+    const data = store({ [speakingSaveKey("u")]: { ...emptySpeakingSave(), completed: englishSpeakingLessons.map(lesson => lesson.id) } });
+    const keys: string[] = [];
+    const read = (key: string) => { keys.push(key); return data.read(key); };
+    expect(getAcademyActivity("u", read).continueItem).toBeNull();
+    expect(keys).not.toContain(speakingSaveKey("u"));
+    for (const href of ["/estudante/jogos/ingles-em-cena", ORBI_PULSE_HREF, WORK_INCIDENT_HREF, "/estudante/pratica/variaveis-js"]) {
+      data.saves.set(resumeStorageKey("u"), JSON.stringify(academyResumeEntry(href, 2000)));
+      keys.length = 0;
+      getAcademyActivity("u", read);
+      expect(keys).not.toContain(speakingSaveKey("u"));
+    }
+    data.saves.set(resumeStorageKey("u"), JSON.stringify(academyResumeEntry(ENGLISH_SPEAKING_HREF, 3000)));
+    const before = [...data.saves];
+    keys.length = 0;
+    const result = getAcademyActivity("u", read);
+    expect(keys).toContain(speakingSaveKey("u"));
+    expect(result.continueItem).toMatchObject({ id: "spoken-english", status: "completed", completedUnits: 12, totalUnits: 12, practiced: true, nextHref: "/estudante/jogos/ingles-em-cena" });
+    expect(result.summaries.experiences).toMatchObject({ total: 6, completed: 0, practiced: 0 });
+    expect([...data.saves]).toEqual(before);
+    data.saves.set(resumeStorageKey("another"), JSON.stringify(academyResumeEntry(ENGLISH_SPEAKING_HREF, 3000)));
+    expect(getAcademyActivity("another", read).continueItem).toMatchObject({ id: "spoken-english", status: "opened", completedUnits: 0, practiced: false });
+  });
+  it("continues the current speaking item and records attempts as participation without adding completion", () => {
+    const initial = emptySpeakingSave();
+    const current = englishSpeakingLessons[1];
+    const data = store({
+      [resumeStorageKey("u")]: academyResumeEntry(ENGLISH_SPEAKING_HREF, 2000),
+      [speakingSaveKey("u")]: { ...initial, current: current.id, completed: [englishSpeakingLessons[0].id] },
+    });
+    const result = getAcademyActivity("u", data.read);
+    expect(result.continueItem).toMatchObject({ id: "spoken-english", status: "in-progress", completedUnits: 1, totalUnits: 12, practiced: true, nextHref: ENGLISH_SPEAKING_HREF });
+    expect(result.continueItem?.detail).toBe(`Ler, ouvir e repetir · ${current.pt} / ${current.en}`);
+    data.saves.set(speakingSaveKey("u"), JSON.stringify({ ...initial, attempts: { ...initial.attempts, [englishSpeakingLessons[0].id]: 1 } }));
+    expect(getAcademyActivity("u", data.read).continueItem).toMatchObject({ status: "in-progress", completedUnits: 0, practiced: true });
+    data.saves.set(speakingSaveKey("u"), "corrupt");
+    const before = [...data.saves];
+    expect(getAcademyActivity("u", data.read).continueItem).toMatchObject({ status: "opened", completedUnits: 0, practiced: false });
+    expect([...data.saves]).toEqual(before);
+  });
+  it("accepts only the exact speaking fragment and strips query data before it", () => {
+    const english = "/estudante/jogos/ingles-em-cena";
+    expect(academyResumeEntry(english + "?token=secret&mode=other#falar", 1000)).toEqual({ href: ENGLISH_SPEAKING_HREF, updatedAt: 1000 });
+    expect(readAcademyResume(JSON.stringify({ href: ENGLISH_SPEAKING_HREF, updatedAt: 1000 }))).toEqual({ href: ENGLISH_SPEAKING_HREF, updatedAt: 1000 });
+    expect(academyResumeEntry(english, 1000)?.href).toBe(english);
+    for (const href of [
+      ENGLISH_SPEAKING_HREF + "?token=secret", ENGLISH_SPEAKING_HREF + "&redirect=https://evil.test", ENGLISH_SPEAKING_HREF + "#other",
+      english + "#Falar", english + "#%66alar", english + "#unknown", english + "#fa\nlar", english + "#fa\tlar", english + "#falar ", english + "#", english + "#\t",
+      "/estudante/trilhas/sql#falar", "/estudante/jogos/entregas-do-orbi#falar", "/dev/academy-preview?activity=english#falar", "https://evil.test" + ENGLISH_SPEAKING_HREF,
+    ]) {
+      expect(academyResumeEntry(href, 1000)).toBeNull();
+      expect(readAcademyResume(JSON.stringify({ href, updatedAt: 1000 }))).toBeNull();
+    }
   });
 });

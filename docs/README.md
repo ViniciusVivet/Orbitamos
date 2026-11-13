@@ -8,7 +8,7 @@ remota de SHA, CI e deploy permanece separada dos resultados locais.
 O protótipo do Simulador de profissões foi implementado em **12/11/2026**, com
 dois casos conferidos em desktop, WebKit/iPhone e tela de 320 px. QA local e
 verificação remota de publicação têm registros separados no documento principal.
-O projeto de inglês falado continua separado e não foi implementado nesta entrega.
+O projeto de inglês falado foi pesquisado separadamente nessa rodada.
 
 Em **13/11/2026**, a fase seguinte do simulador foi implementada: verificações,
 publicação do pacote em homologação e conferência do pedido. O fechamento de QA
@@ -16,8 +16,13 @@ e publicação da rodada fica em [SIMULADOR_PROFISSOES.md](SIMULADOR_PROFISSOES.
 
 O incremento de recuperação, também de **13/11**, acrescenta dois casos de
 histórico/versão/pedidos e uma janela compartilhada com a esteira. Estado e
-fechamento estão no mesmo registro. A referência em vídeo para inglês falado
-será analisada depois desse fechamento, conforme a ordem pedida pelo usuário.
+fechamento estão no mesmo registro.
+
+O piloto de inglês falado, de **13/11**, acrescenta 12 itens de palavras e frases
+em `ingles-em-cena#falar`, com síntese no cliente e participação declarada,
+sem microfone ou nota automática. A análise da referência e o método de cinco
+partes estão em [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md). O fechamento de
+QA e a verificação de publicação permanecem separados da implementação.
 
 Os guias abaixo separam o estado implementado, as decisões de produto,
 a operação e os registros históricos. Datas antigas em auditorias são mantidas
@@ -60,7 +65,8 @@ quando descrevem uma execução específica.
 | [EVOLUCAO_ENTREGA_ORBI.md](EVOLUCAO_ENTREGA_ORBI.md) | Oficina do Pulso, Bloco B implementado em 12/11, compatibilidade, experimentos encerrados e ponto de continuidade/QA |
 | [SIMULADOR_PROFISSOES.md](SIMULADOR_PROFISSOES.md) | Protótipo DevOps: dois casos de conexão e fase de esteira/publicação, saves separados, retomada, QA e plano de expansão |
 | [PESQUISA_ROTINAS_TECH.md](PESQUISA_ROTINAS_TECH.md) | Pesquisa inicial de 12/11: famílias, contextos, tarefas e fontes profissionais; não é catálogo já entregue |
-| [INGLES_FALADO.md](INGLES_FALADO.md) | Viabilidade pesquisada em 12/11: ouvir/repetir, transcrição, limites da avaliação fonética e protótipo sem API contratada |
+| [INGLES_FALADO.md](INGLES_FALADO.md) | Pesquisa de 12/11 preservada e decisão de 13/11: síntese e participação, com captura/transcrição adiadas |
+| [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md) | Referência analisada, cinco partes PT/EN, 12 itens, voz do aparelho, saves separados, custo e QA em preparação |
 
 ## Direção visual e páginas comerciais
 

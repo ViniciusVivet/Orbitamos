@@ -6,6 +6,8 @@ posteriores de catálogo, chat, sessão e XP estão em
 banco local separados dos resultados históricos, além da auditoria isolada de
 cursos/chat em desktop e WebKit. Evidências de publicação
 ficam registradas separadamente em [INFRA_ATUAL.md](INFRA_ATUAL.md).
+O piloto de inglês falado foi acrescentado em 13/11/2026 e está descrito abaixo;
+essa adição não renova as verificações históricas nem comprova publicação.
 
 ## Visão geral
 
@@ -85,6 +87,33 @@ exige programa adequado e chegada ao destino. O save
 `orbitamos-orbi-chapter-v2-<conta>` preserva o legado v1 sem convertê-lo em
 conclusão nova. Sincronização entre dispositivos ainda não foi implementada.
 Detalhes: [STUDIO_E_ORBI_CAPITULO_01.md](STUDIO_E_ORBI_CAPITULO_01.md).
+
+### Inglês falado — piloto de 13/11/2026
+
+`CodeEnglish.tsx` mantém as oito cenas existentes e carrega `SpokenEnglish.tsx`
+sob demanda quando o hash é exatamente `#falar`. O endereço real é
+`/estudante/jogos/ingles-em-cena#falar`; a prévia correspondente é
+`/dev/academy-preview?activity=english#falar`. Não há novo item da sidebar.
+
+`spokenEnglish.ts` contém seis palavras, seis frases e o roteiro de cinco
+partes PT → EN → PT → EN → PT. `spokenSpeech.ts` controla síntese no cliente,
+seleção de voz, sequência após `onend`, pausas e cancelamento. A reprodução
+começa por gesto. Microfone, gravação, reconhecimento, avaliação fonética,
+endpoint de voz e API paga não fazem parte do piloto.
+
+O save v1 gerado por `speakingSaveKey(conta)` é separado do
+`orbitamos-english-v1-<conta>`. Guarda cursor, IDs praticados e tentativas, por
+navegador e conta, sem áudio ou transcrição. A confirmação manual significa
+participação. A Home só lê esse save ao retomar o endereço exato com `#falar`
+e projeta `spoken-english` fora do catálogo de seis experiências e seus
+agregados. Não grava conclusão do jogo antigo nem XP.
+
+As vozes dependem do navegador/aparelho e podem usar serviço local ou remoto;
+síntese no cliente não garante áudio offline ou qualidade uniforme. A ausência
+de API de voz contratada tampouco altera a restrição do Vercel Hobby a uso
+pessoal ou não comercial. Fontes, método, limites e fechamento de QA em
+preparação: [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md). Nenhuma verificação
+remota de publicação é afirmada nesta adição.
 
 ## Autorização
 
