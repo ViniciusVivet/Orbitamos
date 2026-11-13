@@ -15,9 +15,10 @@ import { assemblyDraftKey, orbiDraftKey, readAssemblyDraft, readOrbiDraft, readV
 import { csharpProgressKey, readCSharpProgress } from "./csharpTrack";
 import { csharpModules, readModuleKind, type CSharpModuleKind } from "./csharpModules";
 import { getPulseLesson, pulseLessons, pulseSaveKey, readPulseSave } from "./orbiPulse";
-import { ORBI_DELIVERY_HREF, ORBI_PULSE_HASH, ORBI_PULSE_HREF, WORK_DELIVERY_HASH, WORK_DELIVERY_HREF, WORK_SIMULATION_HREF } from "./portalNavigation";
+import { ORBI_DELIVERY_HREF, ORBI_PULSE_HASH, ORBI_PULSE_HREF, WORK_DELIVERY_HASH, WORK_DELIVERY_HREF, WORK_INCIDENT_HASH, WORK_INCIDENT_HREF, WORK_SIMULATION_HREF } from "./portalNavigation";
 import { getWorkCase, readWorkSave, WORK_CASE_IDS, workSimulationKey } from "./workSimulation";
 import { readWorkDeliverySave, WORK_DELIVERY_STARTER_CODE, workDeliveryKey } from "./workDelivery";
+import { getIncidentCase, INCIDENT_CASE_IDS, incidentSaveKey, readIncidentSave } from "./workIncident";
 
 export type AcademyActivityItem = {
   id: string; title: string; group: "experience" | "code" | "csharp" | "sql-workshop";
@@ -40,8 +41,8 @@ export function academyResumeEntry(href: string, now = Date.now()): AcademyResum
   try {
     const url = new URL(href, "https://academy.invalid");
     const pulse = url.pathname === ORBI_DELIVERY_HREF && url.hash === ORBI_PULSE_HASH;
-    const workDelivery = url.pathname === WORK_SIMULATION_HREF && url.hash === WORK_DELIVERY_HASH;
-    if (url.origin !== "https://academy.invalid" || (url.hash && !pulse && !workDelivery)) return null;
+    const workPhaseHash = url.pathname === WORK_SIMULATION_HREF && [WORK_DELIVERY_HASH, WORK_INCIDENT_HASH].includes(url.hash) ? url.hash : "";
+    if (url.origin !== "https://academy.invalid" || (url.hash && !pulse && !workPhaseHash)) return null;
     const path = url.pathname;
     const code = desafios.some(challenge => path === `/estudante/pratica/${challenge.slug}`);
     const assembly = fasesMonteCodigo.some(phase => path === `/estudante/jogos/${phase.slug}`);
@@ -50,7 +51,7 @@ export function academyResumeEntry(href: string, now = Date.now()): AcademyResum
     if (!code && !assembly && !orbi && !standalone) return null;
     const moduleId = url.searchParams.get("module");
     const query = path === "/estudante/trilhas/sql" && url.searchParams.get("mode") === "workshop" ? "?mode=workshop" : path === "/estudante/trilhas/csharp" && moduleId && ["variables", "conditions", "loops"].includes(moduleId) ? `?module=${moduleId}` : "";
-    return { href: path + query + (pulse ? ORBI_PULSE_HASH : workDelivery ? WORK_DELIVERY_HASH : ""), updatedAt: now };
+    return { href: path + query + (pulse ? ORBI_PULSE_HASH : workPhaseHash), updatedAt: now };
   } catch { return null; }
 }
 export function readAcademyResume(raw: string | null): AcademyResumeEntry | null {
@@ -193,6 +194,19 @@ export function getAcademyActivity(userId: string, read: ReadSave): AcademyActiv
         detail: finished ? "As duas rotas da Oficina estão concluídas. Leve a ideia para o código." : `${getPulseLesson(pulse.current).title} · ${getPulseLesson(pulse.current).objective}`,
         nextHref: "/estudante/pratica/variaveis-js?from=delivery", nextLabel: "Aplicar a descoberta no código",
       };
+    } else if (resume.href === WORK_INCIDENT_HREF) {
+      const incident = readIncidentSave(get(incidentSaveKey(userId)));
+      const current = getIncidentCase(incident.current);
+      const practiced = incident.completed.length > 0 || incident.attempts[incident.current] > 0 || incident.drafts[incident.current] !== current.starterCode;
+      const finished = incident.completed.length === INCIDENT_CASE_IDS.length;
+      separateContinuation = {
+        id: "work-incident", title: "Quando a versão falha", group: "experience", href: WORK_INCIDENT_HREF,
+        status: finished ? "completed" : practiced ? "in-progress" : "opened",
+        completedUnits: incident.completed.length, totalUnits: INCIDENT_CASE_IDS.length, unit: "casos", practiced, reviewed: 0, lastAt: resume.updatedAt,
+        detail: `Loja do Bairro · ${current.title}`,
+        nextHref: finished ? "/estudante/pratica" : WORK_INCIDENT_HREF,
+        nextLabel: finished ? "Levar a resposta ao laboratório" : "Retomar a ocorrência",
+      };
     } else if (resume.href === WORK_DELIVERY_HREF) {
       const delivery = readWorkDeliverySave(get(workDeliveryKey(userId)));
       const practiced = delivery.completed || delivery.attempts > 0 || delivery.draft !== WORK_DELIVERY_STARTER_CODE;
@@ -201,8 +215,8 @@ export function getAcademyActivity(userId: string, read: ReadSave): AcademyActiv
         status: delivery.completed ? "completed" : practiced ? "in-progress" : "opened",
         completedUnits: Number(delivery.completed), totalUnits: 1, unit: "tarefa", practiced, reviewed: 0, lastAt: resume.updatedAt,
         detail: "Loja do Bairro · Publicar e verificar o pedido em homologação.",
-        nextHref: delivery.completed ? "/estudante/pratica" : WORK_DELIVERY_HREF,
-        nextLabel: delivery.completed ? "Levar a verificação ao laboratório" : "Retomar a esteira",
+        nextHref: delivery.completed ? WORK_INCIDENT_HREF : WORK_DELIVERY_HREF,
+        nextLabel: delivery.completed ? "Investigar uma nova ocorrência" : "Retomar a esteira",
       };
     } else if (resume.href === WORK_SIMULATION_HREF) {
       // This collection has its own save and appears only when explicitly resumed.

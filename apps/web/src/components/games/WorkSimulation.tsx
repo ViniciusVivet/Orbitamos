@@ -7,7 +7,7 @@ import { ArrowLeft, ArrowRight, Check, CheckCheck, ChevronRight, ClipboardList, 
 import OfficeScene, { type OfficeTarget } from "./work-simulation/OfficeScene";
 import { completeWorkCase, emptyWorkSave, getWorkCase, mergeWorkSave, parseWorkConfig, readWorkSave, testWorkCheckout, WORK_CASE_IDS, WORK_CONFIG_LIMIT, workSimulationKey, type WorkCaseId, type WorkConfig, type WorkSave, type WorkTestResult } from "@/lib/workSimulation";
 import s from "./WorkSimulation.module.css";
-import { WORK_DELIVERY_HASH } from "@/lib/portalNavigation";
+import { WORK_DELIVERY_HASH, WORK_INCIDENT_HASH } from "@/lib/portalNavigation";
 
 type Props = { userId: string; preview?: boolean; onBackHref?: string };
 type Panel = "ticket" | "services" | "logs" | "config" | "test" | "report";
@@ -21,13 +21,15 @@ const panels = [
 ] as const;
 
 const WorkDelivery = dynamic(() => import("./WorkDelivery"), { loading: () => <p role="status">Abrindo a esteira de homologação…</p> });
+const WorkIncident = dynamic(() => import("./WorkIncident"), { loading: () => <p role="status">Abrindo o ensaio de recuperação…</p> });
 const subscribePhase = (listener: () => void) => {
   window.addEventListener("hashchange", listener);
   return () => window.removeEventListener("hashchange", listener);
 };
 export default function WorkSimulation(props: Props) {
-  const delivery = useSyncExternalStore(subscribePhase, () => window.location.hash === WORK_DELIVERY_HASH, () => false);
-  return delivery ? <WorkDelivery key={props.userId} {...props}/> : <WorkSession key={props.userId} {...props}/>;
+  const phase = useSyncExternalStore(subscribePhase, () => window.location.hash, () => "");
+  if (phase === WORK_INCIDENT_HASH) return <WorkIncident key={props.userId} {...props}/>;
+  return phase === WORK_DELIVERY_HASH ? <WorkDelivery key={props.userId} {...props}/> : <WorkSession key={props.userId} {...props}/>;
 }
 
 function WorkSession({ userId, preview = false, onBackHref }: Props) {
@@ -158,7 +160,7 @@ function WorkSession({ userId, preview = false, onBackHref }: Props) {
   const objective = done ? caseId === "checkout-staging" ? "Ticket entregue. Você pode revisar ou tentar a próxima situação." : "Ticket entregue. Agora prepare a entrega da mudança na esteira."
     : test?.ok ? "O pedido passou. Registre o teste na entrega para Nina."
       : briefed || practiced ? "Use o computador para investigar, alterar e testar o pedido."
-        : "Converse com Nina para conhecer sua primeira tarefa.";
+        : caseId === "checkout-staging" ? "Converse com Nina para conhecer sua primeira tarefa." : "Converse com Nina sobre esta outra instalação.";
   const chatName = chat === "support" ? "Jo" : "Nina";
 
   return <section className={s.experience} data-work-simulation data-case={caseId} data-completed={save.completed.length}>

@@ -48,6 +48,7 @@ da Entrega do Orbi, os controles próprios têm prioridade sobre as abas de form
 | `/estudante/jogos/entregas-do-orbi#oficina-do-pulso` | Oficina opcional de alcance/recarga, save separado; subárea na mesma página |
 | `/estudante/jogos/simulador` | Primeiro turno na Loja do Bairro: configuração, teste e evidência em dois casos de homologação |
 | `/estudante/jogos/simulador#esteira` | Fase seguinte: verificações, pacote publicado em homologação e conferência; save separado |
+| `/estudante/jogos/simulador#incidente` | Recuperação por evidências em dois casos de homologação; save próprio e pré-requisito da esteira |
 | `/estudante/jogos/ingles-em-cena` | Oito cenas de inglês aplicado |
 | `/estudante/jogos/vila-dos-blocos` | Dez fases de sintaxe e indentação |
 | `/estudante/jogos/revisao` | Revisão de bolso sobre experiências concluídas |

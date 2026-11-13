@@ -11,6 +11,52 @@ Este é o documento principal para retomar o projeto. Fontes e catálogo inicial
 [PESQUISA_ROTINAS_TECH.md](PESQUISA_ROTINAS_TECH.md). Projeto complementar de
 voz: [INGLES_FALADO.md](INGLES_FALADO.md).
 
+## Ensaio de recuperação — 13/11/2026
+
+Incremento implementado em revisão: **Quando a versão falha**, na âncora
+`/estudante/jogos/simulador#incidente`, depois da esteira concluída. Dois casos
+usam versões diferentes: `release-regression` (019/020/021) e
+`independent-recovery` (030/031/032). O endereço é igual nos pacotes; a decisão
+depende dos registros de funcionamento, não de repetir a porta anterior.
+
+O aluno compara histórico e amostras fictícias de dez pedidos, escreve
+`recovery.plan.json` e aplica uma versão. Uma versão antiga com defeito pode
+ser instalada: plano válido não significa recuperação. Depois confere o pedido
+e escolhe a evidência que sustenta a entrega. Home aberta ou número de versão
+não bastam. Os registros anteriores permanecem visíveis depois da ação.
+
+O formato do plano é educativo e limitado a `environment: "staging"` e
+`targetArtifact`. Não executa Kubernetes, shell nem requisições ao endereço
+representado. A recuperação é um ensaio sem mudança de esquema de banco; não
+ensina rollback como solução universal nem declara a causa raiz encerrada.
+Base técnica consultada em 13/11:
+[Google SRE — canarying releases](https://sre.google/workbook/canarying-releases/)
+e [Kubernetes — rollback de Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment).
+
+O save `orbitamos-work-incident-v1` é separado por identidade e preserva rascunhos,
+tentativas e conquistas em prefixo dos dois casos. Não restaura instalação ativa,
+motivo escolhido ou teste; não altera saves anteriores nem XP. Editar o rascunho
+não muda o que já está instalado. Conferência e entrega descrevem o plano aplicado.
+
+A janela `work-simulation/WorkstationDialog.tsx` agora compartilha o invólucro
+entre esteira e incidente: ordem de modais, Escape, navegação, foco, rolagem e
+barra de fechar. Conteúdo e estado de cada fase continuam independentes. As artes
+do escritório foram reutilizadas; gráficos mostram os dados do próprio cenário.
+
+Os dois casos passaram por ações da interface em desktop, WebKit/iPhone e 320 px,
+incluindo versão antiga ainda defeituosa, plano inválido, cancelamento, motivo
+insuficiente, aplicação independente, reload e contas separadas. Foram seis
+estados capturados por perfil, com Axe/limites dos blocos exercitados e sem
+exceções JavaScript ou requisições externas. A esteira também passou na regressão
+desktop depois da extração da janela compartilhada. **639 testes em 66 arquivos**
+e os **9 contratos estáticos** passaram; lint terminou com **0 erros e 29 avisos
+anteriores**. O build local de produção passou, incluindo TypeScript. A
+verificação remota de commit, CI e Vercel é registrada separadamente em
+`docs/local/work-incident-20261113/`, com capturas em
+`apps/web/test-results/work-incident/`. O próximo trabalho solicitado pelo usuário
+é analisar a gravação de referência e implementar um método de inglês falado
+voltado a programação, com prioridade para recursos gratuitos no aparelho.
+
 ## Incremento da esteira — 13/11/2026
 
 Depois dos dois casos de conexão, **Do teste à entrega** abre em

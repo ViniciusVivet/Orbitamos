@@ -12,9 +12,10 @@ import { fasesMonteCodigo, JOGO_STORAGE_PREFIX } from "./jogoMonteCodigo";
 import { chapterMissionIds, emptyChapterSave, orbiChapterKey } from "./orbiChapter";
 import { deliveryMissions, deliveryStorageKey } from "./orbiDelivery";
 import { emptyPulseSave, pulseSaveKey } from "./orbiPulse";
-import { ORBI_PULSE_HREF, WORK_DELIVERY_HREF, WORK_SIMULATION_HREF } from "./portalNavigation";
+import { ORBI_PULSE_HREF, WORK_DELIVERY_HREF, WORK_INCIDENT_HREF, WORK_SIMULATION_HREF } from "./portalNavigation";
 import { emptyWorkSave, getWorkCase, WORK_CASE_IDS, workSimulationKey } from "./workSimulation";
 import { emptyWorkDeliverySave, WORK_DELIVERY_STARTER_CODE, workDeliveryKey } from "./workDelivery";
+import { emptyIncidentSave, getIncidentCase, INCIDENT_CASE_IDS, incidentSaveKey } from "./workIncident";
 
 function store(initial: Record<string, unknown> = {}) { const saves = new Map(Object.entries(initial).map(([key, value]) => [key, JSON.stringify(value)])); return { saves, read: (key: string) => saves.get(key) ?? null }; }
 describe("Academy read-only continuity", () => {
@@ -271,7 +272,7 @@ describe("Academy read-only continuity", () => {
     data.saves.set(resumeStorageKey("u"), JSON.stringify(academyResumeEntry(WORK_DELIVERY_HREF, 3000)));
     const before = [...data.saves];
     const complete = getAcademyActivity("u", read);
-    expect(complete.continueItem).toMatchObject({ id: "work-delivery", status: "completed", completedUnits: 1, totalUnits: 1, practiced: true, nextHref: "/estudante/pratica" });
+    expect(complete.continueItem).toMatchObject({ id: "work-delivery", status: "completed", completedUnits: 1, totalUnits: 1, practiced: true, nextHref: WORK_INCIDENT_HREF, nextLabel: "Investigar uma nova ocorrência" });
     expect(complete.summaries.experiences).toMatchObject({ total: 6, completed: 0, practiced: 0 });
     expect([...data.saves]).toEqual(before);
     data.saves.set(resumeStorageKey("another"), JSON.stringify(academyResumeEntry(WORK_DELIVERY_HREF, 3000)));
@@ -295,6 +296,77 @@ describe("Academy read-only continuity", () => {
       WORK_DELIVERY_HREF + "?token=secret", WORK_DELIVERY_HREF + "&redirect=https://evil.test", WORK_DELIVERY_HREF + "#other",
       WORK_SIMULATION_HREF + "#Esteira", WORK_SIMULATION_HREF + "#%65steira", "/estudante/trilhas/sql#esteira",
       "/estudante/jogos/entregas-do-orbi#esteira", "/dev/work-simulation-preview?from=academy#esteira", "https://evil.test" + WORK_DELIVERY_HREF,
+    ]) expect(academyResumeEntry(href, 1000)).toBeNull();
+  });
+  it("projects an incident visit independently without reading earlier saves or adding catalog completion", () => {
+    const data = store({
+      [workSimulationKey("u")]: { ...emptyWorkSave(), completed: [...WORK_CASE_IDS] },
+      [workDeliveryKey("u")]: { ...emptyWorkDeliverySave(), completed: true },
+      [incidentSaveKey("u")]: emptyIncidentSave(),
+      [resumeStorageKey("u")]: academyResumeEntry(WORK_INCIDENT_HREF, 2000),
+    });
+    const before = [...data.saves];
+    const keys: string[] = [];
+    const result = getAcademyActivity("u", key => { keys.push(key); return data.read(key); });
+    expect(result.continueItem).toMatchObject({ id: "work-incident", title: "Quando a versão falha", href: WORK_INCIDENT_HREF, status: "opened", completedUnits: 0, totalUnits: 2, unit: "casos", practiced: false, reviewed: 0, lastAt: 2000 });
+    expect(result.continueItem?.detail).toBe(`Loja do Bairro · ${getIncidentCase(INCIDENT_CASE_IDS[0]).title}`);
+    expect(result.items.some(item => item.id.startsWith("work-"))).toBe(false);
+    expect(result.summaries).toEqual(getAcademyActivity("u", () => null).summaries);
+    expect(keys).toContain(incidentSaveKey("u"));
+    expect(keys).not.toContain(workSimulationKey("u"));
+    expect(keys).not.toContain(workDeliveryKey("u"));
+    expect([...data.saves]).toEqual(before);
+    expect(getAcademyActivity("another", data.read).continueItem).toBeNull();
+  });
+  it("reads the incident save only for its exact continuation and keeps phase achievements per account", () => {
+    const data = store({ [incidentSaveKey("u")]: { ...emptyIncidentSave(), completed: [...INCIDENT_CASE_IDS] } });
+    const keys: string[] = [];
+    const read = (key: string) => { keys.push(key); return data.read(key); };
+    expect(getAcademyActivity("u", read).continueItem).toBeNull();
+    expect(keys).not.toContain(incidentSaveKey("u"));
+    for (const href of [WORK_SIMULATION_HREF, WORK_DELIVERY_HREF, "/estudante/pratica/variaveis-js"]) {
+      data.saves.set(resumeStorageKey("u"), JSON.stringify(academyResumeEntry(href, 2000)));
+      keys.length = 0;
+      getAcademyActivity("u", read);
+      expect(keys).not.toContain(incidentSaveKey("u"));
+    }
+    data.saves.set(resumeStorageKey("u"), JSON.stringify(academyResumeEntry(WORK_INCIDENT_HREF, 3000)));
+    const before = [...data.saves];
+    const complete = getAcademyActivity("u", read);
+    expect(complete.continueItem).toMatchObject({ id: "work-incident", status: "completed", completedUnits: 2, totalUnits: 2, practiced: true, nextHref: "/estudante/pratica" });
+    expect(complete.summaries.experiences).toMatchObject({ total: 6, completed: 0, practiced: 0 });
+    expect([...data.saves]).toEqual(before);
+    data.saves.set(resumeStorageKey("another"), JSON.stringify(academyResumeEntry(WORK_INCIDENT_HREF, 3000)));
+    expect(getAcademyActivity("another", read).continueItem).toMatchObject({ id: "work-incident", status: "opened", completedUnits: 0, practiced: false });
+  });
+  it("continues the saved incident case and distinguishes attempts or drafts from completion", () => {
+    const initial = emptyIncidentSave();
+    const data = store({ [resumeStorageKey("u")]: academyResumeEntry(WORK_INCIDENT_HREF, 2000) });
+    for (const value of [
+      { ...initial, attempts: { ...initial.attempts, [initial.current]: 1 } },
+      { ...initial, drafts: { ...initial.drafts, [initial.current]: initial.drafts[initial.current] + " " } },
+    ]) {
+      data.saves.set(incidentSaveKey("u"), JSON.stringify(value));
+      expect(getAcademyActivity("u", data.read).continueItem).toMatchObject({ id: "work-incident", status: "in-progress", completedUnits: 0, practiced: true });
+    }
+    data.saves.set(incidentSaveKey("u"), JSON.stringify({ ...initial, current: INCIDENT_CASE_IDS[1], completed: [INCIDENT_CASE_IDS[0]] }));
+    const partial = getAcademyActivity("u", data.read);
+    expect(partial.continueItem).toMatchObject({ status: "in-progress", completedUnits: 1, totalUnits: 2 });
+    expect(partial.continueItem?.detail).toBe(`Loja do Bairro · ${getIncidentCase(INCIDENT_CASE_IDS[1]).title}`);
+    data.saves.set(incidentSaveKey("u"), "corrupt");
+    const before = [...data.saves];
+    expect(getAcademyActivity("u", data.read).continueItem).toMatchObject({ status: "opened", completedUnits: 0, practiced: false });
+    expect([...data.saves]).toEqual(before);
+  });
+  it("accepts only the exact incident anchor and strips query data without changing delivery or base routes", () => {
+    expect(academyResumeEntry(WORK_SIMULATION_HREF + "?token=secret&mode=other#incidente", 1000)).toEqual({ href: WORK_INCIDENT_HREF, updatedAt: 1000 });
+    expect(readAcademyResume(JSON.stringify({ href: WORK_INCIDENT_HREF, updatedAt: 1000 }))).toEqual({ href: WORK_INCIDENT_HREF, updatedAt: 1000 });
+    expect(academyResumeEntry(WORK_DELIVERY_HREF, 1000)?.href).toBe(WORK_DELIVERY_HREF);
+    expect(academyResumeEntry(WORK_SIMULATION_HREF, 1000)?.href).toBe(WORK_SIMULATION_HREF);
+    for (const href of [
+      WORK_INCIDENT_HREF + "?token=secret", WORK_INCIDENT_HREF + "&redirect=https://evil.test", WORK_INCIDENT_HREF + "#esteira",
+      WORK_SIMULATION_HREF + "#Incidente", WORK_SIMULATION_HREF + "#%69ncidente", "/estudante/trilhas/sql#incidente",
+      "/estudante/jogos/entregas-do-orbi#incidente", "/dev/work-simulation-preview?from=academy#incidente", "https://evil.test" + WORK_INCIDENT_HREF,
     ]) expect(academyResumeEntry(href, 1000)).toBeNull();
   });
 });

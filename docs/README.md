@@ -14,6 +14,11 @@ Em **13/11/2026**, a fase seguinte do simulador foi implementada: verificações
 publicação do pacote em homologação e conferência do pedido. O fechamento de QA
 e publicação da rodada fica em [SIMULADOR_PROFISSOES.md](SIMULADOR_PROFISSOES.md).
 
+O incremento de recuperação, também de **13/11**, acrescenta dois casos de
+histórico/versão/pedidos e uma janela compartilhada com a esteira. Estado e
+fechamento estão no mesmo registro. A referência em vídeo para inglês falado
+será analisada depois desse fechamento, conforme a ordem pedida pelo usuário.
+
 Os guias abaixo separam o estado implementado, as decisões de produto,
 a operação e os registros históricos. Datas antigas em auditorias são mantidas
 quando descrevem uma execução específica.

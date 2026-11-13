@@ -388,6 +388,18 @@ antiga, cancelamento, recuperação, retomada e isolamento dos saves anteriores.
 Relatórios e capturas ficam em `apps/web/test-results/work-delivery/`. Não valida
 GitHub Actions real, hospedagem externa ou uma conta autenticada de produção.
 
+## Auditoria do ensaio de recuperação
+
+O ensaio usa `node scripts/audit-work-incident.mjs` com argumentos `desktop`,
+`iphone-safari` ou `small-mobile`. O roteiro prepara apenas os saves dos
+pré-requisitos antigos. Instalação de versão defeituosa, plano válido, conferência,
+justificativa e conclusão dos dois casos novos passam pela interface. Inclui
+cancelamento por Escape, JSON inválido, recuperação/desfazer, retomada, isolamento
+de contas e preservação dos saves anteriores. Relatórios e capturas ficam em
+`apps/web/test-results/work-incident/`. A janela compartilhada também exige
+regressão de `audit-work-delivery.mjs`; modelo testado não comprova o lifecycle
+dos diálogos. São ensaios locais, não rollback de infraestrutura real.
+
 ## Limites restantes
 
 Para medir o Orbi sem o trabalho de screenshots e Axe na janela de amostragem,
