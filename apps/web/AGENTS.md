@@ -51,3 +51,32 @@ Para continuar a evolução da aventura, leia também
 `../../docs/EVOLUCAO_ENTREGA_ORBI.md`: estado da Oficina do Pulso, saves separados,
 plano por blocos e próximo ponto de retomada. Atualize esse registro com evidências
 da rodada; não confunda funcionalidades planejadas com funcionalidades publicadas.
+
+## Academy: metodologia de inglês — requisito de 14/11/2026
+
+O usuário tornou **obrigatório** o apoio de pronúncia escrito para brasileiros,
+como `save → salvar → sêiv` e `file → arquivo → fáil`. A decisão inicial de
+omiti-lo foi superada. Leia `../../docs/METODO_INGLES_ORBI.md` antes de alterar
+qualquer experiência de inglês ou acrescentar vocabulário.
+
+- Na apresentação/feedback de um modelo, ligue grafia inglesa correta,
+  significado em português, pronúncia aproximada em português e modelo sonoro
+  em inglês. Não transformar a aproximação na grafia que o aluno deve escrever.
+- Use `src/lib/englishPronunciation.ts` e o componente compartilhado
+  `EnglishPronunciationGuide`. Todo novo alvo exige apoio/chunks/dica revisados
+  no catálogo e cobertura no teste; expressão desconhecida não ganha um fallback
+  de pronúncia inventado.
+- Preserve a tarefa: não antecipar a tradução em uma questão de significado.
+  Na revisão por escrita ou palavra ausente, esconder inglês completo e apoio
+  até consulta explícita de pista/modelo ou acerto. A retomada da Home mostra
+  somente a pista em português.
+- TTS deve receber a expressão inglesa real com idioma inglês. O apoio é uma
+  aproximação visual autoral, não IPA, áudio em português ou corretor de fala.
+- Orbi indica os eventos reais de reprodução e a vez do aluno. Não simular que
+  o microfone ouviu/aprovou alguém; boca animada não equivale a sincronização
+  fonema a fonema. Respeitar movimento reduzido e cancelar ao sair/parar.
+- Mantenha contexto visual e ação claros em desktop e celular, sem empilhar
+  explicações. Confira capturas reais e controles de toque em tela estreita.
+- Não introduzir API paga, serviço de animação ou dependência externa de voz
+  para esta metodologia. Preserve saves, XP e ausência de microfone. A síntese
+  do aparelho pode precisar de rede e não garante qualidade/offline uniforme.

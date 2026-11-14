@@ -221,6 +221,28 @@ prova real e uma ação clara, com tipografia e alvos de toque preservados.
 O critério de passagem é área visível de uma imagem real e título do case
 legível com scroll zero, incluindo notebook baixo e celular estreito.
 
+## Cenário pedagógico e área útil no celular — 14/11/2026
+
+Na oficina de inglês, a rodada verificada localmente diferencia os capítulos de palavras
+e frases com cenário, personagem e contexto. É uma cena pedagógica leve,
+**não uma travessia cinematográfica dirigida pelo scroll**; não recebe nota
+10/10 pela presença de fundo ou personagem animado.
+
+Aprendizado da inspeção: a imersão perde sua função se o aluno vê o ambiente,
+mas precisa procurar a expressão e a pronúncia abaixo da dobra. O enquadramento
+mobile deve trazer modelo e apoio juntos para a área útil após a ação de estudo,
+com espaço para a navegação, sem autoplay, rolagem presa ou animação de câmera
+que concorra com a fala. Preservar a legibilidade e o controle tem prioridade
+sobre ampliar o cenário.
+
+A composição foi ajustada com enquadramento instantâneo do estágio, margem
+superior de 76 px e novas verificações dos limites de inglês/guia em vista.
+O QA completo e a avaliação do usuário permanecem separados; o estado da
+rodada está em [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md#qa-pronuncia-20261114).
+A cobertura de pronúncia nas oito cenas anteriores não equivale a um redesenho
+completo delas; reduzir a cena/história antes das alternativas no mobile é um
+próximo candidato de refinamento.
+
 ## Regra de encerramento
 
 Não concluir uma iteração porque o código está sofisticado. Concluir somente depois de capturar e avaliar começo, pontos intermediários, transições e fim em desktop e mobile. Se o efeito só for impressionante em movimento rápido ou depender de explicação, ainda não está pronto.

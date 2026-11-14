@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowLeft, ArrowRight, Check, Eye, RotateCcw } from "lucide-react";
 import { getSpeakingLesson } from "@/lib/spokenEnglish";
 import type { EnglishReviewSession } from "@/lib/englishReview";
+import EnglishPronunciationGuide from "./EnglishPronunciationGuide";
 import s from "./EnglishReview.module.css";
 
 type Props = {
@@ -52,10 +53,10 @@ export default function EnglishReview({ session, storageError, onDraft, onModel,
         <div className={s.cueCard}><span className={s.paperClip} aria-hidden="true"/><small>A PISTA EM PORTUGUÊS</small><strong data-review-cue>{lesson.pt}</strong><div className={s.coach}><Image src="/orbi-tech.png" width={92} height={108} alt=""/><p>{answered ? "Você trouxe a expressão de volta." : session.consulted ? "Use o modelo como apoio e escreva a expressão." : "Antes de abrir o modelo, veja o que consegue lembrar."}</p></div></div>
         <form className={s.answer} onSubmit={check}>
           <label htmlFor="english-review-answer">Escreva em inglês</label>
-          {(session.consulted || answered) && <div className={s.model}><small>{session.consulted ? "MODELO CONSULTADO" : "EXPRESSÃO DA AULA"}</small><strong lang="en-US" data-review-expression>{lesson.en}</strong></div>}
+          {(session.consulted || answered) && <div className={s.model}><small>{session.consulted ? "MODELO CONSULTADO" : "EXPRESSÃO DA AULA"}</small><strong lang="en-US" data-review-expression>{lesson.en}</strong><EnglishPronunciationGuide text={lesson.en} compact/></div>}
           <input ref={input} id="english-review-answer" value={session.draft} onChange={event => { onDraft(event.target.value); setFeedback(null); }} readOnly={answered} maxLength={160} autoCapitalize="none" autoCorrect="off" autoComplete="off" spellCheck={false} lang="en-US" enterKeyHint="done" placeholder="Tente lembrar…" aria-describedby="english-review-note"/>
           <div className={s.actions}>{answered ? <button className={s.primary} type="button" data-review-next onClick={onNext}>{session.cursor + 1 === session.ids.length ? "Ver como foi" : "Próxima expressão"}<ArrowRight size={17}/></button> : <button className={s.primary} data-review-submit type="submit" disabled={!session.draft.trim()}>Conferir <Check size={17}/></button>}{!answered && <button className={s.secondary} data-review-model type="button" disabled={session.consulted} onClick={consult}><Eye size={17}/>{session.consulted ? "Modelo aberto" : "Ver modelo"}</button>}</div>
-          <p id="english-review-note" className={s.note}>A expressão da aula, com ou sem ponto final.</p>
+          <p id="english-review-note" className={s.note}>{session.consulted || answered ? "Escreva a grafia em inglês. A pista “como se fala” serve para pronunciar." : "A expressão da aula, com ou sem ponto final."}</p>
           {(answered || feedback) && <div role="status" className={s.feedback} data-correct={answered || feedback?.ok}>{answered ? "Expressão recuperada. Siga quando quiser." : feedback?.message}</div>}
         </form>
       </div>

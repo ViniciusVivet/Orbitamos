@@ -2,6 +2,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, FileCode2, FileImage, Folder, Terminal } from "lucide-react";
 import type { EnglishUseQuestion } from "@/lib/englishUse";
+import EnglishPronunciationGuide from "./EnglishPronunciationGuide";
 import s from "./EnglishUseCheck.module.css";
 
 type Props = {
@@ -55,6 +56,7 @@ export default function EnglishUseCheck({ question, completedCount, onAnswer, on
       <div className={s.scene}>
         <p className={s.eyebrow}>VOCÊ ENCONTROU ESTE INGLÊS</p>
         <h1 ref={heading} tabIndex={-1} lang="en-US" data-use-expression>{question.target}</h1>
+        <EnglishPronunciationGuide text={question.target} compact/>
         <WorkScene scene={question.scene} lessonId={question.lessonId}/>
       </div>
       <section className={s.question} aria-labelledby="english-use-prompt">

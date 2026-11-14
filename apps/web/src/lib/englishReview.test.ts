@@ -178,6 +178,7 @@ describe("Short written English review", () => {
       expect(evaluateEnglishReviewAnswer(lesson.id, lesson.en).ok).toBe(true);
       expect(evaluateEnglishReviewAnswer(lesson.id, ` \t${lesson.en.toUpperCase().replaceAll(" ", "  \n")}?!  `).ok).toBe(true);
       expect(evaluateEnglishReviewAnswer(lesson.id, lesson.pt).ok).toBe(false);
+      expect(evaluateEnglishReviewAnswer(lesson.id, lesson.pronunciation.guide).ok).toBe(false);
     }
     expect(evaluateEnglishReviewAnswer("word-file", "ｆｉｌｅ").ok).toBe(true);
     expect(evaluateEnglishReviewAnswer("phrase-open-the-file", "Open\u00a0the\u00a0file.").ok).toBe(true);

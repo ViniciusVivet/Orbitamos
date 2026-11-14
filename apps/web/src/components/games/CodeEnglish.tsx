@@ -6,10 +6,33 @@ import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { ENGLISH_SPEAKING_HASH } from "@/lib/portalNavigation";
 import { emptyEnglishSave, englishLessons, englishStorageKey, evaluateEnglish, readEnglishSave, type EnglishSave, type EnglishScene } from "@/lib/codeEnglish";
+import { getEnglishPronunciation } from "@/lib/englishPronunciation";
+import EnglishPronunciationGuide from "./EnglishPronunciationGuide";
 import styles from "./CodeEnglish.module.css";
 
 type Props = { userId: string; onComplete?: () => void; onBackHref?: string };
 type Feedback = { ok: boolean; message: string };
+
+// Expressions already visible in the scene. Recall keeps its missing word hidden
+// until the learner explicitly consults a hint or completes the task.
+const sceneExpressions: Record<string, string> = {
+  file: "Open the file",
+  button: "Click the Save button",
+  "missing-file": "File not found",
+  "complete-error": "File not found",
+  return: "return",
+  transfer: "output",
+};
+const sceneTakeaways: Record<string, string> = {
+  folder: "folder", file: "file", button: "button", server: "server",
+  "missing-file": "File not found", "complete-error": "File not found",
+  return: "return", transfer: "output",
+};
+const glossary = [
+  { en: "folder", pt: "pasta" }, { en: "file", pt: "arquivo" },
+  { en: "button", pt: "botão" }, { en: "server", pt: "servidor" },
+  { en: "return", pt: "devolver um valor" }, { en: "output", pt: "saída" },
+];
 
 function WorkshopDrawing({ scene, solved, recall = false }: { scene: EnglishScene; solved: boolean; recall?: boolean }) {
   if (scene === "return" || scene === "output") return <div className={styles.codeScene}>
@@ -81,6 +104,7 @@ function EnglishScenes({ userId, onComplete, onBackHref = "/estudante/jogos" }: 
   function focusHeading() { requestAnimationFrame(() => heading.current?.focus()); }
   const lesson = englishLessons[save.current];
   const solved = save.completed.includes(lesson.id);
+  const sceneExpression = sceneExpressions[lesson.id];
 
   function check(answer: string) {
     const result = evaluateEnglish(lesson, answer);
@@ -104,7 +128,7 @@ function EnglishScenes({ userId, onComplete, onBackHref = "/estudante/jogos" }: 
       <div className={styles.finishStamp} aria-hidden="true">✓</div><span className={styles.eyebrow}>PRIMEIRA MISSÃO CONCLUÍDA</span>
       <h1 ref={heading} tabIndex={-1}>Você leu as pistas.<br />E seguiu o código.</h1>
       <p>Você identificou objetos, interpretou uma mensagem de erro e acompanhou um valor até a saída. Esses termos voltam a aparecer no laboratório.</p>
-      <div className={styles.glossary}>{["folder → pasta", "file → arquivo", "button → botão", "server → servidor", "return → devolver um valor", "output → saída"].map(term => <span key={term}>{term}</span>)}</div>
+      <div className={styles.glossary}>{glossary.map(term => <div className={styles.glossaryTerm} key={term.en}><span><strong lang="en-US">{term.en}</strong> → {term.pt}</span><EnglishPronunciationGuide text={term.en} compact/></div>)}</div>
       <div className={styles.finishActions}><Link href={onBackHref} className={styles.primary}>Explorar outras práticas →</Link><button onClick={restart} className={styles.secondary}>Praticar de novo</button></div>
     </div> : !started ? <div className={styles.intro}>
       <div className={styles.introArt}><WorkshopDrawing scene="folder" solved={false} /><div className={styles.introOrbi}><Image src="/orbi-tech.png" alt="" width={110} height={130} sizes="110px" /></div></div>
@@ -117,7 +141,7 @@ function EnglishScenes({ userId, onComplete, onBackHref = "/estudante/jogos" }: 
         <div className={styles.task}><h1 ref={heading} tabIndex={-1}>{lesson.title}</h1><p className={styles.prompt}>{lesson.prompt}</p>
           {lesson.kind === "choice" ? <div className={styles.choices} role="group" aria-label="Escolha uma resposta">
             {lesson.choices.map((choice, index) => <button key={choice.value} className={styles.choice} onClick={() => check(choice.value)} disabled={solved} data-state={solved && choice.value === lesson.answer ? "correct" : selected === choice.value && feedback?.ok === false ? "wrong" : undefined}>
-              <span className={styles.choiceNumber} aria-hidden="true">{solved && choice.value === lesson.answer ? "✓" : String.fromCharCode(65 + index)}</span><span>{choice.label}</span>
+              <span className={styles.choiceNumber} aria-hidden="true">{solved && choice.value === lesson.answer ? "✓" : String.fromCharCode(65 + index)}</span><span className={styles.choiceCopy}><span lang={getEnglishPronunciation(choice.label) ? "en-US" : undefined}>{choice.label}</span><EnglishPronunciationGuide text={choice.label} compact/></span>
             </button>)}
           </div> : <form className={styles.wordForm} onSubmit={event => { event.preventDefault(); if (!solved) check(word); }}>
             <label htmlFor="english-missing-word">Palavra que falta</label>
@@ -125,8 +149,9 @@ function EnglishScenes({ userId, onComplete, onBackHref = "/estudante/jogos" }: 
             <small id="english-word-note">Escreva só a palavra que completa a mensagem.</small>
             {!solved && <button className={styles.primary} type="submit">Verificar palavra</button>}
           </form>}
+          {sceneExpression && !solved && (lesson.kind !== "write" || hint) && <div className={styles.scenePronunciation} data-scene-pronunciation><span lang="en-US">{sceneExpression}</span><EnglishPronunciationGuide text={sceneExpression} compact/></div>}
           {!solved && <><button className={styles.hintToggle} aria-expanded={hint} onClick={() => setHint(!hint)}>{hint ? "Recolher pista" : "Preciso de uma pista"} <span aria-hidden="true">{hint ? "−" : "+"}</span></button>{hint && <p className={styles.hint}>{lesson.hint}</p>}</>}
-          <div className={styles.feedback} role="status" aria-live="polite" data-kind={solved ? "correct" : feedback ? "retry" : "empty"}>{(feedback || solved) && <><strong>{solved ? "Você entendeu a pista!" : "Vamos por outro caminho."}</strong><p>{solved ? lesson.explanation : feedback?.message}</p>{solved && <span className={styles.takeaway}>{lesson.takeaway}</span>}</>}</div>
+          <div className={styles.feedback} role="status" aria-live="polite" data-kind={solved ? "correct" : feedback ? "retry" : "empty"}>{(feedback || solved) && <><strong>{solved ? "Você entendeu a pista!" : "Vamos por outro caminho."}</strong><p>{solved ? lesson.explanation : feedback?.message}</p>{solved && <div className={styles.takeaway}><span>{lesson.takeaway}</span><EnglishPronunciationGuide text={sceneTakeaways[lesson.id]} compact/></div>}</>}</div>
           {solved && <button className={styles.primary} onClick={advance}>{save.current === englishLessons.length - 1 ? "Concluir missão" : "Continuar"} <span aria-hidden="true">→</span></button>}
         </div>
       </div>

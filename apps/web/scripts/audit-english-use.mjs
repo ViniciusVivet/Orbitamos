@@ -217,6 +217,11 @@ for (const profile of profiles) {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 120_000 });
     const spoken = page.locator(spokenScope);
     const item = spoken.locator("#speaking-item");
+    const selectLesson = async id => {
+      const map = spoken.locator("[data-speaking-map]");
+      if (await map.count() && await map.getAttribute("open") === null) await map.locator("summary").click();
+      await item.selectOption(id);
+    };
     const complete = spoken.locator("[data-speaking-complete]");
     const open = spoken.locator("[data-speaking-use-open]");
     await expect(spoken).toBeVisible({ timeout: 90_000 });
@@ -321,7 +326,7 @@ for (const profile of profiles) {
     for (const [index, lesson] of lessons.entries()) {
       if (index === 0) continue;
       if (await item.count()) {
-        await item.selectOption(lesson.id);
+        await selectLesson(lesson.id);
         await spoken.locator("[data-speaking-text-mode]").click();
         await expect(complete).toBeEnabled();
         await complete.click();

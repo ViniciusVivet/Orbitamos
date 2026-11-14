@@ -181,6 +181,11 @@ for (const profile of profiles) {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 120_000 });
     const root = page.locator(scope);
     const item = root.locator("#speaking-item");
+    const selectLesson = async id => {
+      const map = root.locator("[data-speaking-map]");
+      if (await map.count() && await map.getAttribute("open") === null) await map.locator("summary").click();
+      await item.selectOption(id);
+    };
     const start = root.locator("[data-speaking-start]");
     const stop = root.locator("[data-speaking-stop]");
     const complete = root.locator("[data-speaking-complete]");
@@ -250,7 +255,7 @@ for (const profile of profiles) {
     report.checks.push("Portuguese question, one English model, repetition together and an independent turn; completion requires manual participation confirmation");
 
     checkpoint = "stop-and-selection";
-    await item.selectOption("word-folder");
+    await selectLesson("word-folder");
     await setSpeech(page, "hold");
     await start.click();
     await expect.poll(async () => (await readLog(page)).length).toBe(1);
@@ -261,7 +266,7 @@ for (const profile of profiles) {
     await setSpeech(page, "hold");
     await start.click();
     await expect.poll(async () => (await readLog(page)).length).toBe(1);
-    await item.selectOption("phrase-open-the-file");
+    await selectLesson("phrase-open-the-file");
     await expect.poll(() => page.evaluate(() => window.__spokenAudit.lateCallbacks)).toBe(1);
     await expect(complete).toBeDisabled();
     await expect(root).toHaveAttribute("data-speaking-lesson-id", "phrase-open-the-file");
@@ -305,14 +310,14 @@ for (const profile of profiles) {
     report.checks.push("Reload restores cursor and achievements without replay; Home resumes the exact #falar route");
 
     checkpoint = "voice-error-and-mode";
-    await item.selectOption("word-error");
+    await selectLesson("word-error");
     await setSpeech(page, "error");
     await start.click();
     await expect(root.getByRole("alert")).toBeVisible();
     await expect(complete).toBeDisabled();
     assert(!((await readSave(page)).completed.includes("word-error")));
     await capture("voice-error");
-    await item.selectOption("word-run");
+    await selectLesson("word-run");
     await setSpeech(page, "hold");
     await start.click();
     await expect.poll(async () => (await readLog(page)).length).toBe(1);
@@ -331,7 +336,7 @@ for (const profile of profiles) {
     await root.locator("[data-speaking-text-mode]").click();
     for (const id of lessonIds) {
       if ((await readSave(page)).completed.includes(id)) continue;
-      await item.selectOption(id);
+      await selectLesson(id);
       await expect(complete).toBeEnabled();
       await complete.click();
       await expect.poll(async () => (await readSave(page))?.completed.includes(id)).toBe(true);

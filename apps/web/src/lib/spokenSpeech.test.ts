@@ -74,7 +74,7 @@ function harness(initialVoices: SpeechSynthesisVoice[] = []) {
     getVoices: vi.fn(() => voices),
   };
   const createUtterance = vi.fn((text: string) => ({
-    text, lang: "", rate: 1, pitch: 1, volume: 1, voice: null, onend: null, onerror: null,
+    text, lang: "", rate: 1, pitch: 1, volume: 1, voice: null, onstart: null, onend: null, onerror: null,
   }) as unknown as SpeechSynthesisUtterance);
   const engine = createSpokenSpeech({ synth, createUtterance, timers });
 
@@ -82,6 +82,9 @@ function harness(initialVoices: SpeechSynthesisVoice[] = []) {
     engine, timers, synth, spoken, createUtterance,
     overlaps: () => overlaps,
     setVoices(next: SpeechSynthesisVoice[]) { voices = next; },
+    begin(utterance = spoken.at(-1)!) {
+      utterance.onstart?.call(utterance, {} as SpeechSynthesisEvent);
+    },
     end(utterance = spoken.at(-1)!) {
       if (current === utterance) current = null;
       utterance.onend?.call(utterance, {} as SpeechSynthesisEvent);
@@ -115,6 +118,80 @@ describe("voz por idioma", () => {
 });
 
 describe("roteiro de fala no navegador com eventos simulados", () => {
+  it("sinaliza a fala apenas entre onstart e onend, sem duplicar eventos ou animar a pausa", () => {
+    const h = harness();
+    const onSpeakingChange = vi.fn();
+    h.engine.start(script(), { onSpeakingChange });
+    expect(onSpeakingChange).not.toHaveBeenCalled();
+    h.begin(); h.begin();
+    expect(onSpeakingChange.mock.calls).toEqual([[true]]);
+    h.end();
+    expect(onSpeakingChange.mock.calls).toEqual([[true], [false]]);
+    h.timers.advanceBy(250);
+    expect(h.spoken).toHaveLength(2);
+    expect(onSpeakingChange.mock.calls).toEqual([[true], [false]]);
+    h.begin(); h.engine.stop(); h.engine.stop();
+    expect(onSpeakingChange.mock.calls).toEqual([[true], [false], [true], [false]]);
+  });
+
+  it("callbacks de início e término capturados antes de cancelar não animam o roteiro seguinte", () => {
+    const h = harness();
+    const oldSpeaking = vi.fn();
+    const newSpeaking = vi.fn();
+    h.engine.start(script(), { onSpeakingChange: oldSpeaking });
+    const old = h.spoken[0];
+    const lateStart = old.onstart!;
+    const lateEnd = old.onend!;
+    h.begin();
+    h.engine.start(script(), { onSpeakingChange: newSpeaking });
+    expect(old.onstart).toBeNull();
+    lateStart.call(old, {} as SpeechSynthesisEvent);
+    lateEnd.call(old, {} as SpeechSynthesisEvent);
+    expect(oldSpeaking.mock.calls).toEqual([[true], [false]]);
+    expect(newSpeaking).not.toHaveBeenCalled();
+    h.begin(); h.engine.dispose(); h.engine.dispose();
+    expect(newSpeaking.mock.calls).toEqual([[true], [false]]);
+  });
+
+  it.each(["error", "timeout", "dispose"] as const)("encerra o estado de fala em %s e ignora eventos antigos", (end) => {
+    const h = harness();
+    const onSpeakingChange = vi.fn();
+    h.engine.start(script(), { onSpeakingChange });
+    const utterance = h.spoken[0];
+    const lateStart = utterance.onstart!;
+    h.begin();
+    if (end === "error") h.error("synthesis-failed");
+    else if (end === "timeout") h.timers.advanceBy(20_000);
+    else h.engine.dispose();
+    lateStart.call(utterance, {} as SpeechSynthesisEvent);
+    expect(onSpeakingChange.mock.calls).toEqual([[true], [false]]);
+    expect(h.timers.tasks.size).toBe(0);
+  });
+
+  it("não sinaliza fala se a voz nunca iniciar ou não existir, nem ao concluir um trecho sem onstart", () => {
+    const h = harness();
+    const onSpeakingChange = vi.fn();
+    h.engine.start([part("last", "pt-BR", "your-turn")], { onSpeakingChange });
+    h.end();
+    h.engine.stop();
+    const unavailable = createSpokenSpeech({ synth: null, createUtterance: null });
+    unavailable.start(script(), { onSpeakingChange });
+    expect(onSpeakingChange).not.toHaveBeenCalled();
+  });
+
+  it("permite interromper a aula pelo sinal de fala sem enfileirar o próximo trecho", () => {
+    const h = harness();
+    const changes: boolean[] = [];
+    h.engine.start(script(), { onSpeakingChange: speaking => {
+      changes.push(speaking);
+      if (!speaking) h.engine.stop();
+    } });
+    h.begin(); h.end(); h.timers.advanceBy(100_000);
+    expect(changes).toEqual([true, false]);
+    expect(h.spoken).toHaveLength(1);
+    expect(h.timers.tasks.size).toBe(0);
+  });
+
   it("importa em Node sem window e não começa áudio ao criar ou parar o controlador", () => {
     expect(typeof window).toBe("undefined");
     const h = harness();

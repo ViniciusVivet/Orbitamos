@@ -181,6 +181,72 @@ e deploy é registrada pelo SHA após o push. Evidências ficam em `apps/web/tes
 `docs/local/english-review-20261114/`, fora do Git. Estado e limites em
 [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md#qa-revisao-curta-20261114).
 
+## Apoio de pronúncia e Orbi — correção de 14/11/2026
+
+**Fechamento local:** 731 testes em 71 arquivos, 9 contratos, tipos Next,
+TypeScript, lint dos arquivos alterados e build de produção aprovados. A oficina
+falada passou com 8 verificações/9 estados em desktop, WebKit/iPhone e 320 px;
+as oito cenas passaram com 9 verificações/6 estados em desktop e 320 px.
+Regressões desktop: fala 12/7, contexto 11/5 e revisão escrita 13/6. Os roteiros
+novos passaram sem violações Axe no escopo, overflow, erros de página ou chamadas
+proibidas. Capturas principais foram inspecionadas, com ajuste da posição inicial
+da reprodução e enquadramento de inglês/apoio após iniciar no celular. CI e deploy
+são conferidos separadamente pelo SHA após o push.
+Os resultados de 718 testes da revisão escrita não comprovam estas mudanças.
+O novo teste `englishPronunciation.test.ts` cobre conteúdo obrigatório para
+as 12 expressões e os alvos das oito cenas, segmentos alinhados, normalização,
+sons sem equivalente perfeito, rejeição de termos desconhecidos e separação
+entre grafia de apoio e expressão enviada à síntese. O controlador também deve
+cobrir eventos reais de início/fim, silêncio, falha, cancelamento e callbacks
+atrasados, incluindo a reprodução de um único modelo em inglês.
+
+Comandos focais a executar, em série e com Node compatível com o projeto:
+
+```powershell
+node node_modules/vitest/vitest.mjs run src/lib/englishPronunciation.test.ts src/lib/spokenEnglish.test.ts src/lib/spokenSpeech.test.ts src/lib/englishReview.test.ts --maxWorkers=1 --no-file-parallelism
+node scripts/audit-pronunciation-english.mjs desktop
+node scripts/audit-pronunciation-english.mjs iphone
+node scripts/audit-pronunciation-english.mjs small
+node scripts/audit-english-scenes-pronunciation.mjs desktop
+node scripts/audit-english-scenes-pronunciation.mjs iphone
+node scripts/audit-english-scenes-pronunciation.mjs small
+```
+
+Execute os perfis em série com o Next local aquecido. Sem argumento de perfil,
+cada roteiro percorre os três em sequência. `ENGLISH_PRONUNCIATION_BASE_URL`
+troca a origem; `ENGLISH_PRONUNCIATION_URL` troca a entrada da oficina falada.
+Resultados e capturas ficam em `apps/web/test-results/english-pronunciation/`
+e `apps/web/test-results/english-scenes-pronunciation/`, fora do Git.
+
+A verificação de navegador desta rodada deve conferir:
+
+- Apoio legível após revelar o modelo e áudio com inglês correto.
+- Ausência de inglês/apoio na escrita antes de consultar ou acertar, inclusive
+  depois de recarregar e retomar pela Home.
+- Guia coerente em alternativas, oito cenas, contexto, resumo e modelo escrito.
+- Orbi animado somente entre os eventos reais de fala, com parada em pausas,
+  erro, cancelamento, troca de item/tela e callback obsoleto.
+- Reouvir somente a expressão sem reiniciar a sequência completa; essa ação
+  sozinha não conclui prática automaticamente.
+- Capítulo/mapa e contexto em desktop, WebKit/iPhone e 320 px; movimento reduzido,
+  contraste, toque, primeira dobra, overflow e integridade dos saves/journal/XP.
+- Enquadramento mobile no primeiro modelo inglês, modo texto, reouvir e seleção
+  de item no modo texto: inglês e guia dentro da área útil, sem autoplay ou nova
+  mudança de foco causada pelo enquadramento. O scroll é instantâneo e reserva
+  76 px no topo para a navegação.
+
+Registro parcial: as oito cenas passaram em desktop e 320 px com 9 verificações
+e 6 estados por perfil. O fluxo principal passou inicialmente em desktop com
+8 verificações/9 estados, antes do último ajuste de enquadramento. As novas
+execuções com limites visíveis de inglês/guia e a suíte completa continuam
+pendentes de fechamento; não reaproveitar a aprovação anterior para esse ajuste.
+
+É preciso registrar execução, números e capturas realmente observadas antes de
+marcar esses critérios como aprovados. O fechamento ficará em
+[METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md#qa-pronuncia-20261114). Síntese
+simulada não comprova áudio no iPhone físico, sincronia fonética, pronúncia,
+retenção ou eficácia pedagógica. A rodada não introduz serviço pago ou microfone.
+
 ## Oficina do Pulso — implementação de 11/11/2026
 
 A aventura opcional acrescenta duas rotas à experiência do Orbi, sem aumentar

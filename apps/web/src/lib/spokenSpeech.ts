@@ -10,6 +10,8 @@ export type SpokenSpeechError = SpeechSynthesisErrorCode | "unsupported" | "inva
 
 export type SpokenSpeechOptions = {
   onStep?: (part: SpokenSpeechPart, index: number) => void;
+  /** Playback events only: queuing a part or waiting between parts is not speech. */
+  onSpeakingChange?: (speaking: boolean) => void;
   onDone?: () => void;
   onError?: (code: SpokenSpeechError) => void;
   rate?: 0.75 | 0.9;
@@ -105,6 +107,14 @@ export function createSpokenSpeech({
   let submitted = false;
   let watchdog: unknown = null;
   let gap: unknown = null;
+  let speaking = false;
+  let speakingCallback: SpokenSpeechOptions["onSpeakingChange"];
+
+  function setSpeaking(next: boolean) {
+    if (speaking === next) return;
+    speaking = next;
+    speakingCallback?.(next);
+  }
 
   function clearWatchdog() {
     if (watchdog !== null) timers.clearTimeout(watchdog);
@@ -113,6 +123,7 @@ export function createSpokenSpeech({
 
   function releaseActive() {
     if (active) {
+      active.onstart = null;
       active.onend = null;
       active.onerror = null;
     }
@@ -130,6 +141,12 @@ export function createSpokenSpeech({
     gap = null;
     if (shouldCancel) {
       try { synth?.cancel(); } catch { /* Stopping must remain safe during browser teardown. */ }
+    }
+    const notify = speakingCallback;
+    speakingCallback = undefined;
+    if (speaking) {
+      speaking = false;
+      notify?.(false);
     }
   }
 
@@ -149,6 +166,7 @@ export function createSpokenSpeech({
     const currentTurn = turn;
     const isCurrent = () => !disposed && turn === currentTurn;
     const rate = options.rate === 0.75 ? 0.75 : 0.9;
+    speakingCallback = options.onSpeakingChange;
 
     function fail(code: SpokenSpeechError) {
       if (!isCurrent()) return;
@@ -180,9 +198,14 @@ export function createSpokenSpeech({
 
       active = utterance;
       const isActive = () => isCurrent() && active === utterance;
+      utterance.onstart = () => {
+        if (isActive()) setSpeaking(true);
+      };
       utterance.onend = () => {
         if (!isActive()) return;
         releaseActive();
+        setSpeaking(false);
+        if (!isCurrent()) return;
         if (index === script!.length - 1) {
           turn += 1;
           options.onDone?.();

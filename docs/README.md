@@ -37,6 +37,17 @@ sessão, sem medir pronúncia ou retenção e sem XP. O [método](METODO_INGLES_
 registra o QA próprio de 14/11 e a conferência de publicação separadamente dos
 697 testes e da publicação contextual `d3d9eda` de 13/11.
 
+Na correção seguinte de **14/11**, o usuário reafirmou que a pronúncia
+aproximada escrita em português é obrigatória no ensino de inglês. A rodada
+verificada localmente acrescenta catálogo e guia reutilizáveis, apoio
+protegido nos exercícios de escrita, Orbi indicando fala/vez do aluno e cena
+por capítulo. O [método](METODO_INGLES_ORBI.md#apoio-pronuncia-20261114) registra
+a decisão que supera a omissão anterior, dez melhorias concretas e limites;
+o [QA próprio](METODO_INGLES_ORBI.md#qa-pronuncia-20261114) registra 731 testes,
+9 contratos, tipos, lint, build e auditorias de navegador aprovados. A conferência
+da publicação é separada. Os resultados da revisão escrita são históricos
+separados desta interface nova.
+
 Os guias abaixo separam o estado implementado, as decisões de produto,
 a operação e os registros históricos. Datas antigas em auditorias são mantidas
 quando descrevem uma execução específica.

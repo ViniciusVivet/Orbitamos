@@ -8,6 +8,8 @@ import { buildSpokenScript, completeSpeakingPractice, emptySpeakingSave, english
 import { createSpokenSpeech } from "@/lib/spokenSpeech";
 import { emptyEnglishUseSave, englishUseKey, englishUseQuestions, evaluateEnglishUse, getEnglishUseQuestion, mergeEnglishUseSave, readEnglishUseSave, recordEnglishUseAttempt, type EnglishUseSave } from "@/lib/englishUse";
 import EnglishUseCheck from "./EnglishUseCheck";
+import EnglishPronunciationGuide from "./EnglishPronunciationGuide";
+import OrbiSpeechCoach from "./OrbiSpeechCoach";
 import s from "./SpokenEnglish.module.css";
 
 export type EnglishStudySnapshot = { speaking: SpeakingSave; contextual: EnglishUseSave; speakingUnsaved?: boolean; contextualUnsaved?: boolean };
@@ -35,6 +37,8 @@ export default function SpokenEnglish({ userId, onBackHref = "/estudante/jogos",
   const [rate, setRate] = useState<0.75 | 0.9>(0.9);
   const [phase, setPhase] = useState<Phase>("idle");
   const [running, setRunning] = useState(false);
+  const [audioSpeaking, setAudioSpeaking] = useState(false);
+  const [activeLanguage, setActiveLanguage] = useState<"pt-BR" | "en-US">("pt-BR");
   const runningRef = useRef(false);
   const [manual, setManual] = useState(false);
   const [revealed, setRevealed] = useState(false);
@@ -46,6 +50,7 @@ export default function SpokenEnglish({ userId, onBackHref = "/estudante/jogos",
   const speech = useRef<ReturnType<typeof createSpokenSpeech> | null>(null);
   const generation = useRef(0);
   const heading = useRef<HTMLHeadingElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
   const lesson = getSpeakingLesson(save.current) ?? englishSpeakingLessons[0];
   const index = englishSpeakingLessons.findIndex(item => item.id === lesson.id);
   const group = englishSpeakingLessons.filter(item => item.kind === lesson.kind);
@@ -91,7 +96,7 @@ export default function SpokenEnglish({ userId, onBackHref = "/estudante/jogos",
     const interrupt = () => {
       if (!runningRef.current) return;
       invalidate(); speech.current?.stop(); runningRef.current = false;
-      setRunning(false); setCanConfirm(false); setPhase("idle"); setNotice("A aula foi pausada. Toque em Ouvir e repetir para recomeçar este item.");
+      setRunning(false); setAudioSpeaking(false); setCanConfirm(false); setPhase("idle"); setNotice("A aula foi pausada. Toque em Ouvir e repetir para recomeçar este item.");
     };
     const visibility = () => { if (document.hidden) interrupt(); };
     const receive = (event: StorageEvent) => {
@@ -113,25 +118,45 @@ export default function SpokenEnglish({ userId, onBackHref = "/estudante/jogos",
 
   function stop(message?: string) {
     generation.current++; speech.current?.stop(); runningRef.current = false;
-    setRunning(false); setCanConfirm(false); setPhase("idle"); setIssue(null); setNotice(message ?? null);
+    setRunning(false); setAudioSpeaking(false); setCanConfirm(false); setPhase("idle"); setIssue(null); setNotice(message ?? null);
   }
   function choose(id: string) {
     if (!getSpeakingLesson(id)) return;
     stop(); if (checkingId) updateUse({ ...latestUse.current, active: false }); setCheckingId(null); setRecorded(false); setRevealed(manual); setCanConfirm(manual); setPhase(manual ? "your-turn" : "idle");
-    update({ ...latest.current, current: id }); requestAnimationFrame(() => heading.current?.focus());
+    update({ ...latest.current, current: id }); requestAnimationFrame(() => { heading.current?.focus(); if (manual) frameMobilePractice(); });
+  }
+  function frameMobilePractice() {
+    const token = generation.current;
+    requestAnimationFrame(() => {
+      if (token === generation.current && window.matchMedia("(max-width: 760px)").matches) stage.current?.scrollIntoView({ block: "start", behavior: "instant" });
+    });
   }
   function start() {
     if (!capable || !speech.current) return;
     stop(); setManual(false); setRevealed(false); setRecorded(false); setRunning(true); runningRef.current = true;
     const token = ++generation.current;
+    let framed = false;
     speech.current.start(buildSpokenScript(lesson), {
       rate, preferredEnglishVoiceURI: voiceURI || undefined,
-      onStep: part => { if (token !== generation.current) return; setPhase(part.phase); if (part.lang === "en-US") setRevealed(true); },
+      onSpeakingChange: value => { if (token === generation.current) setAudioSpeaking(value); },
+      onStep: part => { if (token !== generation.current) return; setPhase(part.phase); setActiveLanguage(part.lang); if (part.lang === "en-US") { setRevealed(true); if (!framed) { framed = true; frameMobilePractice(); } } },
       onDone: () => { if (token !== generation.current) return; runningRef.current = false; setRunning(false); setPhase("your-turn"); setCanConfirm(true); },
       onError: code => { if (token !== generation.current) return; runningRef.current = false; setRunning(false); setCanConfirm(false); setPhase("idle"); setIssue(code === "language-unavailable" ? "O aparelho não disponibilizou essa voz. Escolha outra voz ou pratique com o texto." : "A voz não respondeu. Tente novamente ou pratique com o texto."); },
     });
   }
-  function textMode() { stop(); setManual(true); setRevealed(true); setPhase("your-turn"); setCanConfirm(true); setRecorded(false); }
+  function hearEnglish() {
+    if (!capable || !speech.current) return;
+    stop(); setManual(false); setRevealed(true); setRecorded(false); setRunning(true); runningRef.current = true;
+    const token = ++generation.current;
+    speech.current.start([{ id: `${lesson.id}-listen-only`, lang: "en-US", text: lesson.en, phase: "your-turn", pauseAfterMs: 0 }], {
+      rate, preferredEnglishVoiceURI: voiceURI || undefined,
+      onSpeakingChange: value => { if (token === generation.current) setAudioSpeaking(value); },
+      onStep: () => { if (token === generation.current) { setPhase("model"); setActiveLanguage("en-US"); frameMobilePractice(); } },
+      onDone: () => { if (token !== generation.current) return; runningRef.current = false; setRunning(false); setPhase("your-turn"); setCanConfirm(true); },
+      onError: () => { if (token !== generation.current) return; runningRef.current = false; setRunning(false); setCanConfirm(false); setPhase("idle"); setIssue("A voz não respondeu. Tente novamente ou pratique com o texto."); },
+    });
+  }
+  function textMode() { stop(); setManual(true); setRevealed(true); setPhase("your-turn"); setCanConfirm(true); setRecorded(false); frameMobilePractice(); }
   function voiceMode() { stop(); setManual(false); setRevealed(false); setRecorded(false); }
   function confirm() {
     if (!canConfirm || running) return;
@@ -161,29 +186,39 @@ export default function SpokenEnglish({ userId, onBackHref = "/estudante/jogos",
     {useStorageError && <p role="alert" className={s.error}>Não foi possível salvar esta situação. O registro está apenas nesta tela.</p>}
   </section>;
 
-  return <section className={s.root} data-spoken-english data-speaking-lesson-id={lesson.id} data-speaking-mode={manual ? "text" : "voice"} data-speaking-phase={phase}>
+  return <section className={s.root} data-spoken-english data-speaking-lesson-id={lesson.id} data-speaking-mode={manual ? "text" : "voice"} data-speaking-phase={phase} data-speaking-world={lesson.kind === "word" ? "words" : "phrases"} data-speaking-scene={lesson.scene}>
     <header className={s.header}><Link href={onBackHref}><ArrowLeft size={14}/> Explorar atividades</Link>{onReview && save.completed.length > 0 ? <button className={s.reviewEntry} data-speaking-review-open onClick={() => onReview({ speaking: latest.current, contextual: latestUse.current, speakingUnsaved: storageError, contextualUnsaved: useStorageError })}><RotateCcw size={14}/> Revisão curta</button> : <span>ORBITAMOS · OUVIR, REPETIR E USAR</span>}</header>
     {finished && !reviewing ? <div className={s.finish}><Image src="/orbi-tech.png" width={150} height={175} alt="Orbi acompanha sua prática"/><p className={s.eyebrow}>12 ITENS PRATICADOS</p><h1 ref={heading} tabIndex={-1}>Você praticou palavras e frases de código.</h1><p>Agora encontre essas palavras em imagens, mensagens e situações de programação.</p><p className={s.small}>Este registro é de prática declarada. Não é uma nota automática de pronúncia.</p><div className={s.finishActions}><button className={s.primary} data-speaking-use-open onClick={() => openUse((englishUseQuestions.find(item => !useSave.completed.includes(item.lessonId)) ?? englishUseQuestions[0]).lessonId)}>{useSave.completed.length === englishUseQuestions.length ? "Revisar situações" : "Usar o inglês em uma situação"}<ArrowRight size={17}/></button><a className={s.secondary} href="#">Praticar com imagens e código <ArrowRight size={17}/></a><button className={s.secondary} onClick={() => { setReviewing(true); choose(englishSpeakingLessons[0].id); }}>Repetir a prática <RotateCcw size={17}/></button></div></div> : <>
-      <div className={s.titleRow}><div><p className={s.eyebrow}>{lesson.kind === "word" ? "PRIMEIRO, PALAVRAS" : "AGORA, FRASES"} · {groupIndex + 1} DE {group.length}</p><h1 ref={heading} tabIndex={-1}>Fale inglês com o Orbi.</h1></div><span className={s.count}>{save.completed.length}/{englishSpeakingLessons.length}<small>práticas</small></span></div>
+      <div className={s.titleRow}><div><p className={s.eyebrow}>{lesson.kind === "word" ? "01 · A OFICINA DAS PALAVRAS" : "02 · O ESTÚDIO DAS FRASES"}</p><h1 ref={heading} tabIndex={-1}>Fale inglês com o Orbi.</h1></div><span className={s.count}>{save.completed.length}/{englishSpeakingLessons.length}<small>práticas</small></span></div>
       <progress className={s.progress} max={englishSpeakingLessons.length} value={save.completed.length} aria-label="Práticas registradas"/>
-
-      <div className={s.stage}>
+      <div className={s.chapterBar}><span>{lesson.kind === "word" ? "Palavra" : "Frase"} {groupIndex + 1} de {group.length}</span><div role="group" aria-label="Caminho desta prática">{group.map((item, itemIndex) => <span key={item.id} role="img" aria-current={lesson.id === item.id ? "step" : undefined} data-current={lesson.id === item.id} data-done={save.completed.includes(item.id)} aria-label={`${itemIndex + 1}: ${lesson.id === item.id ? "item atual" : save.completed.includes(item.id) ? "praticado" : "a praticar"}`}>{save.completed.includes(item.id) ? <Check size={11}/> : itemIndex + 1}</span>)}</div><span>{lesson.kind === "word" ? "Depois: frases" : "Depois: use no código"}</span></div>
+      <div className={s.stage} ref={stage}>
         <div className={s.board}>
-          <div className={s.cardCaption}><span>{manual ? "LEIA E REPITA" : phase === "idle" ? "SEU PRÓXIMO INGLÊS" : phase === "meaning" ? "O SIGNIFICADO" : phase === "model" ? "ESCUTE O MODELO" : phase === "together" ? "FALE JUNTO" : "SUA VEZ"}</span>{capable === false && !manual ? <button className={s.secondary} data-speaking-text-mode onClick={textMode}>Praticar sem voz</button> : running ? <button className={s.secondary} data-speaking-stop onClick={() => stop("Áudio interrompido. Você pode recomeçar este item.")}><Square size={17}/> Parar áudio</button> : manual ? <button className={s.secondary} data-speaking-voice-mode disabled={!capable} onClick={voiceMode}><Volume2 size={18}/> Voltar ao áudio</button> : <button className={s.primary} data-speaking-start disabled={!capable} onClick={start}><Play size={18}/>{revealed ? "Ouvir e repetir de novo" : "Ouvir e repetir"}</button>}</div>
+          <div className={s.cardCaption}><span>{manual ? "LEIA E REPITA" : phase === "idle" ? "COMECE OUVINDO" : phase === "meaning" ? "O SIGNIFICADO" : phase === "model" ? "ESCUTE O MODELO" : phase === "together" ? "FALE JUNTO" : "SUA VEZ"}</span>{running && <button className={s.stopAudio} data-speaking-stop onClick={() => stop("Áudio interrompido. Você pode recomeçar este item.")}><Square size={14}/> Parar áudio</button>}</div>
+          <div className={s.playback}>
+            {capable === false && !manual ? <button className={s.primary} data-speaking-text-mode onClick={textMode}>Praticar sem voz <ArrowRight size={17}/></button> : running ? <p className={s.playingCue} role="status">{audioSpeaking ? "O Orbi está falando…" : "Uma pausa para você repetir."}</p> : manual ? <button className={s.secondary} data-speaking-voice-mode disabled={!capable} onClick={voiceMode}><Volume2 size={18}/> Voltar ao áudio</button> : <button className={canConfirm || recorded ? s.secondary : s.primary} data-speaking-start disabled={!capable} onClick={start}><Play size={18}/>{revealed ? "Ouvir e repetir de novo" : "Ouvir e repetir"}</button>}
+          </div>
           <div className={s.translation}><small>EM PORTUGUÊS</small><span data-highlight={phase === "meaning"}>{lesson.pt}</span></div>
-          <div className={s.english}><small>EM INGLÊS</small><strong lang="en-US" data-speaking-english data-revealed={revealed} data-highlight={revealed && running && (phase === "model" || phase === "together")}>{revealed ? lesson.en : "…"}</strong></div>
-          <div className={s.coach}><Image src="/orbi-tech.png" alt="" width={100} height={118} sizes="100px"/><p><strong>Orbi</strong>{manual ? "Leia o modelo em inglês e repita sozinho. Você pode voltar ao áudio quando quiser." : cues[phase]}</p>{running && <span className={s.wave} role="img" aria-label="Voz em reprodução"><i/><i/><i/><i/></span>}</div>
+          <div className={s.english}><small>EM INGLÊS</small><strong lang="en-US" data-speaking-english data-revealed={revealed} data-highlight={revealed && audioSpeaking && activeLanguage === "en-US"}>{revealed ? lesson.en : "…"}</strong></div>
+          <EnglishPronunciationGuide text={lesson.en} reveal={revealed}/>
+          {revealed && capable && <button className={s.listenOnly} data-speaking-english-only disabled={running} onClick={hearEnglish}><Volume2 size={17}/> Ouvir só o inglês</button>}
+          <div className={s.lessonSteps} aria-label="Como praticar"><span data-active={phase === "idle" || phase === "meaning" || phase === "model"}>1 · Ouça</span><span data-active={phase === "together"}>2 · Repita junto</span><span data-active={phase === "your-turn"}>3 · Tente só</span></div>
+          <div className={s.controls}><button className={s.primary} data-speaking-complete disabled={!canConfirm || running} onClick={confirm}><Check size={18}/>{recorded ? "Prática registrada" : "Já repeti este item"}</button><button className={recorded ? s.primary : s.next} onClick={() => choose(englishSpeakingLessons[(index + 1) % englishSpeakingLessons.length].id)}>Próximo <ArrowRight size={18}/></button></div>
+          {!canConfirm && !recorded && !running && <p className={s.microHint}>Ouça o modelo. Depois, repita e marque sua prática.</p>}
         </div>
-        <aside className={s.context}><p className={s.eyebrow}>NO DIA A DIA DO CÓDIGO</p><CodeContext scene={lesson.scene}/><p>{lesson.context}</p></aside>
+        <aside className={s.world} aria-label={lesson.kind === "word" ? "Oficina das palavras, no bairro do Orbi" : "Estúdio das frases, no bairro do Orbi"}>
+          <span className={s.worldLabel}>{lesson.kind === "word" ? "OFICINA · BAIRRO ORBITAMOS" : "ESTÚDIO · BAIRRO ORBITAMOS"}</span>
+          <div className={s.worldContext} aria-hidden={!revealed}>{revealed ? <CodeContext scene={lesson.scene}/> : <div className={s.editorScene}><div className={s.editorTab}><Code2 size={15}/> SEU PROJETO</div><pre>Uma palavra.{'\n'}Um novo jeito de criar.</pre></div>}</div>
+          <OrbiSpeechCoach speaking={audioSpeaking} waiting={!audioSpeaking && phase === "your-turn"}>{manual ? "Leia o inglês e use a pista de pronúncia para repetir." : running && !audioSpeaking && revealed ? "Repita no seu ritmo. Eu espero aqui." : cues[phase]}</OrbiSpeechCoach>
+          <p className={s.contextLine}>{revealed ? lesson.context : "Vamos descobrir este inglês no dia a dia da programação."}</p>
+        </aside>
       </div>
       {issue && <p className={s.error} role="alert">{issue}</p>}
       {notice && <p className={s.notice} role="status">{notice}</p>}
       {capable === false && !manual && <p className={s.notice}>Este navegador não oferece a voz desta prática. Você pode continuar com o texto.</p>}
-      <div className={s.controls}><button className={s.primary} data-speaking-complete disabled={!canConfirm || running} onClick={confirm}><Check size={18}/>{recorded ? "Prática registrada" : "Já repeti este item"}</button><button className={s.next} onClick={() => choose(englishSpeakingLessons[(index + 1) % englishSpeakingLessons.length].id)}>Próximo <ArrowRight size={18}/></button></div>
       {recorded && <p className={s.notice} role="status">Prática registrada. Você pode ouvir de novo ou seguir para o próximo item.</p>}
       {save.completed.includes(lesson.id) && <div className={s.useInvitation}><div><strong>Você já repetiu. E no código?</strong><span>{useSave.completed.includes(lesson.id) ? "Esta situação já teve uma escolha correta. Você pode tentar de novo." : "Encontre o sentido deste inglês em uma situação de programação."}</span></div><button className={s.secondary} data-speaking-use-open onClick={() => openUse()}>Usar em uma situação <ArrowRight size={17}/></button></div>}
-      <p className={s.mobileContext}>{lesson.context}</p>
-      <div className={s.lessonPicker}><label htmlFor="speaking-item">Seu percurso</label><select id="speaking-item" value={lesson.id} onChange={event => choose(event.target.value)}><optgroup label="1 · Palavras">{englishSpeakingLessons.filter(item => item.kind === "word").map(item => <option key={item.id} value={item.id}>{save.completed.includes(item.id) ? "✓ " : ""}{item.pt} · {item.en}</option>)}</optgroup><optgroup label="2 · Frases">{englishSpeakingLessons.filter(item => item.kind === "phrase").map(item => <option key={item.id} value={item.id}>{save.completed.includes(item.id) ? "✓ " : ""}{item.en}</option>)}</optgroup></select></div>
+      <details className={s.map} data-speaking-map><summary>Seu percurso <span>Palavras → Frases → Usar no código</span></summary><div className={s.lessonPicker}><label htmlFor="speaking-item">Escolha um item</label><select id="speaking-item" value={lesson.id} onChange={event => choose(event.target.value)}><optgroup label="1 · Palavras">{englishSpeakingLessons.filter(item => item.kind === "word").map(item => <option key={item.id} value={item.id}>{save.completed.includes(item.id) ? "✓ " : ""}{item.pt} · {item.en}</option>)}</optgroup><optgroup label="2 · Frases">{englishSpeakingLessons.filter(item => item.kind === "phrase").map(item => <option key={item.id} value={item.id}>{save.completed.includes(item.id) ? "✓ " : ""}{item.en}</option>)}</optgroup></select></div></details>
       <footer className={s.footer}>{capable !== false && <button data-speaking-text-mode onClick={textMode}>Praticar sem voz</button>}<details className={s.settings}><summary><Settings2 size={15}/> Voz e ritmo</summary><div><label htmlFor="speaking-rate">Velocidade<select id="speaking-rate" value={rate} disabled={running} onChange={event => setRate(event.target.value === "0.75" ? 0.75 : 0.9)}><option value="0.9">Normal</option><option value="0.75">Mais devagar</option></select></label><label htmlFor="speaking-voice">Voz em inglês<select id="speaking-voice" value={voiceURI} disabled={running} onChange={event => setVoiceURI(event.target.value)}><option value="">Automática do aparelho</option>{voices.filter(voice => /^en(?:-|_)/i.test(voice.lang) || voice.lang === "en").map(voice => <option key={voice.voiceURI} value={voice.voiceURI}>{voice.name} · {voice.lang}</option>)}</select></label><p>As vozes vêm do navegador ou aparelho e podem precisar de conexão. Se não funcionar, continue com texto. Esta atividade não grava sua voz nem avalia sua pronúncia automaticamente.</p></div></details></footer>
       <p className={s.saveNote}>{storageError ? "O navegador não conseguiu salvar. Seu progresso está apenas nesta tela." : "Prática salva neste navegador, separada por conta. Marcar que repetiu registra participação."}</p>
     </>}

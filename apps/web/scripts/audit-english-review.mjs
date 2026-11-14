@@ -161,6 +161,8 @@ async function earnParticipation(page, ids, onFirst) {
   const spoken = page.locator(spokenScope);
   await spoken.locator("[data-speaking-text-mode]").first().click();
   for (const [index, id] of ids.entries()) {
+    const map = spoken.locator("[data-speaking-map]");
+    if (await map.count() && await map.getAttribute("open") === null) await map.locator("summary").click();
     await spoken.locator("#speaking-item").selectOption(id);
     await expect(spoken.locator("[data-speaking-complete]")).toBeEnabled();
     await spoken.locator("[data-speaking-complete]").click();

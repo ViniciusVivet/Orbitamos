@@ -1,3 +1,5 @@
+import { getEnglishPronunciation, type EnglishPronunciation } from "./englishPronunciation";
+
 export type SpeakingScene = "file" | "folder" | "code" | "save" | "run" | "error" | "test" | "build";
 
 export type SpeakingLesson = {
@@ -7,21 +9,28 @@ export type SpeakingLesson = {
   readonly pt: string;
   readonly context: string;
   readonly scene: SpeakingScene;
+  readonly pronunciation: EnglishPronunciation;
 };
 
+function pronunciationFor(text: string): EnglishPronunciation {
+  const pronunciation = getEnglishPronunciation(text);
+  if (!pronunciation) throw new Error(`Missing authored pronunciation for: ${text}`);
+  return pronunciation;
+}
+
 export const englishSpeakingLessons: readonly SpeakingLesson[] = [
-  { id: "word-file", kind: "word", en: "file", pt: "arquivo", context: "Um arquivo, como script.js, guarda o código do projeto.", scene: "file" },
-  { id: "word-folder", kind: "word", en: "folder", pt: "pasta", context: "A pasta do projeto reúne arquivos que pertencem ao mesmo trabalho.", scene: "folder" },
-  { id: "word-code", kind: "word", en: "code", pt: "código", context: "O código contém as instruções que o computador vai executar.", scene: "code" },
-  { id: "word-save", kind: "word", en: "save", pt: "salvar", context: "Use Save no editor para guardar as alterações no arquivo.", scene: "save" },
-  { id: "word-run", kind: "word", en: "run", pt: "executar", context: "Use Run para executar o código e observar o resultado.", scene: "run" },
-  { id: "word-error", kind: "word", en: "error", pt: "erro", context: "Uma mensagem de erro ajuda a investigar o que precisa ser corrigido.", scene: "error" },
-  { id: "phrase-open-the-file", kind: "phrase", en: "Open the file", pt: "Abra o arquivo", context: "Um tutorial pede para abrir o arquivo do projeto no editor.", scene: "file" },
-  { id: "phrase-save-the-file", kind: "phrase", en: "Save the file", pt: "Salve o arquivo", context: "Depois de alterar o código, salve o arquivo antes de continuar.", scene: "save" },
-  { id: "phrase-run-the-code", kind: "phrase", en: "Run the code", pt: "Execute o código", context: "Execute o código para ver o que ele faz nesta tentativa.", scene: "run" },
-  { id: "phrase-fix-the-error", kind: "phrase", en: "Fix the error", pt: "Corrija o erro", context: "Leia a mensagem e corrija o erro indicado antes de executar novamente.", scene: "error" },
-  { id: "phrase-the-test-passed", kind: "phrase", en: "The test passed", pt: "O teste passou", context: "O teste executado passou. Isso descreve o resultado dessa verificação.", scene: "test" },
-  { id: "phrase-the-build-failed", kind: "phrase", en: "The build failed", pt: "A geração do projeto falhou", context: "O build não terminou com sucesso. Leia o erro para investigar a causa.", scene: "build" },
+  { id: "word-file", kind: "word", en: "file", pt: "arquivo", context: "Um arquivo, como script.js, guarda o código do projeto.", scene: "file", pronunciation: pronunciationFor("file") },
+  { id: "word-folder", kind: "word", en: "folder", pt: "pasta", context: "A pasta do projeto reúne arquivos que pertencem ao mesmo trabalho.", scene: "folder", pronunciation: pronunciationFor("folder") },
+  { id: "word-code", kind: "word", en: "code", pt: "código", context: "O código contém as instruções que o computador vai executar.", scene: "code", pronunciation: pronunciationFor("code") },
+  { id: "word-save", kind: "word", en: "save", pt: "salvar", context: "Use Save no editor para guardar as alterações no arquivo.", scene: "save", pronunciation: pronunciationFor("save") },
+  { id: "word-run", kind: "word", en: "run", pt: "executar", context: "Use Run para executar o código e observar o resultado.", scene: "run", pronunciation: pronunciationFor("run") },
+  { id: "word-error", kind: "word", en: "error", pt: "erro", context: "Uma mensagem de erro ajuda a investigar o que precisa ser corrigido.", scene: "error", pronunciation: pronunciationFor("error") },
+  { id: "phrase-open-the-file", kind: "phrase", en: "Open the file", pt: "Abra o arquivo", context: "Um tutorial pede para abrir o arquivo do projeto no editor.", scene: "file", pronunciation: pronunciationFor("Open the file") },
+  { id: "phrase-save-the-file", kind: "phrase", en: "Save the file", pt: "Salve o arquivo", context: "Depois de alterar o código, salve o arquivo antes de continuar.", scene: "save", pronunciation: pronunciationFor("Save the file") },
+  { id: "phrase-run-the-code", kind: "phrase", en: "Run the code", pt: "Execute o código", context: "Execute o código para ver o que ele faz nesta tentativa.", scene: "run", pronunciation: pronunciationFor("Run the code") },
+  { id: "phrase-fix-the-error", kind: "phrase", en: "Fix the error", pt: "Corrija o erro", context: "Leia a mensagem e corrija o erro indicado antes de executar novamente.", scene: "error", pronunciation: pronunciationFor("Fix the error") },
+  { id: "phrase-the-test-passed", kind: "phrase", en: "The test passed", pt: "O teste passou", context: "O teste executado passou. Isso descreve o resultado dessa verificação.", scene: "test", pronunciation: pronunciationFor("The test passed") },
+  { id: "phrase-the-build-failed", kind: "phrase", en: "The build failed", pt: "A geração do projeto falhou", context: "O build não terminou com sucesso. Leia o erro para investigar a causa.", scene: "build", pronunciation: pronunciationFor("The build failed") },
 ];
 
 export function getSpeakingLesson(id: string): SpeakingLesson | undefined {

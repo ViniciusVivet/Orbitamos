@@ -10,8 +10,12 @@ Em **14/11/2026**, a **Revisão curta por escrita** acrescenta tentativas de
 lembrar de uma a três dessas expressões a partir da pista em português. Está
 implementada e verificada localmente, com registro próprio de QA. A publicação
 remota é conferida separadamente; os resultados de 13/11 permanecem históricos.
-Nenhuma dessas verificações atesta qualidade de áudio em aparelho físico ou
-aprendizagem. A pesquisa inicial de 12/11 permanece em
+A correção de **14/11/2026**, solicitada pelo usuário após testar a revisão,
+torna obrigatório o apoio escrito de pronúncia em português e acrescenta
+presença animada do Orbi e cenário por capítulo. Essa rodada está em
+implementação/validação; seu QA e sua publicação ainda não foram fechados.
+Nenhuma das verificações anteriores atesta o layout novo, qualidade de áudio
+em aparelho físico ou aprendizagem. A pesquisa inicial de 12/11 permanece em
 [INGLES_FALADO.md](INGLES_FALADO.md).
 
 ## O que o aluno pratica
@@ -45,11 +49,120 @@ Os quadros mostram
 O ASR é uma transcrição de apoio, não uma avaliação fonética nem comprovação
 de eficácia pedagógica do anúncio.
 
-O piloto aproveita a sequência de significado, modelo e repetição. Não usa a
-arte nem o áudio do anúncio e não incorpora a aproximação aportuguesada.
-O conteúdo e o contexto visual são próprios da implementação da Orbitamos;
-a fala usa as vozes disponibilizadas pelo aparelho. O material de análise fica em `docs/local/`, fora do Git e da
+Na entrega de **13/11**, o piloto aproveitou a sequência de significado, modelo
+e repetição, mas não incorporou a aproximação escrita em português. Essa foi
+uma omissão em relação ao que o usuário esperava da referência. Em **14/11**,
+o usuário reafirmou que esse apoio é imprescindível em todo o ensino de inglês;
+a decisão anterior de deixá-lo de fora foi superada.
+
+A Orbitamos usa conteúdo, contexto visual e aproximações escritas próprios,
+sem copiar a arte nem o áudio do anúncio. A fala continua usando a expressão
+inglesa correta nas vozes disponibilizadas pelo aparelho; a aproximação em
+português é um apoio visual, não texto enviado à síntese. O material de análise fica em `docs/local/`, fora do Git e da
 mídia distribuída ao aluno.
+
+<a id="apoio-pronuncia-20261114"></a>
+
+## Apoio de pronúncia e presença do Orbi — correção de 14/11
+
+**Estado desta rodada: implementada, com fluxos e conteúdo verificados localmente.**
+A seção de QA própria registra os checks desta entrega; os resultados anteriores
+não cobrem estas mudanças. A publicação é conferida separadamente após o push.
+
+Todo **modelo de ensino** deve ligar quatro coisas: grafia inglesa correta,
+significado em português, apoio aproximado de como falar e modelo sonoro em
+inglês. Exemplos: **save → salvar → sêiv** e **file → arquivo → fáil**. O apoio
+não substitui o inglês: o aluno continua escrevendo `save`, nunca `sêiv`,
+quando a tarefa pede a expressão inglesa.
+
+O catálogo autoral `apps/web/src/lib/englishPronunciation.ts` cobre as 12
+expressões faladas e os alvos das oito cenas ilustradas, em 31 entradas de apoio
+escrito. A síntese interativa permanece nos 12 itens do piloto em `#falar`;
+as cenas e a revisão recebem apoio escrito nesta rodada, sem 31 novos controles
+de áudio. Cada
+entrada possui `text`, `guide`, segmentos alinhados `chunks` e uma dica `tip`.
+`getEnglishPronunciation(text)` normaliza caixa, espaços e pontuação final;
+expressões desconhecidas não recebem uma pronúncia inventada. Novas palavras
+ou frases de ensino exigem conteúdo revisado nesse catálogo, além de cobertura
+no teste de conteúdo.
+
+`EnglishPronunciationGuide.tsx` é o componente compartilhado: a forma compacta
+fica junto de alternativas, feedbacks e modelos já revelados. A forma completa
+mostra o apoio e mantém segmentos/dicas sob demanda. A aproximação deve ter
+texto real no HTML, com `lang="pt-BR"`, ao lado do modelo com `lang="en-US"`.
+
+A regra respeita a tarefa. Na verificação de significado, a grafia inglesa e o
+apoio de som podem aparecer sem a tradução que entrega a resposta. Na revisão
+por escrita, **nenhum inglês ou apoio de pronúncia deve aparecer antes de
+consultar o modelo ou acertar**. A cena `File not …` segue a mesma proteção até
+abrir a pista ou completar a palavra. A retomada da Home conserva somente a
+pista em português. Consultar continua sendo ajuda registrada, não um acerto
+independente.
+
+### Dez melhorias concretas desta rodada
+
+1. **Apoio legível em português:** `save` vem acompanhado de `sêiv`; `file`, de
+   `fáil`, mantendo a grafia correta como modelo de escrita.
+2. **Um catálogo e um componente:** fala, situações, oito cenas e revisão usam
+   a mesma fonte; novas expressões não dependem de transliteração automática.
+3. **Frases por partes:** inglês e apoio têm segmentos correspondentes para
+   ajudar a ensaiar uma frase sem perder a relação entre as palavras.
+4. **Dicas específicas sob demanda:** sons como `th`, consoantes finais e
+   sílabas mais fortes recebem uma orientação curta, sem empilhar explicações.
+5. **Orbi com presença de fala:** boca e movimento acompanham eventos reais de
+   início/fim da síntese; não ficam falando durante uma pausa ou após parar.
+6. **Turno do aluno visível:** a fala do Orbi e a vez de repetir têm estados
+   próprios. O personagem não finge escutar nem aprovar a voz do aluno.
+7. **Cenário por capítulo:** palavras e frases têm ambientes/composição
+   distintos; a troca de etapa muda a cena, sem acrescentar vídeo pesado.
+8. **Conteúdo central no celular:** além do contexto de arquivo/editor, a vista
+   se ajusta ao estágio de estudo quando o primeiro modelo inglês é apresentado,
+   ao entrar no modo texto, reouvir só o inglês ou trocar de item no modo texto.
+   Em até 760 px, o enquadramento usa `scrollIntoView`, margem superior de 76 px
+   e `behavior: "instant"`; não acrescenta autoplay nem movimenta o foco por si.
+   O objetivo é manter inglês e apoio de pronúncia juntos na área útil.
+9. **Reouvir só o inglês:** um toque pode repetir a expressão correta sem
+   reiniciar toda a pergunta e o convite em português. No celular, a mesma ação
+   enquadra o estágio para o apoio não ficar perdido abaixo da dobra.
+10. **Percurso consultável e compacto:** mapa, capítulo atual e progresso ajudam
+    a localizar o aluno, mantendo a ação principal antes dos detalhes.
+
+Essas mudanças são critérios de produto da rodada, não uma nota de qualidade,
+uma comprovação de aprendizagem ou uma aprovação do usuário. A inspeção em
+desktop e mobile pode exigir refinamentos antes do fechamento.
+
+A primeira inspeção de capturas mostrou que o ambiente e os controles podiam
+ocupar a vista enquanto o modelo/apoio ficava mais abaixo no celular. O
+ajuste de enquadramento corrige esse fluxo, sem tentar resolver a posição
+reduzindo a pronúncia a texto pequeno ou removendo o cenário. As novas
+execuções verificaram os limites visíveis do inglês e do guia; os resultados
+estão no fechamento de QA desta rodada.
+
+Nas **oito cenas ilustradas**, esta rodada acrescenta cobertura de pronúncia,
+preserva a tarefa e verifica o percurso; **não redesenha integralmente a
+composição anterior**. Um próximo candidato é reduzir a altura de cena/história
+antes das alternativas no mobile, preservando a ilustração útil e o contexto.
+Não tratar a cobertura do apoio como aprovação estética completa dessas telas.
+
+### Limites linguísticos e técnicos
+
+As grafias de apoio são aproximações autorais para um brasileiro iniciante,
+com referência americana. Não são IPA nem representam perfeitamente sons que
+não existem iguais em português. Em `the`, por exemplo, `dâ`/`di` é uma pista;
+a dica ensina a posição da língua, e o áudio continua sendo a referência.
+Vozes de outras variedades podem soar diferentes. O catálogo também não
+corrige uma tentativa de fala e não participa da validação da resposta escrita.
+
+`OrbiSpeechCoach.tsx` usa a arte existente com uma boca animada sobreposta. É
+uma indicação visual do turno de fala, **não sincronização fonema a fonema**,
+um personagem 3D ou captura da voz do aluno. `spokenSpeech.ts` comunica a fala
+real a partir dos eventos da síntese; parar, terminar, falhar ou trocar de tela
+deve retirar esse estado. Movimento reduzido deve ser respeitado.
+
+A rodada usa HTML/CSS, arte existente e síntese do aparelho. Não acrescenta
+API paga, dependência de serviço de animação, endpoint de TTS, gravação,
+microfone, migration ou nova regra de XP. Isso não promete voz offline nem
+remove as condições existentes dos provedores de hospedagem.
 
 ## Roteiro autoral de cinco partes
 
@@ -94,7 +207,8 @@ piloto, sujeitos a revisão com alunos e áudio real.
 | Frase 6 | The build failed | A geração do projeto falhou |
 
 O conteúdo está em `apps/web/src/lib/spokenEnglish.ts`. Cada item tem ID,
-tipo, expressão inglesa, significado português, contexto e cena. Palavras
+tipo, expressão inglesa, significado português, contexto, cena e referência ao
+apoio de pronúncia central. Palavras
 vêm antes das frases no percurso; a seleção permite revisitar itens.
 
 ## Usar o inglês no código — etapa de 13/11
@@ -457,6 +571,72 @@ conferidos após o push no relatório local
 e `d3d9eda` na seção anterior continuam como histórico do incremento de 13/11.
 
 
+<a id="qa-pronuncia-20261114"></a>
+
+## QA da correção de pronúncia e presença — 14/11/2026
+
+Não reutilizar os 718 testes, as capturas ou o deploy `19454cd` da revisão
+escrita como comprovação desta interface. As verificações próprias desta rodada
+foram executadas em série, com o Next parado antes de tipos e build:
+
+| Escopo | Resultado local |
+| --- | --- |
+| Catálogo de pronúncia e conteúdo falado | 13 testes focais aprovados |
+| Runtime de síntese e eventos de fala | 37 testes focais aprovados |
+| Oficina falada, Chromium desktop 1440 × 1000 | 8 verificações e 9 estados capturados; aprovado |
+| Oficina falada, WebKit/iPhone 13 | 8 verificações e 9 estados capturados; aprovado |
+| Oficina falada, Chromium 320 × 740 com toque | 8 verificações e 9 estados capturados; aprovado |
+| Oito cenas, Chromium desktop | 9 verificações e 6 estados capturados; aprovado |
+| Oito cenas, Chromium 320 px | 9 verificações e 6 estados capturados; aprovado |
+| Regressão da fala no desktop | 12 verificações e 7 estados; aprovado |
+| Regressão do uso contextual no desktop | 11 verificações e 5 estados; aprovado |
+| Regressão da revisão escrita no desktop | 13 verificações e 6 estados; aprovado |
+| Suíte Vitest completa, um worker | 731 testes em 71 arquivos aprovados |
+| Contratos de segurança/operação | 9 aprovados |
+| Tipos Next e TypeScript | Aprovados |
+| Lint dos arquivos alterados, rodadas focais | Sem erros ou avisos |
+| Build de produção, incluindo TypeScript | Aprovado |
+
+Os 39 estados dos dois roteiros novos passaram sem violações Axe no escopo,
+overflow, erros de página ou chamadas proibidas. As capturas principais de
+desktop, iPhone emulado e 320 px foram inspecionadas. As oito cenas foram
+concluídas pela interface; o resumo conferiu seis termos com apoio e a consulta
+na palavra ausente não preencheu o campo. As regressões preservaram progresso,
+retomada, cancelamento e o caso de falha de storage.
+
+A primeira execução encontrou rótulos ARIA em elementos genéricos do mapa,
+corrigidos com papéis e item atual explícitos. O teste de iPhone revelou duas
+questões de fluxo: a ação inicial estava baixa e, depois de iniciar, o modelo
+ficava fora da área visível. A reprodução foi trazida para o topo do quadro e
+o enquadramento mobile passou a apresentar inglês e apoio juntos. As novas
+execuções conferiram os limites desses dois elementos, mantendo a cena e sem
+focar o campo ou abrir teclado. Movimento reduzido, ausência de síntese e
+callbacks antigos também foram exercitados; a animação usa eventos simulados
+da API de voz, não uma gravação validada em aparelho físico.
+
+Roteiros e resultados locais ignorados:
+
+- `apps/web/scripts/audit-pronunciation-english.mjs`: oficina de fala, guia,
+  personagem, contexto, revisão e fallback; resultados em
+  `apps/web/test-results/english-pronunciation/`.
+- `apps/web/scripts/audit-english-scenes-pronunciation.mjs`: oito cenas,
+  recuperação e glossário; resultados em
+  `apps/web/test-results/english-scenes-pronunciation/`.
+
+Os dois aceitam `desktop`, `iphone` e `small` e devem rodar em série. Comandos
+estão em [TESTES_AUTOMATIZADOS.md](TESTES_AUTOMATIZADOS.md).
+
+Critérios de conferência: apoio para as 12 expressões e os alvos das oito cenas;
+EN real nos segmentos de áudio; modelo/apoio ausente antes de consulta ou acerto
+na escrita; boca ativa somente durante a fala real; pausa, cancelamento, falha
+e callbacks atrasados; botão de reouvir; troca de capítulo/mapa; movimento
+reduzido; primeira dobra, overflow, toque e contraste em desktop, WebKit/iPhone
+e 320 px; preservação de saves, elegibilidade, rascunho, journal e XP.
+
+Áudio audível, teclado e desempenho em iPhone físico continuam pendentes até
+uma verificação real. Emulação, dublê de síntese e testes de conteúdo não
+comprovam pronúncia, retenção, eficácia pedagógica ou sincronização fonética.
+
 ## Fontes conferidas nesta decisão
 
 Consulta de **13/11/2026**, separada das fontes históricas de 12/11:
@@ -470,3 +650,21 @@ Consulta de **13/11/2026**, separada das fontes históricas de 12/11:
 - [Vercel — Hobby](https://vercel.com/docs/plans/hobby) e
   [Termos — Hobby Plan](https://vercel.com/legal/terms#hobby-plan): condições
   do plano, separadas da decisão de síntese de voz no cliente.
+
+### Referências de pronúncia — consulta de 14/11/2026
+
+A edição das aproximações foi informada por pronúncias americanas do
+[Cambridge: file](https://dictionary.cambridge.org/us/dictionary/english/file),
+[save](https://dictionary.cambridge.org/pronunciation/english/save),
+[the](https://dictionary.cambridge.org/pronunciation/english/the),
+[return](https://dictionary.cambridge.org/pronunciation/english/return) e pelos
+outros verbetes listados no registro local de fontes. As frases e os apoios
+em português são redação autoral; não se copiou áudio de dicionário.
+
+As terminações regulares foram conferidas no
+[British Council](https://learnenglishteens.britishcouncil.org/sites/teens/files/gs_past_simple_-_regular_verbs.pdf),
+e o gesto articulatório de `th` na
+[BBC Learning English](https://downloads.bbc.co.uk/learningenglish/eiam/unit-2/210220_pronunciation_of_th.pdf).
+Essas fontes orientam o conteúdo sonoro; não validam a eficácia das grafias de
+apoio. Fontes, limitações de acesso e convenções ficam em
+`docs/local/english-pronunciation-20261114/content-sources.md`, fora do Git.

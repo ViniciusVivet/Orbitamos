@@ -10,6 +10,10 @@ continuam fora desta implementação. Este documento complementa o
 Em **14/11/2026**, a **Revisão curta por escrita** acrescenta sessões de uma a
 três expressões já praticadas na fala. Está implementada e verificada
 localmente, com QA próprio; os resultados de 13/11 permanecem históricos.
+A correção seguinte de **14/11** torna o apoio de pronúncia em português
+obrigatório e acrescenta presença do Orbi e cena por capítulo. Foi implementada
+e verificada localmente; o QA próprio e a conferência de publicação são separados
+dos resultados anteriores.
 
 ## Decisão implementada em 13/11
 
@@ -22,8 +26,10 @@ aluno registra participação; não comprova pronúncia ou proficiência.
 
 A análise da referência de 7,546 s identificou **duas** falas inglesas, com
 pergunta e convite em português entre elas. O piloto usa essa organização,
-com conteúdo próprio e turno independente ao final; não usa arte, áudio nem
-aproximação aportuguesada do anúncio. Transcrição, intervalos, conteúdo dos
+com conteúdo próprio e turno independente ao final. Na entrega inicial, a
+aproximação escrita em português ficou de fora; em **14/11**, o usuário
+corrigiu essa omissão e tornou esse apoio requisito permanente. A Orbitamos
+não copia arte ou áudio do anúncio e passa a usar aproximações autorais. Transcrição, intervalos, conteúdo dos
 12 itens e pausas estão em [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md).
 
 A entrada é `/estudante/jogos/ingles-em-cena#falar`; a prévia é
@@ -108,6 +114,35 @@ detalha o contrato. As três fontes pedagógicas conferidas em 13/11 continuam
 com sua data original; elas orientam o desenho e não comprovam eficácia desta
 revisão. O [QA de 14/11](METODO_INGLES_ORBI.md#qa-revisao-curta-20261114)
 tem registro próprio, separado do incremento contextual `d3d9eda` e de seus 697 testes.
+
+## Correção de 14/11 — como falar, Orbi e contexto
+
+O modelo de ensino deve combinar inglês correto, significado em português,
+apoio aproximado de pronúncia e áudio em inglês: **save → salvar → sêiv**,
+**file → arquivo → fáil**. O áudio sintetiza `save`/`file`, nunca o apoio escrito.
+Apoios, segmentos e dicas vêm de `englishPronunciation.ts`; todas as telas de
+ensino usam `EnglishPronunciationGuide.tsx`. Novas expressões exigem conteúdo
+revisado no catálogo, sem inventar uma pronúncia quando não houver entrada.
+
+Na verificação de significado, o apoio sonoro pode acompanhar o inglês sem
+revelar a tradução. Na revisão por escrita e na palavra ausente da cena de
+erro, inglês completo e apoio só aparecem quando o aluno consulta a pista/modelo
+ou acerta. A resposta escrita continua sendo a grafia inglesa da aula.
+
+A rodada também trabalha o personagem indicando fala/vez do aluno, cenário
+distinto entre palavras e frases, contexto útil no celular, reouvir somente o
+inglês e percurso compacto. A boca sobreposta do Orbi acompanha os eventos da
+síntese; não é sincronização fonema a fonema, captação da fala ou correção.
+A animação deve parar com a síntese e respeitar movimento reduzido.
+
+**Estado: implementado e verificado localmente.** A [lista de dez melhorias,
+limites e critérios de QA](METODO_INGLES_ORBI.md#apoio-pronuncia-20261114) separa
+esta rodada das entregas anteriores. O [fechamento próprio](METODO_INGLES_ORBI.md#qa-pronuncia-20261114)
+registra 731 testes em 71 arquivos, 9 contratos, tipos, lint, build e auditorias
+de navegador aprovados. A publicação é conferida após o push. Não há nova API paga,
+microfone, migration, sincronização de aparelhos ou XP. A aproximação não é IPA
+e não substitui o modelo de áudio; voz/teclado em aparelho físico e aprendizagem
+continuam dependendo de verificação específica.
 
 ## Leitura da pesquisa histórica
 
