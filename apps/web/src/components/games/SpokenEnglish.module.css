@@ -17,4 +17,5 @@
 .cardCaption { flex-wrap:wrap; }.cardCaption button { min-height:42px; padding:8px 12px; font-size:11px!important; letter-spacing:0; }.footer>.settings:first-child { margin-left:auto; }
 
 .useInvitation { display:flex; align-items:center; justify-content:space-between; gap:18px; border-top:1px solid #c5d2bb; margin-top:20px; padding-top:18px; }.useInvitation>div { display:grid; gap:6px; }.useInvitation strong { font-size:13px; color:#33583f; }.useInvitation span { font-size:11px; line-height:1.7; color:#4c6452; }.useInvitation button { flex-shrink:0; }
+.reviewEntry { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:44px; padding:8px 12px; font-size:11px!important; color:#35563e; background:#e4ebd7; border:1px solid #acbf9f; border-radius:8px; cursor:pointer; touch-action:manipulation; }
 @media(max-width:640px) { .useInvitation { flex-direction:column; align-items:stretch; gap:12px; margin-top:17px; padding-top:15px; }.useInvitation strong { font-size:12px; }.useInvitation button { width:100%; } }

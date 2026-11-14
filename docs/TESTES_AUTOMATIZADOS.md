@@ -138,6 +138,49 @@ TypeScript, passou. Os logs estão no diretório local da rodada.
 CI e publicação devem ser conferidos após o push. Esses checks não comprovam
 áudio audível ou aprendizagem em aparelho físico.
 
+## Revisão curta de inglês — incremento de 14/11/2026
+
+`englishReview.test.ts` cobre fila de um a três itens já praticados, rotação,
+rascunho, consulta ao modelo, validação restrita da expressão da aula,
+normalização, sessão/cursor, retomada, histórico separado, limites e idempotência.
+`academyActivity.test.ts` cobre a retomada `english-review` no endereço exato
+`#falar`, sua prioridade e pista somente em português, sem inflar o catálogo.
+
+```powershell
+node node_modules/vitest/vitest.mjs run src/lib/englishReview.test.ts src/lib/academyActivity.test.ts --maxWorkers=1 --no-file-parallelism
+node scripts/audit-english-review.mjs desktop
+node scripts/audit-english-review.mjs iphone
+node scripts/audit-english-review.mjs small
+```
+
+O roteiro obtém elegibilidade pela interface, sem semear conquistas novas.
+Confere erro, Enter, caixa/pontuação, rascunho e ajuda após recarga/Home, resumo,
+rotação e encerramento/reabertura. Abrir revisão deve cancelar a fala e ignorar
+callbacks atrasados. O cenário desktop de falha em gravações no storage verifica
+preservação em memória da fala e das situações contextuais, sem prometer
+persistência após recarga. Há perfil sem síntese, guarda de microfone, Axe,
+overflow, modelo antes do campo e posição inicial de campo/botão. Perda de foco
+após acerto ajuda o uso no celular; a simulação não comprova o teclado físico
+nem a voz de um iPhone real.
+
+Os dois arquivos focais passaram em 58 testes; a suíte completa passou em
+**718 testes/70 arquivos**, mais **9 contratos**. O TypeScript passou após
+explicitar a existência de uma sessão usada por uma fixture de protótipo; o
+arquivo de teste manteve a mesma verificação de rejeição. O primeiro lint
+identificou uma leitura de ref no render; o snapshot passou a usar estado.
+As rodadas focais de lint dos arquivos alterados passaram sem erros ou avisos.
+
+A revisão passou em desktop (**13 verificações**), WebKit/iPhone (**12**) e
+320 px (**12**), com **seis estados por perfil**, sem violações Axe no escopo,
+overflow, erros de página ou chamadas proibidas. As capturas foram inspecionadas.
+A regressão da fala passou em 12 verificações/7 estados e a de situações em
+11 verificações/5 estados no desktop. No cenário de gravações bloqueadas,
+conquistas de fala e contexto e seus avisos foram preservados em memória.
+O build de produção, incluindo TypeScript, passou. A verificação remota de CI
+e deploy é registrada pelo SHA após o push. Evidências ficam em `apps/web/test-results/english-review/` e
+`docs/local/english-review-20261114/`, fora do Git. Estado e limites em
+[METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md#qa-revisao-curta-20261114).
+
 ## Oficina do Pulso — implementação de 11/11/2026
 
 A aventura opcional acrescenta duas rotas à experiência do Orbi, sem aumentar

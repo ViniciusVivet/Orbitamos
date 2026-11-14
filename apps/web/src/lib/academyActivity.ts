@@ -21,6 +21,7 @@ import { readWorkDeliverySave, WORK_DELIVERY_STARTER_CODE, workDeliveryKey } fro
 import { getIncidentCase, INCIDENT_CASE_IDS, incidentSaveKey, readIncidentSave } from "./workIncident";
 import { englishSpeakingLessons, getSpeakingLesson, readSpeakingSave, speakingSaveKey } from "./spokenEnglish";
 import { englishUseKey, englishUseQuestions, getEnglishUseQuestion, readEnglishUseSave } from "./englishUse";
+import { englishReviewKey, readEnglishReviewSave } from "./englishReview";
 
 export type AcademyActivityItem = {
   id: string; title: string; group: "experience" | "code" | "csharp" | "sql-workshop";
@@ -187,8 +188,22 @@ export function getAcademyActivity(userId: string, read: ReadSave): AcademyActiv
   let separateContinuation: AcademyActivityItem | null = null;
   if (resume) {
     if (resume.href === ENGLISH_SPEAKING_HREF) {
-      const use = readEnglishUseSave(get(englishUseKey(userId)));
-      if (use.active) {
+      const review = readEnglishReviewSave(get(englishReviewKey(userId)));
+      const session = review.active ? review.session : undefined;
+      const use = session ? null : readEnglishUseSave(get(englishUseKey(userId)));
+      if (session) {
+        const current = getSpeakingLesson(session.ids[Math.min(session.cursor, session.ids.length - 1)])!;
+        const practiced = session.results.length > 0 || text(session.draft) || session.consulted;
+        const finished = session.cursor === session.ids.length;
+        // Written recall counts only this saved queue, outside speaking, choices and catalog/XP.
+        separateContinuation = {
+          id: "english-review", title: "Revisão curta de inglês", group: "experience", href: ENGLISH_SPEAKING_HREF,
+          status: finished ? "completed" : practiced ? "in-progress" : "opened",
+          completedUnits: session.results.length, totalUnits: session.ids.length, unit: "expressões nesta revisão", practiced, reviewed: 0, lastAt: resume.updatedAt,
+          detail: `Escrever em inglês · ${current.pt}`,
+          nextHref: ENGLISH_SPEAKING_HREF, nextLabel: finished ? "Ver o resumo da revisão" : "Continuar a revisão curta",
+        };
+      } else if (use?.active) {
         const current = getEnglishUseQuestion(use.current) ?? englishUseQuestions[0];
         const practiced = use.completed.length > 0 || englishUseQuestions.some(question => (use.attempts[question.lessonId] ?? 0) > 0);
         const finished = use.completed.length === englishUseQuestions.length;

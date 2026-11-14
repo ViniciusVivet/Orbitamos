@@ -10,7 +10,8 @@ import { emptyEnglishUseSave, englishUseKey, englishUseQuestions, evaluateEnglis
 import EnglishUseCheck from "./EnglishUseCheck";
 import s from "./SpokenEnglish.module.css";
 
-type Props = { userId: string; onBackHref?: string };
+export type EnglishStudySnapshot = { speaking: SpeakingSave; contextual: EnglishUseSave; speakingUnsaved?: boolean; contextualUnsaved?: boolean };
+type Props = { userId: string; onBackHref?: string; initialSave?: EnglishStudySnapshot; onReview?: (snapshot: EnglishStudySnapshot) => void };
 type Phase = "idle" | "meaning" | "model" | "together" | "your-turn";
 const cues: Record<Phase, string> = { idle: "Vamos ouvir e repetir?", meaning: "Primeiro, o significado.", model: "Ouça o modelo em inglês.", together: "Agora, fale junto com o Orbi.", "your-turn": "Sua vez. Repita sozinho, no seu ritmo." };
 
@@ -19,7 +20,7 @@ function CodeContext({ scene }: { scene: SpeakingScene }) {
   return <div className={s.editorScene} aria-label="Um exemplo de arquivo e mensagem no contexto de programação"><div className={s.editorTab}><FileCode2 size={15}/><span>script.js</span><i/></div><pre><span>console</span>.log(<b>&quot;Hello, Orbi!&quot;</b>);</pre><div className={s.editorResult} data-error={scene === "error" || scene === "build"}>{scene === "save" ? <><Check size={16}/> Saved · arquivo salvo</> : scene === "run" ? <><Play size={16}/> Hello, Orbi!</> : scene === "error" ? "Error: file not found" : scene === "test" ? <><Check size={16}/> The test passed</> : scene === "build" ? "The build failed" : <><Code2 size={16}/> Código dentro de um arquivo</>}</div></div>;
 }
 
-export default function SpokenEnglish({ userId, onBackHref = "/estudante/jogos" }: Props) {
+export default function SpokenEnglish({ userId, onBackHref = "/estudante/jogos", initialSave, onReview }: Props) {
   const [save, setSave] = useState<SpeakingSave>(emptySpeakingSave);
   const latest = useRef(save);
   const [useSave, setUseSave] = useState<EnglishUseSave>(emptyEnglishUseSave);
@@ -75,9 +76,15 @@ export default function SpokenEnglish({ userId, onBackHref = "/estudante/jogos" 
     queueMicrotask(() => {
       if (!active) return;
       let value = emptySpeakingSave();
-      try { value = readSpeakingSave(localStorage.getItem(speakingSaveKey(userId))); } catch { setStorageError(true); }
+      let speakingUnsaved = initialSave?.speakingUnsaved === true;
+      try { value = readSpeakingSave(localStorage.getItem(speakingSaveKey(userId))); } catch { speakingUnsaved = true; }
+      if (initialSave) value = mergeSpeakingSave(initialSave.speaking, value);
+      setStorageError(speakingUnsaved);
       let contextual = emptyEnglishUseSave();
-      try { contextual = readEnglishUseSave(localStorage.getItem(englishUseKey(userId))); } catch { setUseStorageError(true); }
+      let contextualUnsaved = initialSave?.contextualUnsaved === true;
+      try { contextual = readEnglishUseSave(localStorage.getItem(englishUseKey(userId))); } catch { contextualUnsaved = true; }
+      if (initialSave) contextual = mergeEnglishUseSave(initialSave.contextual, contextual);
+      setUseStorageError(contextualUnsaved);
       latestUse.current = contextual; setUseSave(contextual); setCheckingId(contextual.active ? contextual.current : null);
       latest.current = value; setSave(value); setLoadedUser(userId); setCapable(supported); refreshVoices();
     });
@@ -102,7 +109,7 @@ export default function SpokenEnglish({ userId, onBackHref = "/estudante/jogos" 
     window.addEventListener("pagehide", interrupt);
     window.addEventListener("storage", receive);
     return () => { active = false; invalidate(); runningRef.current = false; speech.current?.dispose(); speech.current = null; synth?.removeEventListener("voiceschanged", refreshVoices); document.removeEventListener("visibilitychange", visibility); window.removeEventListener("pagehide", interrupt); window.removeEventListener("storage", receive); };
-  }, [userId]);
+  }, [userId, initialSave]);
 
   function stop(message?: string) {
     generation.current++; speech.current?.stop(); runningRef.current = false;
@@ -155,7 +162,7 @@ export default function SpokenEnglish({ userId, onBackHref = "/estudante/jogos" 
   </section>;
 
   return <section className={s.root} data-spoken-english data-speaking-lesson-id={lesson.id} data-speaking-mode={manual ? "text" : "voice"} data-speaking-phase={phase}>
-    <header className={s.header}><Link href={onBackHref}><ArrowLeft size={14}/> Explorar atividades</Link><span>ORBITAMOS · OUVIR, REPETIR E USAR</span></header>
+    <header className={s.header}><Link href={onBackHref}><ArrowLeft size={14}/> Explorar atividades</Link>{onReview && save.completed.length > 0 ? <button className={s.reviewEntry} data-speaking-review-open onClick={() => onReview({ speaking: latest.current, contextual: latestUse.current, speakingUnsaved: storageError, contextualUnsaved: useStorageError })}><RotateCcw size={14}/> Revisão curta</button> : <span>ORBITAMOS · OUVIR, REPETIR E USAR</span>}</header>
     {finished && !reviewing ? <div className={s.finish}><Image src="/orbi-tech.png" width={150} height={175} alt="Orbi acompanha sua prática"/><p className={s.eyebrow}>12 ITENS PRATICADOS</p><h1 ref={heading} tabIndex={-1}>Você praticou palavras e frases de código.</h1><p>Agora encontre essas palavras em imagens, mensagens e situações de programação.</p><p className={s.small}>Este registro é de prática declarada. Não é uma nota automática de pronúncia.</p><div className={s.finishActions}><button className={s.primary} data-speaking-use-open onClick={() => openUse((englishUseQuestions.find(item => !useSave.completed.includes(item.lessonId)) ?? englishUseQuestions[0]).lessonId)}>{useSave.completed.length === englishUseQuestions.length ? "Revisar situações" : "Usar o inglês em uma situação"}<ArrowRight size={17}/></button><a className={s.secondary} href="#">Praticar com imagens e código <ArrowRight size={17}/></a><button className={s.secondary} onClick={() => { setReviewing(true); choose(englishSpeakingLessons[0].id); }}>Repetir a prática <RotateCcw size={17}/></button></div></div> : <>
       <div className={s.titleRow}><div><p className={s.eyebrow}>{lesson.kind === "word" ? "PRIMEIRO, PALAVRAS" : "AGORA, FRASES"} · {groupIndex + 1} DE {group.length}</p><h1 ref={heading} tabIndex={-1}>Fale inglês com o Orbi.</h1></div><span className={s.count}>{save.completed.length}/{englishSpeakingLessons.length}<small>práticas</small></span></div>
       <progress className={s.progress} max={englishSpeakingLessons.length} value={save.completed.length} aria-label="Práticas registradas"/>

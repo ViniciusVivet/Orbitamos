@@ -43,11 +43,11 @@ function WorkshopDrawing({ scene, solved, recall = false }: { scene: EnglishScen
   </svg>;
 }
 
-const SpokenEnglish = dynamic(() => import("./SpokenEnglish"), { loading: () => <p role="status">Preparando o inglês falado…</p> });
+const EnglishWorkshop = dynamic(() => import("./EnglishWorkshop"), { loading: () => <p role="status">Preparando o inglês falado…</p> });
 const subscribeEnglishMode = (listener: () => void) => { window.addEventListener("hashchange", listener); return () => window.removeEventListener("hashchange", listener); };
 export default function CodeEnglish(props: Props) {
   const speaking = useSyncExternalStore(subscribeEnglishMode, () => window.location.hash === ENGLISH_SPEAKING_HASH, () => false);
-  return <><nav className={styles.methods} aria-label="Maneiras de praticar inglês"><a href="#" aria-current={!speaking ? "page" : undefined}>Imagens e código</a><a href={ENGLISH_SPEAKING_HASH} aria-current={speaking ? "page" : undefined}>Ouvir e repetir com o Orbi</a></nav>{speaking ? <SpokenEnglish key={props.userId} userId={props.userId} onBackHref={props.onBackHref}/> : <EnglishScenes {...props}/>}</>;
+  return <><nav className={styles.methods} aria-label="Maneiras de praticar inglês"><a href="#" aria-current={!speaking ? "page" : undefined}>Imagens e código</a><a href={ENGLISH_SPEAKING_HASH} aria-current={speaking ? "page" : undefined}>Ouvir e repetir com o Orbi</a></nav>{speaking ? <EnglishWorkshop key={props.userId} userId={props.userId} onBackHref={props.onBackHref}/> : <EnglishScenes {...props}/>}</>;
 }
 
 function EnglishScenes({ userId, onComplete, onBackHref = "/estudante/jogos" }: Props) {

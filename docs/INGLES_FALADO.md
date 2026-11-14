@@ -7,6 +7,9 @@ está implementada no repositório, com QA local e verificação de publicação
 registrados separadamente. Microfone, gravação, transcrição e avaliação de pronúncia
 continuam fora desta implementação. Este documento complementa o
 [Simulador de profissões](SIMULADOR_PROFISSOES.md).
+Em **14/11/2026**, a **Revisão curta por escrita** acrescenta sessões de uma a
+três expressões já praticadas na fala. Está implementada e verificada
+localmente, com QA próprio; os resultados de 13/11 permanecem históricos.
 
 ## Decisão implementada em 13/11
 
@@ -67,6 +70,44 @@ conferidos em 13/11. Aplicar esses princípios ao Orbi é uma inferência de
 desenho: os estudos não validam o anúncio nem este piloto e não demonstram
 que a etapa supera a repetição oral. O método detalha essas diferenças, o
 contrato dos saves e o [QA separado do incremento](METODO_INGLES_ORBI.md).
+
+## Continuidade de 14/11 — Revisão curta por escrita
+
+**Revisão curta** aparece no cabeçalho depois da primeira participação falada.
+O aluno recebe a pista em português e tenta escrever uma das expressões da
+aula, podendo consultar o modelo. Não há novo vocabulário: cada fila reúne
+de um a três itens somente de `spoken.completed`, priorizando os ainda sem
+revisão e depois o registro `history.lastAt` mais antigo, com desempate pela
+ordem fixa do conteúdo. Não há cálculo de intervalos, vencimentos ou agenda
+de repetição espaçada.
+
+A comparação normaliza NFKC, caixa, espaços e pontuação final `.`, `!` e `?`;
+aceita a expressão praticada, sem avaliar todas as traduções possíveis. O erro
+permite tentar novamente. O acerto registra o item uma vez e se houve consulta
+ao modelo, mantém o feedback e aguarda avanço manual. O resumo distingue os
+itens escritos com e sem abrir o modelo nesta revisão; não mede pronúncia,
+fluência ou retenção posterior.
+
+O save separado `orbitamos-english-review-v1-<tipo>-<conta codificada>` guarda
+estado ativo, fila, cursor, rascunho, consulta, resultados e histórico por item.
+A recarga retoma uma sessão ativa válida, inclusive o resumo final. Na Home,
+essa retomada tem prioridade sobre uso em contexto e fala no endereço exato
+`#falar`, mostra o progresso de uma a três expressões e somente a pista em
+português. Fechar deixa a revisão inativa e preserva o histórico. Não modifica
+o catálogo de seis experiências, os saves anteriores, journal ou XP.
+
+`EnglishWorkshop.tsx` é carregado apenas em `#falar` e alterna fala/contexto e
+revisão. A saída da prática de fala cancela a síntese e seus callbacks atrasados.
+O componente conserva em memória os estados de participação e escolhas
+contextuais durante essa troca se o armazenamento bloquear a escrita. A falha
+continua visível; não há garantia de recuperação depois de recarregar ou fechar
+nessa condição. Não há nova API paga, microfone ou sincronização entre aparelhos.
+
+O [método](METODO_INGLES_ORBI.md#revisao-curta-por-escrita)
+detalha o contrato. As três fontes pedagógicas conferidas em 13/11 continuam
+com sua data original; elas orientam o desenho e não comprovam eficácia desta
+revisão. O [QA de 14/11](METODO_INGLES_ORBI.md#qa-revisao-curta-20261114)
+tem registro próprio, separado do incremento contextual `d3d9eda` e de seus 697 testes.
 
 ## Leitura da pesquisa histórica
 
@@ -240,7 +281,8 @@ de aulas automaticamente. Não criar novo item da sidebar apenas para isso.
 Esses critérios da proposta com captura/reconhecimento não foram executados
 na rodada de pesquisa. O QA do piloto sem microfone é tratado separadamente
 em [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md), com os resultados históricos
-do piloto separados do registro próprio da etapa contextual.
+do piloto separados dos registros próprios da etapa contextual e da revisão
+escrita de 14/11.
 
 ## Ordem proposta em 12/11 e continuidade
 
@@ -256,7 +298,8 @@ lifecycle completo. A decisão de 13/11 implementou outro recorte: 12 itens com
 síntese e participação declarada, sem captura ou correção. Gravação,
 reconhecimento e avaliação dedicada permanecem possibilidades futuras, sem
 data de entrega. A etapa seguinte de 13/11 acrescenta escolhas de sentido em
-contexto para o mesmo conteúdo, sem reabrir o escopo de captura ou correção.
+contexto para o mesmo conteúdo, e a de 14/11 acrescenta revisão escrita sem
+reabrir o escopo de captura ou correção de pronúncia.
 Reabrir esta pesquisa quando mudarem navegador, APIs, modelo, fornecedor ou
 proposta de feedback.
 

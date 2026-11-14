@@ -8,6 +8,9 @@ cursos/chat em desktop e WebKit. Evidências de publicação
 ficam registradas separadamente em [INFRA_ATUAL.md](INFRA_ATUAL.md).
 O piloto de inglês falado foi acrescentado em 13/11/2026 e está descrito abaixo;
 essa adição não renova as verificações históricas nem comprova publicação.
+A coordenação de fala/contexto e revisão escrita foi acrescentada em
+14/11/2026; tem QA próprio, separado do incremento contextual publicado em
+`d3d9eda` e dos 697 testes históricos dessa rodada.
 
 ## Visão geral
 
@@ -90,8 +93,9 @@ Detalhes: [STUDIO_E_ORBI_CAPITULO_01.md](STUDIO_E_ORBI_CAPITULO_01.md).
 
 ### Inglês falado — piloto de 13/11/2026
 
-`CodeEnglish.tsx` mantém as oito cenas existentes e carrega `SpokenEnglish.tsx`
-sob demanda quando o hash é exatamente `#falar`. O endereço real é
+`CodeEnglish.tsx` mantém as oito cenas existentes e, desde 14/11, carrega
+`EnglishWorkshop.tsx` sob demanda quando o hash é exatamente `#falar`. Esse
+componente alterna `SpokenEnglish.tsx` e a revisão escrita. O endereço real é
 `/estudante/jogos/ingles-em-cena#falar`; a prévia correspondente é
 `/dev/academy-preview?activity=english#falar`. Não há novo item da sidebar.
 
@@ -133,7 +137,8 @@ chamador. Erros não retiram acertos prévios.
 Abrir uma situação cancela a voz e grava `active: true`; voltar ou seguir para
 a fala do próximo item grava `false`. A recarga com estado ativo reabre a mesma
 pergunta sem selecionar resposta nem reproduzir áudio. Na Home, somente uma
-retomada exata de `#falar` lê essa chave: um check ativo projeta `english-use`,
+retomada exata de `#falar` lê essa chave: na ausência de revisão escrita ativa,
+um check ativo projeta `english-use`,
 com escolhas corretas de 0/12 a 12/12; com estado inativo, permanece a projeção
 `spoken-english`. Ambos ficam fora do catálogo de seis experiências e de seus
 agregados/XP. Nenhum endpoint ou serviço pago novo foi adicionado.
@@ -141,6 +146,50 @@ agregados/XP. Nenhum endpoint ou serviço pago novo foi adicionado.
 Estado, fundamentos e fechamento da rodada estão em
 [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md). Evidência local e publicação
 remota devem ser conferidas separadamente.
+
+### Revisão curta por escrita — incremento de 14/11/2026
+
+O cabeçalho da prática oferece revisão após pelo menos uma participação falada.
+`englishReview.ts` seleciona de um a três IDs conhecidos somente de
+`spoken.completed`: primeiro os sem histórico de revisão e depois o menor
+`history.lastAt`, com desempate pela ordem do conteúdo. Reutiliza as mesmas
+12 expressões, sem algoritmo de repetição espaçada, cálculo de vencimentos
+ou agendamento.
+
+`EnglishReview.tsx` começa pela pista em português e recebe a expressão escrita.
+O modelo inglês fica disponível sob demanda. A comparação normaliza NFKC,
+caixa, espaços e sinais finais `.`, `!` e `?`; só avalia a expressão praticada.
+Um acerto registra o item uma vez na sessão, com a indicação de consulta ao
+modelo, e espera avanço manual. O resumo conta itens com e sem essa consulta
+nesta revisão. Não avalia fala, traduções em geral, fluência ou retenção.
+
+`englishReviewKey(conta)` gera
+`orbitamos-english-review-v1-<tipo>-<conta codificada>`, separado de fala,
+contexto e jogo antigo. O save v1 contém `active`, `session?` e `history`.
+A sessão guarda `ids`, `cursor`, `draft`, `consulted` e resultados sequenciais
+`{ lessonId, helped }`; o histórico por item guarda `reviews`, `helped` e
+`lastAt`. Leitura e mesclagem validam IDs, limites e coerência da sessão, sem
+recontar respostas persistidas. Sessão inválida fica inativa e entradas válidas
+do histórico permanecem.
+
+Recarga com revisão ativa e sessão válida reabre a fila, rascunho e consulta,
+inclusive um acerto aguardando avanço ou o resumo final. Fechar deixa
+`active: false`. Na retomada exata `#falar`, a Home prioriza `english-review`
+antes de `english-use` e `spoken-english`, mostra resultados da sessão sobre
+o tamanho da fila e somente a pista portuguesa. A conclusão exige o avanço
+final do cursor. Essas projeções não acrescentam uma sétima experiência e
+não alteram journal, agregados ou XP.
+
+`EnglishWorkshop.tsx` conserva em memória `EnglishStudySnapshot`, com
+`speaking` e `contextual`, ao desmontar e reabrir a prática durante a revisão.
+Isso preserva ambos durante essa troca quando a escrita no armazenamento está
+bloqueada; a falha é exibida e a recuperação após recarregar ou fechar não é
+garantida. A revisão também continua em memória nessa condição. Ao desmontar
+a fala, o controlador cancela TTS e invalida callbacks atrasados. Não há novo
+endpoint, API paga, microfone, áudio armazenado ou sincronização de aparelhos.
+
+O [método e QA próprio](METODO_INGLES_ORBI.md) separam implementação, evidência
+da rodada de 14/11 e resultados históricos de 13/11.
 
 ## Autorização
 

@@ -29,6 +29,14 @@ partes, os fundamentos pedagógicos e os saves estão em
 [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md). O QA local deste incremento contextual está registrado no método; a verificação
 remota da publicação tem evidência separada após o push.
 
+Em **14/11/2026**, a **Revisão curta por escrita** acrescenta sessões de uma a
+três das mesmas expressões, somente após participação falada. O aluno recebe a
+pista em português, escreve e pode consultar o modelo; fila, rascunho, consulta
+e histórico têm save próprio e retomada pela Home. O resumo descreve esta
+sessão, sem medir pronúncia ou retenção e sem XP. O [método](METODO_INGLES_ORBI.md)
+registra o QA próprio de 14/11 e a conferência de publicação separadamente dos
+697 testes e da publicação contextual `d3d9eda` de 13/11.
+
 Os guias abaixo separam o estado implementado, as decisões de produto,
 a operação e os registros históricos. Datas antigas em auditorias são mantidas
 quando descrevem uma execução específica.
@@ -70,8 +78,8 @@ quando descrevem uma execução específica.
 | [EVOLUCAO_ENTREGA_ORBI.md](EVOLUCAO_ENTREGA_ORBI.md) | Oficina do Pulso, Bloco B implementado em 12/11, compatibilidade, experimentos encerrados e ponto de continuidade/QA |
 | [SIMULADOR_PROFISSOES.md](SIMULADOR_PROFISSOES.md) | Protótipo DevOps: dois casos de conexão e fase de esteira/publicação, saves separados, retomada, QA e plano de expansão |
 | [PESQUISA_ROTINAS_TECH.md](PESQUISA_ROTINAS_TECH.md) | Pesquisa inicial de 12/11: famílias, contextos, tarefas e fontes profissionais; não é catálogo já entregue |
-| [INGLES_FALADO.md](INGLES_FALADO.md) | Pesquisa de 12/11 preservada; piloto de síntese/participação e nova etapa opcional de escolhas em contexto, sem captura/transcrição |
-| [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md) | Cinco partes PT/EN, 12 expressões e verificações contextuais, evidências e limites pedagógicos, saves separados, custo e QA histórico/novo |
+| [INGLES_FALADO.md](INGLES_FALADO.md) | Pesquisa de 12/11 preservada; síntese/participação, escolhas em contexto e revisão escrita de 14/11, sem captura/transcrição |
+| [METODO_INGLES_ORBI.md](METODO_INGLES_ORBI.md) | Cinco partes PT/EN, mesmas 12 expressões, contexto e revisão escrita de 1–3 itens; saves, retomada, limites e QA por rodada |
 
 ## Direção visual e páginas comerciais
 

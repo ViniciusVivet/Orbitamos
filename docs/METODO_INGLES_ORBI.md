@@ -1,11 +1,15 @@
 # Método de inglês com o Orbi
 
-Decisão e implementação em **13/11/2026**. O piloto de ouvir e repetir foi
+Decisão inicial e implementação em **13/11/2026**. O piloto de ouvir e repetir foi
 publicado no commit `d798868`; o QA dessa entrega permanece registrado como
 histórico abaixo. A etapa seguinte, **Usar o inglês no código**, acrescenta
 escolhas de significado em contexto às mesmas 12 expressões. Está implementada
 no repositório, com fluxo e layout verificados localmente. A verificação remota
 de publicação é registrada separadamente no fechamento.
+Em **14/11/2026**, a **Revisão curta por escrita** acrescenta tentativas de
+lembrar de uma a três dessas expressões a partir da pista em português. Está
+implementada e verificada localmente, com registro próprio de QA. A publicação
+remota é conferida separadamente; os resultados de 13/11 permanecem históricos.
 Nenhuma dessas verificações atesta qualidade de áudio em aparelho físico ou
 aprendizagem. A pesquisa inicial de 12/11 permanece em
 [INGLES_FALADO.md](INGLES_FALADO.md).
@@ -130,6 +134,42 @@ O conteúdo e a correção estão em `apps/web/src/lib/englishUse.ts`; a interfa
 em `apps/web/src/components/games/EnglishUseCheck.tsx`. Não foi acrescentada API
 de voz, microfone, gravação ou serviço pago para esta etapa.
 
+<a id="revisao-curta-por-escrita"></a>
+
+## Revisão curta por escrita — etapa de 14/11
+
+Depois de registrar participação em pelo menos um item falado, o aluno encontra
+**Revisão curta** no cabeçalho da prática. A revisão usa de uma a três expressões
+do mesmo conjunto de 12, escolhidas somente entre os IDs de `spoken.completed`.
+Uma escolha contextual correta, sozinha, não torna um item elegível. A fila
+prioriza os itens ainda sem histórico de revisão; depois, os de `history.lastAt`
+mais antigo. Empates seguem a ordem fixa do conteúdo. Essa seleção é
+determinística; não calcula intervalo, vencimento ou agenda e não implementa
+um algoritmo de repetição espaçada.
+
+Cada item começa com a pista em português e um campo vazio para escrever a
+palavra ou frase praticada. A expressão inglesa não aparece antes da tentativa,
+a menos que o aluno abra **Ver modelo**. Nesse caso, o apoio aparece acima do
+campo e a consulta fica registrada para este item. O corretor compara apenas
+com a expressão da aula: normaliza Unicode NFKC, maiúsculas/minúsculas, espaços
+nas extremidades e entre palavras e os sinais finais `.`, `!` e `?`. Não avalia
+todas as traduções possíveis nem corrige inglês geral.
+
+Uma resposta diferente permite tentar de novo ou consultar o modelo e não
+registra acerto. A resposta correspondente registra uma única conclusão para
+o item na sessão, com `helped` indicando se o modelo foi consultado. O feedback
+fica visível, o campo deixa de receber edição e o foco sai dele; o aluno avança
+manualmente em **Próxima expressão** ou **Ver como foi**. Conferir novamente,
+recarregar ou avançar não deve contar a mesma resposta outra vez.
+
+O resumo final distingue os itens feitos **sem abrir o modelo** e **com apoio
+do modelo nesta revisão**. Esses números descrevem o uso do apoio dentro da
+sessão, inclusive após novas tentativas; não são medida de pronúncia, fluência,
+retenção posterior ou domínio. **Outra revisão curta** escolhe uma nova fila
+com os mesmos critérios. Não há vocabulário novo, microfone, gravação, serviço
+pago ou XP nesta etapa. O domínio está em `englishReview.ts`; a tela, em
+`EnglishReview.tsx`, sob coordenação de `EnglishWorkshop.tsx`.
+
 ## Princípios pedagógicos e limites da evidência
 
 Fontes primárias conferidas em **13/11/2026** orientam a decisão de acrescentar
@@ -154,7 +194,9 @@ A aplicação desses resultados ao Orbi é uma **inferência de desenho**, não
 validação do anúncio, deste roteiro de áudio ou da eficácia do aplicativo.
 Os experimentos não compararam este piloto com repetição oral. Uma resposta
 imediata entre três opções pode ocorrer por reconhecimento ou acaso, e uma
-nova tentativa depois da pista também contém apoio. Para investigar retenção,
+nova tentativa depois da pista também contém apoio. A revisão escrita de 14/11
+acrescenta produção da expressão e separa a consulta ao modelo nesta sessão;
+isso não transforma esses registros em evidência de retenção. Para investigá-la,
 seria necessário observar uma tentativa posterior sem o modelo e definir um
 procedimento próprio. Essa medição ainda não foi implementada nem executada.
 
@@ -204,23 +246,52 @@ ativo nem a elegibilidade da Orbitamos e não autoriza alteração de plano.
   não são salvos. **Voltar à fala** e **Próximo item** deixam `active: false`.
   A normalização aceita apenas itens conhecidos; a mesclagem preserva os
   acertos anteriores. Falha de armazenamento é informada separadamente.
+- `englishReviewKey(conta)` gera
+  `orbitamos-english-review-v1-<tipo>-<conta codificada>`, distinguindo, por exemplo,
+  uma conta numérica de outra textual com os mesmos caracteres. O save guarda
+  `{ version: 1, active, session?, history }`. A sessão contém a fila fixa `ids`,
+  `cursor`, `draft`, `consulted` e os `results` sequenciais `{ lessonId, helped }`.
+  O histórico por item contém `reviews`, `helped` e `lastAt`; ele não aumenta a
+  elegibilidade além da participação falada. O leitor limita o tamanho e aceita
+  apenas uma sessão coerente com um a três IDs conhecidos. Uma sessão inválida
+  deixa de estar ativa, preservando as entradas válidas do histórico.
+- A revisão ativa com sessão válida retoma a mesma fila, campo e consulta ao
+  modelo depois de recarregar, inclusive o acerto aguardando avanço ou o resumo
+  final. **Voltar à fala** deixa `active: false` e conserva a sessão; reabrir
+  uma fila inacabada mantém seu estado se todos os itens continuarem elegíveis.
+  Uma sessão concluída só muda de fila ao começar outra revisão.
 - O save antigo `orbitamos-english-v1-<conta>`, o journal e o XP são preservados.
   A prática oral não completa as oito cenas, não aumenta o catálogo de seis
   experiências e não entra nos agregados como outra atividade concluída.
-  As escolhas contextuais também não concedem XP nem mudam esses registros.
+  As escolhas contextuais e a revisão escrita também não concedem XP nem mudam
+  esses registros.
 - A Home projeta uma retomada separada somente se o índice aponta para o
-  endereço exato com `#falar`. Com `active: true`, a retomada `english-use`
-  mostra os acertos contextuais e reabre a situação atual. Caso contrário,
+  endereço exato com `#falar`. Uma revisão ativa com sessão válida tem prioridade:
+  `english-review` mostra `results.length` de `ids.length` **expressões nesta
+  revisão**, com pista somente em português, sem revelar o modelo inglês. O
+  status só fica concluído após o avanço final (`cursor === ids.length`), mesmo
+  que a última resposta já tenha sido registrada. Na ausência dessa revisão,
+  `english-use` ativo mostra os acertos contextuais; caso contrário,
   `spoken-english` mostra de 0/12 a 12/12 participações na fala. A Home não lê
-  esses saves para outras retomadas ou rotas sem o hash exato.
+  essas chaves para outras retomadas ou rotas sem o hash exato.
 - Depois de 12 itens, a tela final oferece usar o inglês em uma situação,
   repetir a prática ou abrir a atividade anterior de imagens e código na
   rota-base. A etapa contextual continua no modo `#falar`.
 
-Os módulos não acessam APIs do navegador ao serem importados. A UI e a voz
-são carregadas no cliente; `spokenSpeech.ts` concentra fila, seleção de voz e
-cancelamento. O save é local ao navegador e à conta, sem sincronização entre
-aparelhos. Falha de armazenamento deve permanecer visível ao aluno.
+Os módulos não acessam APIs do navegador ao serem importados. `CodeEnglish.tsx`
+carrega `EnglishWorkshop.tsx` sob demanda apenas em `#falar`; esse componente
+alterna a prática de fala/contexto e a revisão, sem novo item na sidebar.
+Ao desmontar a prática de fala para abrir a revisão, o controlador cancela TTS
+e invalida callbacks atrasados. `spokenSpeech.ts` concentra fila, seleção de
+voz e cancelamento.
+
+O wrapper mantém em memória o `EnglishStudySnapshot`, com os estados `speaking`
+e `contextual`, para preservar os dois ao abrir e fechar a revisão mesmo quando
+o navegador bloqueia a escrita no armazenamento. A revisão também continua em
+memória e mostra a falha de persistência. Essa proteção vale durante a tela
+aberta: recarregar ou fechar com gravação bloqueada pode perder o estado que
+não foi salvo. Os saves são locais ao navegador e à conta, sem sincronização
+entre aparelhos.
 
 ## Continuidade do dicionário de programação
 
@@ -237,10 +308,11 @@ não conteúdo já disponível:
    recuperação, usando o contexto das missões de trabalho da Academy.
 
 Cada conjunto deve passar de palavra a frase e depois a uso em contexto. A
-etapa opcional de 13/11 inicia essa passagem com as mesmas 12 expressões, sem
-entregar os conjuntos futuros acima. Repetir o som e escolher um significado
-são registros diferentes; nenhum deles comprova compreensão geral ou uso
-independente. Antes de ampliar o catálogo, conferir voz e ritmo em aparelhos
+etapa opcional de 13/11 inicia essa passagem e a revisão escrita de 14/11
+acrescenta uma tentativa de lembrar das mesmas 12 expressões, sem entregar os
+conjuntos futuros acima. Repetir o som, escolher um significado e escrever a
+expressão são registros diferentes; nenhum deles comprova compreensão geral
+ou uso independente. Antes de ampliar o catálogo, conferir voz e ritmo em aparelhos
 reais e observar um iniciante usando os 12 itens e as situações. Registrar as
 dificuldades neste documento para que a próxima rodada continue do resultado
 observado.
@@ -295,6 +367,9 @@ Comandos e escopo em [TESTES_AUTOMATIZADOS.md](TESTES_AUTOMATIZADOS.md).
 
 ## QA do incremento de uso em contexto — 13/11/2026
 
+Registro histórico do incremento publicado em `d3d9eda`. Os resultados abaixo
+não cobrem a revisão escrita de 14/11 nem as mudanças de coordenação da tela.
+
 | Verificação | Resultado local |
 | --- | --- |
 | Suíte Vitest completa, um worker | 697 testes em 69 arquivos aprovados |
@@ -333,6 +408,53 @@ pelo SHA após o push; o relatório remoto fica em
 voz em aparelhos físicos e a observação de aprendizagem com iniciantes continuam
 pendentes. Síntese simulada, múltipla escolha e testes técnicos não demonstram
 pronúncia correta, retenção ou eficácia pedagógica do produto.
+
+
+<a id="qa-revisao-curta-20261114"></a>
+
+## QA da revisão curta por escrita — 14/11/2026
+
+| Verificação | Resultado local |
+| --- | --- |
+| Core e retomada da Home | 58 testes focais aprovados |
+| Chromium desktop 1440 × 1000 | 13 verificações; 6 estados capturados |
+| WebKit/iPhone 13 | 12 verificações; 6 estados capturados |
+| Chromium com toque, 320 × 740 | 12 verificações; 6 estados capturados |
+| Regressão da fala no desktop | 12 verificações; 7 estados capturados |
+| Regressão das situações no desktop | 11 verificações; 5 estados capturados |
+| Suíte Vitest completa, um worker | 718 testes em 70 arquivos aprovados |
+| Contratos de segurança/operação | 9 aprovados |
+| Tipos Next e TypeScript | Aprovados com servidor local parado |
+| Lint dos arquivos alterados (rodadas focais) | Sem erros ou avisos após os ajustes |
+| Build de produção, incluindo TypeScript | Aprovado |
+
+As capturas reais foram inspecionadas. Campo e botão de conferência couberam
+na primeira dobra dos três perfis; o modelo consultado ficou antes do campo.
+Os 18 estados da revisão passaram sem violações Axe no escopo novo, overflow,
+erros de página ou chamadas proibidas. A remoção de foco após acerto foi
+verificada no DOM; o teclado físico de um iPhone não foi simulado.
+
+As participações que dão elegibilidade e as respostas foram obtidas pela
+interface. O roteiro inclui erro sem revelar o modelo, Enter, caixa/pontuação,
+rascunho e modelo após recarga/Home, fila e rotação, resumo com/sem consulta,
+encerramento/reabertura, ausência de síntese, cancelamento de fala e callbacks
+atrasados. Os saves anteriores, contexto, journal e XP foram preservados.
+
+Na falha simulada de gravações, a fala e um acerto contextual permaneceram em
+memória ao entrar e sair da revisão. O aviso de que o salvamento falhou também
+permaneceu visível no retorno: não se promete persistência após recarga. O
+snapshot usa estado React e inclui os dois registros e seus avisos; o lint
+inicial identificou uma leitura de ref no render, corrigida antes dos testes.
+
+A conta fixa da prévia não exercita troca real de usuário autenticado. Chaves,
+normalização, sessão e história são cobertas por testes unitários. Os resultados
+não demonstram fluência, retenção após intervalo ou eficácia do produto.
+
+Evidências ficam em `apps/web/test-results/english-review/` e
+`docs/local/english-review-20261114/`, fora do Git. CI, commit e deploy são
+conferidos após o push no relatório local
+`docs/local/english-review-20261114/production-verification.json`. Os 697 testes
+e `d3d9eda` na seção anterior continuam como histórico do incremento de 13/11.
 
 
 ## Fontes conferidas nesta decisão
