@@ -21,6 +21,17 @@ inteiro nem teste do teclado físico de iPhone. A prévia `/dev/*` não é publi
 Resultados desta rodada e publicação: [Evolução da formação](EVOLUCAO_FORMACAO_ACADEMY.md).
 Os registros anteriores abaixo continuam históricos.
 
+### Mapa de carreira C# — Aluno 0
+
+`node scripts/audit-csharp-career-map.mjs` usa a mesma prévia e perfis isolados
+para conferir oito estações, disponibilidade, tarefa/critério/referência, rotina
+opcional de IA, índice de âncoras e abertura do módulo real de condições. Também
+confere a volta ao mapa, reload com módulo escolhido, URL compartilhável e seis
+exemplos públicos de vagas. Não abre candidaturas nem testa contratação.
+Evidências em `apps/web/test-results/csharp-career-map/`, ignoradas pelo Git;
+Axe é restrito ao mapa. Testes de dados não comprovam aprendizagem ou validade
+futura dos anúncios.
+
 Última revisão documental: 2026-11-12, com o roteiro do Bloco B acrescentado.
 Os resultados de `3643a04` permanecem
 históricos. A rodada de escalabilidade abaixo distingue testes focais, integração

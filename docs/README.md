@@ -1,5 +1,9 @@
 # Documentação da Orbitamos
 
+**Aluno 0 — C# para 2027, 15/11/2026:** [mapa, tarefas e critérios](ALUNO_ZERO_CSHARP_2027.md).
+Pesquisa de vagas e referências oficiais orientam oito estações do OrbiServiços;
+o mapa distingue as práticas abertas das aulas ainda planejadas.
+
 **Plano de continuidade da formação — 14/11/2026:**
 [diagnóstico e lotes de execução](PLANO_FORMACAO_ORBITAMOS.md), sobre a base
 `9f77510`. Reúne inspeção desktop/mobile, inventário, erros de curadoria e

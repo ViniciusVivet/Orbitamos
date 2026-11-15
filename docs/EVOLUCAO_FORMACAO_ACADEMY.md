@@ -86,16 +86,44 @@ WebKit/iPhone e 320 px. Capturas/JSON em
 `apps/web/test-results/academy-first-session/`, ignorados pelo Git. Esse ensaio
 não verifica o teclado físico de um iPhone nem substitui observar um iniciante.
 
+## Aluno 0: mapa para backend C# em 2027 — 15/11/2026
+
+A primeira entrega foi publicada em `9e060cf`: `main` remota, CI
+`43715931490` e Vercel confirmados. Após isso, o usuário priorizou seu próprio
+percurso como Aluno 0, partindo de lógica/vibecoding. O novo recorte está em
+[Aluno 0 — C#](ALUNO_ZERO_CSHARP_2027.md).
+
+O mapa mantém os oito IDs e seus saves. Acrescenta pedido da equipe, competência,
+estruturas/arquivos, entrega, critérios e ambiente por estação. Um índice leva
+direto à estação; a URL `?view=map` permite abrir/retomar o mapa. Somente os três
+módulos atuais oferecem ações de prática: as próximas aulas continuam planejadas.
+O hábito de IA crítica é separado da especialização opcional em IA/RAG.
+
+Foram analisados anúncios atuais e documentação oficial. Seis páginas com
+candidatura visível e sem marcador de encerramento atualizam os exemplos do
+produto. A amostra não é representativa nem confirma seleção ativa. A referência
+salarial histórica de 2026 já existente não foi reavaliada nesta pesquisa de vagas.
+
+QA deste segundo recorte: **845 testes em 75 arquivos**, tipos Next e TypeScript
+aprovados; mapa conferido em desktop, WebKit/iPhone e 320 px. Os ensaios incluem
+foto/ação na primeira dobra, oito estações, critérios/referências, três módulos
+reais, índice/âncora após reload e botão Voltar sem divergência de conteúdo/URL.
+Axe não encontrou violações no mapa nos estados auditados. Não houve teste
+físico de teclado nem ensaio com aluno. Lint dos arquivos alterados e build de
+produção aprovados. A confirmação remota de publicação deste recorte é separada
+da primeira entrega. Métodos/API continuam sendo aulas planejadas.
+
 ## Próximo ponto de continuidade
 
 1. Conferir o fechamento desta entrega: QA local, SHA remoto, CI e Vercel são
    registros separados. Se a publicação já estiver confirmada, seguir para 2.
 2. Observar iniciante e aplicação nova sem instruções externas sobre onde tocar;
    registrar bloqueios e ajuda, sem inventar taxa de eficácia.
-3. Lote 3: contrato comum de evidência e transporte de rascunhos com prévia de
-   conflitos. Backup não será anunciado como sincronização automática.
-4. Lote 4: OrbiServiços em .NET real no computador: arquivos, métodos, coleções,
-   testes e README. Avaliar ambiente antes de prometer .NET completo no celular.
+3. Prioridade do Aluno 0: escrever, alterar e explicar os fundamentos disponíveis;
+   produzir a unidade de métodos com SDK/arquivos/terminal e primeiro commit,
+   antes de classes, coleções, EF e APIs do OrbiServiços.
+4. Lote 3 permanece no plano: contrato comum de evidência e transporte de rascunhos
+   com prévia de conflitos. Backup não será anunciado como sincronização automática.
 5. Curadoria progressiva: conferir fonte canônica remota e materiais por unidade.
    O vídeo geral atual de `csharp-a6` não foi assistido integralmente; o vínculo
    autorado do guia não o certifica como explicação específica de condições.

@@ -1,6 +1,6 @@
 import type { Desafio } from "./desafios";
 
-export const csharpMarketCheckedAt = "25/09/2026";
+export { csharpMarketCheckedAt, csharpJobSources } from "./csharpJobMarket";
 export const csharpStages = [
   { id: "start", title: "Fundamentos: variáveis e console", skill: "Texto, números, reatribuição, cálculo e leitura de erros", delivery: "7 práticas de código e 3 questões. Da primeira variável a um resumo de serviços escrito por você.", available: true, tools: "C# · laboratório guiado e prática independente" },
   { id: "logic", title: "Lógica: decidir e repetir", skill: "Condições, for, while, contadores e acumuladores. Métodos ainda em preparação.", delivery: "Condições e laços: 14 práticas e 6 questões. Construa regras que funcionam para filas vazias, parciais e concluídas, com testes de diferentes entradas.", available: true, tools: "C# · condições · laços · leitura de casos de teste" },
@@ -12,12 +12,6 @@ export const csharpStages = [
   { id: "career", title: "Mostre o que você sabe fazer", skill: "Projeto independente, portfólio e entrevista", delivery: "Uma solução autoral que você consegue explicar e modificar.", available: false, tools: "GitHub · revisão · comunicação" },
 ] as const;
 
-export const csharpJobSources = [
-  { company: "BRQ", title: "Backend Júnior", kind: "Base primeiro", summary: "C#, orientação a objetos, APIs, SQL e Git. A vaga diferencia fundamentos de conhecimentos desejáveis.", url: "https://br.linkedin.com/jobs/view/desenvolvedor-a-backend-j%C3%BAnior-c%23-net-h%C3%ADbrido-sp-at-brq-digital-solutions-4466342270" },
-  { company: "Extractta", title: "Backend Júnior C#/.NET", kind: "Rotina de equipe", summary: "Testes, revisão de código, SQL, APIs e correção de bugs. Também menciona formação em TI.", url: "https://br.linkedin.com/jobs/view/desenvolvedor-backend-j%C3%BAnior-c%23-net-at-extractta-4469632074" },
-  { company: "SEGIMOB", title: "Full Stack .NET Júnior", kind: "Outro caminho", summary: "Inclui Angular e TypeScript, além do backend. Full stack é um aprofundamento, não a primeira barreira desta trilha.", url: "https://segimob.gupy.io/jobs/12059829" },
-  { company: "Confitec", title: ".NET / Angular Júnior", kind: "IA com critério", summary: "Entender regras de negócio, revisar soluções e assumir responsabilidade pela qualidade do código, inclusive com apoio de IA.", url: "https://confitec.gupy.io/jobs/12425462" },
-] as const;
 
 export const csharpPilot: Desafio = {
   slug: "trilha-csharp-piloto-v1",
