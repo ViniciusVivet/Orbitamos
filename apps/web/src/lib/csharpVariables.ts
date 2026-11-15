@@ -2,7 +2,7 @@ import { csharpPilot, csharpProgressKey, readCSharpProgress } from "./csharpTrac
 
 type ActivityBase = { id: string; title: string; topic: string; goal: string };
 export type VariableCode = ActivityBase & { kind: "code"; lesson: string; brief: string; hint: string; starter: string; expected: string; verification: string; required: RegExp[]; solution: string; cases?: { label: string; values: Record<string, string>; expected: string }[] };
-export type VariableQuiz = ActivityBase & { kind: "quiz"; prompt: string; code?: string; options: string[]; answer: number; feedback: string[] };
+export type VariableQuiz = ActivityBase & { kind: "quiz"; prompt: string; code?: string; lesson?: string; options: string[]; answer: number; feedback: string[] };
 export type VariableActivity = VariableCode | VariableQuiz | (ActivityBase & { kind: "guided" });
 
 export const variableActivities: VariableActivity[] = [
@@ -28,9 +28,60 @@ export function variableCodePassed(activity: VariableCode, code: string, output:
   const checks = activity.verification.split("\n").length;
   return !/\bint\s+\w+\s*=\s*"/.test(source) && activity.required.every(pattern => pattern.test(source)) && output.trim() === activity.expected && verification?.trim() === Array(checks).fill("true").join("\n");
 }
-export type VariablesProgress = { version: 1; active: string; drafts: Record<string, string>; done: string[]; answers: Record<string, number> };
+export type CSharpCodeEvidence = {
+  attempts: number;
+  validations: number;
+  hintConsulted: boolean;
+  conceptConsulted: boolean;
+  lastRun: { passed: boolean; helped: boolean; at: number; checksPassed: number; checksTotal: number } | null;
+};
+export type VariablesProgress = { version: 1; active: string; drafts: Record<string, string>; done: string[]; answers: Record<string, number>; evidence: Record<string, CSharpCodeEvidence> };
+const MAX_EVIDENCE_COUNT = 9999;
+const isRecord = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);
+const owns = (value: object, key: string) => Object.prototype.hasOwnProperty.call(value, key);
+const evidenceCount = (value: unknown) => typeof value === "number" && Number.isInteger(value) && value >= 0 ? Math.min(value, MAX_EVIDENCE_COUNT) : 0;
+export const newCSharpCodeEvidence = (): CSharpCodeEvidence => ({ attempts: 0, validations: 0, hintConsulted: false, conceptConsulted: false, lastRun: null });
+
+function readCodeEvidence(value: unknown): CSharpCodeEvidence | null {
+  if (!isRecord(value)) return null;
+  const result = newCSharpCodeEvidence();
+  result.attempts = evidenceCount(owns(value, "attempts") ? value.attempts : undefined);
+  result.validations = Math.min(result.attempts, evidenceCount(owns(value, "validations") ? value.validations : undefined));
+  result.hintConsulted = owns(value, "hintConsulted") && value.hintConsulted === true;
+  result.conceptConsulted = owns(value, "conceptConsulted") && value.conceptConsulted === true;
+  const last = owns(value, "lastRun") ? value.lastRun : null;
+  if (isRecord(last) && result.attempts > 0 && ["passed", "helped", "at", "checksPassed", "checksTotal"].every(key => owns(last, key))
+    && typeof last.passed === "boolean" && typeof last.helped === "boolean"
+    && typeof last.at === "number" && Number.isFinite(last.at) && last.at > 0 && last.at <= Date.now() + 300000
+    && typeof last.checksTotal === "number" && Number.isInteger(last.checksTotal) && last.checksTotal >= 0 && last.checksTotal <= 64
+    && typeof last.checksPassed === "number" && Number.isInteger(last.checksPassed) && last.checksPassed >= 0 && last.checksPassed <= last.checksTotal
+    && (!last.passed || (result.validations > 0 && last.checksPassed === last.checksTotal))) {
+    result.lastRun = { passed: last.passed, helped: last.helped, at: last.at, checksPassed: last.checksPassed, checksTotal: last.checksTotal };
+  }
+  return result;
+}
+
+/** A consultation stays recorded after hiding it, editing, retrying or reloading. */
+export function recordCSharpHelp(evidence: CSharpCodeEvidence | undefined, kind: "hint" | "concept"): CSharpCodeEvidence {
+  const current = readCodeEvidence(evidence) ?? newCSharpCodeEvidence();
+  return { ...current, hintConsulted: current.hintConsulted || kind === "hint", conceptConsulted: current.conceptConsulted || kind === "concept" };
+}
+
+/** These are client-side verification records, not a measure of independent mastery. */
+export function recordCSharpRun(evidence: CSharpCodeEvidence | undefined, result: { passed: boolean; cancelled?: boolean; checks: readonly { passed: boolean }[] }, now = Date.now()): CSharpCodeEvidence {
+  const current = readCodeEvidence(evidence) ?? newCSharpCodeEvidence();
+  if (result.cancelled || !Number.isFinite(now) || now <= 0 || now > Date.now() + 300000) return current;
+  const checks = result.checks.slice(0, 64);
+  const passed = result.passed && result.checks.length <= 64 && checks.every(check => check.passed);
+  return {
+    ...current,
+    attempts: Math.min(MAX_EVIDENCE_COUNT, current.attempts + 1),
+    validations: Math.min(MAX_EVIDENCE_COUNT, current.validations + (passed ? 1 : 0)),
+    lastRun: { passed, helped: current.hintConsulted || current.conceptConsulted, at: now, checksPassed: checks.filter(check => check.passed).length, checksTotal: checks.length },
+  };
+}
 export const variablesKey = (userId: string | number) => `orbitamos-csharp-variables-v1-${userId}`;
-export const newVariablesProgress = (): VariablesProgress => ({ version: 1, active: "guided", drafts: {}, done: [], answers: {} });
+export const newVariablesProgress = (): VariablesProgress => ({ version: 1, active: "guided", drafts: {}, done: [], answers: {}, evidence: {} });
 export function readVariablesProgress(raw: string | null, legacyRaw: string | null = null, activities: VariableActivity[] = variableActivities, migrate = true): VariablesProgress {
   const base = newVariablesProgress();
   try {
@@ -40,6 +91,10 @@ export function readVariablesProgress(raw: string | null, legacyRaw: string | nu
       base.active = ids.includes(value.active) ? value.active : "guided";
       for (const a of activities) {
         if (a.kind === "code" && typeof value.drafts?.[a.id] === "string") base.drafts[a.id] = value.drafts[a.id].slice(0, 100000);
+        if (a.kind === "code" && isRecord(value.evidence) && owns(value.evidence, a.id)) {
+          const evidence = readCodeEvidence(value.evidence[a.id]);
+          if (evidence) base.evidence[a.id] = evidence;
+        }
         if (a.kind === "quiz" && Number.isInteger(value.answers?.[a.id]) && value.answers[a.id] >= 0 && value.answers[a.id] < a.options.length) base.answers[a.id] = value.answers[a.id];
         if (Array.isArray(value.done) && value.done.includes(a.id) && (a.kind !== "quiz" || base.answers[a.id] === a.answer)) base.done.push(a.id);
       }

@@ -1,5 +1,10 @@
 # Academy — revisão pedagógica e continuidade
 
+**Continuidade em 14/11/2026:** a nova auditoria e o plano proposto estão em
+[Formação Orbitamos](PLANO_FORMACAO_ORBITAMOS.md). Incluem inspeção de telas,
+curadoria, um contraexemplo C# reproduzido e lotes de execução. O restante
+deste documento preserva os estados e testes históricos das datas indicadas.
+
 Atualização documental: 04/11/2026, conferida nos componentes e contratos de
 progresso. A auditoria e a validação de 24/10/2026 continuam abaixo como histórico.
 Não foram repetidos testes, sessões com alunos ou verificações de publicação

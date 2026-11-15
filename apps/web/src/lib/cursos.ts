@@ -25,6 +25,8 @@ export interface AulaResumo {
 export interface Aula extends AulaResumo {
   /** ID do video no YouTube (ex.: dQw4w9WgXcQ) para embed */
   youtubeVideoId: string;
+  /** A known mismatched video is withheld while its replacement is reviewed. */
+  videoStatus?: "review";
   /** Texto opcional ao lado do video */
   conteudo?: string;
   materiais?: MaterialAula[];
@@ -524,8 +526,8 @@ export const cursos: Curso[] = [
         id: "vba-m2",
         titulo: "Projetos Práticos",
         aulas: [
-          { id: "vba-a2", titulo: "Banco de dados em planilha", youtubeVideoId: "VdLen3MV-GM", conteudo: "Usando planilha como banco de dados: inserir, consultar e atualizar registros com VBA.", materiais: [material("vba-mat-2", "Banco de dados XLSM", "XLSM", "/course-materials/vba-excel/02-banco-de-dados-xlsm2005.xlsm")] },
-          { id: "vba-a3", titulo: "Formulário que grava no banco de dados", youtubeVideoId: "EV7Idm_mkxo", conteudo: "Criando UserForms, campos de entrada, validação e gravação automática na planilha.", materiais: [material("vba-mat-3", "Apostila VBA - formulário com banco de dados", "DOCX", "/course-materials/vba-excel/03-apostila-vba-no-excel-formulario-que-grava-no-banco-de-dados.docx")] },
+          { id: "vba-a2", titulo: "Banco de dados em planilha", youtubeVideoId: "", videoStatus: "review", conteudo: "Usando planilha como banco de dados: inserir, consultar e atualizar registros com VBA.", materiais: [material("vba-mat-2", "Banco de dados XLSM", "XLSM", "/course-materials/vba-excel/02-banco-de-dados-xlsm2005.xlsm")] },
+          { id: "vba-a3", titulo: "Formulário que grava no banco de dados", youtubeVideoId: "", videoStatus: "review", conteudo: "Criando UserForms, campos de entrada, validação e gravação automática na planilha.", materiais: [material("vba-mat-3", "Apostila VBA - formulário com banco de dados", "DOCX", "/course-materials/vba-excel/03-apostila-vba-no-excel-formulario-que-grava-no-banco-de-dados.docx")] },
         ],
       },
     ],
@@ -759,6 +761,20 @@ function mapSupabaseCourseSummary(row: SupabaseCourseRow<SupabaseLessonSummaryRo
   };
 }
 
+/** Only two confirmed mismatches; new or corrected videos are not replaced. */
+const knownVideoMismatches: Readonly<Record<string, string>> = {
+  "vba-a2": "VdLen3MV-GM",
+  "vba-a3": "EV7Idm_mkxo",
+};
+
+function withReviewedVideo(courseSlug: string, lesson: Aula): Aula {
+  if (courseSlug !== "vba-excel") return lesson;
+  const expected = knownVideoMismatches[lesson.slug ?? lesson.id];
+  return expected && lesson.youtubeVideoId === expected
+    ? { ...lesson, youtubeVideoId: "", videoStatus: "review" }
+    : lesson;
+}
+
 function mapSupabaseCourse(row: SupabaseCourseRow): Curso {
   const modules = courseSourceModules(row);
   if (!modules) return cursoPorSlug(row.slug)!;
@@ -772,7 +788,7 @@ function mapSupabaseCourse(row: SupabaseCourseRow): Curso {
       titulo: mod.title,
       aulas: [...(mod.lessons ?? [])]
         .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-        .map((lesson) => ({
+        .map((lesson) => withReviewedVideo(row.slug, {
           id: lesson.id,
           ...(lesson.slug ? { slug: lesson.slug } : {}),
           titulo: lesson.title,

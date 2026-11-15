@@ -1,7 +1,20 @@
 export const instagramUrl = "https://www.instagram.com/orbitamosbr/";
 export const youtubeChannelUrl = "https://www.youtube.com/@VivetTv";
 export const youtubeFeaturedEmbed = "https://www.youtube.com/embed/b7re8uY8Pf4?start=8";
-export const discordUrl = "https://discord.gg/SEU-GRUPO";
+/** Keep the invitation optional until the team supplies a real community URL. */
+export function discordInviteUrl(value: string | null | undefined): string | null {
+  if (!value?.trim()) return null;
+  try {
+    const url = new URL(value.trim());
+    if (url.protocol !== "https:" || url.username || url.password || url.port || url.search || url.hash) return null;
+    const code = url.hostname === "discord.gg"
+      ? /^\/([a-z\d_-]+)\/?$/i.exec(url.pathname)?.[1]
+      : url.hostname === "discord.com" ? /^\/invite\/([a-z\d_-]+)\/?$/i.exec(url.pathname)?.[1] : undefined;
+    if (!code || /^(seu[-_]?grupo|your[-_]?invite|todo)$/i.test(code)) return null;
+    return url.href;
+  } catch { return null; }
+}
+export const discordUrl = discordInviteUrl(null);
 export const whatsappMentoriaUrl =
   "https://wa.me/5511949138973?text=Quero%20falar%20sobre%20as%20mentorias%20da%20Orbitamos";
 

@@ -1,23 +1,19 @@
 import { describe, expect, it } from "vitest";
+import { discordInviteUrl, discordUrl } from "./social";
 
-import { whatsappFloatByPage } from "./social";
-
-describe("floating WhatsApp links", () => {
-  it.each(Object.entries(whatsappFloatByPage))(
-    "keeps the %s link on HTTPS with the expected business number",
-    (_page, url) => {
-      const parsed = new URL(url);
-      expect(parsed.protocol).toBe("https:");
-      expect(parsed.hostname).toBe("wa.me");
-      expect(parsed.pathname).toBe("/5511949138973");
-      expect(parsed.searchParams.get("text")).toContain("Orbitamos");
+describe("optional community invitation", () => {
+  it("does not offer an unconfigured or placeholder Discord destination", () => {
+    expect(discordUrl).toBeNull();
+    for (const value of [null, undefined, "", " ", "https://discord.gg/SEU-GRUPO", "https://discord.com/invite/YOUR_INVITE"]) {
+      expect(discordInviteUrl(value)).toBeNull();
     }
-  );
+  });
 
-  it("uses a different contextual message for each page", () => {
-    const messages = Object.values(whatsappFloatByPage).map(
-      (url) => new URL(url).searchParams.get("text")
-    );
-    expect(new Set(messages).size).toBe(messages.length);
+  it("accepts only explicit HTTPS invitations on the official hosts", () => {
+    expect(discordInviteUrl("https://discord.gg/actual-code")).toBe("https://discord.gg/actual-code");
+    expect(discordInviteUrl(" https://discord.com/invite/abc123 ")).toBe("https://discord.com/invite/abc123");
+    for (const value of ["http://discord.gg/abc", "https://discord.gg.evil.test/abc", "javascript:alert(1)", "https://discord.gg/", "https://discord.com/channels/123", "https://user:secret@discord.gg/abc", "https://discord.gg/abc?next=elsewhere", "https://discord.gg/abc#fragment"]) {
+      expect(discordInviteUrl(value)).toBeNull();
+    }
   });
 });

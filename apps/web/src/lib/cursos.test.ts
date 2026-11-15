@@ -158,3 +158,54 @@ describe("detalhe de curso sob demanda", () => {
     expect(database.requests).toHaveLength(0);
   });
 });
+
+describe("revisão dos dois vídeos de VBA", () => {
+  it("retira os vínculos inadequados sem apagar aulas ou materiais", () => {
+    const course = cursos.find(item => item.slug === "vba-excel")!;
+    const lessons = course.modulos.flatMap(item => item.aulas);
+    expect(lessons.map(item => item.id)).toEqual(["vba-a1", "vba-a4", "vba-a2", "vba-a3"]);
+    for (const id of ["vba-a2", "vba-a3"]) {
+      const lesson = lessons.find(item => item.id === id)!;
+      expect(lesson.youtubeVideoId).toBe("");
+      expect(lesson.videoStatus).toBe("review");
+      expect(lesson.materiais).toHaveLength(1);
+      expect(lesson.materiais![0].url).toMatch(/^\/api\/course-materials\/vba-excel\//);
+    }
+    const python = cursos.find(item => item.slug === "logica-programacao-python")!;
+    expect(python.modulos.flatMap(item => item.aulas).find(item => item.id === "logica-python-a1")?.youtubeVideoId).toBe("VdLen3MV-GM");
+    expect(python.modulos.flatMap(item => item.aulas).find(item => item.id === "logica-python-a5")?.youtubeVideoId).toBe("EV7Idm_mkxo");
+  });
+
+  function reviewedCourseRow() {
+    return { id: "vba-db", slug: "vba-excel", title: "VBA", description: "", position: 1, course_modules: [
+      { id: "vba-module", slug: "vba-excel-m1", title: "VBA", position: 1, lessons: [
+        { id: "uuid-a2", slug: "vba-a2", title: "Banco de dados em planilha", position: 1, youtube_video_id: "VdLen3MV-GM", content: "Conteúdo mantido", lesson_materials: [{ id: "material-a2", title: "Banco", kind: "XLSM", external_url: "/course-materials/vba-excel/02-banco-de-dados-xlsm2005.xlsm", position: 1 }] },
+        { id: "uuid-a3", slug: "vba-a3", title: "Formulário", position: 2, youtube_video_id: "EV7Idm_mkxo", lesson_materials: [] },
+        { id: "uuid-a1", slug: "vba-a1", title: "Outro vínculo fora do recorte", position: 3, youtube_video_id: "VdLen3MV-GM", lesson_materials: [] },
+        { id: "uuid-a4", slug: "vba-a4", title: "Mais uma aula", position: 4, youtube_video_id: "fixture0001", lesson_materials: [] },
+      ] },
+    ] };
+  }
+
+  it("aplica o mesmo bloqueio aos vínculos confirmados do banco, preservando UUID e slug", async () => {
+    database.responses.push({ data: reviewedCourseRow(), error: null });
+    const course = await buscarCursoAcademyPorSlug("vba-excel");
+    const lessons = course!.modulos.flatMap(item => item.aulas);
+    expect(lessons[0]).toMatchObject({ id: "uuid-a2", slug: "vba-a2", youtubeVideoId: "", videoStatus: "review", conteudo: "Conteúdo mantido" });
+    expect(lessons[0].materiais![0].id).toBe("material-a2");
+    expect(lessons[1]).toMatchObject({ id: "uuid-a3", slug: "vba-a3", youtubeVideoId: "", videoStatus: "review" });
+    expect(lessons[2].youtubeVideoId).toBe("VdLen3MV-GM");
+    expect(lessons[2].videoStatus).toBeUndefined();
+  });
+
+  it("does not withhold a replacement video or an unrelated course with a similar lesson alias", async () => {
+    const corrected = reviewedCourseRow();
+    corrected.course_modules[0].lessons[0].youtube_video_id = "newVid00001";
+    const unrelated = reviewedCourseRow();
+    unrelated.slug = "another-course";
+    unrelated.course_modules[0].slug = "another-course-m1";
+    database.responses.push({ data: corrected, error: null }, { data: unrelated, error: null });
+    expect((await buscarCursoAcademyPorSlug("vba-excel"))!.modulos[0].aulas[0]).toMatchObject({ youtubeVideoId: "newVid00001" });
+    expect((await buscarCursoAcademyPorSlug("another-course"))!.modulos[0].aulas[0]).toMatchObject({ youtubeVideoId: "VdLen3MV-GM" });
+  });
+});

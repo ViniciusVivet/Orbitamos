@@ -29,8 +29,8 @@ export default function AcademyContinue({ userId, nextLessonHref, nextLessonTitl
       {chosenStep && item && item.href !== chosenStep.href && <Link className={s.recent} href={link(item.href)}>{pending ? "Retomar última atividade" : "Revisitar última atividade"}: {item.title}<ArrowRight size={15}/></Link>}
       {!chosenStep && item && <small>{item.lastAt ? "Retomada sugerida pelo registro disponível neste navegador." : "Atividade salva sem horário de edição. Esta é uma sugestão de retomada, não um histórico cronológico."}</small>}
       {unavailable && <small role="status">O histórico local não está disponível. Você pode continuar estudando normalmente.</small>}
-      <AcademyStudyPathPicker userId={userId} preview={preview} compact/>
     </div>
-    <aside className={s.homeScene}><Image src={studyCover} alt="" fill priority placeholder="blur" sizes="(max-width:767px) 100vw, 40vw"/><div className={s.sceneLinks}><Link href={link("/estudante/trilhas")}><Compass size={17}/>Trilhas<ArrowRight size={14}/></Link><Link href={link("/estudante/pratica")}><Code2 size={17}/>Escrever código<ArrowRight size={14}/></Link><Link href={link("/estudante/jogos")}><Gamepad2 size={17}/>Jogar<ArrowRight size={14}/></Link><Link href={link("/estudante/aulas")}><BookOpen size={17}/>Ver aulas<ArrowRight size={14}/></Link></div></aside>
+    <aside className={s.homeScene}><Image src={studyCover} alt="" fill priority placeholder="blur" sizes="(max-width:767px) 100vw, 40vw"/><span className={s.sceneCaption}>Uma pausa no dia. Uma ideia funcionando.</span></aside>
+    <div className={s.explore}><nav className={s.sceneLinks} aria-label="Outras formas de estudar"><Link href={link("/estudante/trilhas")}><Compass size={17}/>Trilhas<ArrowRight size={14}/></Link><Link href={link("/estudante/pratica")}><Code2 size={17}/>Escrever código<ArrowRight size={14}/></Link><Link href={link("/estudante/jogos")}><Gamepad2 size={17}/>Jogar<ArrowRight size={14}/></Link><Link href={link("/estudante/aulas")}><BookOpen size={17}/>Ver aulas<ArrowRight size={14}/></Link></nav><AcademyStudyPathPicker userId={userId} preview={preview} compact/></div>
   </section>;
 }

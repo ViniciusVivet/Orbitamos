@@ -66,4 +66,22 @@ describe("learning experience", () => {
     const lesson = flattenAllLessons(cursos)[0].aula;
     expect(getLessonKind({ ...lesson, tipo: "projeto" })).toBe("projeto");
   });
+
+  it("links the conditions lesson to its authored C# module regardless of its catalog position", () => {
+    const course = cursos.find(item => item.slug === "csharp-fundamentos")!;
+    const lesson = course.modulos.flatMap(item => item.aulas).find(item => item.id === "csharp-a6")!;
+    const original = getLessonGuide(course, lesson, 2);
+    expect(original.practice.href).toBe("/estudante/trilhas/csharp?module=conditions");
+    expect(original.objectives.join(" ")).toContain("if/else");
+    expect(original.quiz[1].answer).toBe("valorPedido >= 100");
+    expect(getLessonGuide(course, lesson, 99)).toEqual(original);
+    expect(getLessonGuide(course, { ...lesson, id: "database-uuid", slug: "csharp-a6", titulo: "Título editado" }, 0)).toEqual(original);
+  });
+
+  it("does not infer the authored pilot from a title or an unrelated course", () => {
+    const course = cursos.find(item => item.slug === "csharp-fundamentos")!;
+    const lesson = course.modulos.flatMap(item => item.aulas).find(item => item.id === "csharp-a6")!;
+    expect(getLessonGuide(course, { ...lesson, id: "unreviewed-lesson" }).practice.href).toBeUndefined();
+    expect(getLessonGuide({ ...course, slug: "another-course" }, lesson).practice.href).not.toBe("/estudante/trilhas/csharp?module=conditions");
+  });
 });

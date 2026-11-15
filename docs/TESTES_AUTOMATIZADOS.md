@@ -1,5 +1,26 @@
 # Testes e validações
 
+## Roteiro da primeira sessão — 15/11/2026
+
+Com a prévia de desenvolvimento rodando em `http://localhost:3015`, execute de
+`apps/web`:
+
+```powershell
+node scripts/audit-academy-first-session.mjs
+```
+
+`ACADEMY_AUDIT_URL` permite outra porta; `ACADEMY_AUDIT_OUTPUT` altera o destino
+das evidências. O roteiro usa contextos isolados, sem login/conta real nem escrita
+no Supabase. Cobre Home/introdução na primeira dobra, escrita e avanço automático,
+retomada, erro, execução positiva, reinício e recuperação. Em desktop e iPhone
+também confere a rejeição do contraexemplo C#, preservação da pista consultada e
+verificações após reload. Em desktop, confere os três registros de inglês e a
+retomada de Jogos. Axe fica restrito ao editor guiado; não é auditoria WCAG do site
+inteiro nem teste do teclado físico de iPhone. A prévia `/dev/*` não é publicada.
+
+Resultados desta rodada e publicação: [Evolução da formação](EVOLUCAO_FORMACAO_ACADEMY.md).
+Os registros anteriores abaixo continuam históricos.
+
 Última revisão documental: 2026-11-12, com o roteiro do Bloco B acrescentado.
 Os resultados de `3643a04` permanecem
 históricos. A rodada de escalabilidade abaixo distingue testes focais, integração

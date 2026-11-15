@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { conditionsActivities, conditionsKey, conditionsPilot, readConditionsProgress } from "./csharpConditions";
-import { variableCodePassed, variablesKey } from "./csharpVariables";
+import { newVariablesProgress, recordCSharpHelp, recordCSharpRun, variableCodePassed, variablesKey } from "./csharpVariables";
+import { loopsActivities, readLoopsProgress } from "./csharpLoops";
 import { diagnoseCSharp, explainCSharpFailure, withCSharpInputs } from "./csharpFeedback";
 
 describe("conditions curriculum", () => {
@@ -27,6 +28,29 @@ describe("conditions curriculum", () => {
     expect(state.drafts).toEqual({ branches: "" });
     expect(state.done).toEqual(["branches"]);
     expect(readConditionsProgress(null).drafts).toEqual({});
+  });
+  it("teaches the three-branch order before the final delivery without changing its position or answer identity", () => {
+    const preparation = conditionsActivities.find(activity => activity.id === "quiz-and");
+    const delivery = conditionsActivities.at(-1);
+    if (preparation?.kind !== "quiz" || delivery?.kind !== "code") throw Error("fixture");
+    expect(preparation.code).toContain("else if");
+    expect(preparation.lesson).toContain("primeiro caminho verdadeiro");
+    expect(preparation.answer).toBe(1);
+    expect(preparation.feedback).toHaveLength(preparation.options.length);
+    expect(conditionsActivities.indexOf(preparation)).toBeLessThan(conditionsActivities.indexOf(delivery));
+    expect(delivery.id).toBe("delivery");
+    expect(delivery.starter).toBe("");
+    expect(delivery.cases).toContainEqual({ label: "Concluído mesmo sem pagamento", values: { concluidos: "12", pago: "false" }, expected: "Nina\nTudo entregue" });
+  });
+  it("restores consultation evidence for conditions and loops through their existing module contracts", () => {
+    const evidence = recordCSharpRun(recordCSharpHelp(undefined, "hint"), { passed: true, checks: [] }, 1000);
+    const old = { ...newVariablesProgress(), drafts: { branches: "condition draft", client: "other module" }, evidence: { branches: evidence, client: evidence } };
+    expect(readConditionsProgress(JSON.stringify(old)).evidence).toEqual({ branches: evidence });
+    const loop = loopsActivities.find(activity => activity.kind === "code");
+    if (!loop) throw Error("fixture");
+    const restored = readLoopsProgress(JSON.stringify({ ...newVariablesProgress(), active: loop.id, evidence: { [loop.id]: evidence, branches: evidence } }));
+    expect(restored.evidence).toEqual({ [loop.id]: evidence });
+    expect(restored.active).toBe(loop.id);
   });
 });
 

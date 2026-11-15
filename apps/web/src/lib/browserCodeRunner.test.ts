@@ -44,4 +44,17 @@ describe("browser code runner server fallbacks", () => {
     expect(result.error).toContain("laboratório C# inicial");
     expect(result.timedOut).toBe(false);
   });
+
+  it("rejects C# type errors before creating any JavaScript worker", async () => {
+    vi.stubGlobal("window", {});
+    const worker = vi.fn();
+    vi.stubGlobal("Worker", worker);
+    const result = await runCSharpInWorker('int count = 3;\ncount = "5";\nConsole.WriteLine(count);', 2500, undefined, "Console.WriteLine(count == 5);");
+    expect(result.output).toBe("");
+    expect(result.verificationOutput).toBeUndefined();
+    expect(result.error).toContain("string a int");
+    expect(result.errorLine).toBe(2);
+    expect(result.timedOut).toBe(false);
+    expect(worker).not.toHaveBeenCalled();
+  });
 });

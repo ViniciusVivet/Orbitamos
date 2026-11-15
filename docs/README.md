@@ -1,5 +1,14 @@
 # Documentação da Orbitamos
 
+**Plano de continuidade da formação — 14/11/2026:**
+[diagnóstico e lotes de execução](PLANO_FORMACAO_ORBITAMOS.md), sobre a base
+`9f77510`. Reúne inspeção desktop/mobile, inventário, erros de curadoria e
+validação reproduzidos, prioridades e critérios para uma formação com aplicação
+independente e projeto real. A implementação iniciada em **15/11/2026**, a régua,
+o recorte entregue e o próximo ponto de continuidade ficam em
+[Evolução da formação](EVOLUCAO_FORMACAO_ACADEMY.md). O plano integral permanece
+um roteiro; consulte o registro para distinguir o que foi implementado.
+
 Índice revisado em **07/11/2026**.
 Plano de evolução e registro da Oficina do Pulso acrescentados em **11/11/2026**.
 Bloco B e roteiro de orientação/previsão/retomada documentados em **12/11/2026**;
@@ -77,6 +86,7 @@ quando descrevem uma execução específica.
 
 | Documento | Finalidade |
 | --- | --- |
+| [PLANO_FORMACAO_ORBITAMOS.md](PLANO_FORMACAO_ORBITAMOS.md) | Diagnóstico de 14/11, confiança do conteúdo, jornada, unidade de referência, projeto real e lotes com critérios de saída |
 | [ARQUITETURA_ESTUDANTE.md](ARQUITETURA_ESTUDANTE.md) | Rotas e dados da área do estudante |
 | [ARQUITETURA_COLABORADOR.md](ARQUITETURA_COLABORADOR.md) | Trabalho, apresentação, oportunidades e admin |
 | [ACADEMY_FLUXO_UNIFICADO.md](ACADEMY_FLUXO_UNIFICADO.md) | Navegação, entradas e continuidade |

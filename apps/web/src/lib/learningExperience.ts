@@ -326,7 +326,49 @@ const pythonPracticeSlugs = [
   "funcoes-python", "strings-python", "comprehensions-python", "erros-python", "classes-python",
 ];
 
+/** One authored pilot; legacy lessons keep their existing guides until reviewed. */
+const conditionsLessonGuide: Omit<LessonGuide, "kind"> = {
+  estimatedMinutes: 20,
+  objectives: [
+    "Prever qual bloco de if/else será executado para uma quantidade de serviços.",
+    "Distinguir > de >= testando um pedido exatamente no limite da promoção.",
+    "Escrever e testar uma decisão com outra entrada, sem depender do exemplo.",
+  ],
+  checklist: [
+    "Prever a saída antes de executar o exemplo de if/else.",
+    "Testar o caso sem serviços pendentes e o caso com trabalho.",
+    "Conferir valores abaixo, iguais e acima do limite de uma promoção.",
+  ],
+  practice: {
+    title: "Decida o próximo passo do OrbiServiços",
+    description: "Pratique if/else, o valor exato de um limite e a correção de uma condição. Comece pelo módulo de condições; os laços são o próximo assunto da trilha.",
+    deliverable: "Uma decisão testada com entradas diferentes e a explicação de qual caminho cada caso tomou.",
+    href: "/estudante/trilhas/csharp?module=conditions",
+  },
+  quiz: [
+    {
+      question: "pendentes vale 0. Em if (pendentes > 0), qual caminho de if/else executa?",
+      options: ["O else, porque 0 não é maior que 0", "O if, porque 0 é um número", "Os dois caminhos"],
+      answer: "O else, porque 0 não é maior que 0",
+    },
+    {
+      question: "A promoção vale para pedidos de 100 ou mais. Qual condição inclui exatamente 100?",
+      options: ["valorPedido > 100", "valorPedido >= 100", "valorPedido < 100"],
+      answer: "valorPedido >= 100",
+    },
+    {
+      question: "Para conferir a regra de 100 ou mais, qual grupo de testes investiga melhor a fronteira?",
+      options: ["99, 100 e 101", "100, 100 e 100", "150, 200 e 300"],
+      answer: "99, 100 e 101",
+    },
+  ],
+};
+
 export function getLessonGuide(curso: Curso, aula: Aula, lessonIndex = 0): LessonGuide {
+  // The stable local ID also appears as a slug when a database UUID is used.
+  if (curso.slug === "csharp-fundamentos" && (aula.slug ?? aula.id) === "csharp-a6") {
+    return { ...conditionsLessonGuide, kind: getLessonKind(aula) };
+  }
   const area = inferArea(curso, aula);
   const materialCount = aula.materiais?.length ?? 0;
   const baseObjectives = [

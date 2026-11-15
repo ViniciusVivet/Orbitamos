@@ -1,8 +1,9 @@
+import { readAcademyResume, resumeStorageKey } from "./academyResume";
 import { questKey, readQuest, questSteps } from "./sqlQuest";
 import { readVillageSave, villageLevels, villageStorageKey } from "./vilaDosBlocos";
 import { fasesMonteCodigo, JOGO_STORAGE_PREFIX } from "./jogoMonteCodigo";
 import { niveisGuiaOrbi } from "./jogoGuiaOrbi";
-import { academyPreviewHref } from "./portalNavigation";
+import { academyPreviewHref, ENGLISH_SPEAKING_HREF } from "./portalNavigation";
 import { chapterMissionIds, orbiChapterKey, readChapterSave } from "./orbiChapter";
 
 export const activityIds = ["sql", "delivery", "english", "village", "orbi", "assembly"] as const;
@@ -19,6 +20,7 @@ export const practiceActivities: Activity[] = [
 /** Resume the first unfinished authored phase using the existing game saves. */
 export function practiceDestination(id: ActivityId, userId: string, read: (key: string) => string | null, preview = false): string {
   const activity = practiceActivities.find(item => item.id === id)!;
+  if (id === "english" && readAcademyResume(read(resumeStorageKey(userId)))?.href === ENGLISH_SPEAKING_HREF) return preview ? academyPreviewHref(ENGLISH_SPEAKING_HREF) : ENGLISH_SPEAKING_HREF;
   if (id !== "orbi" && id !== "assembly") return preview ? activity.preview : activity.route;
   const phases = id === "orbi" ? niveisGuiaOrbi : fasesMonteCodigo;
   const prefix = id === "orbi" ? "orbitamos-jogo-orbi" : JOGO_STORAGE_PREFIX;

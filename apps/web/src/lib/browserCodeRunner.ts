@@ -1,3 +1,5 @@
+import { compileCSharpSubset } from "./csharpSubset";
+
 export type BrowserCodeResult = {
   output: string;
   error: string | null;
@@ -183,27 +185,14 @@ export function runJavaScriptInWorker(code: string, timeoutMs = 2500, signal?: A
  * condicionais, arrays e laços básicos com uma mensagem clara para o aluno.
  */
 export function runCSharpInWorker(code: string, timeoutMs = 2500, signal?: AbortSignal, verificationCode = ""): Promise<BrowserCodeResult> {
-  const unsupported = /\b(namespace|using|class|interface|record|struct|async|await|Task|LINQ|System\.IO|System\.Net)\b/;
-  if (unsupported.test(code)) {
-    return Promise.resolve({
-      output: "",
-      error: "Este laboratório C# inicial executa Console.WriteLine, variáveis, condições, arrays e laços. Recursos avançados serão liberados na trilha .NET.",
-      timedOut: false,
-    });
-  }
-
-  const transpile = (source: string) => source
-    .replace(/\/\/.*$/gm, (comment) => comment)
-    .replace(/\bConsole\.WriteLine\s*\(/g, "console.log(")
-    .replace(/\bforeach\s*\(\s*var\s+(\w+)\s+in\s+([^\)]+)\)/g, "for (const $1 of $2)")
-    .replace(/new\s+(?:int|string|double|decimal|bool)\s*\[\s*\]\s*{([^}]*)}/g, "[$1]")
-    .replace(/\bint\s+(\w+)\s*=\s*([^;\n]+?)\s*\/\s*([^;\n]+);/g, "let $1 = Math.trunc($2 / $3);")
-    .replace(/\b(?:int|string|double|decimal|bool|long|var)\s+(\w+)\s*=/g, "let $1 =")
-    .replace(/\b(?:int|string|double|decimal|bool|long)\s+(\w+)\s*;/g, "let $1;")
-    .replace(/\$"([^"\\]*(?:\\.[^"\\]*)*)"/g, (_, content: string) => `\`${content.replace(/{([^}]+)}/g, "\${$1}")}\``)
-    .replace(/\bMathF?\./g, "Math.");
-
-  return runJavaScriptInWorker(transpile(code), timeoutMs, signal, transpile(verificationCode));
+  if (code.length + verificationCode.length > MAX_CODE_LENGTH) return Promise.resolve(codeTooLargeResult());
+  const compiled = compileCSharpSubset(code, verificationCode);
+  if (!compiled.ok) return Promise.resolve({ output: "", error: compiled.error, errorLine: compiled.line, timedOut: false });
+  return runJavaScriptInWorker(compiled.code, timeoutMs, signal, compiled.verificationCode).then(result => {
+    // JavaScript line offsets describe generated helpers, not the learner's C#.
+    const sourceLine = result.error?.match(/^Linha (\d+):/);
+    return { ...result, errorLine: sourceLine ? Number(sourceLine[1]) : null };
+  });
 }
 
 type PythonWorkerMessage = BrowserCodeResult & { id: number; ready?: boolean };

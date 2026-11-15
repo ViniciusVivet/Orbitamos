@@ -16,7 +16,7 @@ export default function AcademyCommunity({ preview = false }: { preview?: boolea
       <article><OrbitPhoto kind="estudo" className={s.channelPhoto} sizes="(max-width: 650px) 34vw, 30vw"/><div><span>CONTINUE DE ONDE PAROU</span><h2>Mensagens</h2><p>Volte às conversas que você já começou.</p><Link href="/mensagens?area=student">Abrir mensagens<ArrowRight size={17}/></Link></div></article>
     </section>
     <details className={s.context}><summary>Não sei como explicar minha dúvida<ArrowRight size={17}/></summary><p>Não precisa usar termos técnicos. Conte estas três coisas:</p><ol><li><strong>O que você quer fazer</strong><span>“Estou na missão de condições em C#.”</span></li><li><strong>O que já tentou</strong><span>Mostre um trecho do código ou descreva sua tentativa.</span></li><li><strong>O que aconteceu</strong><span>Conte o resultado e o que esperava ver.</span></li></ol><small>Retire senhas, chaves e dados pessoais antes de compartilhar.</small></details>
-    <aside className={s.discord}><div><span>ENCONTRE A GALERA</span><h2>Vamos de Discord?</h2><p>A conversa continua por lá, em outra aba.</p></div><Link href={discordUrl} target="_blank" rel="noreferrer">Entrar no Discord<ArrowUpRight size={17}/></Link></aside>
-    {preview && <p className={s.previewNote}>Mentorias e mensagens pedem sua conta. O fórum é público; o Discord abre em outro site.</p>}
+    {discordUrl && <aside className={s.discord}><div><span>ENCONTRE A GALERA</span><h2>Vamos de Discord?</h2><p>A conversa continua por lá, em outra aba.</p></div><Link href={discordUrl} target="_blank" rel="noreferrer">Entrar no Discord<ArrowUpRight size={17}/></Link></aside>}
+    {preview && <p className={s.previewNote}>Mentorias e mensagens pedem sua conta. O fórum é público{discordUrl ? "; o Discord abre em outro site" : ""}.</p>}
   </div>;
 }

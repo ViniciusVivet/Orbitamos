@@ -506,7 +506,7 @@ export default function CourseLearningRoom() {
         <main className="min-w-0">
           <section className="bg-black">
             <div className="mx-auto aspect-video w-full max-w-6xl">
-              {embedUrl ? (
+              {embedUrl && lesson.videoStatus !== "review" ? (
                 <iframe
                   key={lesson.id}
                   className="h-full w-full"
@@ -519,8 +519,8 @@ export default function CourseLearningRoom() {
                 <div className="grid h-full place-items-center bg-[radial-gradient(circle_at_center,rgba(0,212,255,.08),transparent_55%)] px-6 text-center">
                   <div>
                     <FileText className="mx-auto size-10 text-orbit-electric/60" />
-                    <h2 className="mt-3 font-black text-white">Aula em material guiado</h2>
-                    <p className="mt-2 max-w-md text-sm leading-6 text-white/40">Use a aba Materiais e siga os objetivos desta aula.</p>
+                    <h2 className="mt-3 font-black text-white">{lesson.videoStatus === "review" ? "Vídeo em revisão" : "Aula em material guiado"}</h2>
+                    <p className="mt-2 max-w-md text-sm leading-6 text-white/60">{lesson.videoStatus === "review" ? "O vídeo desta aula está sendo revisado. Os materiais existentes continuam disponíveis abaixo." : "Use a aba Materiais e siga os objetivos desta aula."}</p>
                   </div>
                 </div>
               )}
