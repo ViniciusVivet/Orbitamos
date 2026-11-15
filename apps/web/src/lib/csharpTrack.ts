@@ -3,8 +3,8 @@ import type { Desafio } from "./desafios";
 export { csharpMarketCheckedAt, csharpJobSources } from "./csharpJobMarket";
 export const csharpStages = [
   { id: "start", title: "Fundamentos: variáveis e console", skill: "Texto, números, reatribuição, cálculo e leitura de erros", delivery: "7 práticas de código e 3 questões. Da primeira variável a um resumo de serviços escrito por você.", available: true, tools: "C# · laboratório guiado e prática independente" },
-  { id: "logic", title: "Lógica: decidir e repetir", skill: "Condições, for, while, contadores e acumuladores. Métodos ainda em preparação.", delivery: "Condições e laços: 14 práticas e 6 questões. Construa regras que funcionam para filas vazias, parciais e concluídas, com testes de diferentes entradas.", available: true, tools: "C# · condições · laços · leitura de casos de teste" },
-  { id: "objects", title: "Um programa que cresce", skill: "Objetos, interfaces, coleções e LINQ", delivery: "Clientes e serviços organizados num projeto console.", available: false, tools: ".NET 10 · orientação a objetos" },
+  { id: "logic", title: "Lógica: decidir e repetir", skill: "Condições, for, while, contadores e acumuladores.", delivery: "Condições e laços: 14 práticas e 6 questões. Construa regras que funcionam para filas vazias, parciais e concluídas, com testes de diferentes entradas.", available: true, tools: "C# · condições · laços · leitura de casos de teste" },
+  { id: "objects", title: "Um programa que cresce", skill: "Métodos no projeto .NET já disponíveis. Objetos, interfaces, coleções e LINQ em preparação.", delivery: "Clientes e serviços organizados num projeto console.", available: false, tools: ".NET 10 · métodos · orientação a objetos" },
   { id: "data", title: "Dados que não se perdem", skill: "Modelagem, SQL, joins e relacionamentos", delivery: "Um banco e consultas que respondem perguntas do negócio.", available: false, tools: "SQL Server · SQL · EF Core" },
   { id: "api", title: "Seu sistema conversa com o mundo", skill: "HTTP, APIs, validação e async/await", delivery: "Uma API documentada para cadastrar e consultar serviços.", available: false, tools: "ASP.NET Core · OpenAPI · EF Core" },
   { id: "quality", title: "Funciona. E continua funcionando", skill: "Autorização, testes, logs e correção de bugs", delivery: "Um bug reproduzido por teste, corrigido e enviado em um PR.", available: false, tools: "xUnit · Git · segurança" },
@@ -52,7 +52,7 @@ export function pilotExercisePassed(kind: PilotExercise, code: string, output: s
   return /\bint\s+servicosPendentes\s*=/.test(executable) && /Console\.WriteLine\s*\(\s*servicosPendentes\s*\)/.test(executable) && output.trim() === pilotExercises[kind].expected && verification?.trim() === "true";
 }
 
-export type TrackView = "welcome" | "market" | "map" | "pilot";
+export type TrackView = "welcome" | "market" | "map" | "pilot" | "methods";
 export type PilotStep = "brief" | "guided" | "transfer" | "debug" | "review";
 export type CSharpTrackProgress = {
   version: 1; view: TrackView; step: PilotStep; device: "phone" | "computer"; pace: "short" | "long";
@@ -68,7 +68,7 @@ export function readCSharpProgress(raw: string | null): CSharpTrackProgress {
     if (!value || value.version !== 1) return base;
     return {
       ...base,
-      view: ["welcome", "market", "map", "pilot"].includes(value.view) ? value.view : "welcome",
+      view: ["welcome", "market", "map", "pilot", "methods"].includes(value.view) ? value.view : "welcome",
       step: ["brief", "guided", "transfer", "debug", "review"].includes(value.step) ? value.step : "brief",
       device: value.device === "computer" ? "computer" : "phone", pace: value.pace === "long" ? "long" : "short",
       guided: value.guided === true, transfer: value.transfer === true, debug: value.debug === true,

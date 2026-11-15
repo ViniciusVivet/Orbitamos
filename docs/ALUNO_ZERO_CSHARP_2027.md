@@ -111,16 +111,17 @@ que todos os alunos precisam dominar antes do primeiro backend.
 ## 6. O primeiro compromisso do Aluno 0
 
 Escrever o resumo de serviços, executar, trocar os dados e explicar cada linha.
-Depois, decisões e laços. O próximo bloco a produzir será **métodos no
-OrbiServiços + SDK/arquivos/terminal/primeiro commit**, antes de aumentar a lista
-de frameworks. Rascunhos e conquistas atuais serão preservados.
+Depois, decisões e laços. A próxima prática é [métodos no
+OrbiServiços + SDK/arquivos/terminal/primeiro commit](CSHARP_METODOS_ORBISERVICOS.md),
+implementada em 15/11. Ela tem quatro tarefas, do exemplo à aplicação nova.
+Rascunhos e conquistas anteriores foram preservados.
 
 **Estado do produto nesta rodada:** variáveis, condições e laços têm práticas
 executáveis no navegador. O mapa detalha as oito estações e identifica as aulas
-ainda planejadas. Métodos, API, EF e o projeto profissional não foram anunciados
-como curso já publicado. O subconjunto didático do navegador não é .NET completo;
-o projeto real usará um computador ou ambiente remoto adequado e previamente
-avaliado. O código da Orbitamos continua na stack atual.
+ainda planejadas. Métodos tem preparação no navegador e pacote de projeto
+console para executar no computador com SDK .NET 10. Classes, API, EF e o
+projeto profissional completo continuam em preparação. O subconjunto didático
+do navegador não é .NET completo. O código da Orbitamos continua na stack atual.
 
 ## 7. Como avaliar prontidão para começar a concorrer
 

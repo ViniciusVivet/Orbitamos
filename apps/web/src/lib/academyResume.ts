@@ -24,7 +24,7 @@ export function academyResumeEntry(href: string, now = Date.now()): AcademyResum
     const standalone = ["/estudante/jogos/entregas-do-orbi", "/estudante/jogos/ingles-em-cena", "/estudante/jogos/vila-dos-blocos", WORK_SIMULATION_HREF, "/estudante/trilhas/csharp", "/estudante/trilhas/sql"].includes(path);
     if (!code && !assembly && !orbi && !standalone) return null;
     const moduleId = url.searchParams.get("module");
-    const query = path === "/estudante/trilhas/sql" && url.searchParams.get("mode") === "workshop" ? "?mode=workshop" : path === "/estudante/trilhas/csharp" && moduleId && ["variables", "conditions", "loops"].includes(moduleId) ? `?module=${moduleId}` : "";
+    const query = path === "/estudante/trilhas/sql" && url.searchParams.get("mode") === "workshop" ? "?mode=workshop" : path === "/estudante/trilhas/csharp" && url.searchParams.get("view") === "methods" ? "?view=methods" : path === "/estudante/trilhas/csharp" && moduleId && ["variables", "conditions", "loops"].includes(moduleId) ? `?module=${moduleId}` : "";
     return { href: path + query + (pulse ? ORBI_PULSE_HASH : workPhaseHash || (speaking ? ENGLISH_SPEAKING_HASH : "")), updatedAt: now };
   } catch { return null; }
 }

@@ -35,8 +35,8 @@ try {
       expect(Math.min(scene.y + scene.height, options.viewport.height - (options.isMobile ? 64 : 0)) - Math.max(scene.y, 0)).toBeGreaterThan(60);
       const stations = map.locator('ol[aria-label="Oito estações da formação"] > li');
       await expect(stations).toHaveCount(8);
-      await expect(stations.nth(2).getByRole("button")).toHaveCount(0);
-      await expect(stations.nth(2)).toContainText("Aulas em preparação");
+      await expect(stations.nth(2).getByRole("button", { name: "Métodos e projeto .NET", exact: true })).toHaveCount(1);
+      await expect(stations.nth(2)).toContainText("Métodos disponíveis · classes em preparação");
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(options.viewport.width);
       await page.screenshot({ path: path.join(out, name + "-map.png") });
       const index = map.getByRole("navigation", { name: "Ir para uma estação", exact: true });

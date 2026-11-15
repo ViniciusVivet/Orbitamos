@@ -4,15 +4,16 @@ import { useEffect, type Ref } from "react";
 import { ArrowRight, Check, MapPin } from "lucide-react";
 import { csharpStages } from "@/lib/csharpTrack";
 import { csharpModules, type CSharpModuleKind } from "@/lib/csharpModules";
-import { csharpCareerPath, csharpCareerHabits, csharpAiRoutine, csharpAiSafetyRule, csharpLaterTopics } from "@/lib/csharpCareerPath";
+import { csharpCareerPath, csharpCareerHabits, csharpAiRoutine, csharpAiSafetyRule, csharpLaterTopics, type CSharpCareerStagePlan } from "@/lib/csharpCareerPath";
 import projetoCSharp from "../../../public/images/academy/projeto-csharp-v1.webp";
 import s from "./CSharpCareerMap.module.css";
 
 const stationLabels = { start: "Variáveis", logic: "Regras", objects: "Projeto .NET", data: "Dados", api: "API", quality: "Qualidade", delivery: "Entrega", career: "Portfólio" };
 
-export default function CSharpCareerMap({ currentModule, onOpenModule, headingRef }: {
+export default function CSharpCareerMap({ currentModule, onOpenModule, onOpenMethods, headingRef }: {
   currentModule: CSharpModuleKind;
   onOpenModule: (module: CSharpModuleKind) => void;
+  onOpenMethods: () => void;
   headingRef: Ref<HTMLHeadingElement>;
 }) {
   const currentStage = csharpStages[csharpModules[currentModule].stage].id;
@@ -44,21 +45,22 @@ export default function CSharpCareerMap({ currentModule, onOpenModule, headingRe
       document.getElementById(`career-stage-${stage.id}`)?.scrollIntoView({ block: "start", behavior: "instant" });
     }}><b>{String(index + 1).padStart(2, "0")}</b><span>{stationLabels[stage.id]}</span></a>)}</nav>
 
-    <div className={s.legend}><p><strong>Hoje:</strong> variáveis, condições e laços. As próximas aulas serão publicadas por unidade.</p><details><summary>Como vou estudar?</summary><p>Entenda o pedido, escreva com apoio, teste, mude uma regra e tente outra situação por conta própria. As checagens e consultas à ajuda ficam distintas.</p><p>Boilerplate é uma estrutura inicial reutilizável. Você vai entender seus arquivos, adaptar a regra e verificar o resultado.</p></details></div>
+    <div className={s.legend}><p><strong>Hoje:</strong> variáveis, condições e laços no navegador; métodos em um projeto com SDK .NET 10.</p><details><summary>Como vou estudar?</summary><p>Entenda o pedido, escreva com apoio, teste, mude uma regra e tente outra situação por conta própria. As checagens e consultas à ajuda ficam distintas.</p><p>Você recebe uma estrutura inicial, aprende seus arquivos, adapta a regra e confere o resultado. No celular, pode preparar o rascunho de métodos e continuar no computador.</p></details></div>
 
     <ol className={s.stations} aria-label="Oito estações da formação">
       {csharpStages.map((stage, index) => {
-        const plan = csharpCareerPath[stage.id];
+        const plan: CSharpCareerStagePlan = csharpCareerPath[stage.id];
+        const hasMethods = plan.availableUnits?.includes("methods") ?? false;
         const here = currentStage === stage.id;
         return <li key={stage.id} id={`career-stage-${stage.id}`} className={s.station} data-current={here} data-status={plan.status}>
           <div className={s.number} aria-hidden="true">{String(index + 1).padStart(2, "0")}</div>
           <div className={s.stationBody}>
-            <div className={s.status}>{here && <span><MapPin size={12}/> Seu módulo está aqui</span>}<span>{plan.availableModules.length ? "Práticas abertas" : "Aulas em preparação"}</span></div>
+            <div className={s.status}>{here && <span><MapPin size={12}/> Seu módulo está aqui</span>}<span>{hasMethods ? "Métodos disponíveis · classes em preparação" : plan.availableModules.length ? "Práticas abertas" : "Aulas em preparação"}</span></div>
             <h2>{stage.title}</h2>
             <p>{plan.competence}</p>
             <div className={s.deliverable}><span>VOCÊ VAI ENTREGAR</span><strong>{plan.delivery.title}</strong></div>
-            <div className={s.patterns} aria-label="Estruturas que você vai aprender">{plan.patterns.map(pattern => <span key={pattern.name}>{pattern.name}</span>)}</div>
-            {plan.availableModules.length > 0 && <div className={s.moduleActions}>{plan.availableModules.map(id => <button key={id} onClick={() => onOpenModule(id)}>{csharpModules[id].label}<ArrowRight size={15}/></button>)}</div>}
+            <div className={s.patterns} aria-label="Estruturas que você vai aprender">{plan.patterns.map(pattern => <span key={pattern.name}>{pattern.name}{hasMethods && pattern.status === "planned" ? " · em preparação" : ""}</span>)}</div>
+            {(plan.availableModules.length > 0 || hasMethods) && <div className={s.moduleActions}>{plan.availableModules.map(id => <button key={id} onClick={() => onOpenModule(id)}>{csharpModules[id].label}<ArrowRight size={15}/></button>)}{hasMethods && <button onClick={onOpenMethods}>Métodos e projeto .NET<ArrowRight size={15}/></button>}</div>}
             <details className={s.assignment}>
               <summary>Ver tarefa de trabalho e critérios<ArrowRight size={14}/></summary>
               <div className={s.ticket}><span>PEDIDO DA EQUIPE</span><h3>{plan.ticket.title}</h3><p>{plan.ticket.request}</p><small>{plan.ticket.why}</small></div>

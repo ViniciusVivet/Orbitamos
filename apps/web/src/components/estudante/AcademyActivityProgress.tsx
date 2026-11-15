@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import OrbitPhoto from "@/components/brand/OrbitPhoto";
 import { useAcademyActivity } from "./useAcademyActivity";
-import type { AcademyActivityItem } from "@/lib/academyActivity";
+import type { AcademyActivityItem, AcademyMethodsRecord } from "@/lib/academyActivity";
 import { academyPreviewHref } from "@/lib/portalNavigation";
 import s from "./AcademyActivityProgress.module.css";
 
@@ -16,10 +16,17 @@ function ActivityRecord({ item, preview }: { item: AcademyActivityItem; preview:
   </Link>;
 }
 
+function MethodsRecord({ item, preview }: { item: AcademyMethodsRecord; preview: boolean }) {
+  return <Link href={preview ? academyPreviewHref(item.href) : item.href} className={s.record} data-csharp-methods-record>
+    <OrbitPhoto kind="estudo" className={s.thumbnail} sizes="96px"/>
+    <div className={s.recordContent}><span className={s.recordStatus}>Preparação local</span><strong>{item.title}</strong><p>{item.draftsWritten} {item.draftsWritten === 1 ? "rascunho salvo" : "rascunhos salvos"} · {item.predictionsAnswered} {item.predictionsAnswered === 1 ? "previsão registrada" : "previsões registradas"}</p><p>{item.preparationItems} itens de preparação · {item.activitiesWithHelp} atividades com pistas ou modelo.</p><p>{item.selfReportedRuns} {item.selfReportedRuns === 1 ? "execução declarada por você" : "execuções declaradas por você"}; nenhum resultado conferido pela Orbitamos.</p></div><ArrowRight size={17}/>
+  </Link>;
+}
+
 export default function AcademyActivityProgress({ userId, preview = false }: { userId?: string | number | null; preview?: boolean }) {
-  const { data, records, ready, unavailable } = useAcademyActivity(userId, true);
+  const { data, records, methodsRecord, ready, unavailable } = useAcademyActivity(userId, true);
   const visible = data?.items.filter(item => item.status !== "new" || item.history) ?? [];
-  const hasRecords = visible.length > 0 || records.length > 0;
+  const hasRecords = visible.length > 0 || records.length > 0 || !!methodsRecord;
   return <section className={s.panel} data-academy-evidence aria-label="Código, experiências e trilha C#">
     <header className={s.heading}><div><span>SUAS TENTATIVAS VIRAM CAMINHO</span><h2>Olha o que você<br/>{" "}está construindo.</h2><p>{hasRecords ? "Seu código e suas descobertas estão aqui. Escolha uma atividade para continuar." : "Tudo começa com uma tentativa. Seu primeiro programa pode ser hoje."}</p>{!hasRecords && <Link href={preview ? academyPreviewHref("/estudante/pratica/variaveis-js") : "/estudante/pratica/variaveis-js"}>Escrever minha primeira linha<ArrowRight size={17}/></Link>}</div><OrbitPhoto kind="estudo" className={s.cover} sizes="(max-width: 650px) 92vw, 42vw"/></header>
     {!ready ? <p role="status">Lendo suas atividades salvas…</p> : <>
@@ -28,10 +35,11 @@ export default function AcademyActivityProgress({ userId, preview = false }: { u
         <div><strong>{data?.summaries.code.completed ?? 0}{" "}<small>/ {data?.summaries.code.total ?? "—"}</small></strong><span>Desafios de código</span></div>
         <div><strong>{data?.summaries.csharp.completed ?? 0}{" "}<small>/ 3</small></strong><span>Módulos C# finalizados</span></div>
       </div>
+      {methodsRecord && <section aria-label="Sua preparação de métodos C#"><h3 className={s.listHeading}>Seu projeto C# no computador.</h3><div className={s.activityList}><MethodsRecord item={methodsRecord} preview={preview}/></div></section>}
       {records.length > 0 && <section aria-label="Suas práticas de inglês"><h3 className={s.listHeading}>Seu inglês também conta uma história.</h3><div className={s.activityList}>{records.map(item => <ActivityRecord key={item.id} item={item} preview={preview}/>)}</div></section>}
       {visible.length ? <><h3 className={s.listHeading}>Continue uma atividade</h3><div className={s.activityList}>{visible.slice(0, 6).map(item => <ActivityRecord key={item.id} item={item} preview={preview}/>)}</div>{visible.length > 6 && <details className={s.details}><summary>Mais {visible.length - 6} atividades salvas</summary><div className={s.activityList}>{visible.slice(6).map(item => <ActivityRecord key={item.id} item={item} preview={preview}/>)}</div></details>}</> : <p className={s.empty}>Seus códigos e jogos aparecem aqui depois da primeira tentativa.</p>}
     </>}
-    <details className={s.details}><summary>Como esse progresso é contado?</summary><p>Visitar uma atividade não é concluir. Em prática significa que há uma tentativa ou etapa registrada; finalizada significa que as checagens daquela atividade passaram. Nenhum registro sozinho certifica domínio profissional.</p><p>Nos Primeiros passos, a entrega completa inclui o código inicial, uma alteração e uma aplicação independente testadas. Seus rascunhos anteriores continuam guardados.</p><p>{data?.summaries.experiences.reviewed ?? 0} experiências revisitadas na revisão. C# conta os três módulos disponíveis: variáveis, condições e laços; a formação completa ainda tem etapas em preparação.</p><p>Os registros de código e jogos ficam separados por conta neste navegador e não sincronizam entre aparelhos. O histórico das aulas é separado e sincroniza quando o serviço está disponível.</p></details>
+    <details className={s.details}><summary>Como esse progresso é contado?</summary><p>Visitar uma atividade não é concluir. Em prática significa que há uma tentativa ou etapa registrada; finalizada significa que as checagens daquela atividade passaram. Nenhum registro sozinho certifica domínio profissional.</p><p>Nos Primeiros passos, a entrega completa inclui o código inicial, uma alteração e uma aplicação independente testadas. Seus rascunhos anteriores continuam guardados.</p><p>{data?.summaries.experiences.reviewed ?? 0} experiências revisitadas na revisão. C# conta os três módulos disponíveis: variáveis, condições e laços. A unidade de métodos tem uma preparação separada; rascunhos, pistas e execuções declaradas não acrescentam conclusão aos três módulos.</p><p>Os registros de código e jogos ficam separados por conta neste navegador e não sincronizam entre aparelhos. O histórico das aulas é separado e sincroniza quando o serviço está disponível.</p></details>
     {unavailable && <p role="status">Não foi possível ler parte do armazenamento local. Seus registros não foram alterados.</p>}
   </section>;
 }

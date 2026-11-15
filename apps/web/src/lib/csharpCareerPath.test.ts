@@ -46,6 +46,7 @@ describe("C# career map describes real work without inventing published lessons"
       }
       if (plan.status === "planned") {
         expect(plan.availableModules).toEqual([]);
+        expect(plan.availableUnits ?? []).toEqual([]);
         expect(plan.patterns.every(pattern => pattern.status === "planned")).toBe(true);
       }
     }
@@ -68,13 +69,26 @@ describe("C# career map describes real work without inventing published lessons"
     }
   });
 
-  it("keeps mobile practice distinct from future SDK projects and teaches methods before frameworks", () => {
+  it("opens methods as a separate SDK unit while classes and collections remain planned", () => {
+    expect(plans.flatMap(plan => plan.availableUnits ?? [])).toEqual(["methods"]);
+    expect(csharpCareerPath.objects.status).toBe("partial");
+    expect(csharpCareerPath.objects.availableModules).toEqual([]);
+    expect(csharpCareerPath.objects.availableUnits).toEqual(["methods"]);
+    expect(csharpCareerPath.objects.patterns[0].status).toBe("available");
+    expect(csharpCareerPath.objects.patterns.slice(1).every(pattern => pattern.status === "planned")).toBe(true);
+    expect(csharpCareerPath.objects.artifact.file).toBe("Program.cs");
+    expect(csharpCareerPath.objects.artifact.code).not.toMatch(/\b(static|class|public)\b/);
+    expect(compileCSharpSubset(csharpCareerPath.objects.artifact.code).ok).toBe(false);
+  });
+
+  it("keeps mobile preparation distinct from SDK execution and teaches methods before frameworks", () => {
     for (const plan of plans) {
       expect(plan.environment.phone && plan.environment.computer).toBeTruthy();
       expect(plan.environment.requiresSdk).toBe(!["start", "logic"].includes(plan.id));
     }
     expect(csharpCareerPath.objects.patterns[0].name).toContain("Método");
-    expect(csharpCareerPath.objects.patterns.every(pattern => pattern.status === "planned")).toBe(true);
+    expect(csharpCareerPath.objects.environment.phone).toContain("não são executados");
+    expect(csharpCareerPath.objects.environment.computer).toContain("não é uma verificação automática");
     expect(csharpCareerPath.data.delivery.task).toContain("um de cada vez");
     expect(csharpCareerPath.api.competence).toContain("antes de integrar");
     expect(csharpCareerPath.api.patterns.some(pattern => pattern.name.includes("CancellationToken"))).toBe(true);

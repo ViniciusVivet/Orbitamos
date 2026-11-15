@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, ArrowUpRight, Code2, Monitor, Smartphone } from 
 import { csharpJobSources, csharpMarketCheckedAt, csharpProgressKey, newCSharpProgress, readCSharpProgress, type CSharpTrackProgress, type TrackView } from "@/lib/csharpTrack";
 import CSharpVariables from "./CSharpVariables";
 import CSharpCareerMap from "./CSharpCareerMap";
+import CSharpMethods from "./CSharpMethods";
 import { csharpModules, readModuleKind, type CSharpModuleKind } from "@/lib/csharpModules";
 import projetoCSharp from "../../../public/images/academy/projeto-csharp-v1.webp";
 import s from "./CSharpTrack.module.css";
@@ -28,7 +29,7 @@ export default function CSharpTrack({ userId }: { userId: string | number | null
       if (!active) return;
       const params = new URLSearchParams(window.location.search);
       const requestedView = params.get("view");
-      const validView = views.find(view => view.id === requestedView)?.id;
+      const validView = requestedView === "methods" ? "methods" : views.find(view => view.id === requestedView)?.id;
       setAcademyPreview(params.get("academy") === "1");
       const requested = params.get("module");
       const validModule = requested === "variables" || requested === "conditions" || requested === "loops" ? requested : null;
@@ -36,7 +37,7 @@ export default function CSharpTrack({ userId }: { userId: string | number | null
       let savedModule: CSharpModuleKind = "variables";
       try { saved = readCSharpProgress(key ? localStorage.getItem(key) : null); savedModule = readModuleKind(key ? localStorage.getItem(`${key}-module`) : null); }
       catch { setStorageError(true); }
-      const restored = validModule ? { ...saved, view: "pilot" as const } : validView ? { ...saved, view: validView } : saved;
+      const restored = validView === "methods" ? { ...saved, view: "methods" as const } : validModule ? { ...saved, view: "pilot" as const } : validView ? { ...saved, view: validView } : saved;
       latest.current = restored; setProgress(restored);
       setModuleKind(validModule ?? savedModule);
       setReady(true);
@@ -71,7 +72,7 @@ export default function CSharpTrack({ userId }: { userId: string | number | null
 
   return <div className={s.track} data-csharp-track data-view={progress.view}>
     <header className={s.masthead}><Link href={academyPreview ? "/dev/academy-preview?view=tracks" : "/estudante/trilhas"}><ArrowLeft size={16}/>Minhas trilhas</Link><span>ORBITAMOS ACADEMY <i>/</i> C# & .NET</span><span className={s.edition}>EDIÇÃO PILOTO</span></header>
-    <nav className={s.navigation} aria-label="Etapas da jornada C#">{views.map((view, index) => <button key={view.id} aria-current={progress.view === view.id ? "page" : undefined} onClick={() => navigate(view.id)}><small>0{index + 1}</small>{view.title}</button>)}</nav>
+    <nav className={s.navigation} aria-label="Etapas da jornada C#">{views.map((view, index) => <button key={view.id} aria-current={progress.view === view.id || (view.id === "pilot" && progress.view === "methods") ? "page" : undefined} onClick={() => navigate(view.id)}><small>0{index + 1}</small>{view.title}</button>)}</nav>
     {storageError && <p className={s.notice} role="alert">O navegador não permitiu salvar. Você pode testar, mas copie seu código antes de sair.</p>}
 
     {progress.view === "welcome" && <>
@@ -79,7 +80,7 @@ export default function CSharpTrack({ userId }: { userId: string | number | null
         <div className={s.heroCopy}><span className={s.kicker}>APRENDA C# PROGRAMANDO</span><h1 ref={heading} tabIndex={-1}>Aprenda <em>C#</em> na prática.</h1><p>Escreva suas primeiras linhas e veja o resultado. A orientação fica com você, no celular ou no computador.</p><div className={s.actions}><button className={s.primary} onClick={() => openModule("variables")}>Começar a codar · variáveis<ArrowRight size={18}/></button><button className={s.textButton} onClick={() => navigate("market")}>Antes, conhecer a profissão<ArrowUpRight size={16}/></button></div><div className={s.heroFacts}><span><Smartphone size={16}/>No seu ritmo</span><span><Code2 size={16}/>Escreva e teste</span></div></div>
         <div className={s.heroVisual}><Image src={projetoCSharp} alt="" fill sizes="(max-width: 767px) calc(100vw - 56px), 45vw" placeholder="blur" loading="eager" className={s.heroPhoto}/><span className={s.photoCaption}><strong>OrbiServiços</strong><small>Seu projeto, uma descoberta por vez.</small></span></div>
       </section>
-      <details className={s.welcomeDetails}><summary>O que vamos construir?<ArrowRight size={16}/></summary><div><p>O OrbiServiços é um projeto fictício para organizar clientes e serviços. Você começa com um programa pequeno e aprende a fazer, testar e explicar cada parte.</p><p>Neste piloto: variáveis, condições e laços. Métodos, APIs e as próximas etapas estão planejados. A trilha não promete vaga ou salário.</p></div></details>
+      <details className={s.welcomeDetails}><summary>O que vamos construir?<ArrowRight size={16}/></summary><div><p>O OrbiServiços é um projeto fictício para organizar clientes e serviços. Você começa com um programa pequeno e aprende a fazer, testar e explicar cada parte.</p><p>Variáveis, condições e laços rodam no navegador. A unidade de métodos começa seu projeto .NET no computador. Objetos, APIs e as próximas unidades estão em preparação. A trilha não promete vaga ou salário.</p></div></details>
       <details className={s.welcomeDetails}><summary>Ajustar para meu jeito de estudar<ArrowRight size={16}/></summary><section className={s.preferences} aria-label="Seu jeito de estudar"><div><span className={s.kicker}>A JORNADA CABE NA SUA ROTINA</span><h2>Como você vai começar?</h2><p>Você pode mudar isso quando quiser.</p></div><div><fieldset><legend>Seu ambiente agora</legend><button aria-pressed={progress.device === "phone"} onClick={() => update({ device: "phone" })}><Smartphone size={18}/>Pelo celular</button><button aria-pressed={progress.device === "computer"} onClick={() => update({ device: "computer" })}><Monitor size={18}/>No computador</button></fieldset><fieldset><legend>Seu ritmo preferido</legend><button aria-pressed={progress.pace === "short"} onClick={() => update({ pace: "short" })}>Uma pausa curta</button><button aria-pressed={progress.pace === "long"} onClick={() => update({ pace: "long" })}>Um bloco de estudo</button></fieldset><p className={s.plan}>{progress.pace === "short" ? "Hoje: leia a missão e escreva as primeiras linhas. Seu rascunho permite continuar depois." : "Hoje: faça a missão guiada, tente a variação e termine corrigindo um erro."} {progress.device === "phone" ? "Use as teclas de símbolos junto do editor." : "Use o editor e teste também a execução com o teclado."}</p></div></section></details>
     </>}
 
@@ -91,9 +92,11 @@ export default function CSharpTrack({ userId }: { userId: string | number | null
       <div className={s.boundary}><h2>Você não precisa aprender tudo ao mesmo tempo.</h2><p>Começamos por C#, lógica e depuração. APIs, SQL, Git e testes entram conforme o projeto cresce. Angular é um caminho full stack posterior; Kubernetes e microsserviços não são o ponto de partida.</p><p>Base planejada para os projetos completos: <a href="https://dotnet.microsoft.com/en-us/platform/support/policy" target="_blank" rel="noreferrer">.NET 10 LTS</a>. Formação e disponibilidade também podem ser filtros de vagas; concluir uma trilha não elimina esses critérios.</p><button className={s.primary} onClick={() => navigate("map")}>Ver meu caminho<ArrowRight size={17}/></button></div>
     </>}
 
-    {progress.view === "map" && <CSharpCareerMap currentModule={moduleKind} onOpenModule={openModule} headingRef={heading}/>}
+    {progress.view === "map" && <CSharpCareerMap currentModule={moduleKind} onOpenModule={openModule} onOpenMethods={() => navigate("methods")} headingRef={heading}/>}
 
-    {progress.view === "pilot" && <><nav className={s.moduleTabs} aria-label="Módulos disponíveis">{(Object.keys(csharpModules) as CSharpModuleKind[]).map(id => <button key={id} aria-current={moduleKind === id ? "page" : undefined} onClick={() => openModule(id)}>{csharpModules[id].tab}</button>)}</nav><CSharpVariables key={`${userId}-${moduleKind}`} userId={userId} moduleKind={moduleKind} onModuleChange={openModule} onFullMap={() => navigate("map")}/></>}
+    {(progress.view === "pilot" || progress.view === "methods") && <nav className={s.moduleTabs} aria-label="Módulos disponíveis">{(Object.keys(csharpModules) as CSharpModuleKind[]).map(id => <button key={id} aria-current={progress.view === "pilot" && moduleKind === id ? "page" : undefined} onClick={() => openModule(id)}>{csharpModules[id].tab}</button>)}<button aria-current={progress.view === "methods" ? "page" : undefined} onClick={() => navigate("methods")}>Métodos · .NET real</button></nav>}
+    {progress.view === "pilot" && <CSharpVariables key={`${userId}-${moduleKind}`} userId={userId} moduleKind={moduleKind} onModuleChange={openModule} onMethods={() => navigate("methods")} onFullMap={() => navigate("map")}/>}
+    {progress.view === "methods" && <CSharpMethods key={key} userId={userId} onFullMap={() => navigate("map")}/>}
     <footer className={s.footer}><span>ORBITAMOS / UMA ETAPA DE CADA VEZ</span><p>{key ? "Preferências, código e progresso deste piloto ficam neste navegador, separados do histórico das aulas. Não sincronizam entre aparelhos." : "Entre na sua conta para guardar seu progresso neste navegador."}</p></footer>
   </div>;
 }

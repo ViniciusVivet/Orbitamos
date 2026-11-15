@@ -36,4 +36,9 @@ describe("C# career pilot", () => {
     expect(state.reflection).toHaveLength(1500);
     expect(state.drafts.transfer).toHaveLength(100000);
   });
+  it("restores the real-project methods view without marking browser exercises complete", () => {
+    const state = readCSharpProgress(JSON.stringify({ ...newCSharpProgress(), view: "methods" }));
+    expect(state.view).toBe("methods");
+    expect(state.guided || state.transfer || state.debug).toBe(false);
+  });
 });

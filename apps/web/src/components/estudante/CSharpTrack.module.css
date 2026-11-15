@@ -21,3 +21,5 @@
 @media(max-width:767px){.hero{gap:20px}.heroVisual{order:-1;width:100%;min-height:0;aspect-ratio:1.75}.heroCopy{padding:0}.hero h1{font-size:38px;margin:14px 0 16px}.heroCopy>p{font-size:13px}.heroCopy .actions{margin:18px 0 12px;gap:6px}.heroFacts{margin-top:10px;font-size:10px}.photoCaption{left:18px;bottom:15px}.photoCaption strong{font-size:22px}.photoCaption small{font-size:10px}.welcomeDetails>summary{font-size:12px;min-height:52px}.welcomeDetails{margin-top:16px}}
 
 .track[data-view=map] .navigation{margin-bottom:18px}.track[data-view=map] .masthead{padding-bottom:10px}.track[data-view=map] .navigation button{min-height:52px}
+.track[data-view=methods] .navigation{margin-bottom:12px}.track[data-view=methods] .masthead{padding-bottom:4px}.track[data-view=methods] .navigation button{min-height:44px}.track[data-view=methods] .moduleTabs{display:none}
+@media(max-width:767px){.track[data-view=methods] .navigation{display:none}.track[data-view=methods] .masthead{padding-bottom:0}.track[data-view=methods]{padding-top:0}}

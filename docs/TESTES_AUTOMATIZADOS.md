@@ -634,6 +634,21 @@ dos diálogos. São ensaios locais, não rollback de infraestrutura real.
 
 ## Limites restantes
 
+### Métodos C# — unidade do projeto real (15/11/2026)
+
+`node scripts/audit-csharp-methods.mjs` confere entrada, aviso de SDK, ZIP,
+quatro tarefas, rascunho inicialmente vazio, previsão, ajuda preservada,
+autodeclaração invalidada por edição, reset/recuperação, importação confirmada,
+retomada e progresso separado. Usa Chromium desktop e WebKit 390/320 px em
+prévias isoladas. Não mede teclado físico, aprendizagem ou compilação do aluno.
+
+O material nativo é verificado em sequência com SDK .NET 10 por
+`apps/web/examples/academy/orbiservicos-metodos-v1/tools/validar-material.ps1`.
+O [guia editorial](../apps/web/examples/academy/orbiservicos-metodos-v1/tools/EDITORIAL.md)
+registra soluções/contraexemplos e o ZIP reproduzível. Essa compilação local
+não é executada no backend do site ou dentro do Vitest. Verificador e rascunho
+não concedem XP, conclusão autenticada ou autoria comprovada.
+
 Para medir o Orbi sem o trabalho de screenshots e Axe na janela de amostragem,
 execute `node scripts/profile-orbi-frames.mjs` sozinho, com o servidor já
 aquecido. Aceita `desktop` ou `iphone-safari` como argumento. Guarda as amostras

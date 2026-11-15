@@ -1,5 +1,9 @@
 # Documentação da Orbitamos
 
+**Métodos no OrbiServiços — 15/11/2026:** [unidade, ambiente e verificação](CSHARP_METODOS_ORBISERVICOS.md).
+Quatro tarefas ligam o navegador a um projeto console .NET 10. Rascunhos,
+previsões e execuções declaradas ficam separados das verificações locais reais.
+
 **Aluno 0 — C# para 2027, 15/11/2026:** [mapa, tarefas e critérios](ALUNO_ZERO_CSHARP_2027.md).
 Pesquisa de vagas e referências oficiais orientam oito estações do OrbiServiços;
 o mapa distingue as práticas abertas das aulas ainda planejadas.

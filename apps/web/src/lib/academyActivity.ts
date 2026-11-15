@@ -16,13 +16,14 @@ import { assemblyDraftKey, orbiDraftKey, readAssemblyDraft, readOrbiDraft, readV
 import { csharpProgressKey, readCSharpProgress } from "./csharpTrack";
 import { csharpModules, readModuleKind, type CSharpModuleKind } from "./csharpModules";
 import { getPulseLesson, pulseLessons, pulseSaveKey, readPulseSave } from "./orbiPulse";
-import { ENGLISH_SPEAKING_HREF, ORBI_PULSE_HREF, WORK_DELIVERY_HREF, WORK_INCIDENT_HREF, WORK_SIMULATION_HREF } from "./portalNavigation";
+import { CSHARP_METHODS_HREF, ENGLISH_SPEAKING_HREF, ORBI_PULSE_HREF, WORK_DELIVERY_HREF, WORK_INCIDENT_HREF, WORK_SIMULATION_HREF } from "./portalNavigation";
 import { getWorkCase, readWorkSave, WORK_CASE_IDS, workSimulationKey } from "./workSimulation";
 import { readWorkDeliverySave, WORK_DELIVERY_STARTER_CODE, workDeliveryKey } from "./workDelivery";
 import { getIncidentCase, INCIDENT_CASE_IDS, incidentSaveKey, readIncidentSave } from "./workIncident";
 import { englishSpeakingLessons, getSpeakingLesson, readSpeakingSave, speakingSaveKey } from "./spokenEnglish";
 import { englishUseKey, englishUseQuestions, getEnglishUseQuestion, readEnglishUseSave } from "./englishUse";
 import { englishReviewKey, readEnglishReviewSave } from "./englishReview";
+import { csharpMethodsActivities, csharpMethodsKey, csharpMethodsUnit, readCSharpMethodsProgress, summarizeCSharpMethodsPreparation } from "./csharpMethods";
 
 export type AcademyActivityItem = {
   id: string; title: string; group: "experience" | "code" | "csharp" | "sql-workshop";
@@ -37,6 +38,21 @@ export type AcademyActivity = {
 };
 type ReadSave = (key: string) => string | null;
 export { academyResumeEntry, readAcademyResume, resumeStorageKey, type AcademyResumeEntry } from "./academyResume";
+
+export type AcademyMethodsRecord = ReturnType<typeof summarizeCSharpMethodsPreparation> & {
+  id: "csharp-methods";
+  title: string;
+  href: string;
+  activeTitle: string;
+};
+
+/** Progress-page preparation record. No completion, compiler result or reward is inferred. */
+export function getAcademyMethodsRecord(userId: string | number, read: ReadSave): AcademyMethodsRecord | null {
+  const progress = readCSharpMethodsProgress(read(csharpMethodsKey(userId)));
+  const summary = summarizeCSharpMethodsPreparation(progress);
+  if (!summary.preparationItems && !summary.predictionsAnswered && !summary.draftsWritten && !summary.activitiesWithHelp && !summary.selfReportedRuns) return null;
+  return { ...summary, id: "csharp-methods", title: `C# · ${csharpMethodsUnit.title}`, href: CSHARP_METHODS_HREF, activeTitle: csharpMethodsActivities.find(activity => activity.id === progress.active)!.title };
+}
 
 function object(raw: string | null): Record<string, unknown> | null {
   try { const value = JSON.parse(raw ?? "null"); return value && typeof value === "object" && !Array.isArray(value) ? value : null; } catch { return null; }
@@ -57,7 +73,9 @@ export function chooseAcademyContinuation(items: AcademyActivityItem[]): Academy
 }
 
 /** Account-scoped, read-only projection. A visit is never a validated unit or proof of mastery. */
-export function getAcademyActivity(userId: string, read: ReadSave): AcademyActivity {
+export function getAcademyActivity(ownerId: string | number, read: ReadSave): AcademyActivity {
+  // Existing modules keep their established keys. Methods preserve the owner's type.
+  const userId = String(ownerId);
   const cached = new Map<string, string | null>();
   const get: ReadSave = key => { if (!cached.has(key)) cached.set(key, read(key)); return cached.get(key) ?? null; };
   const journal = readJournal(get(journalKey(userId)));
@@ -161,7 +179,19 @@ export function getAcademyActivity(userId: string, read: ReadSave): AcademyActiv
   const resume = readAcademyResume(get(resumeStorageKey(userId)));
   let separateContinuation: AcademyActivityItem | null = null;
   if (resume) {
-    if (resume.href === ENGLISH_SPEAKING_HREF) {
+    if (resume.href === CSHARP_METHODS_HREF) {
+      const methods = readCSharpMethodsProgress(get(csharpMethodsKey(ownerId)));
+      const summary = summarizeCSharpMethodsPreparation(methods);
+      const current = csharpMethodsActivities.find(activity => activity.id === methods.active)!;
+      const practiced = summary.preparationItems > 0 || summary.predictionsAnswered > 0 || summary.draftsWritten > 0 || summary.activitiesWithHelp > 0 || summary.selfReportedRuns > 0;
+      // Local preparation and student statements remain outside the three C# modules.
+      separateContinuation = {
+        id: "csharp-methods", title: `C# · ${csharpMethodsUnit.title}`, group: "csharp", href: CSHARP_METHODS_HREF,
+        status: practiced ? "in-progress" : "opened", completedUnits: 0, totalUnits: 0, unit: "resultados verificados", practiced, reviewed: 0, lastAt: resume.updatedAt,
+        detail: `${current.title} · ${summary.draftsWritten} ${summary.draftsWritten === 1 ? "rascunho salvo" : "rascunhos salvos"}. Execução no computador com SDK .NET 10; nenhum resultado conferido pela Orbitamos.`,
+        nextHref: CSHARP_METHODS_HREF, nextLabel: "Retomar a preparação de métodos",
+      };
+    } else if (resume.href === ENGLISH_SPEAKING_HREF) {
       const review = readEnglishReviewSave(get(englishReviewKey(userId)));
       const session = review.active ? review.session : undefined;
       const use = session ? null : readEnglishUseSave(get(englishUseKey(userId)));

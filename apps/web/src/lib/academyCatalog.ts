@@ -42,7 +42,7 @@ export function getAcademyCatalog(courses: CursoResumo[]): AcademyCatalogEntry[]
       id: "csharp", title: "C# & .NET", format: "Trilha prática", tone: "mint",
       description: "Um mapa de estudo com código guiado, perguntas e um projeto de contexto para suas primeiras linhas em C#.",
       available: "Comece por variáveis, condições e laços.",
-      boundary: "Edição piloto. Métodos, APIs e as próximas etapas do projeto ainda estão em preparação.",
+      boundary: "Edição piloto. Métodos tem projeto para executar no computador com SDK .NET 10. Classes, APIs e as próximas unidades ainda estão em preparação.",
       href: "/estudante/trilhas/csharp",
       courses: take(["csharp-fundamentos"]),
     },

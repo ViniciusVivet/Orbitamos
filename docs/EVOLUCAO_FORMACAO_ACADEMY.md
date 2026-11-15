@@ -1,5 +1,59 @@
 # Formação Orbitamos: execução e continuidade
 
+## Métodos e primeiro projeto real — 15/11/2026
+
+Continuação sobre `0722e75`. A unidade abre em
+`/estudante/trilhas/csharp?view=methods`, pela estação **Projeto .NET** ou após
+laços. O [guia](CSHARP_METODOS_ORBISERVICOS.md) descreve o ambiente e as decisões.
+Os três módulos executáveis no navegador e seus saves continuam separados.
+
+Quatro tarefas: acompanhar chamada/parâmetros/retorno, reutilizar para outros
+clientes, investigar retorno fixo e escrever uma decisão nova com `bool`.
+Começam vazias no navegador; exemplo, base e pistas são escolhas do aluno.
+O apoio diminui até o pedido independente, sem solução pronta. Previsão não é
+execução. A segunda resposta do exemplo guiado fica escondida até a previsão.
+
+O pacote está em `apps/web/examples/academy/orbiservicos-metodos-v1/` e seu ZIP
+público tem 16 arquivos (~16 KB). Não contém soluções editoriais nem dependências
+NuGet externas. README orienta instalação, Program.cs/.csproj, salvar/build/run,
+Git num repositório de estudo separado e verificador local. Não executa código
+do aluno na Vercel nem introduz serviço pago. O navegador guarda preparação,
+rascunho e consulta à ajuda; exportação/importação transporta apenas texto,
+com confirmação e recuperação. Editar limpa a declaração anterior de execução.
+
+Métodos tem retomada e registro próprios no progresso, sem somar aprovação,
+quarto módulo executável no navegador ou XP. A autodeclaração “executei no PC”
+não vira um resultado de compilador ou certificado de competência.
+
+Verificação nativa: SDK oficial privado **10.0.404**, SHA-512 conferido,
+sem trocar SDKs/PATH globais. **10/10 cenários editoriais** e suplemento de
+assinatura **1/1**: soluções 5/5 ou 9/9, retorno fixo incorreto, erro CS0161,
+stdout fixo, saída precoce, Exit(0), timeout e assinatura incompatível CS0123.
+Cópia do ZIP extraída fora do repositório compilou e mostrou **5 → 3** ao mudar
+só um argumento. São verificações do material autoral; não da conta dos alunos.
+Resultado nativo registrado em `tools/EDITORIAL.md`; relatórios locais ignorados.
+
+**Próximo bloco:** observar o Aluno 0 fazer a tarefa independente, depois ensinar
+tipos/objetos e coleções no mesmo projeto, sem saltar diretamente para EF/API.
+Manter instalador/SDK gratuito, suporte progressivo e critérios observáveis.
+QA web concluído: **899 testes em 77 arquivos**, nove contratos, geração de
+tipos, TypeScript, lint dos 22 arquivos de código alterados e build de produção
+aprovados. Após ajustar os últimos textos e nomes de teste, 17 regressões de
+catálogo/retomada/navegação foram repetidas e aprovadas. O aviso já conhecido de
+rastreamento dinâmico na rota de materiais permanece; essa rota não foi alterada.
+
+`audit-csharp-methods.mjs` e `audit-csharp-career-map.mjs` passaram em Chromium
+desktop 1366×768 e WebKit 390×664/320×640. Conferidos foto/ação na primeira dobra,
+aviso de SDK, quatro tarefas, download do ZIP/JSON, copiar negado com alternativa,
+previsão sem antecipar a resposta, ajuda persistente, reset/importação com
+recuperação do texto mais recente, reload, separação de contas e retomada própria.
+Progresso não transforma declaração em aprovação. Sem rolagem horizontal ou
+erro de página; Axe não apontou violações nos escopos auditados. Capturas foram
+inspecionadas. Esses ensaios não são conformidade integral, teste do teclado
+físico do iPhone ou observação de aprendizagem com iniciante.
+Relatórios/capturas ficam em `apps/web/test-results/csharp-methods/` e
+`csharp-career-map/`, ignorados. A confirmação remota desta rodada é separada.
+
 ## Objetivo e régua
 
 Implementação iniciada em **15/11/2026**, sobre `9f77510`. O usuário autorizou

@@ -9,10 +9,16 @@ export const WORK_INCIDENT_HASH = "#incidente";
 export const WORK_INCIDENT_HREF = WORK_SIMULATION_HREF + WORK_INCIDENT_HASH;
 export const ENGLISH_SPEAKING_HASH = "#falar";
 export const ENGLISH_SPEAKING_HREF = "/estudante/jogos/ingles-em-cena" + ENGLISH_SPEAKING_HASH;
+export const CSHARP_METHODS_HREF = "/estudante/trilhas/csharp?view=methods";
 
 const isWorkPhaseHash = (hash: string) => hash === WORK_DELIVERY_HASH || hash === WORK_INCIDENT_HASH;
 
 const hasPrefix = (path: string, prefix: string) => path === prefix || path.startsWith(`${prefix}/`);
+const csharpLearningQuery = (params: URLSearchParams) => {
+  if (params.get("view") === "methods") return "view=methods";
+  const moduleKind = params.get("module");
+  return moduleKind && ["variables", "conditions", "loops"].includes(moduleKind) ? `module=${moduleKind}` : "";
+};
 
 /** Presentation only. Authentication remains enforced by the proxy and layouts. */
 export function isWorkspacePath(path: string) {
@@ -51,8 +57,8 @@ export function academyPreviewHref(href: string) {
   if (path === "/estudante/jogos") return "/dev/academy-preview";
   if (path === WORK_SIMULATION_HREF) return `/dev/work-simulation-preview?from=academy${isWorkPhaseHash(url.hash) ? url.hash : ""}`;
   if (path === "/estudante/trilhas/csharp") {
-    const moduleKind = url.searchParams.get("module");
-    return `/dev/csharp-preview?academy=1${moduleKind && ["variables", "conditions", "loops"].includes(moduleKind) ? `&module=${moduleKind}` : ""}`;
+    const query = csharpLearningQuery(url.searchParams);
+    return `/dev/csharp-preview?academy=1${query ? `&${query}` : ""}`;
   }
   if (path === "/estudante/trilhas/sql") return `/dev/academy-preview?activity=sql${url.searchParams.get("mode") === "workshop" ? "&mode=workshop" : ""}`;
   const activities: Record<string, string> = { "entregas-do-orbi": "delivery", "ingles-em-cena": "english", revisao: "review", "vila-dos-blocos": "village" };
@@ -84,11 +90,15 @@ export function canonicalAcademyHref(path: string, search = "", hash = ""): stri
   if ([WORK_SIMULATION_HREF, "/dev/work-simulation-preview"].includes(path) && hash && !isWorkPhaseHash(hash)) return null;
   const speakingRoute = path === "/estudante/jogos/ingles-em-cena" || (path === "/dev/academy-preview" && params.get("activity") === "english");
   if (speakingRoute && hash && hash !== ENGLISH_SPEAKING_HASH) return null;
+  if (path === "/estudante/trilhas/csharp") {
+    const query = csharpLearningQuery(params);
+    return path + (query ? `?${query}` : "");
+  }
   if (path.startsWith("/estudante/")) return withMode(path + search);
   if (path === "/dev/work-simulation-preview" && params.get("from") === "academy") return withMode(WORK_SIMULATION_HREF);
   if (path === "/dev/csharp-preview" && params.get("academy") === "1") {
-    const moduleKind = params.get("module");
-    return `/estudante/trilhas/csharp${moduleKind && ["variables", "conditions", "loops"].includes(moduleKind) ? `?module=${moduleKind}` : ""}`;
+    const query = csharpLearningQuery(params);
+    return `/estudante/trilhas/csharp${query ? `?${query}` : ""}`;
   }
   if (path === "/dev/academy-preview") {
     const activity = params.get("activity");
