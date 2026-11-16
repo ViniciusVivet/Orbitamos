@@ -6,6 +6,11 @@ e o [registro de execução](EVOLUCAO_FORMACAO_ACADEMY.md) continuam sendo as fo
 de diagnóstico e evidência. Este arquivo fixa o recorte da primeira entrega,
 as frentes de planejamento e as prioridades.
 
+O [mapa de execução](MAPA_EXECUCAO_ACADEMY.md) é a fila operacional vigente:
+tarefas, subtarefas, dependências, estados e próximo ID. As prioridades deste
+controle orientam a fila; seus registros históricos não são uma segunda lista
+concorrente de trabalho.
+
 ## O que o usuário quer
 
 Uma formação gratuita pelo povo, com cuidado de produto comparável ao esperado
@@ -161,7 +166,8 @@ definem o destino; nenhuma unidade isolada certifica prontidão para vaga.
    a unidade .NET escolhida após visitar inglês. Trocar para SQL ou limpar a
    escolha continua seguindo a intenção do aluno. Auditoria isolada nos três
    perfis confirma rascunhos/retomada, sem criar execução verificada ou XP.
-   Fechar publicação separadamente do QA; este reparo não aumenta a estimativa.
+   Publicação confirmada em `a216357`, `main` remota, CI `43959062550` e Vercel
+   aprovados. Este reparo não aumenta a estimativa.
 2. Fazer a [sessão do Aluno 0](SESSAO_ALUNO_ZERO.md). A IA pode preparar e testar
    o percurso técnico, mas não inventar a tentativa, a compreensão ou o relato
    de um estudante. O usuário e depois outros iniciantes precisam realizá-lo.

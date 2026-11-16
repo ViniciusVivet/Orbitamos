@@ -9,6 +9,10 @@
 - Para trabalho na Academy, leia também [objetivo, régua e continuidade](docs/CONTROLE_FORMACAO_ORBITAMOS.md).
   O percentual é estimativa interna de cobertura do alvo definido; testes, commits e aulas não comprovam
   aprendizagem. Preserve o foco gratuito, visual, mobile e guiado definido ali.
+- A fila de execução fica no [mapa de tarefas](docs/MAPA_EXECUCAO_ACADEMY.md).
+  Retome pelo cursor e escolha a próxima tarefa pronta; se uma depender de aluno
+  ou acesso, registre a pendência e avance outra independente. Atualize a fila
+  após cada incremento, sem esperar nova mensagem “continue” para cada subtarefa.
 - Stack, comandos e versões devem ser conferidos no código, package.json e
   lockfile; documentos históricos não substituem essa conferência.
 

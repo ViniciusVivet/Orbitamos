@@ -1,5 +1,9 @@
 # Documentação da Orbitamos
 
+**Fila de execução — 16/11/2026:** [mapa de tarefas, dependências e cursor](MAPA_EXECUCAO_ACADEMY.md).
+Próxima frente: curadoria de aula → prática. Pendências de teste com aluno ficam
+separadas das tarefas técnicas que podem avançar.
+
 **Régua da formação — 16/11/2026:** [objetivo, percentual e próximo aceite](CONTROLE_FORMACAO_ORBITAMOS.md).
 A estimativa interna de cobertura do alvo definido é cerca de 30%, sem equivalência pedagógica medida.
 [Sessão do Aluno 0](SESSAO_ALUNO_ZERO.md) separa teste técnico de tentativa humana.

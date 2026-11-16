@@ -55,7 +55,7 @@ export default function LessonQuickQuiz({
           <h2 className="mt-1 text-lg font-black text-white">Confira se a ideia ficou clara</h2>
         </div>
         {answered > 0 && (
-          <button type="button" onClick={reset} className="flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 text-[11px] font-bold text-white/45 hover:bg-white/5 hover:text-white">
+          <button type="button" onClick={reset} className="flex min-h-11 items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 text-[11px] font-bold text-white/65 hover:bg-white/5 hover:text-white">
             <RotateCcw className="size-3" /> Refazer
           </button>
         )}
@@ -125,7 +125,7 @@ export default function LessonQuickQuiz({
             </div>
             <div className="mt-1 text-sm font-black text-white">{correct} de {questions.length} corretas</div>
           </div>
-          <span className="text-xs text-white/40">
+          <span className="text-xs text-white/60">
             {correct === questions.length ? "Mandou bem! Siga para a prática." : "Salvo neste dispositivo"}
           </span>
         </div>

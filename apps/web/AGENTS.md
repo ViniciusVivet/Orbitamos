@@ -24,6 +24,9 @@ o alvo da formação, a régua de progresso e o próximo aceite. No encerramento
 implementação, QA técnico, observação com aluno e retomada posterior; não
 substitua os dois últimos por quantidade de testes. A pendência de ensaio humano
 não exige repetir pedidos de permissão para trabalho já autorizado.
+Para selecionar o trabalho, use o cursor e as dependências de
+`../../docs/MAPA_EXECUCAO_ACADEMY.md`. Preserve a distinção entre tarefas técnicas,
+publicação e evidência humana; não interrompa toda a fila por uma pendência local.
 O usuário rejeitou repetidamente entradas com pilhas de parágrafos, métricas,
 slogans e cartões vazios de ícones. Organizar o texto não resolve esse problema.
 

@@ -274,8 +274,8 @@ rodada precisa ser registrada separadamente do histórico de `6613f3f`.
 ### Próximo ponto vigente
 
 1. Fechar publicação da correção Home → C# → outra atividade → Home → mesmo
-   projeto. O percurso já foi conferido localmente nos três perfis isolados;
-   registrar publicação separada do QA.
+   projeto. **Encerrado:** `a216357`, SHA remoto, CI `43959062550` e Vercel
+   confirmados, além do QA local nos três perfis isolados.
 2. Executar o roteiro do Aluno 0, identificando a origem da evidência e os
    bloqueios de compreensão, navegação, teclado e ambiente. Não inventar uma
    sessão humana para preencher essa etapa.
@@ -294,3 +294,29 @@ tipos, lint, testes, contratos, build e percurso com a trilha escolhida nos trê
 perfis aprovados. A chamada do próximo projeto foi encurtada após inspeção da
 captura de 320 px. Evidência técnica não preenche a sessão do Aluno 0; confirmação
 remota continua separada do QA local.
+
+## Fila persistente e curadoria — 16/11/2026
+
+A pedido do usuário, o [mapa de execução](MAPA_EXECUCAO_ACADEMY.md) passa a ser
+a fila operacional: IDs, dependências, subtarefas, estados e cursor. O plano e
+a régua continuam explicando o alvo e os critérios. A ausência de H/R não
+preenche aceites humanos nem interrompe as outras tarefas técnicas prontas.
+
+O primeiro incremento é B02.02: o guia de aula usava sua posição para escolher
+exercícios e perguntas por área. Por exemplo, CSS Grid recebia uma prática de
+funções JavaScript. A orientação agora distingue o vínculo autorado de apoio
+geral, mantém questões fornecidas pelo catálogo e não inventa quiz/prática ou
+duração para unidades ainda sem vínculo. O registro de aula/XP permanece.
+Não houve comparação ou alteração da fonte canônica remota nesta etapa.
+
+Os componentes de revisão/prática são compartilhados entre a página real e
+a prévia isolada. Uma aula sem questões não monta o quiz, não mostra revisão
+completa por zero perguntas e não herda placar de outra aula. O histórico
+existente continua guardado; marcar uma aula não marca sua prática como feita.
+
+QA local aprovado: tipos, lint, 966 testes/78 arquivos, nove contratos, build e
+painéis compartilhados em desktop e dois perfis WebKit. Dois contrastes foram
+corrigidos; não houve sessão humana nem leitura autenticada do catálogo remoto.
+A confirmação de publicação fica separada no fechamento de B02.02 do mapa.
+Próximo item independente: B02.01, manifesto dos materiais e
+vínculos usados no percurso. A estimativa de 30% não muda por criar a fila.

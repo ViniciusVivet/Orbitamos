@@ -30,7 +30,7 @@ export interface Aula extends AulaResumo {
   /** Texto opcional ao lado do video */
   conteudo?: string;
   materiais?: MaterialAula[];
-  /** Quiz de revisao autoral (do painel admin). Se vazio, o aluno ve o quiz automatico por area. */
+  /** Quiz fornecido pelo catálogo. Sem questões, só usar um vínculo autorado da aula; nunca gerar por área/posição. */
   quiz?: QuizPergunta[];
 }
 

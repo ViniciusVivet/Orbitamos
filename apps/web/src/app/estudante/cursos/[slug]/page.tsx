@@ -23,7 +23,7 @@ import {
   Target,
   X,
 } from "lucide-react";
-import LessonQuickQuiz from "@/components/estudante/LessonQuickQuiz";
+import LessonStudyPanels, { LessonSectionHeading as SectionHeading } from "@/components/estudante/LessonStudyPanels";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProgress } from "@/contexts/ProgressContext";
 import type { UserId } from "@/lib/api";
@@ -38,7 +38,7 @@ import {
   type Curso,
   type MaterialAula,
 } from "@/lib/cursos";
-import { flattenCourseLessons, getLessonGuide, getLessonKind, lessonKindLabels } from "@/lib/learningExperience";
+import { flattenCourseLessons, getLessonGuide, getLessonKind, getLessonQuiz, isLessonQuizComplete, lessonKindLabels, type LessonQuizScore } from "@/lib/learningExperience";
 
 const NOTES_STORAGE_KEY = "orbitacademy-notes";
 const YOUTUBE_VIDEO_ID_PATTERN = /^[a-zA-Z0-9_-]{6,20}$/;
@@ -79,34 +79,6 @@ function MaterialCard({ material }: { material: MaterialAula }) {
         <Download className="size-4" />
       </a>
     </article>
-  );
-}
-
-function SectionHeading({
-  number,
-  title,
-  subtitle,
-  done,
-}: {
-  number: number;
-  title: string;
-  subtitle: string;
-  done?: boolean;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <span
-        className={`grid size-9 shrink-0 place-items-center rounded-xl text-sm font-black ${
-          done ? "bg-emerald-400/15 text-emerald-300" : "bg-orbit-electric/10 text-orbit-electric"
-        }`}
-      >
-        {done ? <Check className="size-4" /> : number}
-      </span>
-      <div>
-        <h2 className="text-lg font-black leading-tight text-white">{title}</h2>
-        <p className="mt-0.5 text-sm text-white/40">{subtitle}</p>
-      </div>
-    </div>
   );
 }
 
@@ -221,7 +193,7 @@ export default function CourseLearningRoom() {
   const [course, setCourse] = useState<Curso | null | undefined>();
   const [lessonId, setLessonId] = useState<string | null>(null);
   const [completed, setCompleted] = useState<string[]>([]);
-  const [quizScore, setQuizScore] = useState<{ correct: number; total: number } | null>(null);
+  const [quizScore, setQuizScore] = useState<LessonQuizScore | null>(null);
   const [curriculumOpen, setCurriculumOpen] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -458,11 +430,12 @@ export default function CourseLearningRoom() {
     );
   }
 
-  const quizPerfect = quizScore !== null && quizScore.total > 0 && quizScore.correct === quizScore.total;
+  const questions = guide ? getLessonQuiz(lesson, guide) : [];
+  const quizPerfect = isLessonQuizComplete(lesson.id, questions, quizScore);
   const lessonSteps = [
-    { id: "secao-entenda", label: "Entenda", done: quizPerfect || lessonDone },
-    { id: "secao-revisao", label: "Revise", done: quizPerfect },
-    { id: "secao-pratica", label: "Pratique", done: lessonDone },
+    { id: "secao-entenda", label: "Entenda", done: quizPerfect },
+    ...(questions.length > 0 ? [{ id: "secao-revisao", label: "Revise", done: quizPerfect }] : []),
+    { id: "secao-pratica", label: "Pratique", done: false },
     { id: "secao-concluir", label: "Conclua", done: lessonDone },
   ];
 
@@ -601,7 +574,7 @@ export default function CourseLearningRoom() {
                   number={1}
                   title="Entenda a aula"
                   subtitle="Leia os objetivos antes do conteúdo: eles mostram o que observar."
-                  done={quizPerfect || lessonDone}
+                  done={quizPerfect}
                 />
                 <div className="mt-5 grid max-w-4xl gap-3 sm:grid-cols-2">
                   {guide.objectives.map((objective, index) => (
@@ -655,67 +628,20 @@ export default function CourseLearningRoom() {
               </section>
             )}
 
-            {/* ── 2. Revise ── */}
-            {guide && (
-              <section id="secao-revisao" className="scroll-mt-24 border-b border-white/[0.07] py-6 sm:py-8">
-                <SectionHeading
-                  number={2}
-                  title="Revise o que aprendeu"
-                  subtitle="Responda sem consultar. Errou? Volte ao vídeo e tente de novo."
-                  done={quizPerfect}
-                />
-                <div className="mt-5 max-w-3xl">
-                  <LessonQuickQuiz
-                    key={lesson.id}
-                    questions={lesson.quiz && lesson.quiz.length > 0 ? lesson.quiz : guide.quiz}
-                    storageKey={userId ? `orbitamos-quiz-v2-${userId}-${lesson.id}` : null}
-                    onScoreChange={(correct, total) => setQuizScore({ correct, total })}
-                  />
-                </div>
-              </section>
-            )}
-
-            {/* ── 3. Pratique ── */}
-            {guide && (
-              <section id="secao-pratica" className="scroll-mt-24 border-b border-white/[0.07] py-6 sm:py-8">
-                <SectionHeading
-                  number={3}
-                  title="Pratique de verdade"
-                  subtitle="É aqui que o conteúdo vira habilidade. Reserve alguns minutos."
-                  done={lessonDone}
-                />
-                <div className="mt-5 max-w-3xl rounded-2xl bg-orbit-purple/[0.08] p-5">
-                  <p className="text-[10px] font-bold uppercase tracking-[.18em] text-orbit-purple">Aplicação rápida</p>
-                  <h3 className="mt-2 text-lg font-black text-white">{guide.practice.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-white/55">{guide.practice.description}</p>
-                  <ul className="mt-4 space-y-1.5">
-                    {guide.checklist.map((item) => (
-                      <li key={item} className="flex items-center gap-2 text-xs leading-5 text-white/50">
-                        <CheckCircle2 className="size-3.5 shrink-0 text-orbit-purple/70" aria-hidden="true" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-4 rounded-xl bg-black/25 p-3 text-xs leading-5 text-white/45">
-                    <strong className="text-white/70">Entrega esperada:</strong> {guide.practice.deliverable}
-                  </div>
-                  {guide.practice.href && (
-                    <Link
-                      href={guide.practice.href}
-                      className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 py-2 text-xs font-black text-black transition hover:bg-orbit-electric"
-                    >
-                      Abrir laboratório guiado
-                      <ArrowRight className="size-3.5" />
-                    </Link>
-                  )}
-                </div>
-              </section>
-            )}
+            {guide && <LessonStudyPanels
+              key={lesson.id}
+              guide={guide}
+              questions={questions}
+              lessonId={lesson.id}
+              storageKey={userId ? `orbitamos-quiz-v2-${userId}-${lesson.id}` : null}
+              quizPerfect={quizPerfect}
+              onScoreChange={(correct, total) => setQuizScore({ lessonId: lesson.id, correct, total })}
+            />}
 
             {/* ── 4. Conclua ── */}
             <section id="secao-concluir" className="scroll-mt-24 py-6 sm:py-8">
               <SectionHeading
-                number={4}
+                number={questions.length > 0 ? 4 : 3}
                 title="Conclua a aula"
                 subtitle={lessonDone ? (pendingSync.includes(lessonId!) ? "Concluída neste aparelho; sincronização pendente." : "Aula registrada no seu progresso.") : "Marque como concluída para registrar o progresso e ganhar XP."}
                 done={lessonDone}

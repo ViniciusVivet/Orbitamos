@@ -5,6 +5,8 @@ import {
   flattenAllLessons,
   flattenCourseLessons,
   getLessonGuide,
+  getLessonQuiz,
+  isLessonQuizComplete,
   getLessonKind,
   getNextIncompleteLesson,
   lessonKindLabels,
@@ -43,18 +45,26 @@ describe("learning experience", () => {
     expect(getNextIncompleteLesson([], new Set())).toBeNull();
   });
 
-  it("generates complete guides for every catalog lesson", () => {
+  it("distinguishes authored guidance from general study without manufacturing assessments", () => {
     for (const curso of cursos) {
       flattenCourseLessons(curso).forEach(({ aula }, index) => {
         const guide = getLessonGuide(curso, aula, index);
         expect(lessonKindLabels[guide.kind]).toBeTruthy();
-        expect(guide.estimatedMinutes).toBeGreaterThan(0);
-        expect(guide.objectives.length).toBeGreaterThanOrEqual(3);
-        expect(guide.checklist.length).toBeGreaterThan(0);
-        expect(guide.practice.title.trim()).not.toBe("");
-        expect(guide.practice.description.trim()).not.toBe("");
-        expect(guide.practice.deliverable.trim()).not.toBe("");
-        expect(guide.quiz).toHaveLength(3);
+        expect(guide.objectives.length).toBeGreaterThan(0);
+        if (guide.origin === "authored") {
+          expect(guide.estimatedMinutes).toBeGreaterThan(0);
+          expect(guide.checklist.length).toBeGreaterThan(0);
+          expect(guide.practice?.title.trim()).toBeTruthy();
+          expect(guide.practice?.description.trim()).toBeTruthy();
+          expect(guide.practice?.deliverable.trim()).toBeTruthy();
+          expect(guide.quiz.length).toBeGreaterThan(0);
+        } else {
+          expect(guide.origin).toBe("general");
+          expect(guide.estimatedMinutes).toBeNull();
+          expect(guide.practice).toBeNull();
+          expect(guide.quiz).toEqual([]);
+          expect(guide.checklist).toEqual([]);
+        }
         for (const question of guide.quiz) {
           expect(question.options).toContain(question.answer);
         }
@@ -71,7 +81,8 @@ describe("learning experience", () => {
     const course = cursos.find(item => item.slug === "csharp-fundamentos")!;
     const lesson = course.modulos.flatMap(item => item.aulas).find(item => item.id === "csharp-a6")!;
     const original = getLessonGuide(course, lesson, 2);
-    expect(original.practice.href).toBe("/estudante/trilhas/csharp?module=conditions");
+    expect(original.origin).toBe("authored");
+    expect(original.practice?.href).toBe("/estudante/trilhas/csharp?module=conditions");
     expect(original.objectives.join(" ")).toContain("if/else");
     expect(original.quiz[1].answer).toBe("valorPedido >= 100");
     expect(getLessonGuide(course, lesson, 99)).toEqual(original);
@@ -81,7 +92,50 @@ describe("learning experience", () => {
   it("does not infer the authored pilot from a title or an unrelated course", () => {
     const course = cursos.find(item => item.slug === "csharp-fundamentos")!;
     const lesson = course.modulos.flatMap(item => item.aulas).find(item => item.id === "csharp-a6")!;
-    expect(getLessonGuide(course, { ...lesson, id: "unreviewed-lesson" }).practice.href).toBeUndefined();
-    expect(getLessonGuide({ ...course, slug: "another-course" }, lesson).practice.href).not.toBe("/estudante/trilhas/csharp?module=conditions");
+    expect(getLessonGuide(course, { ...lesson, id: "unreviewed-lesson" }).practice).toBeNull();
+    expect(getLessonGuide({ ...course, slug: "another-course" }, lesson).practice).toBeNull();
+  });
+
+  it("never sends CSS Grid to a JavaScript function exercise because of its position", () => {
+    const course = cursos.find(item => item.slug === "html-css-js")!;
+    const lesson = course.modulos.flatMap(item => item.aulas).find(item => item.id === "html-css-js-a9")!;
+    expect(lesson.titulo).toContain("Grid");
+    const before = JSON.stringify({ course, lesson });
+    const original = getLessonGuide(course, lesson, 6);
+    expect(original).toMatchObject({ origin: "general", practice: null, quiz: [], estimatedMinutes: null });
+    for (const position of [0, 2, 6, 99, -1]) expect(getLessonGuide(course, lesson, position)).toEqual(original);
+    expect(JSON.stringify({ course, lesson })).toBe(before);
+  });
+
+  it("preserves explicitly supplied lesson questions without inventing a related practice", () => {
+    const course = cursos.find(item => item.slug === "html-css-js")!;
+    const base = course.modulos[0].aulas[0];
+    const quiz = [{ question: "Qual elemento é um título?", options: ["h1", "span"], answer: "h1" }];
+    const lesson = { ...base, quiz };
+    const guide = getLessonGuide(course, lesson, 9);
+    expect(getLessonQuiz(lesson, guide)).toEqual(quiz);
+    expect(guide.practice).toBeNull();
+    expect(getLessonQuiz({ ...lesson, quiz: [] }, guide)).toEqual([]);
+  });
+
+  it("uses the authored questions only when the catalog does not supply its own", () => {
+    const course = cursos.find(item => item.slug === "csharp-fundamentos")!;
+    const lesson = course.modulos.flatMap(item => item.aulas).find(item => item.id === "csharp-a6")!;
+    const guide = getLessonGuide(course, lesson);
+    expect(getLessonQuiz({ ...lesson, quiz: [] }, guide)).toEqual(guide.quiz);
+    const quiz = [{ question: "Qual condição inclui100?", options: [">", ">="], answer: ">=" }];
+    expect(getLessonQuiz({ ...lesson, quiz }, guide)).toEqual(quiz);
+    expect(guide.quiz).toHaveLength(3);
+  });
+
+  it("does not carry a perfect score into another lesson or approve an absent assessment", () => {
+    const questions = [{ question: "Qual é o título?", options: ["h1", "span"], answer: "h1" }];
+    const previous = { lessonId: "previous", correct: 1, total: 1 };
+    expect(isLessonQuizComplete("current", questions, previous)).toBe(false);
+    expect(isLessonQuizComplete("previous", [], previous)).toBe(false);
+    expect(isLessonQuizComplete("current", [], { lessonId: "current", correct: 0, total: 0 })).toBe(false);
+    expect(isLessonQuizComplete("current", questions, { lessonId: "current", correct: 1, total: 2 })).toBe(false);
+    expect(isLessonQuizComplete("current", questions, { lessonId: "current", correct: 0, total: 1 })).toBe(false);
+    expect(isLessonQuizComplete("current", questions, { lessonId: "current", correct: 1, total: 1 })).toBe(true);
   });
 });
