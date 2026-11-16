@@ -1,10 +1,11 @@
 import type { AcademyActivity, AcademyActivityItem } from "./academyActivity";
 import { beginnerJavaScriptPath } from "./practiceExperience";
+import { CSHARP_METHODS_HREF, CSHARP_OBJECTS_HREF } from "./portalNavigation";
 
 export type AcademyStudyPath = "fundamentals" | "csharp" | "sql";
 export const academyStudyPaths = [
   { id: "fundamentals" as const, title: "Primeiros passos", description: "Do primeiro perfil a um orçamento: guia, alteração e aplicação independente.", href: "/estudante/pratica/variaveis-js" },
-  { id: "csharp" as const, title: "C# & .NET", description: "Variáveis, condições e laços com prática guiada.", href: "/estudante/trilhas/csharp" },
+  { id: "csharp" as const, title: "C# & .NET", description: "Da lógica no navegador a métodos, objetos e listas num projeto .NET.", href: "/estudante/trilhas/csharp" },
   { id: "sql" as const, title: "SQL com Orbi", description: "Da primeira consulta à construção de uma tabela.", href: "/estudante/trilhas/sql" },
 ];
 export const studyPathKey = (userId: string | number) => `orbitamos-academy-study-path-v1-${userId}`;
@@ -33,12 +34,17 @@ export function getStudyPathStep(path: AcademyStudyPath, activity: AcademyActivi
     return { title: "Seu primeiro percurso está entregue.", detail: "Você praticou dados, contas, decisões e um pequeno orçamento. Seus códigos continuam disponíveis para revisar e experimentar.", href: "/estudante/pratica/primeiro-orcamento-js", action: "Rever meu primeiro orçamento", pilotComplete: true };
   }
   if (path === "csharp") {
+    // Exact recent resume wins; the saved C# choice survives unrelated visits.
+    // Both are locations, never evidence that the student completed a unit.
+    for (const project of [activity?.continueItem, activity?.csharpProjectContinuation]) {
+      if (project && ((project.id === "csharp-methods" && project.href === CSHARP_METHODS_HREF) || (project.id === "csharp-objects" && project.href === CSHARP_OBJECTS_HREF))) return stepFor(project);
+    }
     const modules = ["variables", "conditions", "loops"].flatMap(id => activity?.items.find(item => item.id === `csharp:${id}`) ?? []);
-    if (!modules.some(begun)) return { title: "Comece sua trilha C# & .NET.", detail: "Conheça o projeto da jornada e comece por variáveis. O piloto também inclui condições e laços.", href: "/estudante/trilhas/csharp", action: "Começar minha trilha", pilotComplete: false };
+    if (!modules.some(begun)) return { title: "Comece sua trilha C# & .NET.", detail: "Conheça o projeto da jornada. Comece por variáveis, depois pratique decisões e repetições.", href: "/estudante/trilhas/csharp", action: "Começar minha trilha", pilotComplete: false };
     const active = modules.filter(item => begun(item) && item.status !== "completed").sort((a, b) => (b.lastAt ?? 0) - (a.lastAt ?? 0))[0];
     const next = active ?? modules.find(item => item.status !== "completed");
     if (next) return stepFor(next);
-    return { title: "Você percorreu os módulos deste piloto.", detail: "Variáveis, condições e laços foram praticados. Você pode revisitar as atividades; os próximos módulos ainda estão em preparação.", href: "/estudante/trilhas/csharp", action: "Revisitar minha trilha C#", pilotComplete: true };
+    return { title: "Do navegador ao projeto .NET.", detail: "Continue por métodos, depois objetos e listas. Prepare o código aqui e execute no computador com SDK .NET 10.", href: CSHARP_METHODS_HREF, action: "Continuar no projeto .NET", pilotComplete: false };
   }
   const quest = activity?.items.find(item => item.id === "sql");
   const workshop = activity?.items.find(item => item.id === "sql-workshop");

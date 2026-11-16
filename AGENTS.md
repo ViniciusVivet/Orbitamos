@@ -6,6 +6,9 @@
   [apps/web/AGENTS.md](apps/web/AGENTS.md) antes de alterar essa área.
 - Comece por [README.md](README.md) e [docs/README.md](docs/README.md).
 - Organização de arquivos: [docs/ORGANIZACAO_REPOSITORIO.md](docs/ORGANIZACAO_REPOSITORIO.md).
+- Para trabalho na Academy, leia também [objetivo, régua e continuidade](docs/CONTROLE_FORMACAO_ORBITAMOS.md).
+  O percentual é estimativa interna de cobertura do alvo definido; testes, commits e aulas não comprovam
+  aprendizagem. Preserve o foco gratuito, visual, mobile e guiado definido ali.
 - Stack, comandos e versões devem ser conferidos no código, package.json e
   lockfile; documentos históricos não substituem essa conferência.
 

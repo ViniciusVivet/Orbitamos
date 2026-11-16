@@ -1,5 +1,9 @@
 # Documentação da Orbitamos
 
+**Régua da formação — 16/11/2026:** [objetivo, percentual e próximo aceite](CONTROLE_FORMACAO_ORBITAMOS.md).
+A estimativa interna de cobertura do alvo definido é cerca de 30%, sem equivalência pedagógica medida.
+[Sessão do Aluno 0](SESSAO_ALUNO_ZERO.md) separa teste técnico de tentativa humana.
+
 **Objetos e listas — 16/11/2026:** [guia da unidade](CSHARP_OBJETOS_ORBISERVICOS.md).
 Classes, instâncias, referência/cópia e primeira seleção com `List<Servico>`
 continuam o projeto real. Rascunhos de arquivos diferentes permanecem separados

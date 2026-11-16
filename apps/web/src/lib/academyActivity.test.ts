@@ -7,7 +7,7 @@ import { guidedStorageKey } from "./guidedPractice";
 import { emptyQuest, questKey, questSteps } from "./sqlQuest";
 import { englishLessons, englishStorageKey } from "./codeEnglish";
 import { csharpModules } from "./csharpModules";
-import { csharpProgressKey } from "./csharpTrack";
+import { csharpProgressKey, newCSharpProgress } from "./csharpTrack";
 import { fasesMonteCodigo, JOGO_STORAGE_PREFIX } from "./jogoMonteCodigo";
 import { chapterMissionIds, emptyChapterSave, orbiChapterKey } from "./orbiChapter";
 import { deliveryMissions, deliveryStorageKey } from "./orbiDelivery";
@@ -27,6 +27,79 @@ function activeReview(ids: string[], cursor = 0, draft = "") {
   return { ...emptyEnglishReviewSave(), active: true, session: { ids, cursor, draft, consulted: false, results: ids.slice(0, cursor).map(lessonId => ({ lessonId, helped: false })) } };
 }
 describe("Academy read-only continuity", () => {
+  it("preserves an explicit C# project separately after a newer English visit without changing the global choice", () => {
+    const objects = declareCSharpObjectsRun(setCSharpObjectsDraft(newCSharpObjectsProgress(), "guided", "my class"), "guided", 2000);
+    const data = store({
+      [resumeStorageKey("u")]: academyResumeEntry(ENGLISH_SPEAKING_HREF, 4000),
+      [csharpObjectsKey("u")]: objects,
+      [csharpMethodsKey("u")]: setCSharpMethodsDraft(newCSharpMethodsProgress(), "guided", "other work"),
+    });
+    const baseline = getAcademyActivity("u", data.read);
+    expect(baseline.continueItem?.id).toBe("spoken-english");
+    data.saves.set(csharpProgressKey("u"), JSON.stringify({ ...newCSharpProgress(), view: "map", projectUnit: "objects" }));
+    const before = [...data.saves];
+    const keys: string[] = [];
+    const result = getAcademyActivity("u", key => { keys.push(key); return data.read(key); });
+    expect(result.continueItem).toEqual(baseline.continueItem);
+    expect(result.csharpProjectContinuation).toMatchObject({ id: "csharp-objects", href: CSHARP_OBJECTS_HREF, status: "in-progress", completedUnits: 0, totalUnits: 0 });
+    expect(result.csharpProjectContinuation).not.toHaveProperty("lastAt");
+    expect(keys).toContain(csharpObjectsKey("u"));
+    expect(keys).not.toContain(csharpMethodsKey("u"));
+    expect(result.items).toEqual(baseline.items);
+    expect(result.summaries).toEqual(baseline.summaries);
+    expect(result.summaries.csharp).toMatchObject({ total: 3, completed: 0 });
+    expect([...data.saves]).toEqual(before);
+  });
+
+  it("does not read project saves or invent a pointer without a valid explicit C# unit", () => {
+    const data = store({
+      [csharpMethodsKey("u")]: setCSharpMethodsDraft(newCSharpMethodsProgress(), "guided", "method"),
+      [csharpObjectsKey("u")]: setCSharpObjectsDraft(newCSharpObjectsProgress(), "guided", "class"),
+    });
+    for (const projectUnit of [undefined, "unknown", "objects&redirect=other", 1, true]) {
+      data.saves.set(csharpProgressKey("u"), JSON.stringify({ ...newCSharpProgress(), projectUnit }));
+      const keys: string[] = [];
+      const result = getAcademyActivity("u", key => { keys.push(key); return data.read(key); });
+      expect(result.csharpProjectContinuation).toBeUndefined();
+      expect(keys).not.toContain(csharpMethodsKey("u"));
+      expect(keys).not.toContain(csharpObjectsKey("u"));
+      expect(result.continueItem).toBeNull();
+    }
+  });
+
+  it.each([
+    ["methods", CSHARP_METHODS_HREF, "csharp-methods"],
+    ["objects", CSHARP_OBJECTS_HREF, "csharp-objects"],
+  ])("projects only the explicitly selected %s unit without adding it to global chronology", (projectUnit, href, id) => {
+    const data = store({ [csharpProgressKey("u")]: { ...newCSharpProgress(), projectUnit } });
+    const keys: string[] = [];
+    const result = getAcademyActivity("u", key => { keys.push(key); return data.read(key); });
+    expect(result.csharpProjectContinuation).toMatchObject({ id, href, status: "opened", completedUnits: 0, practiced: false });
+    expect(result.csharpProjectContinuation).not.toHaveProperty("lastAt");
+    expect(result.continueItem).toBeNull();
+    expect(result.items.some(item => item.id === id)).toBe(false);
+    expect(keys).toContain(projectUnit === "methods" ? csharpMethodsKey("u") : csharpObjectsKey("u"));
+    expect(keys).not.toContain(projectUnit === "methods" ? csharpObjectsKey("u") : csharpMethodsKey("u"));
+  });
+
+  it("reads a shared resume and C# preference save only once while preserving owner types", () => {
+    const data = store({
+      [csharpProgressKey(42)]: { ...newCSharpProgress(), projectUnit: "objects" },
+      [resumeStorageKey(42)]: academyResumeEntry(CSHARP_OBJECTS_HREF, 3000),
+      [csharpObjectsKey(42)]: setCSharpObjectsDraft(newCSharpObjectsProgress(), "guided", "numeric owner"),
+      [csharpObjectsKey("42")]: setCSharpObjectsDraft(setCSharpObjectsDraft(newCSharpObjectsProgress(), "guided", "string owner"), "reuse", "another string draft"),
+    });
+    for (const owner of [42, "42"]) {
+      const keys: string[] = [];
+      const result = getAcademyActivity(owner, key => { keys.push(key); return data.read(key); });
+      const count = typeof owner === "number" ? "1 rascunho salvo" : "2 rascunhos salvos";
+      expect(result.continueItem?.detail).toContain(count);
+      expect(result.csharpProjectContinuation?.detail).toContain(count);
+      expect(result.csharpProjectContinuation).not.toHaveProperty("lastAt");
+      expect(keys.filter(key => key === csharpObjectsKey(owner))).toHaveLength(1);
+    }
+  });
+
   it("keeps objects outside catalog counts and reads only the exact SDK continuation", () => {
     let objects = newCSharpObjectsProgress();
     for (const activity of csharpObjectsActivities) objects = declareCSharpObjectsRun(setCSharpObjectsDraft(objects, activity.id, "student draft"), activity.id, 2000);

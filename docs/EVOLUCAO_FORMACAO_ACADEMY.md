@@ -226,7 +226,7 @@ físico de teclado nem ensaio com aluno. Lint dos arquivos alterados e build de
 produção aprovados. A confirmação remota de publicação deste recorte é separada
 da primeira entrega. Métodos/API continuam sendo aulas planejadas.
 
-## Próximo ponto de continuidade
+## Próximo ponto registrado em 15/11/2026
 
 1. Conferir o fechamento desta entrega: QA local, SHA remoto, CI e Vercel são
    registros separados. Se a publicação já estiver confirmada, seguir para 2.
@@ -243,3 +243,54 @@ da primeira entrega. Métodos/API continuam sendo aulas planejadas.
 
 Cada incremento exige tarefa observável, erro/variação testados, revisão visual
 e próximo ponto registrado. Mais jogos ou vídeos não encerram esses requisitos.
+
+## Continuidade e revisão do alvo — 16/11/2026
+
+O ponto de 15/11 acima é histórico. Métodos foi publicado em `85911d9` e a
+primeira unidade de objetos/listas em `6613f3f`, com confirmação remota de
+`main`, CI e Vercel em ambas as rodadas. Consulte os registros específicos em
+[Métodos e projeto .NET](CSHARP_METODOS_ORBISERVICOS.md) e
+[Objetos e listas](CSHARP_OBJETOS_ORBISERVICOS.md). Preparação no navegador,
+autodeclaração de execução e execução real com SDK continuam separadas.
+
+A revisão atual identifica um desvio de prioridade: duas unidades foram
+aprofundadas sem documentar a observação do Aluno 0 solicitada anteriormente.
+Isso amplia conteúdo disponível; não comprova aprendizagem nem transforma
+as estações futuras do mapa em aulas prontas.
+
+O [controle da formação](CONTROLE_FORMACAO_ORBITAMOS.md) registra o alvo, a
+estimativa interna de cobertura de cerca de 30%, seus limites e os critérios
+de aceite. O [roteiro do Aluno 0](SESSAO_ALUNO_ZERO.md) está preparado, ainda
+não realizado. Não converter testes automatizados em percentual de ensino.
+
+Foi encontrado um erro de integração: com C# escolhido como trilha principal,
+a Home podia encerrar a recomendação nos três módulos do navegador, apesar de
+métodos e objetos estarem publicados. Depois de visitar inglês, a escolha
+principal também perdia a unidade .NET selecionada. A correção distingue
+retomada global recente da retomada da trilha escolhida, preservando os saves,
+os totais e a ausência de conclusão/XP por autodeclaração. A confirmação desta
+rodada precisa ser registrada separadamente do histórico de `6613f3f`.
+
+### Próximo ponto vigente
+
+1. Fechar publicação da correção Home → C# → outra atividade → Home → mesmo
+   projeto. O percurso já foi conferido localmente nos três perfis isolados;
+   registrar publicação separada do QA.
+2. Executar o roteiro do Aluno 0, identificando a origem da evidência e os
+   bloqueios de compreensão, navegação, teclado e ambiente. Não inventar uma
+   sessão humana para preencher essa etapa.
+3. Corrigir os bloqueios observados. Confirmada a compreensão de métodos e
+   objetos, seguir para encapsulamento/validação antes de EF e API.
+4. Retomar o trabalho transversal: curadoria aula/prática, transporte seguro
+   dos rascunhos e aplicação em código do que foi treinado em jogo/SQL/inglês.
+
+O trabalho técnico autorizado pode continuar enquanto a sessão humana não
+ocorre; sua ausência permanece visível e impede alegar eficácia demonstrada
+ou equivalência a uma plataforma paga.
+
+QA local desta correção e seus limites estão no
+[controle da formação](CONTROLE_FORMACAO_ORBITAMOS.md#qa-desta-rodada--16112026):
+tipos, lint, testes, contratos, build e percurso com a trilha escolhida nos três
+perfis aprovados. A chamada do próximo projeto foi encurtada após inspeção da
+captura de 320 px. Evidência técnica não preenche a sessão do Aluno 0; confirmação
+remota continua separada do QA local.

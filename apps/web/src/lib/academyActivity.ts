@@ -35,6 +35,8 @@ export type AcademyActivityItem = {
 export type AcademyActivitySummary = { completed: number; total: number; practiced: number; reviewed: number; unit: string };
 export type AcademyActivity = {
   items: AcademyActivityItem[]; continueItem: AcademyActivityItem | null;
+  /** Last explicitly selected C# project, outside chronological activity and totals. */
+  csharpProjectContinuation?: AcademyActivityItem;
   summaries: { experiences: AcademyActivitySummary; code: AcademyActivitySummary; csharp: AcademyActivitySummary; sqlWorkshop: AcademyActivitySummary };
 };
 type ReadSave = (key: string) => string | null;
@@ -74,10 +76,10 @@ export function getAcademyObjectsRecord(userId: string | number, read: ReadSave)
   return hasSdkPreparation(record) ? record : null;
 }
 
-function sdkContinuation(record: AcademyMethodsRecord | AcademyObjectsRecord, updatedAt: number): AcademyActivityItem {
+function sdkContinuation(record: AcademyMethodsRecord | AcademyObjectsRecord, updatedAt?: number): AcademyActivityItem {
   return {
     id: record.id, title: record.title, group: "csharp", href: record.href,
-    status: hasSdkPreparation(record) ? "in-progress" : "opened", completedUnits: 0, totalUnits: 0, unit: "resultados verificados", practiced: hasSdkPreparation(record), reviewed: 0, lastAt: updatedAt,
+    status: hasSdkPreparation(record) ? "in-progress" : "opened", completedUnits: 0, totalUnits: 0, unit: "resultados verificados", practiced: hasSdkPreparation(record), reviewed: 0, ...(updatedAt !== undefined ? { lastAt: updatedAt } : {}),
     detail: `${record.activeTitle} · ${record.draftsWritten} ${record.draftsWritten === 1 ? "rascunho salvo" : "rascunhos salvos"}. Execução no computador com SDK .NET 10; nenhum resultado conferido pela Orbitamos.`,
     nextHref: record.href, nextLabel: record.id === "csharp-methods" ? "Retomar a preparação de métodos" : "Retomar objetos e listas",
   };
@@ -329,5 +331,8 @@ export function getAcademyActivity(ownerId: string | number, read: ReadSave): Ac
     const own = items.filter(item => item.group === group);
     return { completed: own.filter(item => item.status === "completed").length, total: own.length, practiced: own.filter(item => item.practiced).length, reviewed: own.filter(item => item.reviewed > 0).length, unit };
   };
-  return { items, continueItem: chooseAcademyContinuation(separateContinuation ? [...items, separateContinuation] : items), summaries: { experiences: summarize("experience", "experiências"), code: summarize("code", "desafios"), csharp: summarize("csharp", "módulos"), sqlWorkshop: summarize("sql-workshop", "oficinas") } };
+  // This pointer preserves a chosen C# project after an unrelated visit. Its save
+  // has no editing timestamp: never put it into the global chronological chooser.
+  const csharpProjectContinuation = track.projectUnit === "methods" ? sdkContinuation(readMethodsPreparation(ownerId, get)) : track.projectUnit === "objects" ? sdkContinuation(readObjectsPreparation(ownerId, get)) : undefined;
+  return { items, continueItem: chooseAcademyContinuation(separateContinuation ? [...items, separateContinuation] : items), ...(csharpProjectContinuation ? { csharpProjectContinuation } : {}), summaries: { experiences: summarize("experience", "experiências"), code: summarize("code", "desafios"), csharp: summarize("csharp", "módulos"), sqlWorkshop: summarize("sql-workshop", "oficinas") } };
 }

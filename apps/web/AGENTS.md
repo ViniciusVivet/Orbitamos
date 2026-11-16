@@ -19,6 +19,11 @@ Antes de implementar uma experiência desse tipo, leia `../../docs/DIRECAO_IMERS
 ## Academy: padrão visual para estudantes
 
 Leia `../../docs/PADRAO_VISUAL_ACADEMY.md` antes de alterar as telas dos estudantes.
+Leia também `../../docs/CONTROLE_FORMACAO_ORBITAMOS.md` para manter o objetivo,
+o alvo da formação, a régua de progresso e o próximo aceite. No encerramento, distinga
+implementação, QA técnico, observação com aluno e retomada posterior; não
+substitua os dois últimos por quantidade de testes. A pendência de ensaio humano
+não exige repetir pedidos de permissão para trabalho já autorizado.
 O usuário rejeitou repetidamente entradas com pilhas de parágrafos, métricas,
 slogans e cartões vazios de ícones. Organizar o texto não resolve esse problema.
 
