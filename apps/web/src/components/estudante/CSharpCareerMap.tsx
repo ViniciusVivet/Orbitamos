@@ -10,13 +10,16 @@ import s from "./CSharpCareerMap.module.css";
 
 const stationLabels = { start: "Variáveis", logic: "Regras", objects: "Projeto .NET", data: "Dados", api: "API", quality: "Qualidade", delivery: "Entrega", career: "Portfólio" };
 
-export default function CSharpCareerMap({ currentModule, onOpenModule, onOpenMethods, headingRef }: {
+export default function CSharpCareerMap({ currentModule, currentUnit, onOpenModule, onOpenMethods, onOpenObjects, headingRef }: {
   currentModule: CSharpModuleKind;
+  currentUnit?: "methods" | "objects";
   onOpenModule: (module: CSharpModuleKind) => void;
   onOpenMethods: () => void;
+  onOpenObjects: () => void;
   headingRef: Ref<HTMLHeadingElement>;
 }) {
-  const currentStage = csharpStages[csharpModules[currentModule].stage].id;
+  const currentStage = currentUnit ? "objects" : csharpStages[csharpModules[currentModule].stage].id;
+  const currentLabel = currentUnit === "objects" ? "Objetos e listas" : currentUnit === "methods" ? "Métodos" : csharpModules[currentModule].label;
   useEffect(() => {
     const target = window.location.hash.slice(1);
     if (!csharpStages.some(stage => target === `career-stage-${stage.id}`)) return;
@@ -29,8 +32,8 @@ export default function CSharpCareerMap({ currentModule, onOpenModule, onOpenMet
         <span className={s.kicker}>SEU CAMINHO / BACKEND C#</span>
         <h1 ref={headingRef} tabIndex={-1}>Da lógica ao seu<br/><em>primeiro backend.</em></h1>
         <p>Um sistema de clientes e ordens de serviço cresce com você. Cada estação entrega uma parte do trabalho.</p>
-        <button className={s.primary} onClick={() => onOpenModule(currentModule)}>Abrir práticas disponíveis<ArrowRight size={17}/></button>
-        <span className={s.current}><MapPin size={14}/> Seu módulo: {csharpModules[currentModule].label}</span>
+        <button className={s.primary} onClick={() => currentUnit === "objects" ? onOpenObjects() : currentUnit === "methods" ? onOpenMethods() : onOpenModule(currentModule)}>{currentUnit ? `Retomar ${currentLabel.toLowerCase()}` : "Abrir práticas disponíveis"}<ArrowRight size={17}/></button>
+        <span className={s.current}><MapPin size={14}/> Seu módulo: {currentLabel}</span>
       </div>
       <div className={s.scene}>
         <Image src={projetoCSharp} alt="" fill placeholder="blur" sizes="(max-width: 700px) 90vw, 42vw"/>
@@ -45,22 +48,23 @@ export default function CSharpCareerMap({ currentModule, onOpenModule, onOpenMet
       document.getElementById(`career-stage-${stage.id}`)?.scrollIntoView({ block: "start", behavior: "instant" });
     }}><b>{String(index + 1).padStart(2, "0")}</b><span>{stationLabels[stage.id]}</span></a>)}</nav>
 
-    <div className={s.legend}><p><strong>Hoje:</strong> variáveis, condições e laços no navegador; métodos em um projeto com SDK .NET 10.</p><details><summary>Como vou estudar?</summary><p>Entenda o pedido, escreva com apoio, teste, mude uma regra e tente outra situação por conta própria. As checagens e consultas à ajuda ficam distintas.</p><p>Você recebe uma estrutura inicial, aprende seus arquivos, adapta a regra e confere o resultado. No celular, pode preparar o rascunho de métodos e continuar no computador.</p></details></div>
+    <div className={s.legend}><p><strong>Hoje:</strong> variáveis, condições e laços no navegador; métodos, objetos e listas em um projeto com SDK .NET 10.</p><details><summary>Como vou estudar?</summary><p>Entenda o pedido, escreva com apoio, teste, mude uma regra e tente outra situação por conta própria. As checagens e consultas à ajuda ficam distintas.</p><p>Você recebe uma estrutura inicial, aprende seus arquivos, adapta a regra e confere o resultado. No celular, pode preparar o rascunho de métodos e continuar no computador.</p></details></div>
 
     <ol className={s.stations} aria-label="Oito estações da formação">
       {csharpStages.map((stage, index) => {
         const plan: CSharpCareerStagePlan = csharpCareerPath[stage.id];
         const hasMethods = plan.availableUnits?.includes("methods") ?? false;
+        const hasObjects = plan.availableUnits?.includes("objects") ?? false;
         const here = currentStage === stage.id;
         return <li key={stage.id} id={`career-stage-${stage.id}`} className={s.station} data-current={here} data-status={plan.status}>
           <div className={s.number} aria-hidden="true">{String(index + 1).padStart(2, "0")}</div>
           <div className={s.stationBody}>
-            <div className={s.status}>{here && <span><MapPin size={12}/> Seu módulo está aqui</span>}<span>{hasMethods ? "Métodos disponíveis · classes em preparação" : plan.availableModules.length ? "Práticas abertas" : "Aulas em preparação"}</span></div>
+            <div className={s.status}>{here && <span><MapPin size={12}/> Seu módulo está aqui</span>}<span>{hasMethods ? "Métodos, objetos e listas disponíveis" : plan.availableModules.length ? "Práticas abertas" : "Aulas em preparação"}</span></div>
             <h2>{stage.title}</h2>
             <p>{plan.competence}</p>
             <div className={s.deliverable}><span>VOCÊ VAI ENTREGAR</span><strong>{plan.delivery.title}</strong></div>
             <div className={s.patterns} aria-label="Estruturas que você vai aprender">{plan.patterns.map(pattern => <span key={pattern.name}>{pattern.name}{hasMethods && pattern.status === "planned" ? " · em preparação" : ""}</span>)}</div>
-            {(plan.availableModules.length > 0 || hasMethods) && <div className={s.moduleActions}>{plan.availableModules.map(id => <button key={id} onClick={() => onOpenModule(id)}>{csharpModules[id].label}<ArrowRight size={15}/></button>)}{hasMethods && <button onClick={onOpenMethods}>Métodos e projeto .NET<ArrowRight size={15}/></button>}</div>}
+            {(plan.availableModules.length > 0 || hasMethods) && <div className={s.moduleActions}>{plan.availableModules.map(id => <button key={id} onClick={() => onOpenModule(id)}>{csharpModules[id].label}<ArrowRight size={15}/></button>)}{hasMethods && <button onClick={onOpenMethods}>Métodos e projeto .NET<ArrowRight size={15}/></button>}{hasObjects && <button onClick={onOpenObjects}>Objetos e listas<ArrowRight size={15}/></button>}</div>}
             <details className={s.assignment}>
               <summary>Ver tarefa de trabalho e critérios<ArrowRight size={14}/></summary>
               <div className={s.ticket}><span>PEDIDO DA EQUIPE</span><h3>{plan.ticket.title}</h3><p>{plan.ticket.request}</p><small>{plan.ticket.why}</small></div>

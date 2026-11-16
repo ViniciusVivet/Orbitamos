@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { academyResumeEntry, getAcademyActivity, getAcademyMethodsRecord, readAcademyResume, resumeStorageKey } from "./academyActivity";
+import { academyResumeEntry, getAcademyActivity, getAcademyMethodsRecord, getAcademyObjectsRecord, readAcademyResume, resumeStorageKey } from "./academyActivity";
 import { emptyJournal, journalKey, recordPractice } from "./practiceStation";
 import { desafios, getDesafio } from "./desafios";
 import { beginnerPracticeKey, emptyBeginnerPractice } from "./beginnerPractice";
@@ -12,7 +12,7 @@ import { fasesMonteCodigo, JOGO_STORAGE_PREFIX } from "./jogoMonteCodigo";
 import { chapterMissionIds, emptyChapterSave, orbiChapterKey } from "./orbiChapter";
 import { deliveryMissions, deliveryStorageKey } from "./orbiDelivery";
 import { emptyPulseSave, pulseSaveKey } from "./orbiPulse";
-import { CSHARP_METHODS_HREF, ENGLISH_SPEAKING_HREF, ORBI_PULSE_HREF, WORK_DELIVERY_HREF, WORK_INCIDENT_HREF, WORK_SIMULATION_HREF } from "./portalNavigation";
+import { CSHARP_METHODS_HREF, CSHARP_OBJECTS_HREF, ENGLISH_SPEAKING_HREF, ORBI_PULSE_HREF, WORK_DELIVERY_HREF, WORK_INCIDENT_HREF, WORK_SIMULATION_HREF } from "./portalNavigation";
 import { emptyWorkSave, getWorkCase, WORK_CASE_IDS, workSimulationKey } from "./workSimulation";
 import { emptyWorkDeliverySave, WORK_DELIVERY_STARTER_CODE, workDeliveryKey } from "./workDelivery";
 import { emptyIncidentSave, getIncidentCase, INCIDENT_CASE_IDS, incidentSaveKey } from "./workIncident";
@@ -20,12 +20,88 @@ import { emptySpeakingSave, englishSpeakingLessons, speakingSaveKey } from "./sp
 import { emptyEnglishUseSave, englishUseKey, englishUseQuestions } from "./englishUse";
 import { emptyEnglishReviewSave, englishReviewKey } from "./englishReview";
 import { csharpMethodsActivities, csharpMethodsKey, declareCSharpMethodsRun, markCSharpMethodsModel, newCSharpMethodsProgress, revealCSharpMethodsHint, setCSharpMethodsDraft, setCSharpMethodsPreparation, answerCSharpMethodsPrediction } from "./csharpMethods";
+import { csharpObjectsActivities, csharpObjectsKey, declareCSharpObjectsRun, markCSharpObjectsModel, newCSharpObjectsProgress, revealCSharpObjectsHint, setCSharpObjectsDraft, setCSharpObjectsPreparation, answerCSharpObjectsPrediction } from "./csharpObjects";
 
 function store(initial: Record<string, unknown> = {}) { const saves = new Map(Object.entries(initial).map(([key, value]) => [key, JSON.stringify(value)])); return { saves, read: (key: string) => saves.get(key) ?? null }; }
 function activeReview(ids: string[], cursor = 0, draft = "") {
   return { ...emptyEnglishReviewSave(), active: true, session: { ids, cursor, draft, consulted: false, results: ids.slice(0, cursor).map(lessonId => ({ lessonId, helped: false })) } };
 }
 describe("Academy read-only continuity", () => {
+  it("keeps objects outside catalog counts and reads only the exact SDK continuation", () => {
+    let objects = newCSharpObjectsProgress();
+    for (const activity of csharpObjectsActivities) objects = declareCSharpObjectsRun(setCSharpObjectsDraft(objects, activity.id, "student draft"), activity.id, 2000);
+    const data = store({ [csharpObjectsKey("u")]: objects, [csharpMethodsKey("u")]: setCSharpMethodsDraft(newCSharpMethodsProgress(), "guided", "methods draft") });
+    const keys: string[] = [];
+    const read = (key: string) => { keys.push(key); return data.read(key); };
+    const baseline = getAcademyActivity("u", read);
+    expect(keys).not.toContain(csharpObjectsKey("u"));
+    expect(keys).not.toContain(csharpMethodsKey("u"));
+    expect(baseline.continueItem).toBeNull();
+    data.saves.set(resumeStorageKey("u"), JSON.stringify(academyResumeEntry(CSHARP_OBJECTS_HREF, 3000)));
+    const before = [...data.saves];
+    keys.length = 0;
+    const result = getAcademyActivity("u", read);
+    expect(result.continueItem).toMatchObject({ id: "csharp-objects", href: CSHARP_OBJECTS_HREF, status: "in-progress", completedUnits: 0, totalUnits: 0, practiced: true, lastAt: 3000, nextHref: CSHARP_OBJECTS_HREF });
+    expect(result.continueItem?.detail).toContain("4 rascunhos salvos");
+    expect(result.continueItem?.detail).toContain("nenhum resultado conferido pela Orbitamos");
+    expect(keys).toContain(csharpObjectsKey("u"));
+    expect(keys).not.toContain(csharpMethodsKey("u"));
+    expect(result.items).toEqual(baseline.items);
+    expect(result.summaries).toEqual(baseline.summaries);
+    expect(result.summaries.csharp).toMatchObject({ total: 3, completed: 0 });
+    expect(result.items.some(item => item.id === "csharp-objects")).toBe(false);
+    expect([...data.saves]).toEqual(before);
+  });
+
+  it("does not infer objects continuation from another view and recovers from corrupt saves", () => {
+    const data = store({ [csharpObjectsKey("u")]: setCSharpObjectsDraft(newCSharpObjectsProgress(), "guided", "my class") });
+    for (const href of [CSHARP_METHODS_HREF, "/estudante/trilhas/csharp", "/estudante/trilhas/csharp?module=loops", "/estudante/trilhas/csharp?view=Objects", ENGLISH_SPEAKING_HREF]) {
+      data.saves.set(resumeStorageKey("u"), JSON.stringify(academyResumeEntry(href, 3000)));
+      const keys: string[] = [];
+      const result = getAcademyActivity("u", key => { keys.push(key); return data.read(key); });
+      expect(keys).not.toContain(csharpObjectsKey("u"));
+      expect(result.continueItem?.id).not.toBe("csharp-objects");
+    }
+    data.saves.set(resumeStorageKey("u"), JSON.stringify(academyResumeEntry(CSHARP_OBJECTS_HREF, 3000)));
+    data.saves.set(csharpObjectsKey("u"), "corrupt");
+    expect(getAcademyActivity("u", data.read).continueItem).toMatchObject({ id: "csharp-objects", status: "opened", completedUnits: 0, practiced: false });
+    expect(getAcademyObjectsRecord("u", data.read)).toBeNull();
+  });
+
+  it("projects objects records separately from methods and English without completion fields", () => {
+    let objects = setCSharpObjectsPreparation(newCSharpObjectsProgress(), "sdk", true);
+    objects = setCSharpObjectsDraft(objects, "guided", "my class");
+    objects = markCSharpObjectsModel(revealCSharpObjectsHint(objects, "guided"), "guided");
+    const prediction = csharpObjectsActivities.find(activity => activity.id === "guided")!.prediction!;
+    objects = answerCSharpObjectsPrediction(objects, prediction.id, prediction.answer);
+    objects = declareCSharpObjectsRun(objects, "guided", 2000);
+    const methods = setCSharpMethodsDraft(setCSharpMethodsDraft(newCSharpMethodsProgress(), "guided", "method one"), "reuse", "method two");
+    const data = store({ [csharpObjectsKey("u")]: objects, [csharpMethodsKey("u")]: methods, [englishUseKey("u")]: { ...emptyEnglishUseSave(), active: true, completed: englishUseQuestions.map(question => question.lessonId) } });
+    const before = [...data.saves];
+    const keys: string[] = [];
+    const record = getAcademyObjectsRecord("u", key => { keys.push(key); return data.read(key); });
+    expect(record).toMatchObject({ id: "csharp-objects", href: CSHARP_OBJECTS_HREF, preparationItems: 1, predictionsAnswered: 1, draftsWritten: 1, activitiesWithHelp: 1, selfReportedRuns: 1, executionEvidence: "self-report-only" });
+    expect(keys).toEqual([csharpObjectsKey("u")]);
+    for (const field of ["status", "completed", "completedUnits", "passed", "xp"]) expect(record).not.toHaveProperty(field);
+    expect(getAcademyMethodsRecord("u", data.read)?.draftsWritten).toBe(2);
+    expect(getAcademyObjectsRecord("another", data.read)).toBeNull();
+    expect([...data.saves]).toEqual(before);
+  });
+
+  it("preserves owner types and ignores forged objects verification or a methods save", () => {
+    const numeric = { ...setCSharpObjectsDraft(newCSharpObjectsProgress(), "independent", "numeric account"), active: "independent" as const, done: ["independent"], passed: true, xp: 100, selfReportedRuns: { independent: { kind: "verified", at: 2000 } } };
+    const string = setCSharpObjectsDraft(setCSharpObjectsDraft(newCSharpObjectsProgress(), "guided", "string class"), "reuse", "string program");
+    const data = store({ [resumeStorageKey(42)]: academyResumeEntry(CSHARP_OBJECTS_HREF, 3000), [csharpObjectsKey(42)]: numeric, [csharpObjectsKey("42")]: string });
+    expect(getAcademyActivity(42, data.read).continueItem).toMatchObject({ id: "csharp-objects", status: "in-progress", completedUnits: 0 });
+    expect(getAcademyActivity(42, data.read).continueItem?.detail).toContain("1 rascunho salvo");
+    expect(getAcademyActivity("42", data.read).continueItem?.detail).toContain("2 rascunhos salvos");
+    expect(getAcademyObjectsRecord(42, data.read)).toMatchObject({ draftsWritten: 1, selfReportedRuns: 0 });
+    expect(getAcademyObjectsRecord("42", data.read)?.draftsWritten).toBe(2);
+    expect(getAcademyActivity(42, data.read).summaries.csharp.completed).toBe(0);
+    data.saves.set(csharpObjectsKey(42), JSON.stringify(setCSharpMethodsDraft(newCSharpMethodsProgress(), "guided", "wrong unit")));
+    expect(getAcademyObjectsRecord(42, data.read)).toBeNull();
+  });
+
   it("keeps methods saves outside items and all catalog summaries until its exact continuation", () => {
     let methods = newCSharpMethodsProgress();
     for (const activity of csharpMethodsActivities) methods = declareCSharpMethodsRun(setCSharpMethodsDraft(methods, activity.id, "student draft"), activity.id, 2000);

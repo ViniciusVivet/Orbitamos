@@ -634,6 +634,17 @@ dos diálogos. São ensaios locais, não rollback de infraestrutura real.
 
 ## Limites restantes
 
+### Objetos e listas — unidade do projeto real (16/11/2026)
+
+Em **16/11**, `node scripts/audit-csharp-objects.mjs` cobre a continuação:
+ponte métodos → objetos, posição no mapa, arquivos diferentes, modelo/base,
+exportação/importação confirmada, recuperação, autodeclaração, visualização de
+identidade, primeira lista e retomada/progresso separados. O teste anterior de
+métodos também precisa passar, pois ambos usam o editor compartilhado.
+O novo [guia editorial](../apps/web/examples/academy/orbiservicos-objetos-v1/tools/EDITORIAL.md)
+explica testes nativos do tipo, fábrica, cópia e filtro; resultados só são
+afirmados no registro de execução depois dos checks correspondentes.
+
 ### Métodos C# — unidade do projeto real (15/11/2026)
 
 `node scripts/audit-csharp-methods.mjs` confere entrada, aviso de SDK, ZIP,

@@ -69,13 +69,14 @@ describe("C# career map describes real work without inventing published lessons"
     }
   });
 
-  it("opens methods as a separate SDK unit while classes and collections remain planned", () => {
-    expect(plans.flatMap(plan => plan.availableUnits ?? [])).toEqual(["methods"]);
+  it("opens methods and objects as SDK units while deeper OOP remains planned", () => {
+    expect(plans.flatMap(plan => plan.availableUnits ?? [])).toEqual(["methods", "objects"]);
     expect(csharpCareerPath.objects.status).toBe("partial");
     expect(csharpCareerPath.objects.availableModules).toEqual([]);
-    expect(csharpCareerPath.objects.availableUnits).toEqual(["methods"]);
+    expect(csharpCareerPath.objects.availableUnits).toEqual(["methods", "objects"]);
     expect(csharpCareerPath.objects.patterns[0].status).toBe("available");
-    expect(csharpCareerPath.objects.patterns.slice(1).every(pattern => pattern.status === "planned")).toBe(true);
+    expect(csharpCareerPath.objects.patterns.slice(0, 3).every(pattern => pattern.status === "available")).toBe(true);
+    expect(csharpCareerPath.objects.patterns[3].status).toBe("planned");
     expect(csharpCareerPath.objects.artifact.file).toBe("Program.cs");
     expect(csharpCareerPath.objects.artifact.code).not.toMatch(/\b(static|class|public)\b/);
     expect(compileCSharpSubset(csharpCareerPath.objects.artifact.code).ok).toBe(false);

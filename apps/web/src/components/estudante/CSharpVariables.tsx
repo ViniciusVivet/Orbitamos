@@ -130,6 +130,6 @@ export default function CSharpVariables({ userId, onFullMap, onMethods, moduleKi
         <p className={s.runtimeNote}>C# didático no navegador: este executor não é o compilador .NET completo. O progresso fica neste navegador, sem sincronização entre aparelhos.</p>
       </div>
     </div>
-    <details className={m.overview}><summary>Visão geral: do primeiro programa à entrega profissional</summary><ol>{csharpStages.map((stage, i) => <li key={stage.id}><strong>{String(i + 1).padStart(2, "0")} · {stage.title}</strong><span>{i === config.stage ? `Você está aqui: ${label.toLowerCase()}` : stage.id === "objects" ? "Métodos disponíveis · demais unidades em preparação" : stage.available ? "Práticas disponíveis" : "Planejado"}</span><p>{stage.skill}</p></li>)}</ol></details>
+    <details className={m.overview}><summary>Visão geral: do primeiro programa à entrega profissional</summary><ol>{csharpStages.map((stage, i) => <li key={stage.id}><strong>{String(i + 1).padStart(2, "0")} · {stage.title}</strong><span>{i === config.stage ? `Você está aqui: ${label.toLowerCase()}` : stage.id === "objects" ? "Métodos, objetos e listas disponíveis · etapa parcial" : stage.available ? "Práticas disponíveis" : "Planejado"}</span><p>{stage.skill}</p></li>)}</ol></details>
   </section>;
 }

@@ -36,7 +36,8 @@ try {
       const stations = map.locator('ol[aria-label="Oito estações da formação"] > li');
       await expect(stations).toHaveCount(8);
       await expect(stations.nth(2).getByRole("button", { name: "Métodos e projeto .NET", exact: true })).toHaveCount(1);
-      await expect(stations.nth(2)).toContainText("Métodos disponíveis · classes em preparação");
+      await expect(stations.nth(2).getByRole("button", { name: "Objetos e listas", exact: true })).toHaveCount(1);
+      await expect(stations.nth(2)).toContainText("Métodos, objetos e listas disponíveis");
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(options.viewport.width);
       await page.screenshot({ path: path.join(out, name + "-map.png") });
       const index = map.getByRole("navigation", { name: "Ir para uma estação", exact: true });

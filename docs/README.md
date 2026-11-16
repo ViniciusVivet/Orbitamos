@@ -1,5 +1,10 @@
 # Documentação da Orbitamos
 
+**Objetos e listas — 16/11/2026:** [guia da unidade](CSHARP_OBJETOS_ORBISERVICOS.md).
+Classes, instâncias, referência/cópia e primeira seleção com `List<Servico>`
+continuam o projeto real. Rascunhos de arquivos diferentes permanecem separados
+dos registros de métodos e das verificações locais do SDK.
+
 **Métodos no OrbiServiços — 15/11/2026:** [unidade, ambiente e verificação](CSHARP_METODOS_ORBISERVICOS.md).
 Quatro tarefas ligam o navegador a um projeto console .NET 10. Rascunhos,
 previsões e execuções declaradas ficam separados das verificações locais reais.

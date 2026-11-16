@@ -101,6 +101,7 @@ buildNumber.properties
 *.ear
 *.zip
 !apps/web/public/downloads/academy/orbiservicos-metodos-v1.zip
+!apps/web/public/downloads/academy/orbiservicos-objetos-v1.zip
 *.tar.gz
 *.rar
 hs_err_pid*

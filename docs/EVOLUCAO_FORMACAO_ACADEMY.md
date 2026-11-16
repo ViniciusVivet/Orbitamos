@@ -1,5 +1,64 @@
 # Formação Orbitamos: execução e continuidade
 
+## Objetos e primeira lista — 16/11/2026
+
+Continuação sobre `85911d9`, cuja main, CI `43777207630`, Vercel e download
+foram confirmados em 15/11. A nova unidade abre em
+`/estudante/trilhas/csharp?view=objects`, após métodos ou pela estação Projeto
+.NET. O [guia](CSHARP_OBJETOS_ORBISERVICOS.md) registra fontes e sequência.
+
+Quatro tarefas: classe com propriedades/construtor/regras; criação de instâncias
+separadas; investigação de uma referência devolvida como cópia; seleção com
+`List<Servico>` e `foreach`. A primeira edita `Servico.cs`; as outras editam
+`Program.cs` e recebem a classe como base explícita. Diagramas autorais mostram
+identidade e efeitos da alteração, sem simular execução do rascunho. Outra
+instância e outra lista com as mesmas instâncias são critérios distintos.
+
+A base com retornos por completar conta como ajuda; abrir a referência completa
+registra consulta ao modelo. A seleção preserva ordem, repetições, objetos e
+lista de entrada. Não há LINQ, encapsulação/validação, herança ou interfaces
+escondidos no exercício; essas unidades permanecem no plano.
+
+O editor compartilhado `CSharpProjectUnit` atende métodos e objetos com
+adaptadores tipados. Cada unidade mantém seu parser de save, chave e envelope
+de rascunho próprios; a refatoração não migra nem reescreve o código anterior.
+Importação confirma atividade/arquivo e preserva o texto anterior para recuperar.
+Retomada e progresso de objetos não acrescentam módulo concluído ou XP. O mapa
+lembra qual unidade .NET estava aberta, mantendo a estação correta ao voltar.
+
+O ZIP em `public/downloads/academy/orbiservicos-objetos-v1.zip` é estático; os
+projetos em `examples/academy/orbiservicos-objetos-v1/` executam no SDK .NET 10 do
+computador. Não houve novo backend, compilação na Vercel, API paga ou migration.
+
+QA próprio: **951 testes em 78 arquivos**, nove contratos, tipos e lint dos
+24 arquivos alterados passaram. Dois componentes tiveram lint repetido após
+trocar a função de renderização por um componente React explícito; passaram.
+O build de produção também passou. O aviso já conhecido de rastreamento
+dinâmico em `api/course-materials/[...path]` permanece; a rota não foi alterada.
+
+No SDK **10.0.404**, a rodada inicial passou **15/15 cenários**. A revisão
+encontrou dois falsos positivos possíveis: construtor com parâmetro mais amplo
+e filtro que apagava uma entrada sem liberados. Ambos foram corrigidos, e o
+suplemento passou **4/4** (positivos T1/T4 e dois contraexemplos específicos).
+São 17/23/23/26 casos por tarefa. Os quatro projetos extraídos do ZIP, com
+soluções editoriais apenas no arquivo de foco, compilaram e produziram as saídas
+esperadas. A distribuição continua com bases incompletas/bugadas, sem soluções.
+O [registro editorial](../apps/web/examples/academy/orbiservicos-objetos-v1/tools/EDITORIAL.md)
+distingue a rodada inicial, o suplemento e o smoke, sem anunciar repetição
+integral do catálogo de 17 cenários. ZIP de 20 arquivos, cerca de 20 KB,
+reproduzido também após converter a fonte para CRLF/BOM.
+
+`audit-csharp-objects.mjs`, `audit-csharp-methods.mjs` e
+`audit-csharp-career-map.mjs` passaram em desktop Chromium 1366×768 e WebKit
+390×664/320×640. Conferidos primeira dobra com foto/ação, aviso de SDK, ponte
+entre unidades, arquivo alvo, base/modelo, previsões, importação/recuperação,
+autodeclaração invalidada por edição, diagramas, teclado de símbolos, conta e
+unidade separadas, retomada e posição correta no mapa. Sem erros de página,
+overflow horizontal ou violações Axe nos escopos auditados. Capturas reais foram
+inspecionadas. Não houve ensaio de aprendizagem ou teclado físico de iPhone.
+Relatórios e capturas em `apps/web/test-results/` são locais e ignorados.
+A confirmação remota é separada deste QA.
+
 ## Métodos e primeiro projeto real — 15/11/2026
 
 Continuação sobre `0722e75`. A unidade abre em

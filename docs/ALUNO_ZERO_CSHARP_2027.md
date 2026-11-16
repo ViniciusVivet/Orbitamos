@@ -114,13 +114,17 @@ Escrever o resumo de serviços, executar, trocar os dados e explicar cada linha.
 Depois, decisões e laços. A próxima prática é [métodos no
 OrbiServiços + SDK/arquivos/terminal/primeiro commit](CSHARP_METODOS_ORBISERVICOS.md),
 implementada em 15/11. Ela tem quatro tarefas, do exemplo à aplicação nova.
-Rascunhos e conquistas anteriores foram preservados.
+Rascunhos e conquistas anteriores foram preservados. A continuação de
+**16/11** acrescenta [objetos e listas](CSHARP_OBJETOS_ORBISERVICOS.md): quatro
+tarefas sobre ficha, instância, cópia e seleção. Encapsulação e LINQ continuam
+planejados; esses assuntos não viram requisitos ocultos da primeira lista.
 
 **Estado do produto nesta rodada:** variáveis, condições e laços têm práticas
 executáveis no navegador. O mapa detalha as oito estações e identifica as aulas
 ainda planejadas. Métodos tem preparação no navegador e pacote de projeto
-console para executar no computador com SDK .NET 10. Classes, API, EF e o
-projeto profissional completo continuam em preparação. O subconjunto didático
+console para executar no computador com SDK .NET 10. Classes e listas têm
+uma primeira unidade no mesmo ambiente. API, EF e o projeto profissional
+completo continuam em preparação. O subconjunto didático
 do navegador não é .NET completo. O código da Orbitamos continua na stack atual.
 
 ## 7. Como avaliar prontidão para começar a concorrer

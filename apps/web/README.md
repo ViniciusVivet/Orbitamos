@@ -53,6 +53,7 @@ Com o servidor em execução, abra um destes caminhos em `http://localhost:3015`
 | `/dev/ide-preview/variaveis-js?academy=1` | Editor e prática guiada |
 | `/dev/csharp-preview?academy=1` | Piloto da trilha C# |
 | `/dev/csharp-preview?academy=1&view=methods` | Métodos: rascunho no navegador e projeto .NET no computador |
+| `/dev/csharp-preview?academy=1&view=objects` | Objetos e listas: Servico.cs/Program.cs, fichas visuais e projeto .NET |
 | `/dev/portal-preview?role=work` | Início do Studio |
 | `/dev/workspace-preview?view=projects` | Projetos, lista/quadro e detalhe |
 | `/dev/workspace-preview?view=applications` | Candidaturas |

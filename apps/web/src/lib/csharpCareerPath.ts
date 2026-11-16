@@ -14,7 +14,7 @@ export type CSharpCareerStagePlan = {
   environment: { phone: string; computer: string; requiresSdk: boolean };
   prerequisites: readonly CSharpCareerStageId[];
   availableModules: readonly CSharpCareerModule[];
-  availableUnits?: readonly "methods"[];
+  availableUnits?: readonly ("methods" | "objects")[];
   artifact: { file: string; language: "csharp" | "sql" | "yaml" | "markdown"; code: string; note: string };
 };
 
@@ -50,18 +50,19 @@ export const csharpCareerPath = {
     artifact: { file: "Program.cs", language: "csharp", code: 'int[] fila = { 0, 2, 5 };\nforeach (int pendentes in fila) {\n    if (pendentes > 0) Console.WriteLine("Há trabalho");\n}', note: "Exemplo de repetição já suportada; métodos e pacotes não fazem parte deste trecho." },
   },
   objects: {
-    id: "objects", status: "partial", competence: "Dar nome a uma regra, reutilizá-la com outros dados e iniciar um projeto .NET. Classes e coleções vêm depois.",
+    id: "objects", status: "partial", competence: "Reunir dados e regras em objetos, distinguir referência de cópia e selecionar serviços numa lista.",
     ticket: { title: "O programa cresceu. Como manter a regra?", request: "A equipe quer usar a conta de pendências para clientes diferentes e decidir se o trabalho pode começar quando há pagamento e serviço pendente.", why: "Na empresa, outra pessoa vai ler e alterar o código. Métodos e modelos claros vêm antes de adicionar frameworks." },
     patterns: [
       { name: "Método com parâmetros e retorno", file: "Program.cs", purpose: "Dar nome à regra com uma função local, receber dados e devolver o resultado antes de estudar classes.", status: "available" },
-      { name: "Classe, propriedade e construtor", file: "Servico.cs", purpose: "Representar um serviço válido e proteger suas regras; apresentar null e erros previstos no contexto certo.", status: "planned" },
-      { name: "List<T> e consulta LINQ", file: "CatalogoServicos.cs", purpose: "Guardar vários objetos e filtrar o que o atendimento precisa, depois de entender laços e métodos.", status: "planned" },
+      { name: "Classe, propriedade e construtor", file: "Servico.cs", purpose: "Criar fichas com estado próprio. Os setters públicos desta primeira versão não validam entradas; proteção dos dados vem em outra unidade.", status: "available" },
+      { name: "List<Servico>, foreach e referências", file: "Program.cs", purpose: "Montar outra lista com as mesmas fichas elegíveis, preservando a ordem, as repetições e a entrada.", status: "available" },
+      { name: "Encapsulação, interfaces e LINQ", file: "CatalogoServicos.cs", purpose: "Proteger o estado, definir contratos e consultar coleções em unidades posteriores; não é requisito escondido da primeira lista.", status: "planned" },
     ],
-    delivery: { title: "Regras do OrbiServiços no seu projeto", task: "Prepare o SDK .NET 10, encontre Program.cs e execute as quatro tarefas de métodos. Investigue o retorno fixo, escreva uma nova decisão e registre um commit local. Classes e coleções continuam em preparação.", artifact: "Program.cs com funções, conferência local e primeiro commit" },
-    acceptance: ["Consegue chamar a mesma função com outros dados e explicar seu retorno.", "Distingue retorno de saída no console e corrige uma regra que compila, mas responde errado.", "Salva, executa no SDK, lê seu diff e registra um commit no repositório de estudo."],
+    delivery: { title: "Fichas e lista do OrbiServiços", task: "Comece pelas quatro tarefas de métodos, depois faça as quatro de objetos e listas no SDK .NET 10. Corrija uma cópia emprestada e escreva o filtro do dia. Encapsulação, interfaces e LINQ continuam em preparação.", artifact: "Program.cs e Servico.cs, verificações locais e diff explicável" },
+    acceptance: ["Chama a mesma regra com outros dados e explica parâmetros, retorno e estado da instância.", "Distingue outra instância de outra lista com as mesmas instâncias; preserva ordem, repetições e dados de entrada.", "Salva o arquivo certo, executa no SDK, confere os casos e explica seu diff no repositório de estudo."],
     environment: { phone: "Pode prever o retorno, preparar e guardar um rascunho. Os métodos desta unidade não são executados pelo laboratório do navegador.", computer: "Use o pacote da unidade com SDK .NET 10: arquivos, terminal, build/run e Git têm orientação passo a passo. Declarar que executou não é uma verificação automática da Orbitamos.", requiresSdk: true },
-    prerequisites: ["logic"], availableModules: [], availableUnits: ["methods"],
-    artifact: { file: "Program.cs", language: "csharp", code: 'Console.WriteLine(CalcularPendentes(8, 3));\nint CalcularPendentes(int total, int concluidos) {\n    return total - concluidos;\n}', note: "Exemplo de função local para executar no projeto com SDK .NET 10. O laboratório do navegador não executa este trecho. Classes e coleções terão unidades próprias." },
+    prerequisites: ["logic"], availableModules: [], availableUnits: ["methods", "objects"],
+    artifact: { file: "Program.cs", language: "csharp", code: 'Console.WriteLine(CalcularPendentes(8, 3));\nint CalcularPendentes(int total, int concluidos) {\n    return total - concluidos;\n}', note: "Exemplo de função local para executar no projeto com SDK .NET 10. O laboratório do navegador não executa este trecho. Classes e listas começam na unidade seguinte; encapsulação e LINQ terão práticas próprias." },
   },
   data: {
     id: "data", status: "planned", competence: "Modelar dados relacionados, consultar com SQL e persistir pelo EF Core entendendo o que ele faz.",

@@ -41,4 +41,13 @@ describe("C# career pilot", () => {
     expect(state.view).toBe("methods");
     expect(state.guided || state.transfer || state.debug).toBe(false);
   });
+  it("restores objects independently without granting completion", () => {
+    const state = readCSharpProgress(JSON.stringify({ ...newCSharpProgress(), view: "objects", projectUnit: "objects" }));
+    expect(state.view).toBe("objects");
+    expect(state.projectUnit).toBe("objects");
+    expect(state.guided || state.transfer || state.debug).toBe(false);
+    expect(readCSharpProgress(JSON.stringify({ version: 1, projectUnit: "unknown" })).projectUnit).toBeUndefined();
+    expect(readCSharpProgress(JSON.stringify({ ...newCSharpProgress(), view: "methods" })).projectUnit).toBe("methods");
+    expect(readCSharpProgress(JSON.stringify({ ...newCSharpProgress(), view: "pilot", projectUnit: "objects" })).projectUnit).toBeUndefined();
+  });
 });

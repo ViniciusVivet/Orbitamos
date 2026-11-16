@@ -10,12 +10,14 @@ export const WORK_INCIDENT_HREF = WORK_SIMULATION_HREF + WORK_INCIDENT_HASH;
 export const ENGLISH_SPEAKING_HASH = "#falar";
 export const ENGLISH_SPEAKING_HREF = "/estudante/jogos/ingles-em-cena" + ENGLISH_SPEAKING_HASH;
 export const CSHARP_METHODS_HREF = "/estudante/trilhas/csharp?view=methods";
+export const CSHARP_OBJECTS_HREF = "/estudante/trilhas/csharp?view=objects";
 
 const isWorkPhaseHash = (hash: string) => hash === WORK_DELIVERY_HASH || hash === WORK_INCIDENT_HASH;
 
 const hasPrefix = (path: string, prefix: string) => path === prefix || path.startsWith(`${prefix}/`);
 const csharpLearningQuery = (params: URLSearchParams) => {
-  if (params.get("view") === "methods") return "view=methods";
+  const view = params.get("view");
+  if (view === "methods" || view === "objects") return `view=${view}`;
   const moduleKind = params.get("module");
   return moduleKind && ["variables", "conditions", "loops"].includes(moduleKind) ? `module=${moduleKind}` : "";
 };

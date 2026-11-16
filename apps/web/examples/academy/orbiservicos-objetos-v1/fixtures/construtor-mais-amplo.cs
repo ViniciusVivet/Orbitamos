@@ -1,0 +1,25 @@
+public class Servico
+{
+    public string Cliente { get; set; }
+    public int Total { get; set; }
+    public int Concluidos { get; set; }
+    public bool Pago { get; set; }
+
+    public Servico(object cliente, int total, int concluidos, bool pago)
+    {
+        Cliente = (string)cliente;
+        Total = total;
+        Concluidos = concluidos;
+        Pago = pago;
+    }
+
+    public int CalcularPendentes()
+    {
+        return Total - Concluidos;
+    }
+
+    public bool PodeIniciar()
+    {
+        return CalcularPendentes() > 0 && Pago;
+    }
+}

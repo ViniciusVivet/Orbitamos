@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { academyPreviewHref, academySection, academySections, canonicalAcademyHref, CSHARP_METHODS_HREF, ENGLISH_SPEAKING_HASH, ENGLISH_SPEAKING_HREF, isWorkspacePath, practiceMode, WORK_DELIVERY_HASH, WORK_DELIVERY_HREF, WORK_INCIDENT_HASH, WORK_INCIDENT_HREF, WORK_SIMULATION_HREF } from "./portalNavigation";
+import { academyPreviewHref, academySection, academySections, canonicalAcademyHref, CSHARP_METHODS_HREF, CSHARP_OBJECTS_HREF, ENGLISH_SPEAKING_HASH, ENGLISH_SPEAKING_HREF, isWorkspacePath, practiceMode, WORK_DELIVERY_HASH, WORK_DELIVERY_HREF, WORK_INCIDENT_HASH, WORK_INCIDENT_HREF, WORK_SIMULATION_HREF } from "./portalNavigation";
 
 describe("Academy navigation", () => {
   it("separates marketing from workspace with exact path boundaries", () => {
@@ -24,24 +24,25 @@ describe("Academy navigation", () => {
     expect(canonicalAcademyHref("/dev/ide-preview/variaveis-js")).toBeNull();
     expect(canonicalAcademyHref("/dev/academy-preview", "?view=home")).toBeNull();
   });
-  it("round-trips methods as its own view with priority over the legacy module selector", () => {
+  it.each([["methods", CSHARP_METHODS_HREF], ["objects", CSHARP_OBJECTS_HREF]])("round-trips %s as its own view with priority over the legacy module selector", (view, href) => {
     for (const moduleId of ["variables", "conditions", "loops", "unknown"]) {
-      const preview = academyPreviewHref(`${CSHARP_METHODS_HREF}&module=${moduleId}&token=secret`);
-      expect(preview).toBe("/dev/csharp-preview?academy=1&view=methods");
+      const preview = academyPreviewHref(`${href}&module=${moduleId}&token=secret`);
+      expect(preview).toBe(`/dev/csharp-preview?academy=1&view=${view}`);
       const url = new URL(preview, "https://academy.invalid");
-      expect(canonicalAcademyHref(url.pathname, url.search)).toBe(CSHARP_METHODS_HREF);
-      expect(canonicalAcademyHref("/dev/csharp-preview", `?academy=1&module=${moduleId}&view=methods&token=secret`)).toBe(CSHARP_METHODS_HREF);
-      expect(canonicalAcademyHref("/estudante/trilhas/csharp", `?module=${moduleId}&view=methods&token=secret`)).toBe(CSHARP_METHODS_HREF);
+      expect(canonicalAcademyHref(url.pathname, url.search)).toBe(href);
+      expect(canonicalAcademyHref("/dev/csharp-preview", `?academy=1&module=${moduleId}&view=${view}&token=secret`)).toBe(href);
+      expect(canonicalAcademyHref("/estudante/trilhas/csharp", `?module=${moduleId}&view=${view}&token=secret`)).toBe(href);
     }
-    expect(canonicalAcademyHref("/dev/csharp-preview", "?view=methods")).toBeNull();
+    expect(canonicalAcademyHref("/dev/csharp-preview", `?view=${view}`)).toBeNull();
     expect(academySection("/estudante/trilhas/csharp")).toBe("tracks");
   });
-  it("does not interpret an unknown view or module as methods", () => {
-    for (const view of ["Methods", "methods-extra", "https://evil.test", "map"]) {
+  it("does not interpret an unknown view or module as a real SDK unit", () => {
+    for (const view of ["Methods", "methods-extra", "Objects", "objects-extra", "https://evil.test", "map"]) {
       expect(academyPreviewHref(`/estudante/trilhas/csharp?view=${encodeURIComponent(view)}&module=loops`)).toBe("/dev/csharp-preview?academy=1&module=loops");
       expect(canonicalAcademyHref("/dev/csharp-preview", `?academy=1&view=${encodeURIComponent(view)}&module=conditions`)).toBe("/estudante/trilhas/csharp?module=conditions");
     }
     expect(academyPreviewHref("/estudante/trilhas/csharp?module=methods")).toBe("/dev/csharp-preview?academy=1");
+    expect(academyPreviewHref("/estudante/trilhas/csharp?module=objects")).toBe("/dev/csharp-preview?academy=1");
     expect(canonicalAcademyHref("/dev/csharp-preview", "?academy=1&view=unknown&module=methods")).toBe("/estudante/trilhas/csharp");
   });
   it("round-trips only the authored pulse sub-adventure, without saving arbitrary anchors", () => {
