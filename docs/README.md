@@ -1,5 +1,14 @@
 # Documentação da Orbitamos
 
+**Entrada C# — 17/11/2026:** [revisão visual e aceites](REVISAO_VISUAL_CSHARP_20261117.md).
+A rejeição da composição antiga prioriza uma missão visual com o editor já na entrada;
+QA, publicação e retorno do usuário são registrados separadamente.
+
+
+**Materiais do percurso C# — 16/11/2026:** [inventário e lacunas de curadoria](MANIFESTO_FORMACAO_CSHARP.md).
+Lista aulas, práticas, DOCX e apoios; distingue integridade de arquivo, vínculo
+autoral e revisão completa do conteúdo.
+
 **Fila de execução — 16/11/2026:** [mapa de tarefas, dependências e cursor](MAPA_EXECUCAO_ACADEMY.md).
 Próxima frente: curadoria de aula → prática. Pendências de teste com aluno ficam
 separadas das tarefas técnicas que podem avançar.

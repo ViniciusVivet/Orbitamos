@@ -60,6 +60,28 @@ export function practiceStory(challenge: Desafio): Story {
 
 export function contextualLine(challenge: Desafio, code: string): { title: string; why: string } | null {
   const line = code.trim();
+  const csharpLessons: Record<string, Record<string, [string, string]>> = {
+    "trilha-csharp-piloto-v1": {
+      'string projeto = "OrbiServiços";': ["Dê nome ao projeto", "string guarda texto. = coloca OrbiServiços em projeto. Use aspas no texto e ; no fim."],
+      "int servicosPendentes = 3;": ["Guarde a quantidade de serviços", "int guarda o inteiro 3 em servicosPendentes, sem aspas. Esse nome permitirá usar a contagem depois."],
+      "Console.WriteLine(projeto);": ["Mostre o nome no console", "Console.WriteLine lê projeto e mostra OrbiServiços. Sem aspas, usamos o valor da variável."],
+      "Console.WriteLine(servicosPendentes);": ["Mostre também a contagem", "Esta chamada mostra o valor guardado: 3. Depois, aperte Executar código para ver as duas saídas."],
+    },
+    "trilha-csharp-condicoes-v1": {
+      "int pendentes = 3;": ["Conte o trabalho que chegou", "int guarda a contagem 3 em pendentes. Vamos usar esse número para decidir se há trabalho."],
+      "if (pendentes > 0) {": ["Pergunte se há trabalho", "if significa se. > 0 pergunta se a contagem é maior que zero. { abre o bloco dessa decisão."],
+      'Console.WriteLine("Há trabalho");': ["Avise quando a condição for verdadeira", "Dentro das chaves, a mensagem só aparece quando pendentes > 0. Aqui, 3 é maior que zero."],
+      "}": ["Feche a decisão", "} fecha o bloco aberto por {. Com zero pendências, o programa pula a mensagem desse bloco."],
+    },
+    "trilha-csharp-lacos-v1": {
+      "int quantidade = 3;": ["Defina o tamanho da fila", "quantidade guarda o inteiro 3. O laço vai usar esse valor como limite, sem copiar três saídas."],
+      "for (int numero = 1; numero <= quantidade; numero++) {": ["Diga como a repetição acontece", "As três partes do for: iniciar em 1; repetir enquanto numero <= quantidade; avançar com numero++. { abre o bloco."],
+      "Console.WriteLine(numero);": ["Mostre o número de cada serviço", "Esta linha fica dentro do for. Ela mostra 1, depois 2 e depois 3, uma vez por volta."],
+      "}": ["Feche o bloco da repetição", "} marca o fim de cada volta. O for atualiza numero e testa a condição novamente antes de continuar."],
+    },
+  };
+  const csharpLine = csharpLessons[challenge.slug]?.[line];
+  if (csharpLine) return { title: csharpLine[0], why: csharpLine[1] };
   if (["contas-servico-js", "decisao-servico-js", "primeiro-orcamento-js"].includes(challenge.slug)) {
     const assignment = line.match(/^(?:let|const|var)\s+(\w+)\s*=\s*(.+?);?$/);
     if (assignment) {

@@ -320,3 +320,66 @@ corrigidos; não houve sessão humana nem leitura autenticada do catálogo remot
 A confirmação de publicação fica separada no fechamento de B02.02 do mapa.
 Próximo item independente: B02.01, manifesto dos materiais e
 vínculos usados no percurso. A estimativa de 30% não muda por criar a fila.
+
+## Inventário C# e revisão de variáveis — 16/11/2026
+
+B02.02 foi publicado em `d7d79bc`, CI `43972207849` e Vercel confirmados.
+A continuação fecha o inventário B02.01 no
+[manifesto](MANIFESTO_FORMACAO_CSHARP.md): 13 aulas locais em cinco módulos,
+quatro DOCX íntegros e apoios selecionados de SQL/inglês/Entrega. Texto inicial
+e integridade não substituem leitura integral. Vídeos e fonte remota não foram
+conferidos; o material de Cinema/Avalonia continua complemento desktop.
+
+O novo vínculo `csharp-a5 → variables` tem questões próprias de previsão,
+tipo e atualização de valor, com código legível, pistas após erros e explicação
+dos acertos. O destino corresponde ao recorte de string/int/atribuição/+−/console;
+não promete ensinar double/var/conversões. `variables-v1` separa essa avaliação
+das respostas antigas. Quizzes explícitos válidos mantêm prioridade e chave.
+O parser agora descarta entradas nulas/malformadas e questões sem resposta
+possível, preservando as válidas e seus IDs/materiais, sem quiz substituto.
+
+A captura estreita revelou revisão longa demais. O componente compartilhado
+passou a mostrar uma pergunta por vez, navegação por números e avanço após
+feedback. Reload abre a primeira pendente; Refazer limpa somente a versão atual.
+O fluxo mantém revisão, prática e execução em código como evidências diferentes.
+
+QA local: 988 testes/78 arquivos, nove contratos estruturais, lint, tipos e build
+aprovados; snippets executados no SDK .NET 10.0.404, incluindo erro CS0029 esperado.
+Chromium desktop e WebKit 390/320 px conferiram erro, correção, ordem alternativa,
+foco, reload, isolamento de saves e abertura das práticas reais. Nove estados axe
+sem violações no escopo, sem overflow/erros de página; capturas inspecionadas.
+Warnings anteriores de Browserslist/tracing de materiais permanecem. Nenhuma
+sessão humana, execução de aluno ou leitura autenticada remota foi presumida.
+
+Este registro fecha I/Q; a confirmação remota desta rodada fica no cursor local
+`docs/local/academy-manifest-20261116/continuity.json`. Próxima tarefa pronta:
+B02.03.2, vínculo de objetos reais com os requisitos de SDK/PC. A cobertura
+estimada continua cerca de 30%; inventário e testes não comprovam aprendizagem.
+
+
+## Rejeição da entrada C# e reparo — 17/11/2026
+
+O usuário enviou cinco fotos, relatou abandonar a entrada no PC/celular e deu
+nota 1/10 à composição. O QA funcional anterior não havia assegurado clareza
+visual. Isso prioriza B01.07 e B01.08 no mapa; os vínculos novos de biblioteca
+aguardam esse reparo, preservando o trabalho local já aprovado de B02.
+
+A tela de variáveis/condições/laços agora apresenta uma cena própria do Orbi
+no balcão do OrbiServiços junto à tarefa e ao editor. Barra compacta e roteiro
+nativo substituem masthead, quatro abas e cinco botões de módulos. Foram
+retirados o aviso sticky, a lista lateral/mobile inicial, o começo duplicado,
+o plano repetido e o console vazio. Atividades e ferramentas são consultáveis;
+instrução da linha, significado e erro continuam próximos do trabalho.
+
+O [registro visual](REVISAO_VISUAL_CSHARP_20261117.md) reúne critérios, mídia,
+medidas e limites. Browser QA passou em três perfis, com a primeira linha do
+editor visível na dobra de 390 e 320 px, saves/recuperação e navegação conferidos.
+Quinze estados axe no escopo ficaram sem violações. O foco de fechar Atividades
+foi corrigido especificamente no WebKit; isso não substitui teclado de iPhone real.
+
+A publicação deste incremento inclui a curadoria local B02.01/.02.6/.03.1,
+ainda não publicada no momento do feedback. Confirmação final de testes/build,
+SHA, CI, deploy e smoke fica em `docs/local/academy-visual-reset-20261117/continuity.json`.
+Próxima pronta é B01.08: corrigir a pilha interna das unidades .NET antes de
+voltar a ampliar seus vínculos. Não há aprovação visual humana da composição
+nova, sessão de aprendizagem ou nova estimativa de cobertura por esse reparo.

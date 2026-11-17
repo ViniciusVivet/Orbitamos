@@ -6,6 +6,7 @@ import {
   flattenCourseLessons,
   getLessonGuide,
   getLessonQuiz,
+  getLessonQuizStorageKey,
   isLessonQuizComplete,
   getLessonKind,
   getNextIncompleteLesson,
@@ -89,6 +90,25 @@ describe("learning experience", () => {
     expect(getLessonGuide(course, { ...lesson, id: "database-uuid", slug: "csharp-a6", titulo: "Título editado" }, 0)).toEqual(original);
   });
 
+  it("links only the reviewed variables slice by stable identity and explains its limits", () => {
+    const course = cursos.find(item => item.slug === "csharp-fundamentos")!;
+    const lesson = course.modulos.flatMap(item => item.aulas).find(item => item.id === "csharp-a5")!;
+    const guide = getLessonGuide(course, lesson, 1);
+    expect(guide.origin).toBe("authored");
+    expect(guide.practice?.href).toBe("/estudante/trilhas/csharp?module=variables");
+    expect(guide.practice?.description).toContain("ainda não ensina double");
+    expect(guide.practice?.description).toContain("no navegador");
+    expect(getLessonGuide(course, { ...lesson, id: "db-uuid", slug: "csharp-a5", titulo: "Título atualizado" }, 90)).toEqual(guide);
+    expect(getLessonGuide(course, lesson, 99)).toEqual(guide);
+    expect(getLessonGuide({ ...course, slug: "other-course" }, lesson).origin).toBe("general");
+    expect(getLessonGuide(course, { ...lesson, id: "unknown" }).origin).toBe("general");
+    expect(guide.quiz.map(question => question.answer)).toEqual(["Bia, depois cliente", "int quantidade = 7;", "8"]);
+    expect(guide.quiz.filter(question => question.code)).toHaveLength(2);
+    expect(guide.quiz.every(question => Boolean(question.explanation && question.hint))).toBe(true);
+    const explicit = [{ question: "Outra questão", options: ["A", "B"], answer: "B" }];
+    expect(getLessonQuiz({ ...lesson, quiz: explicit }, guide)).toEqual(explicit);
+  });
+
   it("does not infer the authored pilot from a title or an unrelated course", () => {
     const course = cursos.find(item => item.slug === "csharp-fundamentos")!;
     const lesson = course.modulos.flatMap(item => item.aulas).find(item => item.id === "csharp-a6")!;
@@ -137,5 +157,18 @@ describe("learning experience", () => {
     expect(isLessonQuizComplete("current", questions, { lessonId: "current", correct: 1, total: 2 })).toBe(false);
     expect(isLessonQuizComplete("current", questions, { lessonId: "current", correct: 0, total: 1 })).toBe(false);
     expect(isLessonQuizComplete("current", questions, { lessonId: "current", correct: 1, total: 1 })).toBe(true);
+    expect(isLessonQuizComplete("current", questions, { lessonId: "current", quizKey: "old", correct: 1, total: 1 }, "new")).toBe(false);
+  });
+
+  it("isolates the new variables assessment while retaining published conditions and explicit quiz keys", () => {
+    const course = cursos.find(item => item.slug === "csharp-fundamentos")!;
+    const lessons = course.modulos.flatMap(item => item.aulas);
+    const variables = lessons.find(item => item.id === "csharp-a5")!;
+    const conditions = lessons.find(item => item.id === "csharp-a6")!;
+    const guide = getLessonGuide(course, variables);
+    expect(getLessonQuizStorageKey("u", variables, guide)).toBe("orbitamos-quiz-v2-u-csharp-a5-variables-v1");
+    expect(getLessonQuizStorageKey("u", conditions, getLessonGuide(course, conditions))).toBe("orbitamos-quiz-v2-u-csharp-a6");
+    expect(getLessonQuizStorageKey("u", { ...variables, quiz: guide.quiz }, guide)).toBe("orbitamos-quiz-v2-u-csharp-a5");
+    expect(getLessonQuizStorageKey(null, variables, guide)).toBeNull();
   });
 });

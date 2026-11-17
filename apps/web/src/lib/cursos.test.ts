@@ -50,6 +50,14 @@ function courseRow() {
   };
 }
 
+function courseRowWithQuiz(quiz: unknown) {
+  const row = courseRow();
+  return { ...row, course_modules: row.course_modules.map(module => ({
+    ...module,
+    lessons: module.lessons.map(lesson => lesson.id === "lesson-a" ? { ...lesson, quiz } : lesson),
+  })) };
+}
+
 beforeEach(() => {
   database.configured = true;
   database.responses.length = 0;
@@ -72,7 +80,7 @@ describe("catálogo resumido da Academy", () => {
       { id: "lesson-b", slug: "aula-b", titulo: "Segunda aula" },
     ]);
     expect(totalAulas(result[0])).toBe(2);
-    expect(JSON.stringify(result)).not.toMatch(/conteudo|materiais|quiz|youtubeVideoId/);
+    expect(JSON.stringify(result)).not.toMatch(/"(?:conteudo|materiais|quiz|youtubeVideoId)"\s*:/);
     expect(getNextIncompleteLesson(result, new Set(["lesson-a"]))?.aula.id).toBe("lesson-b");
     expect(getCourseTrackGroups(result)[0].cursos[0]).toBe(result[0]);
   });
@@ -89,7 +97,7 @@ describe("catálogo resumido da Academy", () => {
       expect(flattenCourseLessons(course).map(({ aula }) => ({ id: aula.id, titulo: aula.titulo })))
         .toEqual(flattenCourseLessons(cursos[index]).map(({ aula }) => ({ id: aula.id, titulo: aula.titulo })));
     }
-    expect(JSON.stringify(result)).not.toMatch(/conteudo|materiais|quiz|youtubeVideoId/);
+    expect(JSON.stringify(result)).not.toMatch(/"(?:conteudo|materiais|quiz|youtubeVideoId)"\s*:/);
   });
 
   it.each([null, { code: "42501", message: "Acesso indisponível" }])("usa resumo local sem repetir uma consulta de catálogo vazia ou com erro: %j", async (error) => {
@@ -111,6 +119,69 @@ describe("catálogo resumido da Academy", () => {
 });
 
 describe("detalhe de curso sob demanda", () => {
+  it("ignora entradas de quiz malformadas e preserva as questões válidas sem perder a aula", async () => {
+    const first = { question: "O que aparece primeiro?", options: ["Cliente", "Quantidade"], answer: "Cliente" };
+    const second = { question: "  Qual é a decisão?  ", options: ["  Sim  ", "Não"], answer: "  Sim  " };
+    const row = courseRowWithQuiz([
+      null, undefined, 42, false, "pergunta solta", [],
+      { question: "Sem resposta", options: ["A", "B"] },
+      { question: "Resposta ausente das opções", options: ["A", "B"], answer: "C" },
+      first,
+      { question: "Sem opções", answer: "A" },
+      second,
+    ]);
+    const before = JSON.stringify(row);
+    database.responses.push({ data: row, error: null });
+    const result = await buscarCursoAcademyPorSlug("curso-novo");
+    const lesson = result?.modulos[1].aulas[0];
+    expect(result?.id).toBe("course-db");
+    expect(lesson).toMatchObject({ id: "lesson-a", slug: "aula-a", conteudo: "Explicação completa", youtubeVideoId: "video-a", quiz: [first, second] });
+    expect(lesson?.materiais?.map(material => material.id)).toEqual(["material-a", "material-b"]);
+    expect(result?.modulos[1].aulas.map(item => item.id)).toEqual(["lesson-a", "lesson-b"]);
+    expect(database.requests).toHaveLength(1);
+    expect(JSON.stringify(row)).toBe(before);
+  });
+
+  it.each([
+    null,
+    {},
+    "quiz",
+    [],
+    [null],
+    [{ question: "", options: ["A", "B"], answer: "A" }],
+    [{ question: " \t ", options: ["A", "B"], answer: "A" }],
+    [{ question: 7, options: ["A", "B"], answer: "A" }],
+    [{ question: "Pergunta?", options: "A, B", answer: "A" }],
+    [{ question: "Pergunta?", options: ["A"], answer: "A" }],
+    [{ question: "Pergunta?", options: ["A", null], answer: "A" }],
+    [{ question: "Pergunta?", options: ["A", 2], answer: "A" }],
+    [{ question: "Pergunta?", options: ["A", " "], answer: "A" }],
+    [{ question: "Pergunta?", options: ["A", "A"], answer: "A" }],
+    [{ question: "Pergunta?", options: [" A", "A "], answer: " A" }],
+    [{ question: "Pergunta?", options: ["A", "B"], answer: "C" }],
+    [{ question: "Pergunta?", options: ["A", "B"], answer: 1 }],
+    [{ question: "Pergunta?", options: ["A", "B"] }],
+  ].map(quiz => ({ quiz })))("mantém a aula sem fabricar revisão quando não há questões válidas: %j", async ({ quiz }) => {
+    database.responses.push({ data: courseRowWithQuiz(quiz), error: null });
+    const result = await buscarCursoAcademyPorSlug("curso-novo");
+    expect(result?.modulos[1].aulas[0]).toMatchObject({ id: "lesson-a", slug: "aula-a", titulo: "Primeira aula", conteudo: "Explicação completa" });
+    expect(result?.modulos[1].aulas[0].quiz).toBeUndefined();
+    expect(database.requests).toHaveLength(1);
+  });
+
+  it("não converte objetos em opções nem trata propriedades herdadas como questões do catálogo", async () => {
+    const stringify = vi.fn(() => "B");
+    const inherited = Object.create({ question: "Herdada?", options: ["A", "B"], answer: "A" });
+    database.responses.push({ data: courseRowWithQuiz([
+      inherited,
+      { question: "Objeto como opção?", options: ["A", { toString: stringify }], answer: "A" },
+    ]), error: null });
+    const result = await buscarCursoAcademyPorSlug("curso-novo");
+    expect(result?.modulos[1].aulas[0].quiz).toBeUndefined();
+    expect(stringify).not.toHaveBeenCalled();
+    expect(database.requests).toHaveLength(1);
+  });
+
   it("busca somente o slug pedido e preserva conteúdo, quiz e materiais ordenados", async () => {
     database.responses.push({ data: courseRow(), error: null });
 

@@ -1,26 +1,38 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, ArrowRight, ArrowUpRight, Code2, Monitor, Smartphone } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Code2, Map, Monitor, Smartphone, X } from "lucide-react";
 import { csharpJobSources, csharpMarketCheckedAt, csharpProgressKey, newCSharpProgress, readCSharpProgress, type CSharpTrackProgress, type TrackView } from "@/lib/csharpTrack";
 import CSharpVariables from "./CSharpVariables";
 import CSharpCareerMap from "./CSharpCareerMap";
 import CSharpMethods from "./CSharpMethods";
 import CSharpObjects from "./CSharpObjects";
-import { csharpModules, readModuleKind, type CSharpModuleKind } from "@/lib/csharpModules";
+import { laboratoryCovers } from "./laboratoryCovers";
+import { readModuleKind, type CSharpModuleKind } from "@/lib/csharpModules";
 import projetoCSharp from "../../../public/images/academy/projeto-csharp-v1.webp";
 import s from "./CSharpTrack.module.css";
 
 const views: { id: TrackView; title: string }[] = [{ id: "welcome", title: "Sua jornada" }, { id: "market", title: "A profissão" }, { id: "map", title: "Seu caminho" }, { id: "pilot", title: "Codar" }];
+const availableUnits = [
+  { id: "variables", title: "Variáveis", description: "Texto, números e cálculos", image: laboratoryCovers.fundamentos.image },
+  { id: "conditions", title: "Condições", description: "Decisões com if e else", image: laboratoryCovers.decisoes.image },
+  { id: "loops", title: "Laços", description: "Repetições e filas de serviços", image: laboratoryCovers.repeticao.image },
+  { id: "methods", title: "Métodos", description: "Regras reutilizáveis · SDK .NET 10", image: projetoCSharp },
+  { id: "objects", title: "Objetos e listas", description: "Fichas e referências · SDK .NET 10", image: projetoCSharp },
+] as const;
 export default function CSharpTrack({ userId }: { userId: string | number | null }) {
   const [progress, setProgress] = useState<CSharpTrackProgress>(newCSharpProgress);
   const [ready, setReady] = useState(false);
   const [moduleKind, setModuleKind] = useState<CSharpModuleKind>("variables");
   const [storageError, setStorageError] = useState(false);
   const [academyPreview, setAcademyPreview] = useState(false);
+  const [routeOpen, setRouteOpen] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
+  const routeDialog = useRef<HTMLDialogElement>(null);
+  const routeTrigger = useRef<HTMLButtonElement>(null);
+  const focusPage = useRef(false);
   const latest = useRef(progress);
   const key = userId !== null ? csharpProgressKey(userId) : null;
 
@@ -28,6 +40,7 @@ export default function CSharpTrack({ userId }: { userId: string | number | null
     let active = true;
     queueMicrotask(() => {
       if (!active) return;
+      routeDialog.current?.close(); setRouteOpen(false);
       const params = new URLSearchParams(window.location.search);
       const requestedView = params.get("view");
       const validView = requestedView === "methods" || requestedView === "objects" ? requestedView : views.find(view => view.id === requestedView)?.id;
@@ -52,14 +65,22 @@ export default function CSharpTrack({ userId }: { userId: string | number | null
     window.addEventListener("pagehide", save);
     return () => { clearTimeout(timer); save(); window.removeEventListener("pagehide", save); };
   }, [key, progress, ready]);
+  useLayoutEffect(() => {
+    if (!focusPage.current) return;
+    focusPage.current = false;
+    heading.current?.focus({ preventScroll: true });
+  }, [progress.view]);
   function update(change: Partial<CSharpTrackProgress>) { const next = { ...latest.current, ...change }; latest.current = next; setProgress(next); }
   function navigate(view: TrackView) {
+    const needsHeading = view === "welcome" || view === "market" || view === "map";
+    focusPage.current = needsHeading && latest.current.view !== view;
+    if (needsHeading && latest.current.view === view) heading.current?.focus({ preventScroll: true });
     update({ view, ...(view === "methods" || view === "objects" ? { projectUnit: view } : view === "pilot" ? { projectUnit: undefined } : {}) });
     const params = new URLSearchParams(window.location.search);
     params.set("view", view);
     if (view !== "pilot") params.delete("module");
     window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
-    requestAnimationFrame(() => { heading.current?.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: "instant" }); });
+    window.scrollTo({ top: 0, behavior: "instant" });
   }
   function openModule(module: CSharpModuleKind) {
     setModuleKind(module);
@@ -70,11 +91,33 @@ export default function CSharpTrack({ userId }: { userId: string | number | null
     window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
     navigate("pilot");
   }
+  function closeRoute() {
+    routeDialog.current?.close();
+    setRouteOpen(false);
+    routeTrigger.current?.focus({ preventScroll: true });
+  }
+  function openRoute() {
+    if (routeDialog.current?.open) return;
+    routeDialog.current?.showModal();
+    setRouteOpen(true);
+  }
+  function chooseRoute(view: "welcome" | "market" | "map") {
+    closeRoute(); navigate(view);
+  }
   if (!ready) return <p role="status">Preparando sua jornada C#…</p>;
+  const learning = progress.view === "pilot" || progress.view === "methods" || progress.view === "objects";
+  const currentUnit = progress.view === "methods" || progress.view === "objects" ? progress.view : moduleKind;
+  const currentLabel = availableUnits.find(unit => unit.id === currentUnit)!.title;
 
-  return <div className={s.track} data-csharp-track data-view={progress.view}>
-    <header className={s.masthead}><Link href={academyPreview ? "/dev/academy-preview?view=tracks" : "/estudante/trilhas"}><ArrowLeft size={16}/>Minhas trilhas</Link><span>ORBITAMOS ACADEMY <i>/</i> C# & .NET</span><span className={s.edition}>EDIÇÃO PILOTO</span></header>
-    <nav className={s.navigation} aria-label="Etapas da jornada C#">{views.map((view, index) => <button key={view.id} aria-current={progress.view === view.id || (view.id === "pilot" && (progress.view === "methods" || progress.view === "objects")) ? "page" : undefined} onClick={() => navigate(view.id)}><small>0{index + 1}</small>{view.title}</button>)}</nav>
+  return <div className={`${s.track}${learning ? ` ${s.learning}` : ""}`} data-csharp-track data-view={progress.view}>
+    {learning ? <nav className={s.lessonBar} aria-label="Navegação da prática C#">
+      <button type="button" onClick={() => navigate("welcome")}><ArrowLeft size={15}/>Voltar C#</button>
+      <span className={s.lessonName} title={currentLabel}>{currentLabel}</span>
+      <button ref={routeTrigger} type="button" aria-haspopup="dialog" aria-controls="csharp-route-dialog" aria-expanded={routeOpen} onClick={openRoute}><Map size={16}/>Roteiro da trilha</button>
+    </nav> : <>
+      <header className={s.masthead}><Link href={academyPreview ? "/dev/academy-preview?view=tracks" : "/estudante/trilhas"}><ArrowLeft size={16}/>Minhas trilhas</Link><span>ORBITAMOS ACADEMY <i>/</i> C# & .NET</span><span className={s.edition}>EDIÇÃO PILOTO</span></header>
+      <nav className={s.navigation} aria-label="Etapas da jornada C#">{views.map((view, index) => <button key={view.id} aria-current={progress.view === view.id ? "page" : undefined} onClick={() => navigate(view.id)}><small>0{index + 1}</small>{view.title}</button>)}</nav>
+    </>}
     {storageError && <p className={s.notice} role="alert">O navegador não permitiu salvar. Você pode testar, mas copie seu código antes de sair.</p>}
 
     {progress.view === "welcome" && <>
@@ -96,10 +139,23 @@ export default function CSharpTrack({ userId }: { userId: string | number | null
 
     {progress.view === "map" && <CSharpCareerMap currentModule={moduleKind} currentUnit={progress.projectUnit} onOpenModule={openModule} onOpenMethods={() => navigate("methods")} onOpenObjects={() => navigate("objects")} headingRef={heading}/>}
 
-    {(progress.view === "pilot" || progress.view === "methods" || progress.view === "objects") && <nav className={s.moduleTabs} aria-label="Módulos disponíveis">{(Object.keys(csharpModules) as CSharpModuleKind[]).map(id => <button key={id} aria-current={progress.view === "pilot" && moduleKind === id ? "page" : undefined} onClick={() => openModule(id)}>{csharpModules[id].tab}</button>)}<button aria-current={progress.view === "methods" ? "page" : undefined} onClick={() => navigate("methods")}>Métodos · .NET real</button><button aria-current={progress.view === "objects" ? "page" : undefined} onClick={() => navigate("objects")}>Objetos e listas</button></nav>}
     {progress.view === "pilot" && <CSharpVariables key={`${userId}-${moduleKind}`} userId={userId} moduleKind={moduleKind} onModuleChange={openModule} onMethods={() => navigate("methods")} onFullMap={() => navigate("map")}/>}
     {progress.view === "methods" && <CSharpMethods key={key} userId={userId} onFullMap={() => navigate("map")} onNextUnit={() => navigate("objects")}/>}
     {progress.view === "objects" && <CSharpObjects key={key} userId={userId} onFullMap={() => navigate("map")}/>}
-    <footer className={s.footer}><span>ORBITAMOS / UMA ETAPA DE CADA VEZ</span><p>{key ? "Preferências, código e progresso deste piloto ficam neste navegador, separados do histórico das aulas. Não sincronizam entre aparelhos." : "Entre na sua conta para guardar seu progresso neste navegador."}</p></footer>
+    {!learning && <footer className={s.footer}><span>ORBITAMOS / UMA ETAPA DE CADA VEZ</span><p>{key ? "Preferências, código e progresso deste piloto ficam neste navegador, separados do histórico das aulas. Não sincronizam entre aparelhos." : "Entre na sua conta para guardar seu progresso neste navegador."}</p></footer>}
+    <dialog ref={routeDialog} id="csharp-route-dialog" className={s.routeDialog} aria-labelledby="csharp-route-title" aria-describedby="csharp-route-description" onCancel={event => { event.preventDefault(); closeRoute(); }} onClose={() => setRouteOpen(false)} onClick={event => {
+      if (event.target !== event.currentTarget) return;
+      const bounds = event.currentTarget.getBoundingClientRect();
+      if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) closeRoute();
+    }}>
+      <div className={s.routeHeading}><div><span>C# & .NET</span><h2 id="csharp-route-title">Roteiro da trilha</h2></div><button type="button" aria-label="Fechar roteiro da trilha" onClick={closeRoute}><X size={20}/></button></div>
+      <p id="csharp-route-description">Escolha onde continuar. Seus rascunhos e avanços ficam guardados.</p>
+      <ol className={s.routeUnits}>{availableUnits.map(unit => <li key={unit.id}><button type="button" aria-current={learning && unit.id === currentUnit ? "page" : undefined} onClick={() => {
+        closeRoute();
+        if (unit.id === "methods" || unit.id === "objects") navigate(unit.id); else openModule(unit.id);
+      }}><span className={s.routeThumb}><Image src={unit.image} alt="" fill sizes="76px"/></span><span className={s.routeCopy}><strong>{unit.title}</strong><small>{unit.description}</small></span><ArrowRight size={17}/></button></li>)}</ol>
+      <nav className={s.routeLinks} aria-label="Conhecer a trilha"><button type="button" onClick={() => chooseRoute("map")}>Mapa completo</button><button type="button" onClick={() => chooseRoute("market")}>A profissão</button><button type="button" onClick={() => chooseRoute("welcome")}>Início da trilha</button></nav>
+      <p className={s.routeLimit}>As práticas do navegador usam um subconjunto de C#. Métodos, objetos e listas executam no computador com SDK .NET 10. Dados, APIs e as próximas entregas continuam em preparação.</p>
+    </dialog>
   </div>;
 }

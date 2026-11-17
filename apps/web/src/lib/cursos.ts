@@ -377,7 +377,7 @@ export const cursos: Curso[] = [
     id: "fallback-csharp",
     slug: "csharp-fundamentos",
     titulo: "C# Fundamentos",
-    descricao: "Da sintaxe básica ao ASP.NET Core: tudo que um dev C# junior precisa dominar.",
+    descricao: "Aulas e materiais de apoio em C#, da sintaxe a conceitos de ASP.NET Core e APIs.",
     modulos: [
       {
         id: "csharp-m1",
@@ -701,17 +701,19 @@ function detailSelect(withQuiz: boolean) {
 
 function parseLessonQuiz(raw: unknown): QuizPergunta[] | undefined {
   if (!Array.isArray(raw)) return undefined;
-  const questions = raw
-    .map((item) => {
-      const q = item as { question?: unknown; options?: unknown; answer?: unknown };
-      const options = Array.isArray(q.options) ? q.options.map((o) => String(o)) : [];
-      return {
-        question: typeof q.question === "string" ? q.question : "",
-        options,
-        answer: typeof q.answer === "string" ? q.answer : "",
-      };
-    })
-    .filter((q) => q.question && q.options.length >= 2);
+  const questions: QuizPergunta[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+    const q = item as Record<string, unknown>;
+    if (!["question", "options", "answer"].every(key => Object.prototype.hasOwnProperty.call(q, key))) continue;
+    const options = q.options;
+    if (typeof q.question !== "string" || !q.question.trim() || !Array.isArray(options) || options.length < 2
+      || !options.every((option): option is string => typeof option === "string" && option.trim().length > 0)
+      || new Set(options.map(option => option.trim())).size !== options.length
+      || typeof q.answer !== "string" || !options.includes(q.answer)) continue;
+    // Keep the authored wording and order; malformed data does not gain a substitute.
+    questions.push({ question: q.question, options: [...options], answer: q.answer });
+  }
   return questions.length > 0 ? questions : undefined;
 }
 

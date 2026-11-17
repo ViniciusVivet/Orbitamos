@@ -38,7 +38,7 @@ import {
   type Curso,
   type MaterialAula,
 } from "@/lib/cursos";
-import { flattenCourseLessons, getLessonGuide, getLessonKind, getLessonQuiz, isLessonQuizComplete, lessonKindLabels, type LessonQuizScore } from "@/lib/learningExperience";
+import { flattenCourseLessons, getLessonGuide, getLessonKind, getLessonQuiz, getLessonQuizStorageKey, isLessonQuizComplete, lessonKindLabels, type LessonQuizScore } from "@/lib/learningExperience";
 
 const NOTES_STORAGE_KEY = "orbitacademy-notes";
 const YOUTUBE_VIDEO_ID_PATTERN = /^[a-zA-Z0-9_-]{6,20}$/;
@@ -431,7 +431,8 @@ export default function CourseLearningRoom() {
   }
 
   const questions = guide ? getLessonQuiz(lesson, guide) : [];
-  const quizPerfect = isLessonQuizComplete(lesson.id, questions, quizScore);
+  const quizStorageKey = guide ? getLessonQuizStorageKey(userId, lesson, guide) : null;
+  const quizPerfect = isLessonQuizComplete(lesson.id, questions, quizScore, quizStorageKey);
   const lessonSteps = [
     { id: "secao-entenda", label: "Entenda", done: quizPerfect },
     ...(questions.length > 0 ? [{ id: "secao-revisao", label: "Revise", done: quizPerfect }] : []),
@@ -633,9 +634,9 @@ export default function CourseLearningRoom() {
               guide={guide}
               questions={questions}
               lessonId={lesson.id}
-              storageKey={userId ? `orbitamos-quiz-v2-${userId}-${lesson.id}` : null}
+              storageKey={quizStorageKey}
               quizPerfect={quizPerfect}
-              onScoreChange={(correct, total) => setQuizScore({ lessonId: lesson.id, correct, total })}
+              onScoreChange={(correct, total) => setQuizScore({ lessonId: lesson.id, quizKey: quizStorageKey, correct, total })}
             />}
 
             {/* ── 4. Conclua ── */}

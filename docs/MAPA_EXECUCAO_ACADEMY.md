@@ -1,22 +1,26 @@
 # Mapa de execução da formação Orbitamos
 
 Versão 1 — **16/11/2026**, base publicada `a216357`.
+Prioridade de entrada revisada em **17/11/2026**, após feedback humano do usuário.
 Este arquivo é a fila de trabalho. O [controle da formação](CONTROLE_FORMACAO_ORBITAMOS.md)
 define a qualidade; o [plano integral](PLANO_FORMACAO_ORBITAMOS.md) explica o diagnóstico;
 o [registro de execução](EVOLUCAO_FORMACAO_ACADEMY.md) guarda as entregas.
 
 ## Ponto de retomada
 
-- **Fechamento atual:** publicar e confirmar B00.02/B00.03/B02.02; implementação e QA concluídos.
-- **Próxima após o fechamento:** B02.01 → B02.03; depois B03.01 e B04.01.
+- **Em fechamento:** B01.07 — entrada visual e QA aprovados; confirmar publicação e seguir B01.08. [Problema e aceites](REVISAO_VISUAL_CSHARP_20261117.md).
+- **Trabalho local preservado:** B02.01, B02.02.6 e B02.03.1 têm I/Q concluídos; esta rodada ainda não tem commit/push nem P confirmado. Não repetir a implementação nem declará-la publicada.
+- **Próxima pronta após publicar B01.07:** B01.08 — aplicar o mesmo princípio ao interior de Métodos/Objetos; depois B02.03.2 → B02.03.3, B03.01 e B04.01.
 - **Aguardando participação, sem parar a fila:** H01–H03, sessão do Aluno 0.
-- **Publicação-base confirmada:** `a216357`, CI `43959062550` e Vercel aprovados.
+- **Publicação-base confirmada:** `d7d79bc`, CI `43972207849` e Vercel aprovados.
 - **Cobertura estimada:** cerca de 30% do alvo, conforme a régua. Quantidade de
-  tarefas concluídas não será convertida em percentual de aprendizagem.
+  tarefas concluídas não será convertida em percentual de aprendizagem ou nota
+  de qualidade visual. O feedback de 17/11 não gera novo percentual.
 
-O estado remoto desta rodada é conferido pelo commit que contém este arquivo,
-CI e Vercel. A confirmação fica em `docs/local/academy-task-map-20261116/continuity.json`
-no PC de autoria. Conferir esse fechamento antes de repetir uma publicação.
+O fechamento anterior está confirmado em `docs/local/academy-task-map-20261116/continuity.json`;
+não repetir B02.02.1–5. A curadoria local registra suas evidências em
+`docs/local/academy-manifest-20261116/`. O QA visual de B01.07 fica em
+`docs/local/academy-visual-reset-20261117/`; confirmar SHA/CI/Vercel somente após commit/push.
 
 ## Alvo e limites
 
@@ -90,8 +94,8 @@ flowchart TD
 | ID | Tarefa e aceite | Estado / dependência |
 | --- | --- | --- |
 | B00.01 | Fixar alvo, limites e régua; distinguir cobertura, técnica e aprendizagem | Feita — controle da formação, `a216357` |
-| B00.02 | Criar esta fila com IDs, dependências, aceites e cursor | Feita I/Q — 88 linhas principais, IDs únicos e links conferidos; P no fechamento atual |
-| B00.03 | Ligar AGENTS, índice e régua ao mapa; impedir três listas concorrentes de “próximo passo” | Feita I/Q — dois AGENTS, índice e controle apontam à fila; P no fechamento atual |
+| B00.02 | Criar esta fila com IDs, dependências, aceites e cursor | Feita I/Q/P — 88 linhas principais, IDs únicos e links conferidos; `d7d79bc` |
+| B00.03 | Ligar AGENTS, índice e régua ao mapa; impedir três listas concorrentes de “próximo passo” | Feita I/Q/P — dois AGENTS, índice e controle apontam à fila; `d7d79bc` |
 | B00.04 | Fechar o registro rastreado da publicação `a216357`, já confirmada remotamente | Feita — controle e evolução atualizados; I/Q/P confirmados |
 | B00.05 | Em cada rodada: atualizar cursor, evidência, publicação e maior risco restante | Recorrente — obrigatório em todo fechamento |
 
@@ -105,20 +109,63 @@ flowchart TD
 | B01.04 | Corrigir bloqueios observados, um por vez; repetir a mesma tarefa e uma variante | Planejada — B01.03/H01 |
 | B01.05 | Auditar missão vazia, ajuda, Progresso e retorno pelo menu/Voltar em 320/390/desktop | Pronta — ampliar cenários existentes sem redesenhar todo o portal |
 | B01.06 | Garantir rótulos e uma ação principal; tratar instruções “abaixo/ao lado” conforme layout | Pronta — inventariar ocorrências e conferir telas afetadas |
+| B01.07 | Corrigir a entrada C# rejeitada pelo usuário: cena útil, tarefa e início do editor na primeira dobra de 390×664; uma ação principal, mapa acessível e feedback preservado | I/Q feitas — tipos/build, lint, 988 testes e navegador 1366/390/320 px; P em fechamento; sem aprovação humana presumida |
+| B01.08 | Reduzir a pilha interna das unidades .NET: contexto visual, pedido e editor juntos; preparação, tarefas e referências consultáveis sem perder requisitos nem antecipar respostas | Pronta após B01.07 — CSharpProjectUnit/Métodos/Objetos; prioridade antes B02.03.2 |
+
+### Urgência B01.07 — entrada C# antes de nova expansão
+
+Em **17/11/2026**, o usuário enviou cinco fotos e atribuiu **1/10** à tela do
+piloto C#. Relatou abandonar a entrada no PC e no celular por encontrar menus,
+submenus e caixas antes de mídia e código. É feedback humano de apresentação e
+orientação, suficiente para priorizar o reparo. Não é ensaio de aprendizagem,
+observação completa de H01–H03 nem retorno R01/R02; esses estados permanecem pendentes.
+
+- **B01.07.1 — Compactar a entrada:** retirar a duplicação de tabs e o banner
+  contextual sticky do piloto; manter localização curta e acesso ao mapa
+  completo. Roteiro, troca de atividade e opções ficam consultáveis sob demanda,
+  com rotas e saves preservados. **I feita**, com barra de 44 px e roteiro nativo; QA nos três perfis aprovado.
+- **B01.07.2 — Compor a missão:** cena contextual útil com Orbi/foto, uma
+  orientação próxima do editor e uma ação principal conforme o estado da
+  tentativa. Sem console vazio antes de executar; instruções necessárias e
+  feedback de erro continuam visíveis quando pertinentes. **I e QA visual feitas**;
+  cena de 168 px no celular e editor na primeira dobra, antes de B02.03.2.
+- **B01.07.3 — Conferir e publicar:** capturas estáveis em 320×640, 390×664 e
+  desktop, aceites numéricos do registro visual, teclado/foco, erro/recuperação,
+  saves, mapa e retomada. Depois conferir commit, push, CI, deploy e smoke
+  público separadamente. **Q aprovado: lint, 988 testes/78 arquivos, nove contratos, tipos/build e navegador; P em fechamento**.
+  Relatórios e cursor ficam em `docs/local/academy-visual-reset-20261117/`. iPhone físico e H/R continuam separados do WebKit.
+
+O QA anterior continua válido nos seus escopos funcionais. A ausência de overflow,
+erros de página ou violações automáticas não aprovou a composição visual agora
+rejeitada. Fechar B01.07 não equivale a obter nota 10/10 ou equivalência com
+plataformas pagas.
+
+### Continuação B01.08 — tarefa .NET na primeira tela
+
+- B01.08.1: unificar cabeçalho, posição, arquivo e troca de tarefa. Preparação,
+  lista e escopo do SDK ficam consultáveis; erros/requisitos de execução continuam explícitos.
+- B01.08.2: promover contexto visual dos dados/relações junto ao pedido e editor.
+  Não revelar solução, previsão ou resposta de referência no contexto da questão.
+- B01.08.3: conferir 390/320/desktop, preparação/tarefa, teclado/foco, arquivos
+  independentes e retomada; preservar chaves, evidências e execução autodeclarada.
+
+Escopo mínimo: `CSharpProjectUnit.tsx/.module.css`, `CSharpMethods.tsx` e
+`CSharpObjects.tsx/.module.css`. A barra externa já foi reduzida por B01.07;
+não repetir esse trabalho. Não mudar modelos/pacotes .NET para redesenhar a tela.
 
 ## B02 — Curadoria: conteúdo certo leva à prática certa
 
 | ID | Tarefa e aceite | Estado / dependência |
 | --- | --- | --- |
-| B02.01 | Manifesto do percurso-alvo: ID, fonte, tema, pré-requisito, dispositivo, prática, revisão e lacuna de cada unidade usada | Pronta — inventário local; remoto marcado como não conferido |
-| B02.02 | Remover quiz/prática por rotação do índice. Reordenar CSS Grid não pode enviá-lo a funções JS; ausência de vínculo autorado deve ser explícita | Feita I/Q — fonte, página, componentes compartilhados e regressões; P no fechamento atual |
-| B02.03 | Criar vínculos por ID/slug estável, começando pelos fundamentos C#; objetivo, exemplo, prática e verificação correspondem | Pronta após B02.02 — conferir unidades uma a uma; não certificar vídeo não assistido |
+| B02.01 | Manifesto do percurso-alvo: ID, fonte, tema, pré-requisito, dispositivo, prática, revisão e lacuna de cada unidade usada | Feita I/Q local — [inventário](MANIFESTO_FORMACAO_CSHARP.md), 13 aulas, 4 DOCX e apoios selecionados; não é revisão integral; sem commit/push/P desta rodada |
+| B02.02 | Remover quiz/prática por rotação do índice. Reordenar CSS Grid não pode enviá-lo a funções JS; ausência de vínculo autorado deve ser explícita | Feita I/Q/P no escopo inicial — `d7d79bc`; proteção adicional .6 descoberta nesta rodada |
+| B02.03 | Criar vínculos por ID/slug estável, começando pelos fundamentos C#; objetivo, exemplo, prática e verificação correspondem | .1 feita I/Q local, P pendente; aguardar B01.07 antes de .2; não certificar vídeo não assistido |
 | B02.04 | Conferir fontes remotas e substituir escolha por contagem em `courseSourceModules` por origem/publicação explícitas | Acesso — precisa comparar Supabase real; não remover compatibilidade às cegas |
 | B02.05 | Rever materiais do percurso em celular: fonte, objetivo, integridade, alternativa legível e links | Planejada — B02.01; um material por tarefa filha |
 | B02.06 | Conferir integralmente vídeos utilizados; registrar trecho/tema/data e lacunas, sem tratar metadados como revisão do vídeo | Planejada — B02.01; indisponíveis viram lacuna explícita |
 | B02.07 | Revisão editorial final do percurso: sem promessa falsa, destino provisório ou assunto deslocado | Planejada — B02.03–06 |
 
-### Subtarefas do incremento ativo B02.02
+### Subtarefas B02.02 e ampliação de confiança
 
 - B02.02.1: retirar seleção por índice de quiz, exercício e duração genérica;
   preservar o vínculo autorado por identidade estável. **Feita I/Q.**
@@ -129,7 +176,40 @@ flowchart TD
 - B02.02.4: conferir ordem alterada, quiz anterior, erro/acerto, reload e destino
   correto em desktop e WebKit estreito. **Feita I/Q**, incluindo contraste do quiz.
 - B02.02.5: fechar tipos, lint, testes/build, publicar e registrar SHA/CI/Vercel.
-  **Checks locais feitos; confirmar P após push.** Nenhuma observação humana presumida.
+  **Feita I/Q/P em `d7d79bc`.** Nenhuma observação humana presumida.
+- B02.02.6: impedir que quiz nulo/malformado ou resposta fora das opções quebre
+  a aula; preservar questões válidas, ordem, IDs e materiais. **Feita I/Q local;
+  sem commit/push/P desta rodada.** Vinte regressões do parser aprovadas. Descoberta ao inspecionar o contrato do catálogo; não
+  exige migration nem inventa quiz substituto.
+
+### Subtarefas B02.03 — vínculos e recortes autorados
+
+- B02.03.1: `csharp-a5` → `variables`, com código, previsão, pistas e explicação
+  dos acertos. Declarar o recorte string/int/atribuição/+−/console e as lacunas
+  de double/var/conversões. **Feita I/Q local; sem commit/push/P desta rodada.** Quiz de uma
+  pergunta por vez, pistas e explicações próprias, versão separada do legado;
+  respostas antigas preservadas. SDK conferiu os snippets, não código de aluno.
+- B02.03.2: `csharp-a7` → objetos reais, após métodos; prática da classe e
+  construtor com indicação de SDK/PC, sem afirmar encapsulação. **Planejada após
+  o fechamento de B01.07 e a publicação de .1.** Não ampliar antes de corrigir a entrada.
+- B02.03.3: `csharp-a9` → recorte inicial de List; não prometer arrays,
+  Dictionary ou LINQ ainda não ensinados. **Pronta após .2.**
+- B02.03.4: verificar cada vínculo contra identidade estável, quiz explícito,
+  destinos, ajuda/feedback e retomada; registrar revisão de vídeo separadamente.
+  **Recorrente por guia.**
+
+QA do fechamento: 988 testes/78 arquivos, nove contratos estruturais, tipos,
+lint dos arquivos alterados e build aprovados. Painéis reais compartilhados
+conferidos em Chromium 1366×768 e WebKit 390×664/320×640: erro/acerto,
+navegação fora de ordem, foco, primeira pendente após reload, Refazer isolado,
+chave antiga preservada e destinos reais de variáveis/condições. Nove estados
+axe sem violações no escopo; sem overflow/erros de página. Não equivale a
+ensaio autenticado do catálogo remoto, auditoria integral ou iPhone físico.
+Warnings preexistentes de Browserslist e tracing do endpoint de materiais
+permanecem. Este QA é local e antecede a nova composição de B01.07; não fecha
+seu aceite visual. Ainda não há commit/push desta rodada. Após a publicação,
+registrar SHA/CI/Vercel em `docs/local/academy-manifest-20261116/continuity.json`.
+Retomar B02.03.2 somente depois de B01.07, sem repetir este incremento de curadoria.
 
 ## B03 — Evidência e revisão que ajudam a aprender
 

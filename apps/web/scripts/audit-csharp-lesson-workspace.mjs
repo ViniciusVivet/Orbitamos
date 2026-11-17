@@ -1,0 +1,116 @@
+import { chromium, webkit, devices, expect as baseExpect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+import { mkdir, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+const expect = baseExpect.configure({ timeout: 30000 });
+const base = process.env.ACADEMY_AUDIT_URL || 'http://localhost:3015';
+const out = path.resolve(process.env.ACADEMY_AUDIT_OUTPUT || '../../docs/local/academy-visual-reset-20261117/browser');
+await mkdir(out, { recursive: true });
+const report = { scope: 'Shared production C# lesson in isolated preview; no real student, account data or physical keyboard trial.', completed: false, profiles: [], errors: [] };
+const profiles = [['desktop', chromium, { viewport: { width: 1366, height: 768 } }], ['iphone', webkit, { ...devices['iPhone 13'], viewport: { width: 390, height: 664 } }], ['narrow', webkit, { ...devices['iPhone SE'], viewport: { width: 320, height: 640 } }]];
+const guidedKey = 'orbitamos-guided-v1-academy-preview-trilha-csharp-piloto-v1';
+const codeKey = 'orbitamos-csharp-variables-v1-academy-preview';
+const source = 'string projeto = "OrbiServiços";\nint servicosPendentes = 3;\nConsole.WriteLine(projeto);\nConsole.WriteLine(servicosPendentes);';
+const readiness = await fetch(base + '/dev/csharp-preview?academy=1&module=variables&view=pilot', { signal: AbortSignal.timeout(180000) });
+if (readiness.status !== 200) throw new Error('C# readiness HTTP ' + readiness.status);
+await readiness.body?.cancel();
+for (const [name, engine, settings] of profiles.filter(([id]) => !process.env.CSHARP_PROFILE || id === process.env.CSHARP_PROFILE)) {
+ const browser = await engine.launch();
+ const context = await browser.newContext({ ...settings, reducedMotion: 'reduce' });
+ const page = await context.newPage();
+ const result = { name, completed: false, checks: [], layouts: [], axe: [] }; report.profiles.push(result);
+ page.on('pageerror', error => report.errors.push({ name, error: String(error) }));
+ try {
+  await page.goto(base + '/dev/csharp-preview?academy=1&module=variables&view=pilot', { waitUntil: 'domcontentloaded', timeout: 120000 });
+  const root = page.locator('[data-csharp-track]');
+  const workspace = page.locator('[data-variables-module]');
+  const lab = page.locator('[data-guided-lab]');
+  const editor = page.locator('#guided-code');
+  const routeTrigger = root.getByRole('button', { name: 'Roteiro da trilha', exact: true });
+  const route = root.getByRole('dialog', { name: 'Roteiro da trilha', exact: true });
+  const activityTrigger = workspace.getByRole('button', { name: /Prática .*Atividades/ });
+  const activities = workspace.getByRole('dialog', { name: 'Suas atividades', exact: true });
+  async function audit(label) {
+   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(settings.viewport.width);
+   const scan = await new AxeBuilder({ page }).include('[data-csharp-track]').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+   const violations = scan.violations.map(({ id, impact, nodes }) => ({ id, impact, targets: nodes.map(node => node.target) }));
+   result.axe.push({ label, violations }); expect(violations).toEqual([]);
+  }
+  async function initial(label) {
+   await expect(editor).toBeVisible();
+   await expect(root.getByRole('navigation', { name: 'Etapas da jornada C#' })).toHaveCount(0);
+   await expect(root.getByRole('navigation', { name: 'Módulos disponíveis' })).toHaveCount(0);
+   await expect(lab.getByRole('region', { name: 'Resultado da execução' })).toHaveCount(0);
+   const image = workspace.locator('[data-mission-scene] img');
+   await expect(image).toBeVisible();
+   await expect.poll(() => image.evaluate(node => node.complete && node.naturalWidth > 0)).toBe(true);
+   await page.evaluate(() => scrollTo(0, 0));
+   const layout = await page.evaluate(() => {
+    const box = selector => { const r = document.querySelector(selector).getBoundingClientRect(); return { top: r.top, bottom: r.bottom, width: r.width, height: r.height }; };
+    return { viewport: { width: innerWidth, height: innerHeight }, editor: box('#guided-code'), scene: box('[data-mission-scene]'), heading: box('[data-mission-scene] h1'), visibleActions: [...document.querySelectorAll('[data-guided-lab] button')].filter(node => {const r = node.getBoundingClientRect(); return r.width && r.height && r.top < innerHeight && r.bottom > 64;}).map(node => node.innerText) };
+   });
+   result.layouts.push({ label, ...layout });
+   expect(layout.editor.top).toBeLessThanOrEqual(settings.viewport.height - 44);
+   expect(layout.scene.height).toBeGreaterThanOrEqual(120);
+   await page.screenshot({ path: path.join(out, `${name}-${label}.png`) });
+   await audit(label);
+  }
+  await initial('variables-entry');
+  await activityTrigger.click(); await expect(activities).toBeVisible();
+  await audit('activities-open');
+  await page.keyboard.press('Escape'); await expect(activities).not.toBeVisible(); await expect(activityTrigger).toBeFocused();
+  await routeTrigger.click(); await expect(route).toBeVisible();
+  await expect(route.locator('img')).toHaveCount(5); await audit('route-open');
+  await page.screenshot({ path: path.join(out, `${name}-route.png`) });
+  await page.keyboard.press('Escape'); await expect(route).not.toBeVisible(); await expect(routeTrigger).toBeFocused();
+  await editor.fill('string projeto = "OrbiServiços";');
+  await expect(lab.locator('code').first()).toContainText('int servicosPendentes = 3;');
+  await expect.poll(async () => JSON.parse(await page.evaluate(key => localStorage.getItem(key), guidedKey) || '{}').code).toBe('string projeto = "OrbiServiços";');
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expect(editor).toHaveValue('string projeto = "OrbiServiços";');
+  await expect(lab.locator('code').first()).toContainText('int servicosPendentes = 3;');
+  await editor.fill(source); await lab.getByRole('button', { name: 'Executar código', exact: true }).click();
+  await expect(lab.getByText('Resultado validado. Boa!', { exact: true })).toBeVisible();
+  await expect(lab.getByRole('region', { name: 'Resultado da execução' })).toContainText('OrbiServiços');
+  await workspace.getByRole('button', { name: 'Próxima atividade', exact: true }).click();
+  await expect(workspace.getByRole('heading', { level: 1, name: 'Nome ou valor?' })).toBeVisible();
+  await workspace.getByRole('radio', { name: 'cliente, depois cliente', exact: true }).check();
+  await expect(workspace.getByRole('button', { name: 'Continuar para a próxima', exact: true })).toHaveCount(0);
+  await workspace.getByRole('radio', { name: 'Lia, depois cliente', exact: true }).check();
+  await workspace.getByRole('button', { name: 'Continuar para a próxima', exact: true }).click();
+  const independent = page.locator('#variables-code');
+  await expect(independent).toHaveValue('');
+  await expect(workspace.getByText('A saída e o feedback aparecem aqui ao executar.', { exact: true })).toHaveCount(0);
+  await independent.fill('Console.WriteLine("Lia");'); await workspace.getByRole('button', { name: 'Executar e verificar', exact: true }).click();
+  await expect(workspace.getByText('Ainda não passou.', { exact: false })).toBeVisible();
+  await independent.fill('string cliente = "Lia";\nConsole.WriteLine(cliente);'); await workspace.getByRole('button', { name: 'Executar e verificar', exact: true }).click();
+  await expect(workspace.getByText('Código validado!', { exact: false })).toBeVisible();
+  await expect.poll(async () => JSON.parse(await page.evaluate(key => localStorage.getItem(key), codeKey) || '{}').drafts?.client).toBe('string cliente = "Lia";\nConsole.WriteLine(cliente);');
+  await page.reload({ waitUntil: 'domcontentloaded' }); await expect(independent).toHaveValue('string cliente = "Lia";\nConsole.WriteLine(cliente);');
+  await routeTrigger.click(); await route.getByRole('button', { name: /Condições/ }).click(); await expect(module).toHaveAttribute('data-module-kind', 'conditions'); await initial('conditions-entry');
+  await routeTrigger.click(); await route.getByRole('button', { name: /Laços/ }).click(); await expect(module).toHaveAttribute('data-module-kind', 'loops'); await initial('loops-entry');
+  await routeTrigger.click(); await route.getByRole('button', { name: /Variáveis/ }).click(); await expect(independent).toHaveValue('string cliente = "Lia";\nConsole.WriteLine(cliente);');
+  await activityTrigger.click(); await activities.getByRole('button', { name: /Guarde seus primeiros valores/ }).click(); await expect(editor).toHaveValue(source);
+  await lab.getByText('Ajuda e ferramentas', { exact: true }).click();
+  await lab.getByRole('button', { name: 'Editor com realce', exact: true }).click();
+  await expect(lab.getByRole('group', { name: 'Outras teclas para programar', exact: true })).toHaveCount(0);
+  await lab.getByRole('button', { name: 'Editor simples', exact: true }).click();
+  await lab.getByRole('button', { name: 'Reiniciar', exact: true }).click();
+  await lab.getByRole('button', { name: 'Sim, reiniciar', exact: true }).click(); await expect(editor).toHaveValue('');
+  await lab.getByRole('button', { name: 'Recuperar código anterior ao reinício', exact: true }).click(); await expect(editor).toHaveValue(source);
+  await activityTrigger.click(); await activities.getByRole('button', { name: /Entregue seu primeiro resumo/ }).click();
+  await independent.fill('string cliente = "Nina";\nint totalServicos = 12;\nint servicosConcluidos = 4;\nint servicosPendentes = totalServicos - servicosConcluidos;\nConsole.WriteLine(cliente);\nConsole.WriteLine(servicosPendentes);');
+  await workspace.getByRole('button', { name: 'Executar e verificar', exact: true }).click();
+  await expect(workspace.getByText('Código validado!', { exact: false })).toBeVisible();
+  await workspace.getByRole('button', { name: 'Próxima atividade', exact: true }).click();
+  await expect(workspace.getByRole('heading', { name: 'Conte os serviços pendentes', exact: true })).toBeVisible();
+  result.checks.push('Skipping to the final exercise returns to the first pending activity; enhanced editor hides inactive symbol controls.');
+  await routeTrigger.click(); await route.getByRole('button', { name: 'Mapa completo', exact: true }).click(); await expect(root).toHaveAttribute('data-view', 'map');
+  await expect(root.getByRole('heading', { level: 1 })).toBeVisible();
+  result.checks.push('Fresh variables/conditions/loops show context and editor in first fold, no old tabs/sticky context or empty console.', 'Native route and activity dialogs open, close on Escape and return focus.', 'Automatic next line, reload, runtime success, quiz mistake/correction, independent code negative/positive, reset recovery and module switching preserve authored saves.', 'Full formation map remains reachable.');
+  result.completed = true; console.log(`${name} passed`);
+ } catch(error) { report.errors.push({ name, error: String(error), stack: error.stack }); await page.screenshot({ path: path.join(out, `${name}-failure.png`) }).catch(() => {}); console.error(`${name}: ${error}`); }
+ finally { await context.close(); await browser.close(); await writeFile(path.join(out, 'report.json'), JSON.stringify(report, null, 2)); }
+}
+expect(report.errors).toEqual([]); report.completed = true;
+await writeFile(path.join(out, 'report.json'), JSON.stringify(report, null, 2));

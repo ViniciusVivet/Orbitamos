@@ -27,7 +27,7 @@ export default function LessonStudyPanels({ guide, questions, lessonId, storageK
   return <div data-lesson-study-panels data-guide-origin={guide.origin}>
     {questions.length > 0 && <section id="secao-revisao" className="scroll-mt-24 border-b border-white/[0.07] py-6 sm:py-8">
       <LessonSectionHeading number={2} title="Revise o que aprendeu" subtitle="Responda e confira. Se precisar, consulte o conteúdo e tente novamente." done={quizPerfect}/>
-      <div className="mt-5 max-w-3xl"><LessonQuickQuiz key={lessonId} questions={questions} storageKey={storageKey} onScoreChange={onScoreChange}/></div>
+      <div className="mt-5 max-w-3xl"><LessonQuickQuiz key={storageKey ?? lessonId} questions={questions} storageKey={storageKey} onScoreChange={onScoreChange}/></div>
     </section>}
     <section id="secao-pratica" className="scroll-mt-24 border-b border-white/[0.07] py-6 sm:py-8">
       <LessonSectionHeading number={questions.length > 0 ? 3 : 2} title={guide.practice ? "Coloque a ideia em prática" : "Continue explorando"} subtitle={guide.practice ? "Leia o pedido, experimente e compare o resultado." : "Esta aula ainda não tem uma prática específica vinculada."}/>

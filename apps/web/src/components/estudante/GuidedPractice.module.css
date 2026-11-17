@@ -29,3 +29,20 @@
 
 .studio[data-writing=true] .header{padding-bottom:3px;min-height:44px}.studio[data-writing=true] .title{padding:12px 0}.studio[data-writing=true] .title h1{font-size:28px;margin:0}.studio[data-writing=true] .title .eyebrow{display:none}.editorHint{display:none}:global(body:has([data-guided-lab][data-writing=true]) [data-practice-navigation]){display:none}
 @media(max-width:767px){.studio[data-writing=true] .title{padding:7px 0 12px}.studio[data-writing=true] .title h1{font-size:23px}}
+
+/* Embedded C# lesson: one instruction, one editor, one primary action. */
+.studio[data-embedded=true]{padding:0;max-width:none}
+.studio[data-embedded=true] .bench{display:block;border:0;border-radius:0;background:transparent;overflow:visible}
+.studio[data-embedded=true] .codeColumn{padding:0;border:0;scroll-margin-top:80px}
+.studio[data-embedded=true] .lesson{padding:18px 0;background:transparent;border-bottom:1px solid #ffffff20;margin-bottom:18px}
+.studio[data-embedded=true] .writingPrompt{padding:0;border:0;background:transparent;margin-bottom:16px}
+.studio[data-embedded=true] .writingPrompt span{font-size:10px;color:#acd8c7;letter-spacing:.06em}
+.studio[data-embedded=true] .writingPrompt h2{font-size:21px;line-height:1.25;margin:8px 0 12px;letter-spacing:-.025em}
+.studio[data-embedded=true] .writingPrompt code{font-size:16px;line-height:1.65;padding:14px 16px;border-radius:12px;background:#112a30;color:#d4ffeb;margin:0;border-left:2px solid #82efd1}
+.studio[data-embedded=true] .lineMeaning{font-size:13px;line-height:1.65;color:#c0d8cf;margin:12px 0 0}
+.studio[data-embedded=true] .filebar{margin:0 0 8px}.studio[data-embedded=true] .filebar label,.studio[data-embedded=true] .filebar strong{font-size:12px}.studio[data-embedded=true] .filebar span{font-size:10px}
+.studio[data-embedded=true] .inputWrap{border-color:#63877c;border-radius:12px;background:#06151c}.studio[data-embedded=true] .inputWrap textarea{min-height:120px;max-height:360px;font-size:16px;padding-block:14px;background:transparent}
+.studio[data-embedded=true] .keys{grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin:8px 0}.studio[data-embedded=true] .keys>[data-essential=false]{display:none}.studio[data-embedded=true] .keys button{min-height:44px;background:#10262d;border-color:#3c5b55;border-radius:8px}
+.studio[data-embedded=true] .actions{margin:10px 0 0}.studio[data-embedded=true] .actions .primary{border-radius:12px;min-height:48px}
+.lessonTools{margin-top:18px;border-top:1px solid #8cad9f38;font-size:12px;color:#b5cbbf}.lessonTools>summary{cursor:pointer;min-height:44px;padding:13px 0;list-style:none}.lessonTools>summary:after{content:"＋";float:right;color:#b4e5cf}.lessonTools[open]>summary:after{content:"−"}.lessonTools>p{font-size:12px;line-height:1.7;margin:8px 0 12px;color:#adc6bb}.toolActions{display:flex;flex-wrap:wrap;gap:8px}.toolActions button{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:8px 12px;border:1px solid #456157;border-radius:8px;font-size:12px}.autoControl{display:flex;align-items:center;gap:9px;min-height:44px;margin-top:8px}.autoControl input{width:18px;height:18px;accent-color:#82efd1}.partialRun{color:#cbb7fa;min-height:44px;font-size:12px;text-decoration:underline;text-underline-offset:4px}.studio[data-embedded=true] .lessonTools .keys>[data-essential=false]{display:block}.studio[data-embedded=true] .console{margin-top:18px;border-radius:12px}
+@media(max-width:767px){.studio[data-embedded=true] .writingPrompt{margin-bottom:12px}.studio[data-embedded=true] .writingPrompt h2{font-size:18px;margin:6px 0 10px}.studio[data-embedded=true] .writingPrompt code{padding:10px 12px;font-size:14px}.studio[data-embedded=true] .lineMeaning{font-size:12px;line-height:1.5;margin-top:10px}.studio[data-embedded=true] .inputWrap textarea{min-height:104px;padding-block:12px}.studio[data-embedded=true] .numbers{padding-block:12px}.studio[data-embedded=true] .filebar{margin-bottom:6px}.studio[data-embedded=true] .keys{margin:6px 0}.studio[data-embedded=true] .actions{margin-top:6px}.lessonTools{margin-top:14px}}

@@ -41,6 +41,26 @@ slogans e cartões vazios de ícones. Organizar o texto não resolve esse proble
 - Confira screenshots reais em desktop e celular, além de lint/build. Número de
   testes aprovados não comprova qualidade visual. Preserve auth, saves e progresso.
 
+O piloto C# foi rejeitado pelo usuário com nota **1/10 em 17/11/2026** por
+empilhar menus, submenus e caixas antes do código. Na tela de trabalho, mantenha
+uma navegação local curta e uma tarefa atual; mapa e troca de unidade ficam sob
+demanda. A cena, o pedido e o começo do editor precisam aparecer juntos em
+390×664, sem console vazio nem aviso contextual sticky. Não recolher instruções
+necessárias para escrever ou mensagens de erro. A referência e os aceites estão
+em `../../docs/REVISAO_VISUAL_CSHARP_20261117.md`. Aprovação automática não é
+aprovação da composição pelo usuário.
+
+## Academy: vínculo de aula e avaliação
+
+Leia `../../docs/MANIFESTO_FORMACAO_CSHARP.md` antes de ampliar o percurso C#.
+Guias usam identidade estável de curso/aula; posição e título não escolhem quiz
+ou exercício. Um vínculo de prática não certifica o vídeo da biblioteca.
+Use `getLessonQuizStorageKey`: uma nova avaliação autorada recebe `quizVersion`
+própria para não reaproveitar respostas de um antigo quiz por área. Mudanças de
+perguntas/respostas que alterem a avaliação exigem nova versão; mudanças somente
+de estilo ou explicação não apagam respostas válidas. Preserve chaves anteriores.
+Questões explícitas válidas do catálogo mantêm prioridade e seu contrato atual.
+
 ## Academy: referência aprovada para jogos (04/11/2026)
 
 O usuário aprovou o capítulo **A última luz do bairro**, da Entrega do Orbi,
