@@ -4,7 +4,7 @@ import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 
 export const metadata: Metadata = {
   title: "Projetos | Orbitamos",
-  description: "Portfolio de projetos reais desenvolvidos pela Orbitamos — sites, plataformas e experiências digitais com impacto.",
+  description: "Portfólio de trabalhos e demonstrações autorais da Orbitamos — sites, plataformas e experiências digitais.",
 };
 
 export default function ProjetosLayout({ children }: { children: ReactNode }) {

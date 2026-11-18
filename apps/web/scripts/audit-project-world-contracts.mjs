@@ -39,7 +39,7 @@ const { orderProjectsForPortfolio, projectCatalogPresentation } = await load("sr
 const { PROJECT_ENVIRONMENTS, getProjectEnvironment } = await load("src/lib/projectEnvironments.ts");
 
 const categories = ["todos", ...CATEGORIAS.map(({ slug }) => slug)];
-const approvedOrder = ["sabrina-lashes", "radar-da-rima", "yume-moda-disruptiva", "mb-multimarcas-infantil", "sensimilla-records", "orbitamos-portal-tech", "orbicore-gestao", "palladinos-assessoria", "fast-comunicacao-design", "kitcerto", "destaque-multimarcas"];
+const approvedOrder = ["sabrina-lashes", "radar-da-rima", "yume-moda-disruptiva", "vitrine-infantil-orbitamos", "sensimilla-records", "orbitamos-portal-tech", "orbicore-gestao", "palladinos-assessoria", "fast-comunicacao-design", "kitcerto", "destaque-multimarcas"];
 const originalProjects = JSON.stringify(projetos);
 const originalReferences = [...projetos];
 const validCtas = new Set(["/contato", ...servicos.map(({ slug }) => `/servicos/${slug}`)]);

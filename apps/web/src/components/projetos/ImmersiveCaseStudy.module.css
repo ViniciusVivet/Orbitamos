@@ -311,7 +311,7 @@
 .experience[data-case-slug="sensimilla-records"] .caseMotif i:nth-child(8) { height: 62%; }
 
 /* Moda infantil: bolhas suaves e irregulares preservam leveza e movimento. */
-.experience[data-case-slug="mb-multimarcas-infantil"] .caseMotif i {
+.experience[data-case-slug="vitrine-infantil-orbitamos"] .caseMotif i {
   width: clamp(3rem, 8vw, 8rem);
   aspect-ratio: 1;
   border: 1px solid rgb(var(--case-accent-rgb) / 0.28);
@@ -319,12 +319,12 @@
   background: radial-gradient(circle at 34% 27%, rgb(255 255 255 / 0.16), rgb(var(--case-accent-rgb) / 0.04) 46%, transparent 72%);
 }
 
-.experience[data-case-slug="mb-multimarcas-infantil"] .caseMotif i:nth-child(1) { top: 6%; left: 8%; }
-.experience[data-case-slug="mb-multimarcas-infantil"] .caseMotif i:nth-child(2) { top: 18%; right: 14%; width: clamp(5rem, 13vw, 12rem); transform: rotate(38deg); }
-.experience[data-case-slug="mb-multimarcas-infantil"] .caseMotif i:nth-child(3) { top: 49%; left: 28%; width: clamp(2rem, 5vw, 5rem); transform: rotate(72deg); }
-.experience[data-case-slug="mb-multimarcas-infantil"] .caseMotif i:nth-child(4) { right: 3%; bottom: 8%; transform: rotate(112deg); }
-.experience[data-case-slug="mb-multimarcas-infantil"] .caseMotif i:nth-child(5) { bottom: 2%; left: 5%; width: clamp(4rem, 10vw, 9rem); transform: rotate(148deg); }
-.experience[data-case-slug="mb-multimarcas-infantil"] .caseMotif i:nth-child(n + 6) { display: none; }
+.experience[data-case-slug="vitrine-infantil-orbitamos"] .caseMotif i:nth-child(1) { top: 6%; left: 8%; }
+.experience[data-case-slug="vitrine-infantil-orbitamos"] .caseMotif i:nth-child(2) { top: 18%; right: 14%; width: clamp(5rem, 13vw, 12rem); transform: rotate(38deg); }
+.experience[data-case-slug="vitrine-infantil-orbitamos"] .caseMotif i:nth-child(3) { top: 49%; left: 28%; width: clamp(2rem, 5vw, 5rem); transform: rotate(72deg); }
+.experience[data-case-slug="vitrine-infantil-orbitamos"] .caseMotif i:nth-child(4) { right: 3%; bottom: 8%; transform: rotate(112deg); }
+.experience[data-case-slug="vitrine-infantil-orbitamos"] .caseMotif i:nth-child(5) { bottom: 2%; left: 5%; width: clamp(4rem, 10vw, 9rem); transform: rotate(148deg); }
+.experience[data-case-slug="vitrine-infantil-orbitamos"] .caseMotif i:nth-child(n + 6) { display: none; }
 
 /* Beleza: curvas finas lembram cílios e o gesto preciso do trabalho manual. */
 .experience[data-case-slug="sabrina-lashes"] .caseMotif i {

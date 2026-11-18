@@ -87,7 +87,7 @@ export const servicos: Servico[] = [
       { pergunta: "Serve para serviços?", resposta: "Sim. A jornada também funciona para orçamento, agendamento e contratação de serviços." },
       { pergunta: "Posso anunciar essa página?", resposta: "Sim. Ela é preparada para receber tráfego e conduzir o visitante até uma ação clara." },
     ],
-    relatedProjects: ["mb-multimarcas-infantil", "yume-moda-disruptiva", "kitcerto"],
+    relatedProjects: ["vitrine-infantil-orbitamos", "yume-moda-disruptiva", "kitcerto"],
     whatsappText: "Olá, quero contratar o Vender pela Internet da Orbitamos por R$ 1.997.",
   },
   {
@@ -207,7 +207,7 @@ export const servicos: Servico[] = [
       { pergunta: "Há fidelidade?", resposta: "As condições de duração e cancelamento são apresentadas de forma clara na proposta comercial." },
       { pergunta: "Hospedagem está incluída?", resposta: "Custos de infraestrutura e ferramentas de terceiros não estão incluídos, salvo quando indicados na proposta." },
     ],
-    relatedProjects: ["sabrina-lashes", "mb-multimarcas-infantil", "orbicore-gestao"],
+    relatedProjects: ["sabrina-lashes", "vitrine-infantil-orbitamos", "orbicore-gestao"],
     whatsappText: "Olá, quero contratar o plano Manutenção e Evolução da Orbitamos por R$ 497/mês.",
   },
 ];

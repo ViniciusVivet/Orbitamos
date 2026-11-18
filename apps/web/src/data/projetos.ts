@@ -1,6 +1,6 @@
 import type { Projeto } from "@/types/projeto";
 
-/** Projetos reais da Orbitamos usados como portfólio comercial. */
+/** Trabalhos e demonstrações autorais da Orbitamos usados como portfólio comercial. */
 export const projetos: Projeto[] = [
   {
     slug: "fast-comunicacao-design",
@@ -58,31 +58,32 @@ export const projetos: Projeto[] = [
       "Presença comercial publicada com planos, método, conteúdo editorial e caminhos de contato reunidos em uma experiência consistente com a marca.",
   },
   {
-    slug: "mb-multimarcas-infantil",
-    nome: "MB Multimarcas Infantil",
+    slug: "vitrine-infantil-orbitamos",
+    nome: "Vitrine Infantil",
+    tipo: "demonstracao",
     categoria: "ecommerce",
     resumo:
-      "Catálogo digital de moda infantil com filtros por categoria, vitrine de produtos e atendimento direto pelo WhatsApp.",
-    tags: ["Catálogo digital", "Moda infantil", "WhatsApp", "Mobile-first"],
+      "Demonstração autoral de catálogo infantil com filtros, detalhes de peças e contato contextualizado pelo WhatsApp.",
+    tags: ["Demonstração", "Moda infantil", "WhatsApp", "Mobile-first"],
     status: "publicado",
-    link: "https://mb-multimarcas-infantil.vercel.app/",
-    thumbnail: "/case-mb-multimarcas-infantil.png",
-    imagemPrincipal: "/case-mb-multimarcas-infantil.png",
+    link: "https://orbitamos-vitrine-infantil.vercel.app/",
+    thumbnail: "/case-vitrine-infantil-orbitamos.webp",
+    imagemPrincipal: "/case-vitrine-infantil-orbitamos.webp",
     contexto:
-      "A MB Multimarcas Infantil precisava de uma presença digital simples e comercial para apresentar peças infantis e facilitar o atendimento pelo WhatsApp.",
+      "Criamos este conceito para mostrar como uma pequena loja infantil pode organizar seu catálogo e tornar a descoberta de peças mais agradável no celular.",
     problema:
-      "Os produtos dependiam de atendimento manual e redes sociais, dificultando organizar modelos, tamanhos, cores e caminho rápido para compra.",
+      "Sem uma vitrine própria, modelos, tamanhos e cores podem ficar dispersos em mensagens e publicações, tornando a escolha mais trabalhosa.",
     solucao:
-      "Criamos uma vitrine responsiva com catálogo filtrável, detalhes de produtos, chamada direta para WhatsApp, informações da loja e acesso ao Instagram.",
+      "Desenhamos uma vitrine responsiva com categorias, busca, páginas de produto e seleção ilustrativa de variações. O contato leva à Orbitamos para conversar sobre um projeto semelhante; a demonstração não recebe pedidos.",
     destaques: [
       "Catálogo organizado por categorias como conjuntos, calças e casacos",
-      "Fluxo de compra pensado para WhatsApp, sem checkout complexo",
-      "Seções de sobre, endereço, contato e redes sociais em uma página leve",
-      "Experiência mobile-first para pais e mães comprarem pelo celular",
+      "Exemplo de seleção de tamanho e cor, sem checkout ou venda",
+      "Conteúdo e produtos explicitamente ilustrativos, sem vínculo com uma loja real",
+      "Experiência mobile-first para demonstrar a navegação no celular",
     ],
     stack: ["Next.js", "TypeScript", "Tailwind CSS", "Vercel"],
     resultado:
-      "Loja com vitrine digital publicada, produtos mais organizados e caminho direto do interesse ao atendimento.",
+      "Demonstração autoral publicada como referência visual e funcional; não representa operação comercial ou resultado de uma loja.",
   },
   {
     slug: "sabrina-lashes",

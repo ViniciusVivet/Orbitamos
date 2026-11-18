@@ -26,6 +26,8 @@ export const STATUS_LABELS: Record<StatusSlug, string> = {
 export interface Projeto {
   slug: string;
   nome: string;
+  /** Diferencia demonstrações autorais de trabalhos entregues a clientes. */
+  tipo?: "demonstracao";
   categoria: CategoriaSlug;
   resumo: string;
   tags: string[];

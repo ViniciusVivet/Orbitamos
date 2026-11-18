@@ -7,7 +7,7 @@ const PORTFOLIO_PROJECT_SLUGS = [
   "sabrina-lashes",
   "radar-da-rima",
   "yume-moda-disruptiva",
-  "mb-multimarcas-infantil",
+  "vitrine-infantil-orbitamos",
   "sensimilla-records",
   "orbitamos-portal-tech",
   "orbicore-gestao",

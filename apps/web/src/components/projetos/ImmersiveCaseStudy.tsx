@@ -35,7 +35,7 @@ const CASE_THEMES: Record<string, { accent: string; accentSoft: string; second: 
   "palladinos-assessoria": { accent: "#d5bb83", accentSoft: "213 187 131", second: "#846238", motion: [0.62, 0.28, 0.76, 0.36] },
   "yume-moda-disruptiva": { accent: "#29f5c6", accentSoft: "41 245 198", second: "#8b5cf6", motion: [0.18, 0.84, 0.28, 0.12] },
   "sensimilla-records": { accent: "#d9ff57", accentSoft: "217 255 87", second: "#8b5cf6", motion: [0.76, 0.42, 0.88, 0.34] },
-  "mb-multimarcas-infantil": { accent: "#ff79b7", accentSoft: "255 121 183", second: "#70d6ff", motion: [0.42, 0.68, 0.38, 0.74] },
+  "vitrine-infantil-orbitamos": { accent: "#ff79b7", accentSoft: "255 121 183", second: "#70d6ff", motion: [0.42, 0.68, 0.38, 0.74] },
   "sabrina-lashes": { accent: "#ff9ecb", accentSoft: "255 158 203", second: "#c4a1ff", motion: [0.12, 0.36, 0.54, 0.9] },
   kitcerto: { accent: "#ffbd2e", accentSoft: "255 189 46", second: "#fb7185", motion: [0.58, 0.2, 0.7, 0.48] },
   "destaque-multimarcas": { accent: "#ff4d55", accentSoft: "255 77 85", second: "#ffb020", motion: [0.94, 0.16, 0.32, 0.08] },
@@ -83,7 +83,7 @@ function ProjectViewport({
       <div className={styles.viewportScreen}>
         <Image
           src={projeto.imagemPrincipal}
-          alt={"Interface real do projeto " + projeto.nome}
+          alt={(projeto.tipo === "demonstracao" ? "Interface demonstrativa do projeto " : "Interface real do projeto ") + projeto.nome}
           fill
           priority={priority}
           className={styles.projectImage}
@@ -398,7 +398,7 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
 
             <div ref={introCopyRef} className={styles.introCopy}>
               <div className={styles.eyebrow}>
-                <span>Case real</span>
+                <span>{projeto.tipo === "demonstracao" ? "Conceito autoral" : "Case real"}</span>
                 <i />
                 <span>{category}</span>
               </div>
@@ -432,7 +432,7 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
               <div className={styles.deviceGlow} aria-hidden="true" />
               <ProjectViewport projeto={projeto} priority />
               <div className={styles.deviceNote}>
-                <span>Interface real</span>
+                <span>{projeto.tipo === "demonstracao" ? "Interface demonstrativa" : "Interface real"}</span>
                 <span>{host}</span>
               </div>
             </div>
@@ -477,7 +477,7 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
           <div data-landing className={styles.landing} aria-hidden="true">
             <p>Do atrito ao produto</p>
             <strong>{projeto.nome}</strong>
-            <span>Uma experiência Orbitamos em operação.</span>
+            <span>{projeto.tipo === "demonstracao" ? "Uma experiência demonstrativa da Orbitamos." : "Uma experiência Orbitamos em operação."}</span>
           </div>
 
           <button type="button" className={styles.skipExperience} onClick={skipExperience}>
@@ -540,7 +540,7 @@ export default function ImmersiveCaseStudy({ projeto, nextProjeto }: ImmersiveCa
                   <p>{item}</p>
                 </div>
                 <div className={styles.featureMeta} aria-hidden="true">
-                  <span><i /> Em operação</span>
+                  <span><i /> {projeto.tipo === "demonstracao" ? "Demonstração" : "Em operação"}</span>
                   <span>{host}</span>
                 </div>
               </li>

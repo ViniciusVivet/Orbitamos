@@ -16,8 +16,9 @@ Os 11 projetos continuam acessíveis, com os mesmos slugs e páginas de case.
   comunidade, conforme avaliação do usuário. Potencial não é crescimento,
   adoção ou retorno financeiro já comprovado.
 - **YUME:** compõe a seleção principal pela apresentação da marca e do produto.
-- **MB Multimarcas Infantil:** vem depois da seleção principal como referência
-  de catálogo. Segundo o usuário, ainda não está vendendo.
+- **Vitrine Infantil:** demonstração autoral de catálogo, sem vínculo com uma
+  loja em operação. Vem depois da seleção principal como referência visual,
+  com link para a publicação independente da Orbitamos.
 - **Destaque Multimarcas:** fica ao final; o usuário informou que o parceiro
   ainda não usa o site. Publicação de uma página não equivale a uso operacional.
 
@@ -144,8 +145,8 @@ A home funciona como uma seleção do trabalho da Orbitamos. O catálogo complet
 permite comparar referências por tipo e objetivo. Aumentar o catálogo não aumenta
 automaticamente a quantidade de cases da home.
 
-- Home: seis cases na ordem acordada — YUME, Sensimilla, MB Multimarcas Infantil,
-  Sabrina Lashes, KitCerto e Radar da Rima.
+- Home: a seleção atual é YUME, Sabrina Lashes e Radar da Rima. A Vitrine Infantil
+  permanece no catálogo como demonstração, não como case de cliente.
 - `/projetos`: 11 projetos. FAST e Palladinos abrem a seleção em duas imagens
   maiores; os outros nove aparecem uma vez em uma galeria mais compacta.
 - Busca combina nome, resumo, tipo, tags e stack, sem exigir acentos. O filtro

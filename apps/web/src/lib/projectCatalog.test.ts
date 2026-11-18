@@ -8,7 +8,7 @@ const commercialOrder = [
   "sabrina-lashes",
   "radar-da-rima",
   "yume-moda-disruptiva",
-  "mb-multimarcas-infantil",
+  "vitrine-infantil-orbitamos",
   "sensimilla-records",
   "orbitamos-portal-tech",
   "orbicore-gestao",
@@ -70,7 +70,7 @@ describe("catálogo comercial", () => {
 
   it("combina objetivo e categoria, permitindo pesquisar várias palavras", () => {
     const found = filterProjectCatalog(projetos, "ecommerce", "moda mobile");
-    expect(found.some((project) => project.slug === "mb-multimarcas-infantil")).toBe(true);
+    expect(found.some((project) => project.slug === "vitrine-infantil-orbitamos")).toBe(true);
     expect(found.every((project) => project.categoria === "ecommerce")).toBe(true);
     expect(filterProjectCatalog(projetos, "ecommerce", "Palladinos")).toEqual([]);
   });
@@ -88,7 +88,7 @@ describe("catálogo comercial", () => {
       "sabrina-lashes", "sensimilla-records", "palladinos-assessoria", "destaque-multimarcas",
     ]);
     expect(slugs(filterProjectCatalog(shuffled, "todos", "WhatsApp"))).toEqual([
-      "sabrina-lashes", "mb-multimarcas-infantil", "fast-comunicacao-design", "destaque-multimarcas",
+      "sabrina-lashes", "vitrine-infantil-orbitamos", "fast-comunicacao-design", "destaque-multimarcas",
     ]);
     expect(projectCatalogPresentation(shuffled, "sites-institucionais", "").featured).toEqual([]);
   });

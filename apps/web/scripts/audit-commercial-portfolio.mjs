@@ -96,7 +96,7 @@ for (const { name, type, ...options } of views) {
     await expect(cards).toHaveCount(11);
     const slugs = await cards.evaluateAll((items) => items.map((el) => el.dataset.projectCard));
     assert.equal(new Set(slugs).size, 11);
-    assert.deepEqual(slugs, ["sabrina-lashes", "radar-da-rima", "yume-moda-disruptiva", "mb-multimarcas-infantil", "sensimilla-records", "orbitamos-portal-tech", "orbicore-gestao", "palladinos-assessoria", "fast-comunicacao-design", "kitcerto", "destaque-multimarcas"]);
+    assert.deepEqual(slugs, ["sabrina-lashes", "radar-da-rima", "yume-moda-disruptiva", "vitrine-infantil-orbitamos", "sensimilla-records", "orbitamos-portal-tech", "orbicore-gestao", "palladinos-assessoria", "fast-comunicacao-design", "kitcerto", "destaque-multimarcas"]);
     await expect(catalog.locator('[data-project-variant="lead"]')).toHaveCount(1);
     await expect(catalog.locator('[data-project-variant="feature"]')).toHaveCount(2);
     for (const card of await cards.all()) {
@@ -140,7 +140,7 @@ for (const { name, type, ...options } of views) {
     assert.deepEqual(catalogAxe.violations, []);
     console.log(`${name}: catalog, images, search, category and empty state passed`);
 
-    for (const [slug, title, live, next] of [["sabrina-lashes", "Sabrina Lashes", "https://salashes-whatsapp-funnel.vercel.app/", "radar-da-rima"], ["radar-da-rima", "Radar da Rima", "https://batalhai.vercel.app/", "yume-moda-disruptiva"], ["yume-moda-disruptiva", "YUME – Moda Disruptiva", "https://yume-atelier.vercel.app/", "mb-multimarcas-infantil"]]) {
+    for (const [slug, title, live, next] of [["sabrina-lashes", "Sabrina Lashes", "https://salashes-whatsapp-funnel.vercel.app/", "radar-da-rima"], ["radar-da-rima", "Radar da Rima", "https://batalhai.vercel.app/", "yume-moda-disruptiva"], ["yume-moda-disruptiva", "YUME – Moda Disruptiva", "https://yume-atelier.vercel.app/", "vitrine-infantil-orbitamos"]]) {
       await page.goto(`${base}/projetos/${slug}`, { waitUntil: "load", timeout: 120000 });
       await page.bringToFront();
       if (options.reducedMotion !== "reduce") {
