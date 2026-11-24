@@ -30,6 +30,10 @@ nesses perfis não apontou violações nem estouro horizontal. Capturas locais e
 `apps/web/test-results/academy-review-20261124/`. TypeScript e 988 testes
 unitários passaram. O escopo técnico usa a infraestrutura atual.
 
+**Publicação.** `d28c534` confirmado na `main`, com
+[CI e build aprovados](https://github.com/ViniciusVivet/Orbitamos/actions/runs/45499271305)
+e [deploy concluído](https://vercel.com/viniciusvivets-projects/orbitamos/E362vwKjLrkfJbL4j67Wnk8SX4C6).
+
 **Referência pedagógica.** Trazer prática vinculada aos conteúdos e dar espaço
 para aplicação independente. Os [checkpoints da Alura](https://www.alura.com.br/carreiras),
 os [desafios junto aos módulos da DIO](https://www.dio.me/articles/guia-definitivo-para-entregar-seus-desafios-de-codigo-na-dio-170c889ccdce)
