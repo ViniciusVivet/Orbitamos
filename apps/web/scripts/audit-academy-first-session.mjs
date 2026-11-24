@@ -108,10 +108,10 @@ try {
       expect((await frame(page, name + "-error-recovery")).scrollWidth).toBe(settings.viewport.width);
       if (name !== "narrow-webkit") {
         await page.goto(base + "/dev/csharp-preview?academy=1&module=variables&view=pilot", { waitUntil: "domcontentloaded", timeout: 120000 });
-        const module = page.locator("[data-variables-module]");
-        await expect(module).toBeVisible();
-        await module.getByRole("button", { name: /Prática .*Atividades/ }).click();
-        await module.getByRole("dialog", { name: "Suas atividades" }).getByRole("button", { name: /Conte os serviços pendentes/ }).click();
+        const workspace = page.locator("[data-variables-module]");
+        await expect(workspace).toBeVisible();
+        await workspace.getByRole("button", { name: /Prática .*Atividades/ }).click();
+        await workspace.getByRole("dialog", { name: "Suas atividades" }).getByRole("button", { name: /Conte os serviços pendentes/ }).click();
         const cs = page.getByRole("textbox", { name: "Seu código C#", exact: true });
         await expect(cs).toHaveValue("");
         await cs.fill('int servicosPendentes = 3;\nservicosPendentes = "5";\nConsole.WriteLine(servicosPendentes);');
