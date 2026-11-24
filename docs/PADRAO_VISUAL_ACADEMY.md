@@ -31,6 +31,13 @@ o número de imagens em volta da mesma quantidade de texto.
 
 ## Aplicação desta rodada
 
+### Início e prática · 24/11/2026
+
+- Início: manter a foto na retomada, com área suficiente para ver aulas restantes, XP e nível na primeira tela. Biblioteca vem em seguida e os detalhes do progresso podem ser abertos mais abaixo.
+- Praticar: a escolha de formato acontece no catálogo. Busca e linguagem ficam perto das atividades. Os filtros de refinamento só aparecem ao abrir a opção.
+- IDE: entrar direto no editor guiado. Mostrar a tarefa atual, uma amostra curta e a explicação anterior à execução. Concentrar mapa, desfazer, reinício e editor com realce em uma única área de ajuda. Mostrar resultado quando houver execução e manter Modo livre ao alcance.
+- Aceite em telas de referência: começar em 390×664 e 1366×620 com a ação dentro da área útil. Conferir também 320 px e a altura curta de 429×464. O teste automatizado não substitui o teclado físico nem a tentativa de um aluno novo.
+
 - Código: recomendação com foto desde a entrada, dois atalhos visuais, catálogo
   sem os antigos blocos de método/roteiro antes das capas; filtros extras recolhidos.
 - Jogos: recomendação e seis capas com capturas reais dos jogos. Revisão vazia

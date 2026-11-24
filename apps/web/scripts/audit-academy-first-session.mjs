@@ -11,7 +11,7 @@ const results = { kind: "Isolated development preview; not a learner trial or ph
 const profiles = [
   ["iphone-webkit", webkit, { ...devices["iPhone 13"], viewport: { width: 390, height: 664 } }],
   ["narrow-webkit", webkit, { ...devices["iPhone SE"], viewport: { width: 320, height: 640 } }],
-  ["desktop", chromium, { viewport: { width: 1366, height: 768 } }],
+  ["desktop", chromium, { viewport: { width: 1366, height: 620 } }],
 ];
 
 async function frame(page, name) {
@@ -46,37 +46,45 @@ try {
       const bounds = await first.boundingBox();
       const scene = await page.locator('[data-academy-continue] aside img').boundingBox();
       result.home = { ...await frame(page, name + "-home"), action: bounds, scene };
+      const summary = page.locator('[data-academy-continue] dl[aria-label="Seu progresso"]');
+      await expect(summary).toContainText("Aulas restantes");
+      await expect(summary).toContainText("XP");
+      await expect(summary).toContainText("Nível");
+      const progress = await summary.boundingBox();
+      expect(progress.y + progress.height).toBeLessThan(settings.viewport.height - (settings.isMobile ? 64 : 0));
       expect(bounds.y + bounds.height).toBeLessThan(settings.viewport.height - (settings.isMobile ? 64 : 0));
       expect(Math.min(scene.y + scene.height, settings.viewport.height - (settings.isMobile ? 64 : 0)) - Math.max(0, scene.y)).toBeGreaterThan(60);
       expect(result.home.scrollWidth).toBe(result.home.width);
       await first.click();
-      const start = page.getByRole("button", { name: "Entendi, vamos construir", exact: true });
-      await expect(start).toBeVisible();
-      await page.evaluate(() => scrollTo(0, 0));
-      result.brief = { ...await frame(page, name + "-brief"), action: await start.boundingBox() };
-      expect(result.brief.action.y + result.brief.action.height).toBeLessThan(settings.viewport.height - (settings.isMobile ? 64 : 0));
-      await start.click();
       const editor = page.getByRole("textbox", { name: "Seu código", exact: true });
       await expect(editor).toHaveValue("");
+      await expect(page.locator("[data-practice-navigation]")).toHaveCount(0);
+      await expect(page.getByRole("region", { name: "Resultado da execução" })).toHaveCount(0);
+      await page.evaluate(() => scrollTo(0, 0));
+      result.entry = { ...await frame(page, name + "-first-code"), editor: await editor.boundingBox() };
+      expect(result.entry.editor.y + Math.min(result.entry.editor.height, 44)).toBeLessThan(settings.viewport.height);
+      expect(result.entry.scrollWidth).toBe(result.entry.width);
+      await editor.focus();
+      await page.keyboard.press("Tab");
+      await expect(editor).not.toBeFocused();
       const prompt = page.locator('section[aria-label="Escreva e execute"] code').first();
       const source = await prompt.innerText();
       await editor.fill(source);
-      await expect(page.getByRole("status").filter({ hasText: /Linha conferida|Código montado/ })).toBeVisible();
+      await expect(page.getByRole("status").filter({ hasText: "Linha conferida." })).toBeVisible();
       await page.waitForTimeout(1100);
       await expect(prompt).not.toHaveText(source);
-      await expect(page.getByText("Resultado validado. Boa!", { exact: true })).toHaveCount(0);
+      await expect(page.getByText("Resultado validado.", { exact: true })).toHaveCount(0);
       const saved = await editor.inputValue();
       await page.reload({ waitUntil: "domcontentloaded" });
       await expect(editor).toHaveValue(saved);
       result.checks.push("Initial empty editor, learner entry, pause, exact draft reload");
       result.editor = await frame(page, name + "-editor");
       await editor.fill("const nome =");
-      const explore = page.locator("details").filter({ has: page.locator('summary', { hasText: "Quer executar antes de terminar?" }) });
-      await explore.locator("summary").click();
-      await page.getByRole("button", { name: "Testar meu código agora", exact: true }).click();
+      await page.getByText("Ajuda e ferramentas", { exact: true }).click();
+      await page.getByRole("button", { name: "Testar código incompleto", exact: true }).click();
       testingSyntaxError = true;
       await page.getByRole("button", { name: "Executar código", exact: true }).click();
-      await expect(page.getByText("Ainda não rodou. Vamos ajustar.", { exact: true })).toBeVisible();
+      await expect(page.getByText("Ainda não rodou", { exact: true })).toBeVisible();
       testingSyntaxError = false;
       await expect(editor).toHaveValue("const nome =");
       result.checks.push("Exploratory syntax error preserves draft and does not award mission");
@@ -88,7 +96,7 @@ try {
       result.checks.push("Confirmed reset and recovery preserve previous work");
       await editor.fill(source + "\nconsole.log(nome);");
       await page.getByRole("button", { name: "Executar código", exact: true }).click();
-      await expect(page.getByText("Resultado validado. Boa!", { exact: true })).toBeVisible();
+      await expect(page.getByText("Resultado validado.", { exact: true })).toBeVisible();
       await expect(page.getByRole("button", { name: "Próxima missão", exact: true })).toHaveCount(1);
       await page.getByRole("button", { name: "Próxima missão", exact: true }).click();
       await expect(prompt).toBeVisible();

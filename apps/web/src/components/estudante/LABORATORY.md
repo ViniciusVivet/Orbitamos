@@ -86,7 +86,7 @@ O novo audit usa **WebKit/iPhone**, Chromium 320px e desktop, com execução Pyt
 
 ### Direção pedagógica
 
-- O aluno precisa saber **qual problema está resolvendo, o que recebe, o que transforma e o que entrega**, antes de ver o editor. `PracticeBrief` mostra uma história curta, foto de contexto reutilizada e o fluxo entrada → ação → saída. Não embutir explicações em imagens.
+- O editor guiado abre junto do contexto, com o objetivo e a linha atual. A foto editorial é reutilizada do catálogo. O plano completo de entrada → ação → saída fica em “Ajuda e ferramentas”. As instruções necessárias para escrever a linha continuam no editor.
 - Os 32 desafios do catálogo têm histórias próprias em `practiceNarrative.ts`. Conferir cada narrativa contra a referência executável, não só contra o título. Exemplo: Python retorna os textos `sim`/`não` em Pode Dirigir; Notas que Atingem a Meta filtra `>= 7`, não calcula a média. O slug desse desafio continua `listas-python` para preservar links e rascunhos.
 - Após começar, uma faixa compacta mantém linguagem e objetivo, com opção de rever a história sem perder código. Rascunhos iniciados retomam o editor diretamente. Os módulos C# já contextualizados usam a versão embutida, sem repetir a tela introdutória.
 - A explicação do passo acompanha o editor. Calculadora de descontos, classificador de notas e comparação de idade têm explicações específicas de parâmetros, chamadas, retorno, regras e recuos. Perfis explicam cada variável e a diferença entre nome e valor. Não dizer que uma função é executada quando apenas declarada.

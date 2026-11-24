@@ -1,0 +1,639 @@
+.workspace[data-free-workspace] {
+  height: var(--free-space,calc(100dvh - 140px));
+  min-height: 320px;
+  max-height: 900px;
+  border: 1px solid #a4b9c538;
+  border-top: 2px solid #b6d5c1;
+  border-radius: 12px;
+  position: relative;
+  isolation: isolate;
+  background: #0c141c;
+}
+
+.workspace * {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.workspace :is(button,a,summary):focus-visible {
+  outline: 2px solid #bce8d1;
+  outline-offset: 3px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 5px 12px;
+  border-bottom: 1px solid #a4b9c52a;
+  background: #15222b;
+  flex-shrink: 0;
+}
+
+.identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.identity>span {
+  display: block;
+  color: #b3d4bf;
+  font-size: 9px;
+  line-height: 1.4;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.identity h1 {
+  font: 600 14px/1.4 var(--font-display),sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #edf3ef;
+  margin: 2px 0 0;
+}
+
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.iconButton,.secondaryButton,.tools>summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 7px;
+  color: #d0e1dc;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.secondaryButton {
+  padding: 0 10px;
+}
+
+.secondaryButton[aria-expanded=true],.secondaryButton:hover,.iconButton:hover,.tools>summary:hover {
+  background: #c0dfd013;
+}
+
+.tools {
+  position: relative;
+}
+
+.tools>summary {
+  list-style: none;
+}
+
+.tools>summary::-webkit-details-marker {
+  display: none;
+}
+
+.toolsContent {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 30;
+  width: min(350px,calc(100vw - 42px));
+  max-height: min(520px,70dvh);
+  overflow: auto;
+  border: 1px solid #9eb8c459;
+  border-radius: 10px;
+  padding: 17px;
+  background: #13232d;
+  box-shadow: 0 16px 45px #0009;
+  color: #d8e7e3;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.toolsContent>strong {
+  font-size: 13px;
+}
+
+.toolsContent p {
+  font-size: 11px;
+  color: #bdccd1;
+  margin: 9px 0;
+}
+
+.toolsContent button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 11px;
+  border: 1px solid #a6c2bd42;
+  border-radius: 6px;
+  margin: 8px 0;
+  color: #d5e8df;
+  font-size: 11px;
+}
+
+.toolsContent details {
+  border-top: 1px solid #ffffff1d;
+  margin-top: 13px;
+}
+
+.toolsContent summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 12px 0;
+  font-size: 11px;
+}
+
+.toolsContent pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 170px;
+  overflow: auto;
+  background: #07141d;
+  padding: 12px;
+  font: 11px/1.7 ui-monospace,monospace;
+}
+
+.storageError {
+  padding: 8px 14px;
+  background: #362a18;
+  color: #ffe0ae;
+  font-size: 11px;
+  line-height: 1.7;
+  flex-shrink: 0;
+}
+
+.workArea {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.editorPane {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  background: #0c141c;
+}
+
+.fileBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 31px;
+  padding: 5px 15px;
+  border-bottom: 1px solid #ffffff15;
+  flex-shrink: 0;
+  background: #0d1922;
+}
+
+.fileBar>span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 11px ui-monospace,monospace;
+  color: #c3d2da;
+}
+
+.fileBar small {
+  font-size: 10px;
+  line-height: 1.5;
+  color: #b7cbbf;
+  text-align: right;
+}
+
+.fileBar [data-error=true] {
+  color: #ffd09b;
+}
+
+.task {
+  padding: 10px 15px;
+  border-bottom: 1px solid #ffffff17;
+  flex-shrink: 0;
+  background: #12232b;
+}
+
+.task span {
+  display: block;
+  font: 9px/1.5 ui-monospace,monospace;
+  letter-spacing: .06em;
+  color: #a8c4bc;
+}
+
+.task p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #e1eae8;
+  margin: 5px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.origin {
+  font-size: 10px;
+  line-height: 1.7;
+  color: #c8dcd3;
+  background: #192f2b;
+  padding: 6px 15px;
+  flex-shrink: 0;
+  border-bottom: 1px solid #ffffff13;
+}
+
+.codeArea {
+  flex: 1;
+  min-height: 150px;
+  position: relative;
+  overflow: hidden;
+}
+
+.executionBar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 58px;
+  padding: 6px 13px;
+  flex-shrink: 0;
+  background: #101e28;
+  border-top: 1px solid #ffffff18;
+}
+
+.executionBar>button:first-child {
+  min-height: 42px;
+  min-width: 112px;
+  font-size: 12px;
+  border-radius: 7px;
+}
+
+.shortcut {
+  font-size: 10px;
+  color: #b2c5cd;
+}
+
+.console {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex-shrink: 0;
+  border-top: 1px solid #99acbc40;
+  background: #0d1923;
+}
+
+.console[data-active=true] {
+  height: var(--console-height);
+  max-height: 42%;
+  min-height: 116px;
+}
+
+.console[data-active=true][data-expanded=true] {
+  height: min(320px,55dvh);
+  max-height: 65%;
+}
+
+.consoleToolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 0 13px;
+  flex-shrink: 0;
+}
+
+.consoleToolbar>strong {
+  font: 600 10px/1.5 var(--font-inter),sans-serif;
+  color: #c9d8df;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+
+.consoleToolbar>span {
+  font-size: 10px;
+  color: #aebfc9;
+}
+
+.consoleActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.consoleActions>small {
+  font-size: 9px;
+  color: #adbfca;
+  padding-right: 5px;
+}
+
+.consoleActions button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: #becdd7;
+  border-radius: 5px;
+}
+
+.consoleActions button:hover {
+  background: #ffffff0b;
+}
+
+.consoleBody {
+  min-height: 0;
+  overflow: auto;
+  padding: 0 15px 12px;
+  color: #d9e6e9;
+  font: 12px/1.7 ui-monospace,monospace;
+}
+
+.consoleBody pre {
+  font: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.consoleBody>p {
+  margin: 3px 0;
+}
+
+.feedback {
+  border-left: 2px solid #e3b977;
+  background: #e3b97709;
+  padding: 7px 10px;
+  margin-top: 7px;
+  font: 11px/1.7 var(--font-inter),sans-serif;
+  color: #ead4b4;
+}
+
+.feedback[data-outcome=success] {
+  border-color: #a8d6b1;
+  background: #a8d6b109;
+  color: #cce5ce;
+}
+
+.feedback button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 36px;
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.error {
+  border-left: 2px solid #ea9c9d;
+  background: #ea9c9d0b;
+  padding: 8px 10px;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+}
+
+.error>p:first-child {
+  color: #ffc1bd;
+  font: 12px/1.7 ui-monospace,monospace;
+}
+
+.error>p+p {
+  margin-top: 7px;
+  color: #e8d1a7;
+  font: 11px/1.8 var(--font-inter),sans-serif;
+}
+
+.running {
+  color: #b6e1d2;
+}
+
+.warning {
+  color: #e5c28e;
+}
+
+.resizeOutput {
+  position: absolute;
+  top: -4px;
+  left: calc(50% - 35px);
+  width: 70px;
+  height: 8px;
+  border-radius: 5px;
+  cursor: row-resize;
+  z-index: 2;
+}
+
+.resizeOutput:hover {
+  background: #b9dbcc50;
+}
+
+.resizeGuide {
+  width: 5px;
+  flex-shrink: 0;
+  background: #ffffff08;
+  cursor: col-resize;
+}
+
+.resizeGuide:hover {
+  background: #bad8c84a;
+}
+
+.guidePane {
+  width: var(--guide-width);
+  max-width: 440px;
+  min-width: 280px;
+  min-height: 0;
+  overflow: auto;
+  flex-shrink: 0;
+}
+
+.guideHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 5px 13px;
+  border-bottom: 1px solid #ffffff20;
+  background: #1a2b35;
+}
+
+.guideHeader strong {
+  font-size: 12px;
+  color: #d2e5de;
+}
+
+.guideHeader button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  color: #c2d8d0;
+}
+
+.guidePane :global(summary) {
+  min-height: 44px;
+  align-content: center;
+}
+
+.guidePane :global(button) {
+  min-height: 44px;
+}
+
+.guidePane :global(textarea) {
+  font-size: 16px;
+}
+
+.guidePane :global(pre) {
+  overflow-wrap: anywhere;
+}
+
+.workspace :global([data-practice-origin]) {
+  flex-shrink: 0;
+}
+
+@media (max-width:1099px) {
+  .workspace[data-guide-open=true] .editorPane {
+    display: none;
+  }
+
+  .guidePane {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .resizeGuide {
+    display: none;
+  }
+}
+
+@media (max-width:767px) {
+  .toolbar {
+    min-height: 52px;
+    padding: 4px 6px;
+    gap: 5px;
+  }
+
+  .identity h1 {
+    font-size: 12px;
+  }
+
+  .identity>span {
+    font-size: 8px;
+  }
+
+  .toolbarActions {
+    gap: 1px;
+  }
+
+  .buttonLabel {
+    display: none;
+  }
+
+  .secondaryButton {
+    padding: 0 7px;
+    font-size: 10px;
+    gap: 5px;
+  }
+
+  .fileBar {
+    padding: 4px 12px;
+  }
+
+  .fileBar>span {
+    font-size: 10px;
+  }
+
+  .fileBar small {
+    font-size: 9px;
+  }
+
+  .task {
+    padding: 8px 12px;
+  }
+
+  .task p {
+    font-size: 12px;
+    line-height: 1.65;
+  }
+
+  .codeArea {
+    min-height: 165px;
+  }
+
+  .executionBar {
+    min-height: 54px;
+    padding: 5px 10px;
+    gap: 9px;
+  }
+
+  .executionBar>button:first-child {
+    min-height: 44px;
+    min-width: 104px;
+  }
+
+  .shortcut {
+    display: none;
+  }
+
+  .consoleToolbar {
+    min-height: 39px;
+    padding: 0 11px;
+  }
+
+  .consoleActions button {
+    min-width: 39px;
+    min-height: 39px;
+  }
+
+  .consoleBody {
+    padding: 0 12px 10px;
+    font-size: 12px;
+  }
+
+  .resizeOutput {
+    display: none;
+  }
+
+  .workspace[data-free-workspace] {
+    max-height: none;
+  }
+
+  .toolsContent {
+    right: 1px;
+  }
+}
+
+@media (max-width:350px) {
+  .identity h1 {
+    font-size: 11px;
+  }
+
+  .secondaryButton {
+    min-width: 40px;
+    padding: 0 5px;
+  }
+
+  .secondaryButton>span {
+    font-size: 10px;
+  }
+
+  .fileBar {
+    gap: 6px;
+  }
+
+  .consoleActions>small {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) and (max-height: 530px) {
+  .codeArea {
+    min-height: 114px;
+  }
+}

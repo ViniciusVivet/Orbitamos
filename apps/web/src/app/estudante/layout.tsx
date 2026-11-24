@@ -23,6 +23,7 @@ export default function EstudanteLayout({
   const firstName = user?.name?.trim().split(" ")[0] ?? "";
   const router = useRouter();
   const pathname = usePathname();
+  const editingCode = pathname.startsWith("/estudante/pratica/");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -70,8 +71,8 @@ export default function EstudanteLayout({
         <PortalHeader mode="student" name={firstName} mobileOpen={mobileMenuOpen} onOpenMenu={() => setMobileMenuOpen(true)}>
           <NotificacaoBadge count={notifications.filter((item) => !item.readAt).length} onClick={() => setNotifOpen(true)} />
         </PortalHeader>
-        <div className="container mx-auto px-4 py-4 sm:py-6 lg:px-6 lg:py-8 max-w-full">
-          {academySection(pathname) === "practice" && !["/estudante/jogos/entregas-do-orbi", "/estudante/jogos/simulador"].includes(pathname) && <PracticeNavigation/>}
+        <div className={`container mx-auto px-4 lg:px-6 max-w-full ${editingCode ? "py-2 sm:py-3" : "py-4 sm:py-6 lg:py-8"}`}>
+          {academySection(pathname) === "practice" && !editingCode && !["/estudante/jogos/entregas-do-orbi", "/estudante/jogos/simulador"].includes(pathname) && <PracticeNavigation/>}
           {children}
         </div>
       </div>

@@ -119,6 +119,9 @@ export function contextualLine(challenge: Desafio, code: string): { title: strin
     const assignment = line.match(/^(?:(let|const|string|int|bool)\s+)?(\w+)\s*=\s*(.+?);?$/);
     if (assignment) {
       const [, type, name, value] = assignment;
+      if (challenge.slug === "variaveis-js" && name === "nome") {
+        return { title: "Guarde o nome na ficha", why: "let cria a variável. O sinal = guarda o texto das aspas dentro de nome." };
+      }
       const meaning: Record<string, string> = { nome: "quem é a pessoa", idade: "quantos anos ela tem", ativo: "se o perfil está ativo", estudando: "se a pessoa está estudando" };
       return { title: `Guarde ${name} na ficha`, why: `${name} representa ${meaning[name] ?? "um dado do perfil"}. O sinal = atribui ${value} a esse nome. ${/^(string|int|bool)$/.test(type ?? "") ? `${type} indica o tipo: ${type === "string" ? "texto" : type === "int" ? "número inteiro" : "verdadeiro ou falso"}.` : /^['"]/.test(value) ? "As aspas delimitam um texto." : /^(true|false|True|False)$/.test(value) ? "Esse valor é booleano: representa sim/não, não uma palavra entre aspas." : "Aqui o número não usa aspas, porque queremos tratá-lo como valor numérico."} Guardar não mostra nada ainda; isso acontece nas instruções de saída.` };
     }

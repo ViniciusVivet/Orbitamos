@@ -8,6 +8,37 @@ o [registro de execução](EVOLUCAO_FORMACAO_ACADEMY.md) guarda as entregas.
 
 ## Ponto de retomada
 
+- **Prioridade de 24/11 — fluxo do estudante:** os prints mostram o progresso abaixo da dobra e instruções repetidas antes do editor. A rodada B01.09 cobre Início → Praticar → IDE e tem os aceites abaixo.
+- **Próxima frente depois de B01.09:** B01.10, observar a entrada e a execução de uma tarefa com o Aluno 0. Em paralelo com a espera pela sessão, seguir B01.08 e a curadoria B02. Não usar a quantidade de telas ou testes como nota de aprendizagem.
+
+### Revisão do fluxo · 24/11/2026
+
+| ID | Entrega | Aceite |
+| --- | --- | --- |
+| B01.09.1 | Início compacto | Retomada, aulas restantes, XP e nível na primeira dobra em 390×664 e notebook de altura curta. Usar o catálogo disponível e o progresso da conta. |
+| B01.09.2 | Entrada de Praticar | Um começo sugerido com imagem. Busca e linguagem junto do catálogo. Dificuldade, tema e situação sob demanda. Jogos, inglês e revisão acessíveis pela navegação de formatos. |
+| B01.09.3 | IDE guiada e modo livre | Mostrar contexto, instrução atual e começo do editor na primeira dobra. Uma ação principal. Resultado aparece ao executar. Preservar teclado, rascunhos, modos e validações. |
+| B01.10 | Sessão com o Aluno 0 | Observar se o aluno encontra onde continuar, começa a escrever sem ajuda externa, interpreta um erro e retoma no próprio aparelho. Registrar tempo até a primeira ação, bloqueios e resultado. |
+| B01.11 | Diversificar as formas de prática | Em uma unidade de fundamentos, ligar escrita guiada, depuração de um exemplo e resolução independente ao mesmo objetivo. Levar a prática à aula e organizar as variações como próximas tarefas, com evidência de aplicação. |
+
+**Implementação e QA local.** B01.09.1–3 implementadas. Chromium conferido em
+1366×620, 390×664, 320×640 e 429×464 com a retomada do Classificador de Nota.
+Aulas restantes, XP e nível ficaram na primeira dobra e o editor apareceu sem
+rolagem. O roteiro passou por busca, avanço de linha, execução, retomada do
+rascunho e ida/volta do modo livre. A auditoria automatizada do editor guiado
+nesses perfis não apontou violações nem estouro horizontal. Capturas locais em
+`apps/web/test-results/academy-review-20261124/`. TypeScript e 988 testes
+unitários passaram. O escopo técnico usa a infraestrutura atual.
+
+**Referência pedagógica.** Trazer prática vinculada aos conteúdos e dar espaço
+para aplicação independente. Os [checkpoints da Alura](https://www.alura.com.br/carreiras),
+os [desafios junto aos módulos da DIO](https://www.dio.me/articles/guia-definitivo-para-entregar-seus-desafios-de-codigo-na-dio-170c889ccdce)
+e os [projetos da Rocketseat](https://app.rocketseat.com.br/jornada/full-stack/projetos)
+são referências para essa organização. A equivalência pedagógica e a tentativa
+com um aluno continuam sem avaliação neste incremento.
+
+### Histórico do cursor anterior
+
 - **Em fechamento:** B01.07 — entrada visual e QA aprovados; confirmar publicação e seguir B01.08. [Problema e aceites](REVISAO_VISUAL_CSHARP_20261117.md).
 - **Trabalho local preservado:** B02.01, B02.02.6 e B02.03.1 têm I/Q concluídos; esta rodada ainda não tem commit/push nem P confirmado. Não repetir a implementação nem declará-la publicada.
 - **Próxima pronta após publicar B01.07:** B01.08 — aplicar o mesmo princípio ao interior de Métodos/Objetos; depois B02.03.2 → B02.03.3, B03.01 e B04.01.

@@ -19,9 +19,9 @@ const profiles = [
 const browser = await chromium.launch({ headless: true });
 const results = [];
 
-async function openEditorTab(page) {
-  const codeTab = page.getByRole("tab", { name: "Código", exact: true });
-  if (await codeTab.isVisible()) await codeTab.click();
+async function openEditor(page) {
+  const back = page.getByRole("button", { name: "Voltar ao código", exact: true });
+  if (await back.isVisible()) await back.click();
 }
 
 async function setEditorCode(page, code) {
@@ -35,10 +35,7 @@ async function setEditorCode(page, code) {
 }
 
 async function auditConsoleControls(page, context, name) {
-  // A resposta pedagógica troca automaticamente para o Guia após o acerto.
-  await page.waitForTimeout(1_200);
-  await openEditorTab(page);
-  const consoleOutput = page.locator('#practice-editor-panel [role="status"]');
+  const consoleOutput = page.getByRole("region", { name: "Resultado da execução" });
   const initialHeight = await consoleOutput.evaluate((element) => element.getBoundingClientRect().height);
   const expandButton = page.getByRole("button", { name: "Expandir console", exact: true });
   if (await expandButton.isVisible()) {
@@ -56,18 +53,17 @@ async function auditConsoleControls(page, context, name) {
   if (!copiedOutput.trim()) throw new Error(`${name}: copiar saída produziu clipboard vazio`);
 
   await page.getByRole("button", { name: "Limpar console", exact: true }).click();
-  await page.getByText('Clique em "Executar" para ver o resultado...', { exact: true }).waitFor();
+  await consoleOutput.getByText("Aparece ao executar", { exact: true }).waitFor();
 }
 
 async function auditStopButton(page, name) {
-  await openEditorTab(page);
+  await openEditor(page);
   await setEditorCode(page, "while (true) {}");
   await page.getByRole("button", { name: "Executar", exact: false }).click();
   const stopButton = page.getByRole("button", { name: "Interromper execução", exact: true });
   await stopButton.waitFor({ state: "visible", timeout: 2_000 });
   await stopButton.click();
-  await page.getByText("Execução interrompida. Seu código continua salvo para você ajustar e tentar novamente.", { exact: true }).waitFor({ state: "attached" });
-  await page.getByText("Execução interrompida. Seu código não foi perdido e você pode continuar de onde parou.", { exact: true }).waitFor({ state: "attached" });
+  await page.getByText("Execução interrompida. Seu código foi preservado.", { exact: true }).waitFor({ state: "attached" });
   if (await stopButton.isVisible()) throw new Error(`${name}: botão Parar continuou visível após cancelamento`);
 }
 
@@ -89,12 +85,10 @@ try {
     }
     await page.getByLabel("Editor de código", { exact: true }).waitFor({ state: "visible", timeout: 12_000 });
 
-    const guideTab = page.getByRole("tab", { name: "Guia", exact: true });
-    if (await guideTab.isVisible()) {
-      await guideTab.click();
-      if ((await guideTab.getAttribute("aria-selected")) !== "true") throw new Error(`${name}: aba Guia não foi selecionada`);
-      await openEditorTab(page);
-    }
+    const help = page.getByRole("button", { name: "Ajuda", exact: true });
+    await help.click();
+    if ((await help.getAttribute("aria-expanded")) !== "true") throw new Error(`${name}: a ajuda não abriu`);
+    await openEditor(page);
 
     const metrics = await page.evaluate(() => ({
       viewportWidth: window.innerWidth,
@@ -129,7 +123,7 @@ try {
     if (name === "iphone-13") {
       await page.waitForTimeout(700);
       await page.reload({ waitUntil: "networkidle" });
-      await openEditorTab(page);
+      await openEditor(page);
       const restoredText = await page.getByLabel("Editor de código", { exact: true }).innerText();
       if (!restoredText.includes("precoFinal(200, 15)")) throw new Error(`${name}: rascunho não sobreviveu ao recarregamento`);
     }
@@ -150,20 +144,15 @@ try {
     if (name === "iphone-13") await context.setOffline(true);
     if (name === "desktop") await editor.press("Control+Enter");
     else await runButton.click();
-    const consoleOutput = page.locator('#practice-editor-panel [role="status"]');
-    await consoleOutput.waitFor({ state: "attached" });
-    await page.waitForTimeout(500);
+    const consoleOutput = page.getByRole("region", { name: "Resultado da execução" });
+    await consoleOutput.getByText("Esta etapa passou nos critérios do desafio.", { exact: true }).waitFor();
     const consoleText = await consoleOutput.innerText();
     const expectedOutput = "170";
     if (!consoleText.split("\n").includes(expectedOutput)) {
       throw new Error(`${name}: execução não retornou ${expectedOutput}. Console: ${consoleText}`);
     }
-    await page.getByText("Boa! Esta etapa passou nos critérios do desafio.", { exact: true }).waitFor();
     if (name === "iphone-13") await context.setOffline(false);
-    const mobileCodeTab = page.getByRole("tab", { name: "Código", exact: true });
-    if (await mobileCodeTab.count()) {
-      if ((await mobileCodeTab.getAttribute("aria-selected")) !== "true") throw new Error(`${name}: resultado da execução tirou o estudante do editor`);
-    }
+    if (!await editor.isVisible()) throw new Error(`${name}: resultado da execução tirou o estudante do editor`);
     await auditConsoleControls(page, context, name);
     if (name !== "desktop") await auditStopButton(page, name);
 
@@ -201,7 +190,7 @@ try {
   await pythonRunButton.click();
   await pythonPage.getByRole("button", { name: "Interromper execução", exact: true }).waitFor({ state: "visible", timeout: 2_000 });
   await pythonRunButton.waitFor({ state: "visible", timeout: 60_000 });
-  const pythonConsole = pythonPage.locator('#practice-editor-panel [role="status"]');
+  const pythonConsole = pythonPage.getByRole("region", { name: "Resultado da execução" });
   const firstPythonOutput = await pythonConsole.innerText();
   const firstPythonRunMs = Date.now() - pythonStartedAt;
   const pythonAvailable = firstPythonOutput.split("\n").includes("True");
@@ -222,13 +211,13 @@ try {
     secondPythonRunMs = Date.now() - secondPythonStartedAt;
     if (secondPythonRunMs > 5_000) throw new Error(`python-pixel-7: runtime não foi reaproveitado (${secondPythonRunMs} ms na segunda execução)`);
 
-    await openEditorTab(pythonPage);
+    await openEditor(pythonPage);
     await setEditorCode(pythonPage, "while True:\n    pass");
     await pythonPage.getByRole("button", { name: "Executar", exact: false }).click();
     const pythonStop = pythonPage.getByRole("button", { name: "Interromper execução", exact: true });
     await pythonStop.waitFor({ state: "visible", timeout: 5_000 });
     await pythonStop.click();
-    await pythonPage.getByText("Execução interrompida. Seu código continua salvo para você ajustar e tentar novamente.", { exact: true }).waitFor({ state: "attached" });
+    await pythonPage.getByText("Execução interrompida. Seu código foi preservado.", { exact: true }).waitFor({ state: "attached" });
   }
   await pythonPage.screenshot({ path: path.join(outputDir, "python-pixel-7.png"), fullPage: true });
   results.push({
@@ -251,8 +240,8 @@ try {
   await csharpPage.getByText("Primeiro Perfil em C#", { exact: true }).waitFor({ timeout: 15_000 });
   await setEditorCode(csharpPage, 'string nome = "Ana";\nint idade = 20;\nConsole.WriteLine(nome);\nConsole.WriteLine(idade);');
   await csharpPage.getByRole("button", { name: "Executar", exact: false }).click();
-  const csharpConsole = csharpPage.locator('#practice-editor-panel [role="status"]');
-  await csharpPage.getByText(/Boa! Esta etapa passou/, { exact: false }).waitFor({ timeout: 10_000 });
+  const csharpConsole = csharpPage.getByRole("region", { name: "Resultado da execução" });
+  await csharpConsole.getByText("Esta etapa passou nos critérios do desafio.", { exact: true }).waitFor({ timeout: 10_000 });
   const csharpOutput = await csharpConsole.innerText();
   if (!csharpOutput.includes("Ana") || !csharpOutput.includes("20")) throw new Error(`csharp-pixel-7: saida inesperada: ${csharpOutput}`);
   await csharpPage.screenshot({ path: path.join(outputDir, "csharp-pixel-7.png"), fullPage: true });

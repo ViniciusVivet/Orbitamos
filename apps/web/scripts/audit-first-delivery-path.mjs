@@ -27,14 +27,13 @@ try {
   await page.locator("[data-academy-continue]").getByRole("link", { name: "Começar esta entrega", exact: true }).click();
   for (const item of data) {
     await expect(page).toHaveURL(new RegExp(`/dev/ide-preview/${item.slug}\\?academy=1`));
-    await page.getByRole("button", { name: "Entendi, vamos construir", exact: true }).click();
     const editor = page.getByRole("textbox", { name: "Seu código", exact: true });
     for (const [index, code] of item.guides.entries()) {
       await editor.fill(code);
       await page.getByRole("button", { name: "Executar código", exact: true }).click();
       if (index < item.guides.length - 1) {
         await expect(page.getByRole("region", { name: "Resultado da execução" })).toContainText("Resultado validado", { timeout: 45000 });
-        await page.getByRole("button", { name: "Continuar para próxima missão", exact: true }).click();
+        await page.getByRole("button", { name: "Próxima missão", exact: true }).click();
       }
     }
     const application = page.locator("[data-beginner-practice]");

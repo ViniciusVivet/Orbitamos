@@ -1,14 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowLeft, ArrowRight, Check, Play, RotateCcw, Square, Undo2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ChevronDown, Play, RotateCcw, Square, Undo2 } from "lucide-react";
 import { getNextDesafio, type Desafio } from "@/lib/desafios";
 import { emptyGuidedDraft, guidedLines, guidedMissionProgram, guidedProgram, guidedStorageKey, nextGuidedLine, readGuidedDraft, guidedWritingMatches, type GuidedDraft } from "@/lib/guidedPractice";
 import { runCSharpInWorker, runJavaScriptInWorker, runPythonInWorker, type BrowserCodeResult } from "@/lib/browserCodeRunner";
 import { diagnoseCSharp } from "@/lib/csharpFeedback";
 import ReliableCodeEditor from "./ReliableCodeEditor";
-import PracticeBrief from "./PracticeBrief";
 import PracticeJourney from "./PracticeJourney";
 import PracticeCheck from "./PracticeCheck";
 import { practiceChecks, practiceSymbols } from "@/lib/practiceExperience";
@@ -16,6 +16,8 @@ import s from "./GuidedPractice.module.css";
 import { academyPreviewHref } from "@/lib/portalNavigation";
 import BeginnerPractice from "./BeginnerPractice";
 import { supportsBeginnerPractice } from "@/lib/beginnerPractice";
+import { practiceStory } from "@/lib/practiceNarrative";
+import { getLaboratoryCover } from "./laboratoryCovers";
 
 function GuidedReplay({ collapsed, children }: { collapsed: boolean; children: ReactNode }) {
   return collapsed ? <details className={s.replay}><summary>Rever o guia concluído e meu código</summary>{children}</details> : <>{children}</>;
@@ -30,11 +32,9 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
   const [running, setRunning] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [enhanced, setEnhanced] = useState(false);
-  const [showBrief, setShowBrief] = useState(!embedded);
   const [autoAdvance, setAutoAdvance] = useState(true);
   const [composing, setComposing] = useState(false);
   const [allowPartialRun, setAllowPartialRun] = useState(false);
-  const [focusMode, setFocusMode] = useState(false);
   const [undoDraft, setUndoDraft] = useState<GuidedDraft | null>(null);
   const [applicationValidated, setApplicationValidated] = useState(false);
   const textarea = useRef<HTMLTextAreaElement>(null);
@@ -63,6 +63,9 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
   const applicationRequired = !embedded && supportsBeginnerPractice(challenge.slug);
   const next = getNextDesafio(challenge.slug);
   const lang = { javascript: "JavaScript", typescript: "TypeScript", python: "Python", csharp: "C#" }[challenge.linguagem];
+  const file = `rascunho.${{ javascript: "js", typescript: "ts", python: "py", csharp: "cs" }[challenge.linguagem]}`;
+  const story = practiceStory(challenge);
+  const cover = getLaboratoryCover(challenge.categoria);
   const symbols = practiceSymbols(challenge.linguagem);
   const essentialSymbols = challenge.linguagem === "python" ? ["Recuo", "↵", ":", '"', "(", ")"] : challenge.linguagem === "csharp" ? ["↵", '"', ";", "=", "{", "}"] : ["↵", '"', ";", "=", "(", ")"];
   const personalWriting = challenge.steps[draft.mission].escrita;
@@ -84,17 +87,15 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
     queueMicrotask(() => {
       if (!active) return;
       setRunning(false);
-      focusStep.current = restored.started;
       update(restored);
-      setShowBrief(!embedded && !restored.started);
       setReady(true);
       setSave(blocked ? "Armazenamento indisponível: copie seu código antes de sair." : restored.started ? "Retomado neste dispositivo" : "Seu código fica neste dispositivo");
     });
     return () => { active = false; activeRun.current?.abort(); activeRun.current = null; };
-  }, [challenge, key, update, embedded]);
+  }, [challenge, key, update]);
 
   useEffect(() => {
-    if (!ready || showBrief || !autoAdvance || composing || running || resetting || !editedForAuto.current) return;
+    if (!ready || !autoAdvance || composing || running || resetting || !editedForAuto.current) return;
     const nextLine = nextGuidedLine(draft, challenge);
     if (nextLine === null) return;
     const timer = window.setTimeout(() => {
@@ -103,14 +104,14 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
       update({ ...draft, line: nextLine });
     }, 950);
     return () => clearTimeout(timer);
-  }, [draft, challenge, ready, showBrief, autoAdvance, composing, running, resetting, update]);
+  }, [draft, challenge, ready, autoAdvance, composing, running, resetting, update]);
 
   useLayoutEffect(() => {
     if (!ready || !focusStep.current) return;
     focusStep.current = false;
     missionHeading.current?.focus({ preventScroll: true });
     if (window.matchMedia("(max-width: 767px)").matches) codeColumn.current?.scrollIntoView({ block: "start", behavior: "instant" });
-  }, [ready, showBrief, draft.line, draft.mission]);
+  }, [ready, draft.line, draft.mission]);
 
   useEffect(() => {
     if (!ready) return;
@@ -191,73 +192,80 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
 
   if (!ready) return <p role="status">Abrindo seu laboratório…</p>;
 
-  return <section className={s.studio} data-guided-lab data-embedded={embedded} data-writing={!showBrief && !completed} data-focus={focusMode && !showBrief && !missionPassed} onCompositionStart={() => setComposing(true)} onCompositionEnd={() => setComposing(false)}>
+  return <section className={s.studio} data-guided-lab data-embedded={embedded} onCompositionStart={() => setComposing(true)} onCompositionEnd={() => setComposing(false)}>
     {!embedded && <header className={s.header}>
-      <Link href={link(`/estudante/pratica?linguagem=${challenge.linguagem}#experimentos`)}><ArrowLeft size={16}/> Laboratório</Link>
-      <span>{lang} · {challenge.dificuldade}</span>
-      <button onClick={() => onFreeMode(draft.code)}>Modo livre</button>
+      <Link href={link(`/estudante/pratica?linguagem=${challenge.linguagem}#experimentos`)}><ArrowLeft size={16}/> Exercícios</Link>
+      <button onClick={() => onFreeMode(draft.code)}>Modo livre<ArrowRight size={15}/></button>
     </header>}
-    {!embedded && <div className={s.title}><div><p className={s.eyebrow}>ORBITAMOS / CÓDIGO NO SEU RITMO</p><h1>{challenge.titulo}</h1></div><span className={s.mode}>Passo a passo</span></div>}
-    {showBrief ? <><PracticeBrief challenge={challenge} onStart={() => { focusStep.current = true; setShowBrief(false); update({ ...draft, started: true }); }}/>{!embedded && <PracticeJourney challenge={challenge} preview={preview}/>}</> : <>
-    {completed && applicationRequired && <div className={s.applicationIntro}><span>01 / GUIA CONCLUÍDO</span><h2>Você construiu com ajuda. Agora, dê seu próximo passo.</h2><p>O guia e seu código continuam guardados. Primeiro faça uma mudança nos dados; depois resolva uma nova situação com menos apoio.</p></div>}
-    {!embedded && <details className={s.studyOptions}><summary>Seu objetivo, mapa e opções<span>Consultar quando precisar</span></summary><div className={s.optionsContent}>
-    {!embedded && <PracticeJourney challenge={challenge} preview={preview}/>}
-    {!embedded && <PracticeBrief challenge={challenge} compact onReview={() => { editedForAuto.current = false; setShowBrief(true); }}/>}
-    {!missionPassed && <div className={s.focusTools}><button type="button" aria-pressed={focusMode} onPointerDown={event => event.preventDefault()} onClick={() => { editedForAuto.current = false; setFocusMode(value => !value); }}>Foco no código<span aria-hidden="true">{focusMode ? "Ligado" : "Desligado"}</span></button><span>{focusMode ? `Etapa ${draft.line + 1}/${lines.length} · Avanço ${autoAdvance ? "automático" : "manual"}` : "Menos distrações, mesma orientação. Você escolhe quando ativar."}</span></div>}
-    <div className={s.guideControls}><label><input type="checkbox" checked={autoAdvance} onChange={event => { editedForAuto.current = false; setAutoAdvance(event.target.checked); }}/>Avanço automático</label><span>{autoAdvance ? "Terminou a linha? O guia muda após uma breve pausa. Não executa sozinho." : "No seu ritmo: use Próxima linha quando terminar de escrever."}</span></div>
-    </div></details>}
+    {!embedded && <div className={s.title}><span>{lang} · {challenge.dificuldade}</span><h1>{challenge.titulo}</h1></div>}
     <GuidedReplay collapsed={completed && applicationRequired}>
-    {!embedded && <div className={s.progress} role="group" aria-label={`Missão ${draft.mission + 1} de ${challenge.steps.length}, etapa ${draft.line + 1} de ${lines.length}`}>
-      {lines.map((_, i) => <span key={i} data-done={i < draft.line || missionPassed} data-active={i === draft.line}/>)}
-    </div>}
     <div className={s.bench}>
-      {(!embedded || missionPassed) && <section className={s.lesson} data-passed={missionPassed} aria-label="Orientação da etapa">
-        <div className={s.stepMeta}><span>MISSÃO {draft.mission + 1}/{challenge.steps.length}</span><span>ETAPA {draft.line + 1} DE {lines.length}</span></div>
-        <h2 ref={missionPassed ? missionHeading : undefined} tabIndex={-1}>{completed ? "Você escreveu. E fez funcionar." : missionPassed ? "Missão executada com sucesso." : "Seu plano nesta missão"}</h2>
-        <p>{completed ? "Agora experimente sem a referência. Entender também é conseguir prever o resultado e resolver uma variação." : missionPassed ? challenge.steps[draft.mission].acerto : challenge.steps[draft.mission].instrucao}</p>
-        {completed && !embedded && !applicationRequired && <div className={s.nextActions}>{practiceChecks[challenge.slug] && <a href="#practice-check">Aplicar o que aprendi · pergunta extra<ArrowRight size={16}/></a>}<button className={s.primary} onClick={() => onFreeMode(draft.code)}>Praticar sem o guia<ArrowRight size={17}/></button>{next ? <Link href={link(`/estudante/pratica/${next.slug}`)}>Próximo desafio: {next.titulo}<ArrowRight size={16}/></Link> : challenge.linguagem === "csharp" ? <Link href={link("/estudante/trilhas/csharp")}>Continue na trilha C# &amp; .NET<ArrowRight size={16}/></Link> : <Link href={link(`/estudante/pratica?linguagem=${challenge.linguagem}#experimentos`)}>Revisar os fundamentos de {lang}<ArrowRight size={16}/></Link>}</div>}
-        <details className={s.details}><summary>Objetivo, exemplos e próximo nível</summary><p>{challenge.steps[draft.mission].instrucao}</p>{challenge.exemplo && <pre>{challenge.exemplo}</pre>}<p>1. Siga o exemplo para conhecer a sintaxe.<br/>2. Preveja a saída antes de executar.<br/>3. No modo livre, resolva sem consultar e teste outros valores.</p><p>Este treino trabalha fundamentos. Projetos maiores exigem também depuração, testes e decisões próprias.</p>{challenge.linguagem === "csharp" && <p>C# usa um executor didático limitado, não o ambiente .NET completo.</p>}</details>
-      </section>}
+      {!embedded && <aside className={s.context} aria-label="Contexto da atividade">
+        <div className={s.scene}>
+          <div className={s.photo}><Image src={cover.image} alt="" fill sizes="(max-width: 767px) 72px, 286px" placeholder="blur" style={{ objectPosition: cover.position }}/></div>
+          <p className={s.goal}>{story.goal}</p>
+        </div>
+        <p className={s.sceneStory}>{story.scene}</p>
+      </aside>}
       <section ref={codeColumn} className={s.codeColumn} aria-label="Escreva e execute">
-        {!embedded && <div className={s.filebar}>{enhanced ? <strong>Seu código</strong> : <label htmlFor="guided-code">Seu código</label>}<span>rascunho.{challenge.linguagem === "python" ? "py" : challenge.linguagem === "csharp" ? "cs" : "js"}</span></div>}
-        <p className={s.editorHint} id="guided-editor-hint">Toque no campo para digitar. Você escreve o programa; nada é preenchido automaticamente.</p>
-        {!missionPassed && <div className={s.writingPrompt}><div role="status" aria-live="polite"><span>{embedded ? `Linha ${draft.line + 1} de ${lines.length}` : `MISSÃO ${draft.mission + 1}/${challenge.steps.length} · ETAPA ${draft.line + 1}/${lines.length}`}</span><h2 ref={missionHeading} tabIndex={-1}>{current.title}</h2></div><code>{current.code}</code>{personalTip && <p>{personalTip}</p>}{embedded ? <p className={s.lineMeaning}>{current.why}</p> : <details className={s.focusExplanation} key={`${draft.mission}-${draft.line}`}><summary>Entender esta linha</summary><p>{current.why}</p></details>}{embedded && draft.line > 0 && <small>Acrescente em uma nova linha; mantenha as anteriores.</small>}{!embedded && <small>{draft.line ? "Mantenha as linhas anteriores e acrescente esta em uma nova linha." : "Comece digitando esta linha. Você pode ir no seu ritmo."}{challenge.linguagem === "python" ? " Recuo insere 4 espaços." : " ↵ começa uma nova linha."}</small>}</div>}
-        {embedded && <div className={s.filebar}>{enhanced ? <strong>Seu código</strong> : <label htmlFor="guided-code">Seu código</label>}<span>rascunho.{challenge.linguagem === "python" ? "py" : challenge.linguagem === "csharp" ? "cs" : "js"}</span></div>}
+        <div className={s.writingPrompt} aria-live="polite">
+          <p className={s.stepMeta}>
+            {!embedded && challenge.steps.length > 1 && `Missão ${draft.mission + 1}/${challenge.steps.length} · `}
+            {missionPassed ? "Código validado" : `Linha ${draft.line + 1} de ${lines.length}`}
+          </p>
+          <h2 ref={missionHeading} tabIndex={-1}>{completed ? "Atividade concluída" : missionPassed ? "Missão concluída" : current.title}</h2>
+          {missionPassed ? <p className={s.lineMeaning}>{challenge.steps[draft.mission].acerto}</p> : <>
+            <p className={s.lineMeaning}>{personalTip ?? current.why}</p>
+            <code>{current.code}</code>
+            {personalTip && <p className={s.personalMeaning}>{current.why}</p>}
+            {draft.line > 0 && !matches && <p className={s.lineNote}>Mantenha as linhas anteriores e escreva esta na linha seguinte.</p>}
+          </>}
+        </div>
+        <div className={s.editor}>
+        <div className={s.filebar}>{enhanced ? <strong>Seu código</strong> : <label htmlFor="guided-code">Seu código</label>}<span>{file}</span></div>
         {enhanced ? <div className={s.enhanced}><ReliableCodeEditor value={draft.code} language={challenge.linguagem} onChange={changeCode}/></div> : <div className={s.inputWrap}>
           <div ref={gutter} className={s.numbers} aria-hidden="true">{Array.from({ length: Math.max(3, draft.code.split("\n").length) }, (_, i) => <span key={i}>{i + 1}</span>)}</div>
-          <textarea ref={textarea} id="guided-code" aria-label="Seu código" aria-describedby="guided-editor-hint" value={draft.code} onChange={event => changeCode(event.target.value)} onScroll={event => { if (gutter.current) gutter.current.scrollTop = event.currentTarget.scrollTop; }} placeholder="Toque aqui e escreva sua primeira linha…" autoCapitalize="off" autoCorrect="off" autoComplete="off" spellCheck={false} maxLength={100000} wrap="off" rows={Math.min(14, Math.max(3, draft.code.split("\n").length + 1))} onKeyDown={event => { if (event.key === "Tab") { event.preventDefault(); insert(challenge.linguagem === "python" ? "    " : "  "); } if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); void run(); } }}/>
+          <textarea ref={textarea} id="guided-code" value={draft.code} onChange={event => changeCode(event.target.value)} onScroll={event => { if (gutter.current) gutter.current.scrollTop = event.currentTarget.scrollTop; }} placeholder="Escreva aqui…" autoCapitalize="off" autoCorrect="off" autoComplete="off" spellCheck={false} maxLength={100000} wrap="off" rows={Math.min(12, Math.max(3, draft.code.split("\n").length + 1))} onKeyDown={event => { if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); void run(); } }}/>
         </div>}
-        {!enhanced && <div className={s.keys} role="group" aria-label="Teclas para programar">{symbols.map(renderSymbol)}</div>}
-        {!missionPassed && (!embedded || matches) && <div className={s.feedback} role="status" aria-live="polite">{matches ? <><Check size={16}/>{fullMatches ? "Código montado. Execute para testar a regra." : autoAdvance ? "Linha conferida. O guia acompanha após sua pausa." : "Linha conferida. Pode seguir para a próxima."}</> : "Digite a linha do guia no campo Seu código."}</div>}
+        </div>
+        {!enhanced && <div className={s.keys} role="group" aria-label="Símbolos de código">{essentialSymbols.filter(symbol => symbols.includes(symbol)).map(renderSymbol)}</div>}
+        <div className={s.feedback} role="status">{!missionPassed && (matches || fullMatches) && <><Check size={16}/>{fullMatches ? "Pronto para executar." : "Linha conferida."}</>}</div>
         <div className={s.actions}>
           {needsAdvance && !running && <button className={s.primary} disabled={!matches && !missionPassed} onClick={advance}>{missionPassed ? "Próxima missão" : "Próxima linha"}<ArrowRight size={17}/></button>}
-          {running ? <button key="stop" className={s.primary} onClick={() => activeRun.current?.abort()}><Square size={17}/>Parar execução</button> : (!needsAdvance || allowPartialRun) && <button key="run" className={needsAdvance ? undefined : s.primary} disabled={!canRun} aria-describedby={!embedded && !fullMatches && !missionPassed ? "guided-run-hint" : undefined} onClick={() => void run()}><Play size={17}/>Executar código</button>}
-
-          {!embedded && <button aria-label="Desfazer última edição" disabled={running || !history.current.length} onClick={() => { editedForAuto.current = false; const code = history.current.pop(); if (code !== undefined) { update({ ...draft, code, passed: draft.passed.filter(n => n < draft.mission) }); setResult(null); } }}><Undo2 size={16}/>Desfazer</button>}
-          {!embedded && <button ref={resetButton} onClick={() => setResetting(true)}><RotateCcw size={16}/>Reiniciar</button>}
+          {running ? <button key="stop" className={s.primary} onClick={() => activeRun.current?.abort()}><Square size={17}/>Parar execução</button> : (!needsAdvance || allowPartialRun) && !missionPassed && <button key="run" className={needsAdvance ? s.secondary : s.primary} disabled={!canRun} onClick={() => void run()}><Play size={17}/>Executar código</button>}
         </div>
-        {draft.line > 0 && !missionPassed && <button className={s.backStep} onClick={() => { editedForAuto.current = false; focusStep.current = true; update({ ...draft, line: draft.line - 1 }); }}>Rever etapa anterior</button>}
-        {!embedded && !fullMatches && !missionPassed && <details className={s.runGuidance} id="guided-run-hint"><summary>Quer executar antes de terminar?</summary><p>Um bloco incompleto pode dar erro. A missão só é concluída se o código passar nos testes.</p><button aria-pressed={allowPartialRun} onClick={() => { editedForAuto.current = false; setAllowPartialRun(!allowPartialRun); }}>{allowPartialRun ? "Voltar à execução guiada" : "Testar meu código agora"}</button></details>}
-        {!embedded && !enhanced && <details className={s.moreSymbols}><summary>Mais símbolos para programar</summary><div className={s.keys} role="group" aria-label="Outras teclas para programar">{symbols.filter(symbol => !essentialSymbols.includes(symbol)).map(renderSymbol)}</div></details>}
 
+        {completed && !embedded && !applicationRequired && <div className={s.nextActions}>{practiceChecks[challenge.slug] && <a href="#practice-check">Aplicar o que aprendi<ArrowRight size={16}/></a>}<button className={s.secondary} onClick={() => onFreeMode(draft.code)}>Praticar sem o guia<ArrowRight size={17}/></button>{next ? <Link href={link(`/estudante/pratica/${next.slug}`)}>Próximo desafio: {next.titulo}<ArrowRight size={16}/></Link> : challenge.linguagem === "csharp" ? <Link href={link("/estudante/trilhas/csharp")}>Continue na trilha C# &amp; .NET<ArrowRight size={16}/></Link> : <Link href={link(`/estudante/pratica?linguagem=${challenge.linguagem}#experimentos`)}>Revisar os fundamentos de {lang}<ArrowRight size={16}/></Link>}</div>}
+        {(running || result) && <section className={s.console} aria-label="Resultado da execução"><div><strong>Resultado</strong>{result && <button onClick={() => setResult(null)}>Limpar saída</button>}</div><div role="status">{running ? <p>{challenge.linguagem === "python" ? "Preparando Python e executando… A primeira execução precisa de conexão." : "Executando seu programa…"}</p> : result && <>{result.output && <pre>{result.output}</pre>}{result.cancelled ? <p>Execução interrompida. Seu código está preservado.</p> : result.error ? <div className={s.error}><strong>Ainda não rodou</strong><p>{result.errorLine ? `Confira a linha ${result.errorLine}. ` : ""}{/indent|syntax/i.test(result.error) ? "Confira os recuos, as aspas e os sinais da etapa." : "Confira os nomes e valores da etapa."}</p><pre>{result.error}</pre></div> : <p>{missionPassed ? "Resultado validado." : "Executou, mas ainda não resolveu a missão. Compare a saída com o objetivo."}</p>}</>}</div></section>}
+        <details className={s.lessonTools}>
+          <summary>Ajuda e ferramentas<ChevronDown aria-hidden="true" size={16}/></summary>
+          <div className={s.toolContent}>
+            {!embedded && <div className={s.missionInfo}>
+              <strong>O que seu programa precisa fazer</strong>
+              <p>{challenge.steps[draft.mission].instrucao}</p>
+              <p className={s.mobileStory}>{story.scene}</p>
+              <dl className={s.programPlan}>
+                <div><dt>Recebe</dt><dd>{story.input}</dd></div>
+                <div><dt>Faz</dt><dd>{story.action}</dd></div>
+                <div><dt>Mostra</dt><dd>{story.outcome}</dd></div>
+              </dl>
+              <PracticeJourney challenge={challenge} preview={preview}/>
+            </div>}
+            <div className={s.toolActions}>
+              {draft.line > 0 && !missionPassed && <button onClick={() => { editedForAuto.current = false; focusStep.current = true; update({ ...draft, line: draft.line - 1 }); }}>Rever etapa anterior</button>}
+              <button aria-label="Desfazer última edição" disabled={running || !history.current.length} onClick={() => { editedForAuto.current = false; const code = history.current.pop(); if (code !== undefined) { update({ ...draft, code, passed: draft.passed.filter(n => n < draft.mission) }); setResult(null); } }}><Undo2 size={16}/>Desfazer</button>
+              <button ref={resetButton} onClick={() => setResetting(true)}><RotateCcw size={16}/>Reiniciar</button>
+              <button onClick={() => setEnhanced(value => !value)}>{enhanced ? "Editor simples" : "Editor com realce"}</button>
+              {!fullMatches && !missionPassed && <button aria-pressed={allowPartialRun} onClick={() => { editedForAuto.current = false; setAllowPartialRun(!allowPartialRun); }}>{allowPartialRun ? "Voltar à execução guiada" : "Testar código incompleto"}</button>}
+            </div>
+            <label className={s.autoControl}><input type="checkbox" checked={autoAdvance} onChange={event => { editedForAuto.current = false; setAutoAdvance(event.target.checked); }}/>Avanço automático de linha</label>
+            {!enhanced && <div className={s.toolKeys} role="group" aria-label="Outros símbolos de código">{symbols.map(renderSymbol)}</div>}
+            <p className={s.save}>{save}. O rascunho fica neste navegador.{challenge.linguagem === "csharp" && " O ambiente C# aqui é didático e tem menos recursos que o .NET completo."}</p>
+          </div>
+        </details>
         {resetting && <div className={s.reset} role="group" aria-label="Confirmar reinício"><strong>Recomeçar este desafio guiado?</strong><p>O código e as etapas deste modo serão reiniciados. Seu rascunho do modo livre não muda.</p><button ref={cancelReset} onClick={() => { setResetting(false); resetButton.current?.focus(); }}>Continuar editando</button><button onClick={reset}>Sim, reiniciar</button></div>}
         {undoDraft && <div className={s.reset}><p>O código anterior está disponível até você sair desta página.</p><button onClick={() => { editedForAuto.current = false; activeRun.current?.abort(); activeRun.current = null; setRunning(false); update(undoDraft); setUndoDraft(null); setResult(null); }}>Recuperar código anterior ao reinício</button></div>}
-        {!embedded && <div className={s.save}>{save} · Rascunhos não sincronizam entre aparelhos.</div>}
-        {embedded && save.startsWith("Não foi possível") && <p role="alert" className={s.error}>{save}</p>}
-        {(!embedded || running || result) && <section className={s.console} aria-label="Resultado da execução"><div><strong>Console / resultado</strong>{result && <button onClick={() => setResult(null)}>Limpar saída</button>}</div><div role="status" aria-live="polite">{running ? <p>{challenge.linguagem === "python" ? "Preparando Python e executando… A primeira abertura baixa o ambiente e precisa de conexão." : "Executando seu programa…"}</p> : result ? <><pre>{result.output || "Sem saída no console."}</pre>{result.cancelled ? <p>Execução interrompida. Seu código está preservado.</p> : result.error ? <div className={s.error}><strong>Ainda não rodou. Vamos ajustar.</strong><p>{result.errorLine ? `Confira a linha ${result.errorLine}. ` : ""}{/indent|syntax/i.test(result.error) ? "Confira os recuos, as aspas e os sinais da etapa. Um bloco incompleto pode dar erro antes da última linha." : "Confira os nomes e valores. Compare seu código com a etapa antes de tentar de novo."}</p><pre>{result.error}</pre></div> : <p>{missionPassed ? "Resultado validado. Boa!" : "Executou, mas ainda não atende à missão. Termine as etapas e compare a saída com o objetivo."}</p>}</> : <p>A saída aparece aqui ao executar. Enquanto você monta um bloco, ele pode estar incompleto — tudo bem.</p>}</div></section>}
-        {embedded ? <details className={s.lessonTools}>
-          <summary>Ajuda e ferramentas</summary>
-          <div className={s.toolActions}>
-            <button aria-label="Desfazer última edição" disabled={running || !history.current.length} onClick={() => { editedForAuto.current = false; const code = history.current.pop(); if (code !== undefined) { update({ ...draft, code, passed: draft.passed.filter(n => n < draft.mission) }); setResult(null); } }}><Undo2 size={16}/>Desfazer</button>
-            <button ref={resetButton} onClick={() => setResetting(true)}><RotateCcw size={16}/>Reiniciar</button>
-            <button onClick={() => setEnhanced(value => !value)}>{enhanced ? "Editor simples" : "Editor com realce"}</button>
-          </div>
-          <label className={s.autoControl}><input type="checkbox" checked={autoAdvance} onChange={event => { editedForAuto.current = false; setAutoAdvance(event.target.checked); }}/>Avanço automático</label>
-          <p>Ao terminar a linha, o guia avança após uma pausa. Seu código só executa quando você pede.</p>
-          {!fullMatches && !missionPassed && <button className={s.partialRun} aria-pressed={allowPartialRun} onClick={() => { editedForAuto.current = false; setAllowPartialRun(!allowPartialRun); }}>{allowPartialRun ? "Voltar à execução guiada" : "Testar código incompleto"}</button>}
-          {!enhanced && <div className={s.keys} role="group" aria-label="Outras teclas para programar">{symbols.filter(symbol => !essentialSymbols.includes(symbol)).map(renderSymbol)}</div>}
-          <p>{save}. O rascunho fica neste navegador e não sincroniza entre aparelhos. C# usa um executor didático limitado; ainda não é o .NET completo.</p>
-        </details> : <button className={s.editorToggle} onClick={() => setEnhanced(value => !value)}>{enhanced ? "Usar editor simples (recomendado no celular)" : "Usar editor com realce e sugestões"}</button>}
+        {/^(Não foi possível|Armazenamento indisponível)/.test(save) && <p role="alert" className={s.error}>{save}</p>}
       </section>
     </div>
     </GuidedReplay>
@@ -266,7 +274,5 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
       {applicationValidated ? <section className={s.deliveryNext} aria-label="Seu próximo passo"><strong>{challenge.slug === "primeiro-orcamento-js" ? "Você entregou seu primeiro orçamento." : "Você aplicou a ideia em outra situação."}</strong><p>{challenge.slug === "primeiro-orcamento-js" ? "Seu programa reúne dados, cálculo e decisão. Revise sua entrega ou continue aprendendo como reunir instruções em funções." : "O exemplo virou uma regra que funciona com outros dados. Agora siga para a próxima entrega."}</p>{next && <Link className={s.primary} href={link(`/estudante/pratica/${next.slug}`)}>{challenge.slug === "primeiro-orcamento-js" ? "Próximo tema" : "Próxima entrega"}: {next.titulo}<ArrowRight size={17}/></Link>}<Link href={link("/estudante/progresso")}>Ver o que já pratiquei<ArrowRight size={15}/></Link></section> : <p className={s.deliveryPending}>A próxima entrega aparece depois de testar sua aplicação. O mapa continua disponível para consultar e explorar.</p>}
     </div>}
     {completed && !embedded && !applicationRequired && practiceChecks[challenge.slug] && <PracticeCheck key={practiceChecks[challenge.slug].id} check={practiceChecks[challenge.slug]} userId={userId} onPractice={() => onFreeMode(draft.code)}/>}
-    </>}
-    {!embedded && <footer className={s.footer}>Treine numa pausa, com segurança e no seu tempo. O laboratório não executa sozinho enquanto você digita.</footer>}
   </section>;
 }

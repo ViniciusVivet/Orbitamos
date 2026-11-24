@@ -1,14 +1,15 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Suspense, useState, useRef, useCallback, useEffect, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
-import { Play, Square, RotateCcw, ChevronRight, Lightbulb, CheckCircle2, XCircle, ArrowLeft, Code2, MessageSquare, Eye, EyeOff, Copy, Check, BookOpen, Trash2, Maximize2, Minimize2 } from "lucide-react";
+import { Play, Square, RotateCcw, ChevronRight, Lightbulb, CheckCircle2, XCircle, ArrowLeft, Code2, MessageSquare, Eye, EyeOff, Copy, Check, BookOpen, Trash2, Maximize2, Minimize2, MoreHorizontal, X } from "lucide-react";
 import Link from "next/link";
 import { getDesafio, getNextDesafio, type DesafioStep } from "@/lib/desafios";
 import { runCSharpInWorker, runJavaScriptInWorker, runPythonInWorker, warmPythonRuntime } from "@/lib/browserCodeRunner";
 import { useAuth } from "@/contexts/AuthContext";
 import ReliableCodeEditor, { type ReliableCodeEditorHandle } from "@/components/estudante/ReliableCodeEditor";
 import lab from "@/components/estudante/Laboratory.module.css";
+import free from "./FreePracticeWorkspace.module.css";
 import GuidedPractice from "@/components/estudante/GuidedPractice";
 import PracticeOrigin from "@/components/estudante/PracticeOrigin";
 import { academyPreviewHref } from "@/lib/portalNavigation";
@@ -17,7 +18,6 @@ import { freePracticeStorageKey, freshFreePracticeDraft, practiceCodeHistoryKey,
 import BeginnerPractice from "@/components/estudante/BeginnerPractice";
 import { supportsBeginnerPractice } from "@/lib/beginnerPractice";
 
-type MobileTab = "editor" | "guia";
 type ChatMessage = { tipo: "sistema" | "sucesso" | "erro" | "dica"; texto: string };
 
 function appendPedagogicalMessage(previous: ChatMessage[], message: ChatMessage): ChatMessage[] {
@@ -156,13 +156,12 @@ export function PraticaWorkspace({ userId = null, preview = false }: { userId?: 
   if (free === null) return <p role="status">Abrindo seu laboratório…</p>;
   if (pending) return <PracticeHandoffChoice guidedCode={pending.code} existingCode={pending.existingCode} error={handoffError} onImport={() => importGuidedCode(pending.code)} onKeep={() => { setEntryDraft(null); chooseMode(true); }} onCancel={() => { setPending(null); setHandoffError(""); }}/ >;
   if (!free) return <><Suspense fallback={null}><PracticeOrigin/></Suspense><GuidedPractice key={`${userId}-${challenge.slug}`} challenge={challenge} userId={userId} preview={preview} onFreeMode={requestFreeMode}/></>;
-  return <><div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-300"><p>Modo livre · experimente e execute suas próprias mudanças.</p><button className="min-h-11 rounded-lg border border-emerald-200/30 px-4 text-emerald-200" onClick={() => { setEntryDraft(null); chooseMode(false); }}>Voltar ao passo a passo</button></div><FreePracticeWorkspace key={`${userId}-${challenge.slug}`} userId={userId} preview={preview} initialDraft={entryDraft}/></>;
+  return <FreePracticeWorkspace key={`${userId}-${challenge.slug}`} userId={userId} preview={preview} initialDraft={entryDraft} onGuidedMode={() => { setEntryDraft(null); chooseMode(false); }}/ >;
 }
 
-function FreePracticeWorkspace({ userId = null, preview = false, initialDraft = null }: { userId?: string | number | null; preview?: boolean; initialDraft?: FreePracticeDraft | null }) {
+function FreePracticeWorkspace({ userId = null, preview = false, initialDraft = null, onGuidedMode }: { userId?: string | number | null; preview?: boolean; initialDraft?: FreePracticeDraft | null; onGuidedMode: () => void }) {
   const link = (href: string) => preview ? academyPreviewHref(href) : href;
   const params = useParams();
-  const router = useRouter();
   const slug = params.slug as string;
   const desafio = getDesafio(slug);
   const nextChallenge = getNextDesafio(slug);
@@ -186,13 +185,15 @@ function FreePracticeWorkspace({ userId = null, preview = false, initialDraft = 
   const [canPersist, setCanPersist] = useState(false);
   const [versions, setVersions] = useState<PracticeCodeHistory>({ version: 1, source: null, entries: [] });
   const [versionError, setVersionError] = useState("");
-  const [mobileTab, setMobileTab] = useState<MobileTab>("editor");
+  const [guideOpen, setGuideOpen] = useState(false);
   const [consoleExpanded, setConsoleExpanded] = useState(false);
   const [stepAttempts, setStepAttempts] = useState<number[]>([]);
   const [reflection, setReflection] = useState("");
   const [pythonRuntimeStatus, setPythonRuntimeStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [guideWidth, setGuideWidth] = useState(320);
   const [consoleHeight, setConsoleHeight] = useState(156);
+  const [workspaceHeight, setWorkspaceHeight] = useState<number | null>(null);
+  const workspaceRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<ReliableCodeEditorHandle>(null);
   const activeRunRef = useRef<AbortController | null>(null);
@@ -406,6 +407,24 @@ function FreePracticeWorkspace({ userId = null, preview = false, initialDraft = 
   }, []);
 
   useEffect(() => () => { activeRunRef.current?.abort(); activeRunRef.current = null; }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    let frame = 0;
+    const resize = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const top = Math.max(0, workspaceRef.current?.getBoundingClientRect().top ?? 0);
+        const viewport = window.visualViewport;
+        const bottom = (viewport?.offsetTop ?? 0) + (viewport?.height ?? window.innerHeight);
+        setWorkspaceHeight(Math.max(320, Math.floor(bottom - top - 12)));
+      });
+    };
+    resize();
+    window.addEventListener("resize", resize);
+    window.visualViewport?.addEventListener("resize", resize);
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("resize", resize); window.visualViewport?.removeEventListener("resize", resize); };
+  }, [hydrated]);
 
   useEffect(() => {
     if (desafio?.linguagem !== "python") {
@@ -744,256 +763,93 @@ function FreePracticeWorkspace({ userId = null, preview = false, initialDraft = 
   );
 
   return (
-    <><div className={lab.workspace} data-lab-workspace>
+    <>
+    <div ref={workspaceRef} className={lab.workspace + " " + free.workspace} data-lab-workspace data-free-workspace data-guide-open={guideOpen} style={workspaceHeight ? { "--free-space": workspaceHeight + "px" } as CSSProperties : undefined}>
       <Suspense fallback={null}><PracticeOrigin/></Suspense>
-      {/* Top bar — compacto no mobile */}
-      <div className={lab.editorToolbar}>
-        <button
-          aria-label="Voltar para o laboratório"
-          onClick={() => router.back()}
-          className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1 text-xs text-white/50 transition-colors hover:text-white touch-manipulation sm:justify-start sm:min-w-0 md:min-h-9"
-        >
-          <ArrowLeft className="size-4 sm:size-3.5" />
-          <span className="hidden sm:inline">Voltar</span>
-        </button>
-        <div className="h-4 w-px bg-white/10 hidden sm:block" />
-        <h1 className={lab.editorTitle}>{desafio.titulo}</h1>
-        <span className="hidden sm:inline rounded-full bg-orbit-electric/15 px-2 py-0.5 text-[10px] font-bold uppercase text-orbit-electric">
-          {desafio.linguagem}
-        </span>
-        {desafio.linguagem === "python" && (
-          <span className={`hidden lg:inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[9px] font-bold ${pythonRuntimeStatus === "ready" ? "bg-emerald-400/10 text-emerald-300" : pythonRuntimeStatus === "error" ? "bg-red-400/10 text-red-300" : "bg-amber-300/10 text-amber-200"}`}>
-            <span className={`size-1.5 rounded-full ${pythonRuntimeStatus === "ready" ? "bg-emerald-400" : pythonRuntimeStatus === "error" ? "bg-red-400" : "animate-pulse bg-amber-300"}`} />
-            {pythonRuntimeStatus === "ready" ? "Python pronto" : pythonRuntimeStatus === "error" ? "Python indisponível" : "Preparando Python"}
-          </span>
-        )}
-
-        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-          <button
-            type="button"
-            onClick={handleReset}
-            className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1 rounded-lg border border-white/10 bg-white/5 p-2 text-xs text-white/70 transition hover:bg-white/10 touch-manipulation sm:px-3 sm:py-1.5"
-            aria-label="Reiniciar"
-          >
-            <RotateCcw className="size-3.5 sm:size-3" />
-            <span className="hidden sm:inline">Reiniciar</span>
-          </button>
-          {running ? (
-            <button type="button" onClick={stopExecution} className={lab.stopButton} aria-label="Interromper execução">
-              <Square className="size-3.5 fill-current" />
-              <span className="hidden sm:inline">Parar</span>
-            </button>
-          ) : (
-            <button type="button" onClick={executeCode} aria-label="Executar" title="Executar (Ctrl/⌘ + Enter)" className={lab.runButton}>
-              <Play className="size-3.5" />
-              <span className="hidden sm:inline">Executar</span>
-            </button>
-          )}
+      <header className={free.toolbar}>
+        <Link aria-label="Voltar ao catálogo de exercícios" href={link(`/estudante/pratica?linguagem=${desafio.linguagem}#experimentos`)} className={free.iconButton}><ArrowLeft size={17}/></Link>
+        <div className={free.identity}><span>Modo livre</span><h1>{desafio.titulo}</h1></div>
+        <div className={free.toolbarActions}>
+          <button type="button" onClick={onGuidedMode} aria-label="Voltar ao passo a passo" className={free.secondaryButton}><BookOpen size={16}/><span className={free.buttonLabel}>Passo a passo</span></button>
+          <button type="button" onClick={() => setGuideOpen(value => !value)} aria-expanded={guideOpen} aria-controls={guideOpen ? "practice-guide-panel" : undefined} className={free.secondaryButton}><MessageSquare size={16}/><span>Ajuda</span></button>
+          <details className={free.tools}>
+            <summary aria-label="Opções do código"><MoreHorizontal size={19}/></summary>
+            <div className={free.toolsContent}>
+              <strong>Seu código e suas versões</strong>
+              <p>O rascunho fica neste navegador. Ctrl/⌘ + Enter executa; Ctrl/⌘ + S salva.</p>
+              {desafio.linguagem === "python" && <p role="status">{pythonRuntimeStatus === "ready" ? "Python pronto para executar." : pythonRuntimeStatus === "error" ? "Python não carregou. Tente executar novamente com conexão." : "Preparando Python…"}</p>}
+              <button type="button" onClick={handleReset}><RotateCcw size={15}/> Reiniciar</button>
+              {versions.entries.length > 0 && <details data-practice-code-versions>
+                <summary>Versões guardadas · {versions.entries.length}</summary>
+                <p>Recuperar guarda também o código aberto agora. O passo a passo mantém seu próprio rascunho.</p>
+                {versions.entries.map((version, index) => {
+                  const draft = readFreePracticeDraft(version.raw, desafio.steps.length);
+                  return <details key={version.savedAt + "-" + index}><summary>Versão {versions.entries.length - index} · {new Date(version.savedAt).toLocaleString("pt-BR")}</summary><pre>{draft?.code ?? version.raw}</pre>{draft ? <button type="button" disabled={running} onClick={() => recoverVersion(index)}>Recuperar código desta versão</button> : <p>Texto preservado. Esta versão precisa ser copiada manualmente.</p>}</details>;
+                })}
+              </details>}
+            </div>
+          </details>
         </div>
-      </div>
+      </header>
 
-      {/* Mobile tabs */}
-      <div className="flex border-b border-white/10 md:hidden" role="tablist" aria-label="Painéis do laboratório">
-        <button
-          id="practice-code-tab"
-          type="button"
-          onClick={() => setMobileTab("editor")}
-          role="tab"
-          aria-selected={mobileTab === "editor"}
-          aria-controls="practice-editor-panel"
-          className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-bold transition touch-manipulation ${
-            mobileTab === "editor" ? "text-orbit-electric border-b-2 border-orbit-electric bg-orbit-electric/5" : "text-slate-400"
-          }`}
-        >
-          <Code2 className="size-3.5" />
-          Código
-        </button>
-        <button
-          id="practice-guide-tab"
-          type="button"
-          onClick={() => setMobileTab("guia")}
-          role="tab"
-          aria-selected={mobileTab === "guia"}
-          aria-controls="practice-guide-panel"
-          className={`relative flex min-h-11 flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-bold transition touch-manipulation ${
-            mobileTab === "guia" ? "text-violet-300 border-b-2 border-violet-300 bg-orbit-purple/5" : "text-slate-400"
-          }`}
-        >
-          <MessageSquare className="size-3.5" />
-          Guia
-          {chatMessages.length > 2 && mobileTab !== "guia" && (
-            <span className="absolute right-1/4 top-1 size-2 rounded-full bg-orbit-electric" />
-          )}
-        </button>
-      </div>
+      {versionError && <p role="alert" className={free.storageError}>{versionError}</p>}
+      {saveStatus === "error" && !versionError && <p role="alert" className={free.storageError}>Não foi possível salvar. Copie seu programa antes de sair.</p>}
 
-      {/* Main content */}
-      <div className="flex min-h-0 flex-1 overflow-hidden">
-        {/* Editor + Console — full width mobile, 80% desktop */}
-        <div id="practice-editor-panel" role="tabpanel" aria-labelledby="practice-code-tab" className={`min-h-0 min-w-0 flex-col overflow-x-hidden overflow-y-auto md:overflow-hidden ${mobileTab === "editor" ? "flex flex-1" : "hidden md:flex md:flex-1"}`}>
-          <div className={lab.fileBar}>
-            <span className={lab.fileTab}><Code2 size={13}/>rascunho.{{ javascript: "js", typescript: "ts", python: "py", csharp: "cs" }[desafio.linguagem]}</span>
-            <span className={lab.editorSave} data-error={saveStatus === "error"}>{saveStatus === "saving" ? "Salvando…" : saveStatus === "saved" ? "Salvo neste navegador" : saveStatus === "error" ? "Falha ao salvar" : "Rascunho local"}</span>
+      <div className={free.workArea}>
+        <section id="practice-editor-panel" aria-label="Código e execução" className={free.editorPane}>
+          <div className={free.fileBar}>
+            <span><Code2 size={13}/>rascunho.{{ javascript: "js", typescript: "ts", python: "py", csharp: "cs" }[desafio.linguagem]}</span>
+            <small role="status" data-error={saveStatus === "error"}>{saveStatus === "saving" ? "Salvando…" : saveStatus === "saved" ? "Salvo neste navegador" : saveStatus === "error" ? "Falha ao salvar" : "Rascunho local"}</small>
           </div>
-          {versions.source === "guided" && <p className="shrink-0 border-b border-emerald-100/10 bg-emerald-200/5 px-3 py-2 text-[11px] leading-5 text-emerald-100" data-practice-handoff-origin>Este é o código que você trouxe da atividade. No modo livre, execute para validar suas próprias mudanças.</p>}
-          {versions.source === "restored" && <p className="shrink-0 px-3 py-2 text-[11px] leading-5 text-emerald-100">Versão recuperada. O programa anterior também está guardado nas versões.</p>}
-          {versions.entries.length > 0 && <details className="shrink-0 border-b border-white/10 bg-[#101d2b] text-xs text-slate-200" data-practice-code-versions>
-            <summary className="min-h-11 cursor-pointer px-3 py-3">Versões guardadas · {versions.entries.length}</summary>
-            <div className="max-h-64 overflow-y-auto px-3 pb-3"><p className="mb-3 text-[11px] leading-5 text-slate-300">Recuperar guarda também o código aberto agora. O passo a passo continua com seu próprio rascunho.</p>{versions.entries.map((version, index) => {
-              const draft = readFreePracticeDraft(version.raw, desafio.steps.length);
-              return <details key={`${version.savedAt}-${index}`} className="border-t border-white/10 py-1"><summary className="min-h-11 cursor-pointer py-3">Versão {versions.entries.length - index} · {new Date(version.savedAt).toLocaleString("pt-BR")}</summary><pre className="max-h-36 overflow-auto whitespace-pre-wrap break-words rounded bg-black/30 p-3 text-[11px] leading-5">{draft?.code ?? version.raw}</pre>{draft ? <button type="button" disabled={running} onClick={() => recoverVersion(index)} className="my-2 min-h-11 rounded border border-emerald-100/30 px-3 py-2 text-emerald-100">Recuperar código desta versão</button> : <p className="py-2 text-[11px] text-amber-100">Texto preservado. Esta versão precisa ser copiada manualmente.</p>}</details>;
-            })}</div>
-          </details>}
-          {versionError && <p role="alert" className="shrink-0 border-b border-amber-200/20 bg-amber-200/5 px-3 py-2 text-[11px] leading-5 text-amber-100">{versionError}</p>}
-          {completed && applicationRequired && !applicationValidated && <a href="#beginner-free-application" className="shrink-0 border-b border-emerald-100/20 bg-emerald-200/10 px-3 py-3 text-xs leading-5 text-emerald-100">Programa validado. Agora aplique com novos dados e escreva sozinho ↓</a>}
-          {!completed && desafio.steps[currentStep] && (
-            <div className="shrink-0 border-b border-orbit-electric/15 bg-orbit-electric/[.055] px-3 py-2.5 md:hidden">
-              <div className="flex items-start gap-2">
-                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-lg bg-orbit-electric/15 text-[10px] font-black text-orbit-electric">{currentStep + 1}</span>
-                <div className="min-w-0 flex-1">
-                  <p className="line-clamp-2 text-[11px] font-semibold leading-4 text-white/80">{desafio.steps[currentStep].instrucao}</p>
-                  <p className="mt-1 text-[9px] text-slate-400">{stepAttempts[currentStep] ?? 0} tentativa{(stepAttempts[currentStep] ?? 0) === 1 ? "" : "s"} · execute para validar</p>
-                </div>
-                <button type="button" onClick={() => setMobileTab("guia")} className="min-h-9 shrink-0 rounded-lg border border-white/10 bg-white/[.04] px-2 text-[10px] font-bold text-orbit-electric">
-                  Ver guia
-                </button>
-              </div>
-            </div>
-          )}
-          <div className="min-h-[280px] min-w-0 flex-1 shrink-0 overflow-hidden md:min-h-0 md:shrink">
-            <ReliableCodeEditor
-              ref={editorRef}
-              language={desafio.linguagem}
-              value={code}
-              onChange={handleCodeChange}
-              errorLine={errorMark?.line}
-              errorMessage={errorMark?.message}
-            />
+          <div className={free.task} data-free-task>
+            <div><span>{completed ? "PROGRAMA VALIDADO" : "SUA EXPERIÊNCIA AGORA · " + (currentStep + 1) + "/" + desafio.steps.length}</span><p>{completed ? "Experimente outro valor, execute e observe o que muda." : desafio.steps[currentStep]?.instrucao}</p></div>
+          </div>
+          {versions.source === "guided" && <p className={free.origin} data-practice-handoff-origin>Programa trazido da atividade. Altere um valor e execute para experimentar.</p>}
+          {versions.source === "restored" && <p className={free.origin}>Versão recuperada; o programa anterior está nas versões.</p>}
+          {completed && applicationRequired && !applicationValidated && <a href="#beginner-free-application" className={free.origin}>Seu programa passou. Aplique com novos dados para fechar esta entrega ↓</a>}
+          <div className={free.codeArea}>
+            <ReliableCodeEditor ref={editorRef} language={desafio.linguagem} value={code} onChange={handleCodeChange} errorLine={errorMark?.line} errorMessage={errorMark?.message}/>
+          </div>
+          <div className={free.executionBar}>
+            {running ? <button type="button" onClick={stopExecution} className={lab.stopButton} aria-label="Interromper execução"><Square size={15} fill="currentColor"/>Parar</button>
+              : <button type="button" onClick={executeCode} aria-label="Executar" title="Executar (Ctrl/⌘ + Enter)" className={lab.runButton}><Play size={15}/>Executar</button>}
+            <span className={free.shortcut}>Ctrl/⌘ + Enter</span>
           </div>
 
-          {/* Console output */}
-          <div
-            className={`${lab.consoleSection} relative z-10 shrink-0 border-t md:h-[var(--console-height)]`}
-            style={{ "--console-height": `${consoleHeight}px` } as CSSProperties}
-          >
-            <button
-              type="button"
-              onPointerDown={startConsoleResize}
-              onDoubleClick={() => setConsoleHeight(156)}
-              aria-label="Redimensionar console"
-              title="Arraste para redimensionar · duplo clique para restaurar"
-              className="absolute -top-1 left-1/2 z-20 hidden h-2 w-16 -translate-x-1/2 cursor-row-resize rounded-full bg-white/0 transition hover:bg-orbit-electric/40 md:block"
-            />
-            <div className={`${lab.consoleToolbar} flex items-center gap-2 border-b border-white/5 px-3 py-1.5`}>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-white/60">Console</span>
-              {running && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orbit-electric" />}
-              {consoleRun?.outcome === "success" && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
-              {consoleRun?.outcome === "needs-work" && <span className="h-1.5 w-1.5 rounded-full bg-amber-300" />}
-              {consoleRun?.outcome === "error" && <span className="h-1.5 w-1.5 rounded-full bg-red-400" />}
-              {consoleRun?.outcome === "cancelled" && <span className="h-1.5 w-1.5 rounded-full bg-white/35" />}
-              {consoleRun && (
-                <span className="ml-auto flex items-center gap-2">
-                  <span className="text-[9px] text-white/60">{consoleRun.durationMs} ms</span>
-                  <button type="button" onClick={() => setConsoleExpanded((value) => !value)} aria-label={consoleExpanded ? "Reduzir console" : "Expandir console"} className="text-white/60 transition hover:text-white/80 md:hidden">
-                    {consoleExpanded ? <Minimize2 className="size-3" /> : <Maximize2 className="size-3" />}
-                  </button>
-                  <button type="button" onClick={() => navigator.clipboard.writeText([...consoleRun.lines, consoleRun.error?.message].filter(Boolean).join("\n")).catch(() => {})} aria-label="Copiar saída do console" className="text-white/60 transition hover:text-white/80">
-                    <Copy className="size-3" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setConsoleRun(null);
-                      setErrorMark(null);
-                    }}
-                    aria-label="Limpar console"
-                    className="flex items-center gap-1 text-[9px] font-bold uppercase text-white/60 transition hover:text-white/80 touch-manipulation"
-                  >
-                    <Trash2 className="size-3" />
-                    Limpar
-                  </button>
-                </span>
-              )}
+          <section className={free.console} aria-label="Resultado da execução" data-active={running || !!consoleRun} data-expanded={consoleExpanded} style={{ "--console-height": consoleHeight + "px" } as CSSProperties}>
+            {(running || consoleRun) && <button type="button" onPointerDown={startConsoleResize} onDoubleClick={() => setConsoleHeight(156)} aria-label="Redimensionar console" title="Arraste para redimensionar · duplo clique para restaurar" className={free.resizeOutput}/>}
+            <div className={free.consoleToolbar}>
+              <strong>Resultado</strong>
+              {!running && !consoleRun && <span>Aparece ao executar</span>}
+              {running && <span role="status">Executando…</span>}
+              {consoleRun && <div className={free.consoleActions}>
+                <small>{consoleRun.durationMs} ms</small>
+                <button type="button" onClick={() => setConsoleExpanded(value => !value)} aria-label={consoleExpanded ? "Reduzir console" : "Expandir console"}>{consoleExpanded ? <Minimize2 size={14}/> : <Maximize2 size={14}/>}</button>
+                <button type="button" onClick={() => navigator.clipboard.writeText([...consoleRun.lines, consoleRun.error?.message].filter(Boolean).join("\n")).catch(() => {})} aria-label="Copiar saída do console"><Copy size={14}/></button>
+                <button type="button" onClick={() => { setConsoleRun(null); setErrorMark(null); }} aria-label="Limpar console"><Trash2 size={14}/></button>
+              </div>}
             </div>
-            <div role="status" aria-live="polite" className={`${consoleExpanded ? "h-64" : "h-28 sm:h-32"} min-w-0 overflow-y-auto overflow-x-hidden px-3 py-2 font-mono text-xs transition-[height] md:h-[calc(100%_-_32px)]`}>
-              {running && (
-                <div className="flex items-center gap-2 font-sans text-orbit-electric/80">
-                  <span className="size-3 animate-spin rounded-full border border-orbit-electric/30 border-t-orbit-electric" />
-                  {desafio.linguagem === "python" ? "Preparando Python e executando seu código..." : "Executando seu código..."}
-                </div>
-              )}
-              {!running && !consoleRun && (
-                <span className="text-white/60">Clique em &quot;Executar&quot; para ver o resultado...</span>
-              )}
-              {consoleRun?.lines.map((line, index) => (
-                <div key={index} className="whitespace-pre-wrap leading-5 text-slate-200">
-                  {line}
-                </div>
-              ))}
-              {consoleRun && !consoleRun.error && consoleRun.lines.length === 0 && (
-                <div className="leading-5 text-white/60">Execução concluída sem saída no console.</div>
-              )}
-              {consoleRun?.truncated && (
-                <div className="mt-1 text-[10px] text-amber-300">A saída foi limitada para manter o editor rápido.</div>
-              )}
-              {consoleRun?.outcome === "needs-work" && !consoleRun.error && (
-                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-md border-l-2 border-amber-400 bg-amber-400/[0.08] px-2.5 py-2 font-sans text-[11px] text-amber-100">
-                  <span>O código rodou, mas ainda não passou em todos os critérios.</span>
-                  <button type="button" onClick={() => setMobileTab("guia")} className="font-bold text-amber-300 underline-offset-2 hover:underline md:hidden">
-                    Ver orientação
-                  </button>
-                </div>
-              )}
-              {consoleRun?.outcome === "success" && (
-                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-md border-l-2 border-emerald-400 bg-emerald-400/[0.08] px-2.5 py-2 font-sans text-[11px] text-emerald-100">
-                  <span>Boa! Esta etapa passou nos critérios do desafio.</span>
-                  <button type="button" onClick={() => setMobileTab("guia")} className="font-bold text-emerald-300 underline-offset-2 hover:underline md:hidden">
-                    Ver próximo passo
-                  </button>
-                </div>
-              )}
-              {consoleRun?.outcome === "cancelled" && (
-                <div className="mt-2 rounded-md border-l-2 border-white/30 bg-white/[0.05] px-2.5 py-2 font-sans text-[11px] text-white/60">
-                  Execução interrompida. Seu código não foi perdido e você pode continuar de onde parou.
-                </div>
-              )}
-              {consoleRun?.error && (
-                <div className="mt-1.5 min-w-0 rounded-md border-l-2 border-red-500 bg-red-500/[0.08] px-2.5 py-2">
-                  <p className="break-words leading-5 text-red-300">
-                    ✖ {consoleRun.error.line ? `Linha ${consoleRun.error.line}: ` : ""}
-                    {consoleRun.error.message}
-                  </p>
-                  <p className="mt-1 break-words font-sans leading-5 text-amber-200/90">{consoleRun.error.friendly}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+            {(running || consoleRun) && <div role="status" aria-live="polite" className={free.consoleBody}>
+              {running && <p className={free.running}>{desafio.linguagem === "python" ? "Preparando Python e executando seu código…" : "Executando seu código…"}</p>}
+              {consoleRun?.lines.map((line, index) => <pre key={index}>{line}</pre>)}
+              {consoleRun && !consoleRun.error && consoleRun.lines.length === 0 && <p>Execução concluída sem saída no console.</p>}
+              {consoleRun?.truncated && <p className={free.warning}>A saída foi limitada para manter o editor rápido.</p>}
+              {consoleRun?.outcome === "needs-work" && !consoleRun.error && <div className={free.feedback} data-outcome="needs-work"><p>Seu código rodou. Confira o critério da missão para continuar.</p><button type="button" onClick={() => setGuideOpen(true)}>Ver orientação<ChevronRight size={13}/></button></div>}
+              {consoleRun?.outcome === "success" && <div className={free.feedback} data-outcome="success"><p>Esta etapa passou nos critérios do desafio.</p><button type="button" onClick={() => setGuideOpen(true)}>Ver próximo passo<ChevronRight size={13}/></button></div>}
+              {consoleRun?.outcome === "cancelled" && <p>Execução interrompida. Seu código foi preservado.</p>}
+              {consoleRun?.error && <div className={free.error}><p>{consoleRun.error.line ? "Linha " + consoleRun.error.line + ": " : ""}{consoleRun.error.message}</p><p>{consoleRun.error.friendly}</p></div>}
+            </div>}
+          </section>
+        </section>
 
-        <button
-          type="button"
-          onPointerDown={startGuideResize}
-          onDoubleClick={() => setGuideWidth(320)}
-          aria-label="Redimensionar painel do guia"
-          title="Arraste para redimensionar · duplo clique para restaurar"
-          className="group relative hidden w-1 shrink-0 cursor-col-resize border-x border-white/[.04] bg-white/[.025] transition hover:bg-orbit-electric/20 md:block"
-        >
-          <span className="absolute left-1/2 top-1/2 h-10 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/15 transition group-hover:bg-orbit-electric" />
-        </button>
-
-        {/* Guide panel — full width mobile, sidebar desktop */}
-        <div
-          id="practice-guide-panel"
-          role="tabpanel"
-          aria-labelledby="practice-guide-tab"
-          style={{ "--guide-width": `${guideWidth}px` } as CSSProperties}
-          className={`${lab.guidePane} flex min-h-0 flex-col overflow-y-auto ${mobileTab === "guia" ? "flex-1" : "hidden md:flex md:w-[var(--guide-width)] md:min-w-[280px] md:max-w-[440px] md:flex-none"}`}
-        >
+        {guideOpen && <button type="button" onPointerDown={startGuideResize} onDoubleClick={() => setGuideWidth(320)} aria-label="Redimensionar painel do guia" title="Arraste para redimensionar · duplo clique para restaurar" className={free.resizeGuide}/>}
+        {guideOpen && <aside id="practice-guide-panel" aria-label="Ajuda para experimentar" className={lab.guidePane + " " + free.guidePane} style={{ "--guide-width": guideWidth + "px" } as CSSProperties}>
+          <header className={free.guideHeader}><strong>Ajuda para experimentar</strong><button type="button" onClick={() => setGuideOpen(false)} aria-label="Voltar ao código"><X size={17}/></button></header>
           {guiaContent}
-        </div>
+        </aside>}
       </div>
     </div>
-    {completed && applicationRequired && <div id="beginner-free-application" className="scroll-mt-20 pt-6"><BeginnerPractice challengeSlug={slug} userId={userId} guidedCode={code} origin="free" onValidatedChange={setApplicationValidated}/>{applicationValidated && <Link href={link(nextChallenge ? `/estudante/pratica/${nextChallenge.slug}` : "/estudante/pratica")} className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-lg bg-emerald-200 px-5 py-3 text-sm font-semibold text-emerald-950">{nextChallenge ? `Próximo: ${nextChallenge.titulo}` : "Ver mais desafios"}<ChevronRight size={16}/></Link>}</div>}
+    {completed && applicationRequired && <div id="beginner-free-application" className="scroll-mt-20 pt-6"><BeginnerPractice challengeSlug={slug} userId={userId} guidedCode={code} origin="free" onValidatedChange={setApplicationValidated}/>{applicationValidated && <Link href={link(nextChallenge ? "/estudante/pratica/" + nextChallenge.slug : "/estudante/pratica")} className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-lg bg-emerald-200 px-5 py-3 text-sm font-semibold text-emerald-950">{nextChallenge ? "Próximo: " + nextChallenge.titulo : "Ver mais desafios"}<ChevronRight size={16}/></Link>}</div>}
     </>
   );
 }
