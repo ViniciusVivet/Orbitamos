@@ -265,7 +265,7 @@
 }
 
 .executionBar>button:first-child {
-  min-height: 42px;
+  min-height: 44px;
   min-width: 112px;
   font-size: 12px;
   border-radius: 7px;

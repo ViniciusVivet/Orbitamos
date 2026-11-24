@@ -832,7 +832,7 @@ function FreePracticeWorkspace({ userId = null, preview = false, initialDraft = 
             {(running || consoleRun) && <div role="status" aria-live="polite" className={free.consoleBody}>
               {running && <p className={free.running}>{desafio.linguagem === "python" ? "Preparando Python e executando seu código…" : "Executando seu código…"}</p>}
               {consoleRun?.lines.map((line, index) => <pre key={index}>{line}</pre>)}
-              {consoleRun && !consoleRun.error && consoleRun.lines.length === 0 && <p>Execução concluída sem saída no console.</p>}
+              {consoleRun && !consoleRun.error && consoleRun.outcome !== "cancelled" && consoleRun.lines.length === 0 && <p>Execução concluída sem saída no console.</p>}
               {consoleRun?.truncated && <p className={free.warning}>A saída foi limitada para manter o editor rápido.</p>}
               {consoleRun?.outcome === "needs-work" && !consoleRun.error && <div className={free.feedback} data-outcome="needs-work"><p>Seu código rodou. Confira o critério da missão para continuar.</p><button type="button" onClick={() => setGuideOpen(true)}>Ver orientação<ChevronRight size={13}/></button></div>}
               {consoleRun?.outcome === "success" && <div className={free.feedback} data-outcome="success"><p>Esta etapa passou nos critérios do desafio.</p><button type="button" onClick={() => setGuideOpen(true)}>Ver próximo passo<ChevronRight size={13}/></button></div>}
