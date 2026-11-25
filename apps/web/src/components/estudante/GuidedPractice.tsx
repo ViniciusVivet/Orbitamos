@@ -2,6 +2,7 @@
 
 import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
+import { Nunito } from "next/font/google";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowLeft, ArrowRight, Check, ChevronDown, Play, RotateCcw, Square, Undo2 } from "lucide-react";
 import { getNextDesafio, type Desafio } from "@/lib/desafios";
@@ -20,6 +21,13 @@ import { practiceStory } from "@/lib/practiceNarrative";
 import { getLaboratoryCover } from "./laboratoryCovers";
 import profileArt from "../../../public/images/laboratorio/orbi-ficha-v1.webp";
 import gradesArt from "../../../public/images/laboratorio/orbi-notas-v1.webp";
+
+const studyFont = Nunito({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-guided-practice",
+  preload: false,
+});
 
 type PracticeArtwork = {
   image: StaticImageData;
@@ -225,7 +233,7 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
   const keyboard = !enhanced && <div className={s.keys} role="group" aria-label="Símbolos de código">{essentialSymbols.filter(symbol => symbols.includes(symbol)).map(renderSymbol)}</div>;
   const feedback = !missionPassed && (matches || fullMatches) && <><Check size={14} aria-hidden="true"/>{fullMatches ? "Pronto para executar." : "Linha conferida."}</>;
 
-  return <section className={s.studio} data-guided-lab data-embedded={embedded} onCompositionStart={() => setComposing(true)} onCompositionEnd={() => setComposing(false)}>
+  return <section className={embedded ? s.studio : `${s.studio} ${studyFont.variable}`} data-guided-lab data-embedded={embedded} onCompositionStart={() => setComposing(true)} onCompositionEnd={() => setComposing(false)}>
     {!embedded && <header className={s.header}>
       <Link href={link(`/estudante/pratica?linguagem=${challenge.linguagem}#experimentos`)}><ArrowLeft size={16}/> Exercícios</Link>
       <button onClick={() => onFreeMode(draft.code)}>Modo livre<ArrowRight size={15}/></button>

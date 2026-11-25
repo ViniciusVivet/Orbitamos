@@ -9,6 +9,10 @@
   color: var(--ink);
 }
 
+.studio[data-embedded="false"] {
+  font-family: var(--font-guided-practice), var(--font-inter), sans-serif;
+}
+
 .studio :is(button, a, summary):focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
@@ -54,13 +58,13 @@
 }
 .sceneImage img { object-fit: cover; }
 .sceneCopy { margin-top: 14px; }
-.sceneLanguage { color: var(--accent); font-size: 12px; font-weight: 650; }
+.sceneLanguage { color: #c7d8de; font-size: 13px; font-weight: 650; }
 .scene h1 {
   margin-top: 4px;
-  font-size: clamp(24px, 2.6vw, 34px);
-  font-weight: 650;
-  line-height: 1.1;
-  letter-spacing: -.045em;
+  font-size: clamp(24px, 2.5vw, 34px);
+  font-weight: 750;
+  line-height: 1.14;
+  letter-spacing: -.022em;
   overflow-wrap: anywhere;
 }
 .goal {
@@ -74,9 +78,9 @@
   gap: 4px;
   margin-top: 11px;
   color: #dbebe5;
-  font-size: 12px;
+  font-size: 14px;
 }
-.sample > span:first-child { color: var(--muted); font-size: 11px; }
+.sample > span:first-child { color: #c7d8de; font-size: 12px; }
 .sampleValues {
   display: flex;
   flex-wrap: wrap;
@@ -85,7 +89,7 @@
 }
 .sampleValues strong { color: var(--accent); }
 .sampleValues svg { flex: none; color: #bddbd0; }
-.sceneStory { margin-top: 8px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.sceneStory { margin-top: 9px; color: #c9d5da; font-size: 15px; line-height: 1.5; }
 .mobileStory { display: none; }
 
 .writingPrompt { margin-bottom: 12px; }
@@ -98,6 +102,16 @@
   line-height: 1.2;
 }
 .writingPrompt h2:focus { outline: none; }
+.studio[data-embedded="false"] .stepMeta {
+  color: #c7d8de;
+  font-size: 13px;
+  font-weight: 650;
+}
+.studio[data-embedded="false"] .writingPrompt h2 {
+  font-weight: 750;
+  letter-spacing: -.012em;
+  line-height: 1.18;
+}
 .lineMeaning, .personalMeaning, .lineNote {
   margin-top: 6px;
   color: var(--muted);
@@ -105,6 +119,12 @@
   line-height: 1.45;
 }
 .lineNote { font-size: 12px; }
+.studio[data-embedded="false"] :is(.lineMeaning, .personalMeaning, .lineNote) {
+  color: #d1dde0;
+  font-size: 15px;
+  line-height: 1.48;
+}
+.studio[data-embedded="false"] .lineNote { font-size: 13px; }
 .writingPrompt code {
   display: block;
   margin-top: 9px;
@@ -135,6 +155,7 @@
   font-size: 12px;
   font-weight: 650;
 }
+.studio[data-embedded="false"] .filebar { font-size: 13px; font-weight: 700; }
 .fileName { font: 11px ui-monospace, Consolas, monospace; color: var(--muted); }
 .editorFeedback {
   display: inline-flex;
@@ -181,6 +202,10 @@
 }
 .inputWrap textarea:focus { box-shadow: none; }
 .inputWrap textarea::placeholder { color: #a0b3bf; }
+.studio[data-embedded="false"] .inputWrap textarea::placeholder {
+  font-family: var(--font-guided-practice), var(--font-inter), sans-serif;
+  font-weight: 500;
+}
 .enhanced { height: clamp(180px, 32vh, 320px); }
 
 .keys, .toolKeys { gap: 5px; margin-top: 7px; }
@@ -222,6 +247,7 @@
 }
 .primary { background: var(--accent); color: #102525; }
 .secondary { border-color: var(--line); color: var(--ink); }
+.studio[data-embedded="false"] :is(.primary, .secondary) { font-size: 14px; font-weight: 750; }
 .primary:hover:not(:disabled) { background: #c4ffe9; }
 .secondary:hover:not(:disabled) { background: #1c323e; }
 
@@ -247,6 +273,7 @@
   color: var(--muted);
   font-size: 13px;
 }
+.studio[data-embedded="false"] :is(.lessonTools, .replay) { font-size: 14px; }
 .lessonTools > summary, .replay > summary {
   padding: 10px 0;
   min-height: 44px;
@@ -344,16 +371,18 @@
     content: "";
   }
   .sceneCopy { width: 58%; margin: 0; }
-  .sceneLanguage { font-size: 10px; }
-  .scene h1 { font-size: clamp(18px, 4.8vw, 24px); }
+  .sceneLanguage { font-size: 11px; }
+  .scene h1 { font-size: clamp(19px, 5vw, 23px); }
   .scene[data-artwork="editorial"] .sceneImage { opacity: .8; }
   .goal { margin-top: 5px; font-size: 12px; }
-  .sample { margin-top: 6px; gap: 1px; }
+  .sample { margin-top: 6px; gap: 1px; font-size: 13px; }
+  .sample > span:first-child { font-size: 11px; }
   .sampleValues { gap: 4px; }
   .sampleValues svg { width: 12px; }
   .sceneStory { display: none; }
   .mobileStory { display: block; }
   .writingPrompt { margin-bottom: 10px; }
+  .studio[data-embedded="false"] :is(.lineMeaning, .personalMeaning) { font-size: 14px; line-height: 1.42; }
   .writingPrompt code { margin-top: 7px; padding: 7px 9px; }
   .inputWrap textarea { min-height: 88px; }
   .keys { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); }
@@ -379,7 +408,8 @@
     column-gap: 10px;
   }
   .studio[data-embedded="false"] .stepHeading h2 { order: -1; margin-top: 0; font-size: 17px; }
-  .studio[data-embedded="false"] .stepMeta { font-size: 10px; }
+  .studio[data-embedded="false"] .stepMeta { font-size: 11px; }
+  .studio[data-embedded="false"] :is(.lineMeaning, .personalMeaning) { line-height: 1.3; }
   .studio[data-embedded="false"] .writingPrompt { margin-bottom: 5px; }
   .studio[data-embedded="true"] .writingPrompt { margin-bottom: 7px; }
   .lineMeaning, .personalMeaning { margin-top: 4px; }

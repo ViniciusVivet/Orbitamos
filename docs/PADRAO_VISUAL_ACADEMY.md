@@ -43,6 +43,7 @@ o número de imagens em volta da mesma quantidade de texto.
 - Variáveis e Tipos abre com Orbi montando uma ficha de apresentação. Classificador de Nota abre com Orbi separando fichas em três caminhos, com a amostra “Nota 8 → Aprovado” no HTML. A região Resultado continua reservada ao programa que o aluno executar.
 - Em tela larga, a cena fica ao lado da primeira tarefa. No celular, a mesma cena divide uma faixa compacta com o nome e o exemplo da atividade. As capas editoriais por tema ocupam esse espaço nos demais exercícios.
 - Cenas autorais em WebP, 1200×400 px, geradas com a arte de Orbi como referência. `orbi-ficha-v1.webp` mostra uma recepção e uma ficha física com peças de madeira. `orbi-notas-v1.webp` mostra uma oficina escolar e três caminhos de classificação. Ambas ficam em `apps/web/public/images/laboratorio/`.
+- Em 25/11, os exercícios guiados de Praticar passaram a usar Nunito nos títulos, instruções e controles. Instruções usam 14 px no celular e 15 px no desktop, com o progresso em tom neutro. Código, números de linha e nome do arquivo continuam em fonte monoespaçada. A versão compacta preserva a ação principal em telas de 429×464.
 
 - Código: recomendação com foto desde a entrada, dois atalhos visuais, catálogo
   sem os antigos blocos de método/roteiro antes das capas; filtros extras recolhidos.
