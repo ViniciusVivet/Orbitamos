@@ -44,6 +44,7 @@ o número de imagens em volta da mesma quantidade de texto.
 - Em tela larga, a cena fica ao lado da primeira tarefa. No celular, a mesma cena divide uma faixa compacta com o nome e o exemplo da atividade. As capas editoriais por tema ocupam esse espaço nos demais exercícios.
 - Cenas autorais em WebP, 1200×400 px, geradas com a arte de Orbi como referência. `orbi-ficha-v1.webp` mostra uma recepção e uma ficha física com peças de madeira. `orbi-notas-v1.webp` mostra uma oficina escolar e três caminhos de classificação. Ambas ficam em `apps/web/public/images/laboratorio/`.
 - Em 25/11, os exercícios guiados de Praticar passaram a usar Nunito nos títulos, instruções e controles. Instruções usam 14 px no celular e 15 px no desktop, com o progresso em tom neutro. Código, números de linha e nome do arquivo continuam em fonte monoespaçada. A versão compacta preserva a ação principal em telas de 429×464.
+- Os dois exemplos com Orbi têm vídeos silenciosos de cerca de sete segundos. Em Variáveis, a sequência mostra o valor na variável e a chamada a `console.log`. No Classificador, mostra 8, 6 e 3 passando pelas respectivas faixas. O botão de reprodução ocupa a própria ilustração. Os MP4 H.264 ficam junto das cenas em `apps/web/public/images/laboratorio/` e só são carregados ao abrir o exemplo. O fechamento devolve o foco ao botão e o resultado de exemplo fica disponível em texto.
 
 - Código: recomendação com foto desde a entrada, dois atalhos visuais, catálogo
   sem os antigos blocos de método/roteiro antes das capas; filtros extras recolhidos.

@@ -3,8 +3,8 @@
 import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import { Nunito } from "next/font/google";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowLeft, ArrowRight, Check, ChevronDown, Play, RotateCcw, Square, Undo2 } from "lucide-react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { ArrowLeft, ArrowRight, Check, ChevronDown, Play, RotateCcw, Square, Undo2, X } from "lucide-react";
 import { getNextDesafio, type Desafio } from "@/lib/desafios";
 import { emptyGuidedDraft, guidedLines, guidedMissionProgram, guidedProgram, guidedStorageKey, nextGuidedLine, readGuidedDraft, guidedWritingMatches, type GuidedDraft } from "@/lib/guidedPractice";
 import { runCSharpInWorker, runJavaScriptInWorker, runPythonInWorker, type BrowserCodeResult } from "@/lib/browserCodeRunner";
@@ -31,6 +31,8 @@ const studyFont = Nunito({
 
 type PracticeArtwork = {
   image: StaticImageData;
+  video: string;
+  videoDescription: string;
   position: string;
   input: string;
   output: string;
@@ -40,6 +42,8 @@ type PracticeArtwork = {
 const practiceArtwork: Partial<Record<string, PracticeArtwork>> = {
   "variaveis-js": {
     image: profileArt,
+    video: "/images/laboratorio/orbi-ficha-demo-v1.mp4",
+    videoDescription: "A variável guarda o valor. console.log mostra Rafa, 20 e true, um por linha.",
     position: "69% center",
     input: "Nome: Rafa",
     output: "Ficha preenchida",
@@ -47,12 +51,81 @@ const practiceArtwork: Partial<Record<string, PracticeArtwork>> = {
   },
   "condicionais-js": {
     image: gradesArt,
+    video: "/images/laboratorio/orbi-notas-demo-v1.mp4",
+    videoDescription: "Com a nota 8, o programa mostra Aprovado. Com 6, mostra Recuperação. Com 3, mostra Reprovado.",
     position: "74% center",
     input: "Nota 8",
     output: "Aprovado",
     firstLine: "nota recebe o valor que você vai classificar.",
   },
 };
+
+function PracticeSceneDemo({ artwork }: { artwork: PracticeArtwork }) {
+  const dialogId = useId();
+  const dialog = useRef<HTMLDialogElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const player = useRef<HTMLVideoElement>(null);
+  const [open, setOpen] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  function showDemo() {
+    dialog.current?.showModal();
+    setFailed(false);
+    setOpen(true);
+  }
+
+  function finishDemo() {
+    player.current?.pause();
+    setOpen(false);
+    trigger.current?.focus({ preventScroll: true });
+  }
+
+  return <>
+    <button
+      ref={trigger}
+      className={s.demoTrigger}
+      type="button"
+      aria-label="Ver exemplo em movimento"
+      aria-haspopup="dialog"
+      aria-controls={dialogId}
+      onClick={showDemo}
+    >
+      <Play size={17} fill="currentColor" aria-hidden="true"/>
+      <span>Ver exemplo</span>
+    </button>
+    <dialog
+      ref={dialog}
+      id={dialogId}
+      className={s.demoDialog}
+      aria-labelledby={`${dialogId}-title`}
+      aria-describedby={`${dialogId}-sample`}
+      onClose={finishDemo}
+    >
+      <div className={s.demoHeading}>
+        <h2 id={`${dialogId}-title`}>Exemplo em movimento</h2>
+        <button type="button" aria-label="Fechar exemplo" onClick={() => dialog.current?.close()}>
+          <X size={20} aria-hidden="true"/>
+        </button>
+      </div>
+      <p className={s.demoSample} id={`${dialogId}-sample`}>{artwork.videoDescription}</p>
+      {open && <div className={s.demoMedia}>
+        {failed ? <Image src={artwork.image} alt="" fill sizes="(max-width: 680px) 90vw, 620px"/> : <video
+          ref={player}
+          src={artwork.video}
+          poster={artwork.image.src}
+          aria-label="Animação do exemplo"
+          muted
+          autoPlay
+          playsInline
+          controls
+          preload="none"
+          onError={() => setFailed(true)}
+        />}
+      </div>}
+      {open && failed && <p className={s.demoError} role="status">O vídeo não carregou. Confira o exemplo acima.</p>}
+    </dialog>
+  </>;
+}
 
 function GuidedReplay({ collapsed, children }: { collapsed: boolean; children: ReactNode }) {
   return collapsed ? <details className={s.replay}><summary>Rever o guia concluído e meu código</summary>{children}</details> : <>{children}</>;
@@ -243,6 +316,7 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
         <div className={s.sceneImage}>
           <Image src={cover.image} alt="" fill sizes={artwork ? "(max-width: 767px) 70vw, 440px" : "(max-width: 767px) 62vw, 340px"} placeholder="blur" loading="eager" fetchPriority="high" style={{ objectPosition: cover.position }}/>
         </div>
+        {artwork && <PracticeSceneDemo key={challenge.slug} artwork={artwork}/>}
         <div className={s.sceneCopy}>
           <p className={s.sceneLanguage}>{lang} · {challenge.dificuldade}</p>
           <h1>{challenge.titulo}</h1>

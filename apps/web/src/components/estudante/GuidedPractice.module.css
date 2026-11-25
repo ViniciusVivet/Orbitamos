@@ -48,6 +48,7 @@
 }
 
 .scene, .work, .codeColumn { min-width: 0; }
+.scene { position: relative; }
 .codeColumn { scroll-margin-top: 76px; }
 .sceneImage {
   position: relative;
@@ -57,6 +58,91 @@
   background: #192b32;
 }
 .sceneImage img { object-fit: cover; }
+.demoTrigger {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-end: 10px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  padding-inline: 12px;
+  border: 1px solid #7eaaa5;
+  border-radius: 999px;
+  background: #091c26f2;
+  color: #e7fcf3;
+  font-size: 13px;
+  font-weight: 750;
+}
+.demoTrigger:hover { background: #1b3a47; }
+.demoDialog {
+  position: fixed;
+  inset: 0;
+  inline-size: min(650px, calc(100% - 24px));
+  max-block-size: calc(100dvh - 24px);
+  margin: auto;
+  padding: 14px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid #64857f;
+  border-radius: 16px;
+  background: #102631;
+  color: var(--ink);
+  box-shadow: 0 20px 80px #000a;
+}
+.demoDialog::backdrop { background: #02090de0; }
+.demoHeading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.demoHeading h2 {
+  margin: 0;
+  font-size: clamp(18px, 4vw, 24px);
+  font-weight: 750;
+  line-height: 1.18;
+}
+.demoHeading button {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border: 1px solid #58747f;
+  border-radius: 11px;
+  background: #0c1c25;
+  color: var(--ink);
+}
+.demoHeading button:hover { background: #1b3a47; }
+.demoSample {
+  margin: 5px 0 12px;
+  color: #dbe8ec;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.demoMedia {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  max-block-size: 58dvh;
+  border-radius: 9px;
+  background: #070f15;
+}
+.demoMedia video, .demoMedia img {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+}
+.demoError {
+  margin: 8px 0 0;
+  color: #ffdbbf;
+  font-size: 13px;
+}
 .sceneCopy { margin-top: 14px; }
 .sceneLanguage { color: #c7d8de; font-size: 13px; font-weight: 650; }
 .scene h1 {
@@ -342,6 +428,8 @@
 }
 
 @media (max-width: 767px) {
+  .demoTrigger { padding: 0; }
+  .demoTrigger span { display: none; }
   .bench { display: block; padding-top: 0; border: 0; }
   .scene {
     position: relative;
