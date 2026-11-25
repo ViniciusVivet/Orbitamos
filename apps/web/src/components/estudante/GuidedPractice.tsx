@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowLeft, ArrowRight, Check, ChevronDown, Play, RotateCcw, Square, Undo2 } from "lucide-react";
@@ -18,6 +18,33 @@ import BeginnerPractice from "./BeginnerPractice";
 import { supportsBeginnerPractice } from "@/lib/beginnerPractice";
 import { practiceStory } from "@/lib/practiceNarrative";
 import { getLaboratoryCover } from "./laboratoryCovers";
+import profileArt from "../../../public/images/laboratorio/orbi-ficha-v1.webp";
+import gradesArt from "../../../public/images/laboratorio/orbi-notas-v1.webp";
+
+type PracticeArtwork = {
+  image: StaticImageData;
+  position: string;
+  input: string;
+  output: string;
+  firstLine: string;
+};
+
+const practiceArtwork: Partial<Record<string, PracticeArtwork>> = {
+  "variaveis-js": {
+    image: profileArt,
+    position: "69% center",
+    input: "Nome: Rafa",
+    output: "Ficha preenchida",
+    firstLine: "let cria a variável. O sinal = guarda o texto.",
+  },
+  "condicionais-js": {
+    image: gradesArt,
+    position: "74% center",
+    input: "Nota 8",
+    output: "Aprovado",
+    firstLine: "nota recebe o valor que você vai classificar.",
+  },
+};
 
 function GuidedReplay({ collapsed, children }: { collapsed: boolean; children: ReactNode }) {
   return collapsed ? <details className={s.replay}><summary>Rever o guia concluído e meu código</summary>{children}</details> : <>{children}</>;
@@ -65,7 +92,9 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
   const lang = { javascript: "JavaScript", typescript: "TypeScript", python: "Python", csharp: "C#" }[challenge.linguagem];
   const file = `rascunho.${{ javascript: "js", typescript: "ts", python: "py", csharp: "cs" }[challenge.linguagem]}`;
   const story = practiceStory(challenge);
-  const cover = getLaboratoryCover(challenge.categoria);
+  const artwork = practiceArtwork[challenge.slug];
+  const cover = artwork ?? getLaboratoryCover(challenge.categoria);
+  const firstLineNote = !embedded && draft.mission === 0 && draft.line === 0 ? artwork?.firstLine : undefined;
   const symbols = practiceSymbols(challenge.linguagem);
   const essentialSymbols = challenge.linguagem === "python" ? ["Recuo", "↵", ":", '"', "(", ")"] : challenge.linguagem === "csharp" ? ["↵", '"', ";", "=", "{", "}"] : ["↵", '"', ";", "=", "(", ")"];
   const personalWriting = challenge.steps[draft.mission].escrita;
@@ -192,48 +221,66 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
 
   if (!ready) return <p role="status">Abrindo seu laboratório…</p>;
 
+  const codeLines = draft.code.split("\n").length;
+  const keyboard = !enhanced && <div className={s.keys} role="group" aria-label="Símbolos de código">{essentialSymbols.filter(symbol => symbols.includes(symbol)).map(renderSymbol)}</div>;
+  const feedback = !missionPassed && (matches || fullMatches) && <><Check size={14} aria-hidden="true"/>{fullMatches ? "Pronto para executar." : "Linha conferida."}</>;
+
   return <section className={s.studio} data-guided-lab data-embedded={embedded} onCompositionStart={() => setComposing(true)} onCompositionEnd={() => setComposing(false)}>
     {!embedded && <header className={s.header}>
       <Link href={link(`/estudante/pratica?linguagem=${challenge.linguagem}#experimentos`)}><ArrowLeft size={16}/> Exercícios</Link>
       <button onClick={() => onFreeMode(draft.code)}>Modo livre<ArrowRight size={15}/></button>
     </header>}
-    {!embedded && <div className={s.title}><span>{lang} · {challenge.dificuldade}</span><h1>{challenge.titulo}</h1></div>}
-    <GuidedReplay collapsed={completed && applicationRequired}>
     <div className={s.bench}>
-      {!embedded && <aside className={s.context} aria-label="Contexto da atividade">
-        <div className={s.scene}>
-          <div className={s.photo}><Image src={cover.image} alt="" fill sizes="(max-width: 767px) 72px, 286px" placeholder="blur" style={{ objectPosition: cover.position }}/></div>
-          <p className={s.goal}>{story.goal}</p>
+      {!embedded && <header className={s.scene} data-practice-scene data-artwork={artwork ? "orbi" : "editorial"}>
+        <div className={s.sceneImage}>
+          <Image src={cover.image} alt="" fill sizes={artwork ? "(max-width: 767px) 70vw, 440px" : "(max-width: 767px) 62vw, 340px"} placeholder="blur" loading="eager" fetchPriority="high" style={{ objectPosition: cover.position }}/>
+        </div>
+        <div className={s.sceneCopy}>
+          <p className={s.sceneLanguage}>{lang} · {challenge.dificuldade}</p>
+          <h1>{challenge.titulo}</h1>
+          {artwork ? <p className={s.sample}>
+            <span>Exemplo</span>
+            <span className={s.sampleValues}>{artwork.input}<span className="sr-only"> resulta em </span><ArrowRight size={14} aria-hidden="true"/><strong>{artwork.output}</strong></span>
+          </p> : <p className={s.goal}>{story.goal}</p>}
         </div>
         <p className={s.sceneStory}>{story.scene}</p>
-      </aside>}
+      </header>}
+      <div className={s.work}>
+      <GuidedReplay collapsed={completed && applicationRequired}>
       <section ref={codeColumn} className={s.codeColumn} aria-label="Escreva e execute">
         <div className={s.writingPrompt} aria-live="polite">
-          <p className={s.stepMeta}>
-            {!embedded && challenge.steps.length > 1 && `Missão ${draft.mission + 1}/${challenge.steps.length} · `}
-            {missionPassed ? "Código validado" : `Linha ${draft.line + 1} de ${lines.length}`}
-          </p>
-          <h2 ref={missionHeading} tabIndex={-1}>{completed ? "Atividade concluída" : missionPassed ? "Missão concluída" : current.title}</h2>
+          <div className={s.stepHeading}>
+            <p className={s.stepMeta}>
+              {!embedded && challenge.steps.length > 1 && `Missão ${draft.mission + 1}/${challenge.steps.length} · `}
+              {missionPassed ? "Código validado" : `Linha ${draft.line + 1} de ${lines.length}`}
+            </p>
+            <h2 ref={missionHeading} tabIndex={-1}>{completed ? "Atividade concluída" : missionPassed ? "Missão concluída" : current.title}</h2>
+          </div>
           {missionPassed ? <p className={s.lineMeaning}>{challenge.steps[draft.mission].acerto}</p> : <>
-            <p className={s.lineMeaning}>{personalTip ?? current.why}</p>
+            <p className={s.lineMeaning}>{personalTip ?? firstLineNote ?? current.why}</p>
             <code>{current.code}</code>
-            {personalTip && <p className={s.personalMeaning}>{current.why}</p>}
+            {personalTip && <p className={s.personalMeaning}>{firstLineNote ?? current.why}</p>}
             {draft.line > 0 && !matches && <p className={s.lineNote}>Mantenha as linhas anteriores e escreva esta na linha seguinte.</p>}
           </>}
         </div>
         <div className={s.editor}>
-        <div className={s.filebar}>{enhanced ? <strong>Seu código</strong> : <label htmlFor="guided-code">Seu código</label>}<span>{file}</span></div>
+        <div className={s.filebar}>
+          {enhanced ? <strong>Seu código</strong> : <label htmlFor="guided-code">Seu código</label>}
+          {!embedded && <span className={s.editorFeedback} role="status">{feedback}</span>}
+          <span className={s.fileName}>{file}</span>
+        </div>
         {enhanced ? <div className={s.enhanced}><ReliableCodeEditor value={draft.code} language={challenge.linguagem} onChange={changeCode}/></div> : <div className={s.inputWrap}>
-          <div ref={gutter} className={s.numbers} aria-hidden="true">{Array.from({ length: Math.max(3, draft.code.split("\n").length) }, (_, i) => <span key={i}>{i + 1}</span>)}</div>
-          <textarea ref={textarea} id="guided-code" value={draft.code} onChange={event => changeCode(event.target.value)} onScroll={event => { if (gutter.current) gutter.current.scrollTop = event.currentTarget.scrollTop; }} placeholder="Escreva aqui…" autoCapitalize="off" autoCorrect="off" autoComplete="off" spellCheck={false} maxLength={100000} wrap="off" rows={Math.min(12, Math.max(3, draft.code.split("\n").length + 1))} onKeyDown={event => { if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); void run(); } }}/>
+          <div ref={gutter} className={s.numbers} aria-hidden="true">{Array.from({ length: Math.max(embedded ? 3 : 2, codeLines) }, (_, i) => <span key={i}>{i + 1}</span>)}</div>
+          <textarea ref={textarea} id="guided-code" value={draft.code} onChange={event => changeCode(event.target.value)} onScroll={event => { if (gutter.current) gutter.current.scrollTop = event.currentTarget.scrollTop; }} placeholder="Escreva aqui…" autoCapitalize="off" autoCorrect="off" autoComplete="off" spellCheck={false} maxLength={100000} wrap="off" rows={Math.min(12, Math.max(embedded ? 3 : 2, codeLines + 1))} onKeyDown={event => { if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); void run(); } }}/>
         </div>}
         </div>
-        {!enhanced && <div className={s.keys} role="group" aria-label="Símbolos de código">{essentialSymbols.filter(symbol => symbols.includes(symbol)).map(renderSymbol)}</div>}
-        <div className={s.feedback} role="status">{!missionPassed && (matches || fullMatches) && <><Check size={16}/>{fullMatches ? "Pronto para executar." : "Linha conferida."}</>}</div>
+        {embedded && keyboard}
+        {embedded && <div className={s.feedback} role="status">{feedback}</div>}
         <div className={s.actions}>
           {needsAdvance && !running && <button className={s.primary} disabled={!matches && !missionPassed} onClick={advance}>{missionPassed ? "Próxima missão" : "Próxima linha"}<ArrowRight size={17}/></button>}
           {running ? <button key="stop" className={s.primary} onClick={() => activeRun.current?.abort()}><Square size={17}/>Parar execução</button> : (!needsAdvance || allowPartialRun) && !missionPassed && <button key="run" className={needsAdvance ? s.secondary : s.primary} disabled={!canRun} onClick={() => void run()}><Play size={17}/>Executar código</button>}
         </div>
+        {!embedded && keyboard}
 
         {completed && !embedded && !applicationRequired && <div className={s.nextActions}>{practiceChecks[challenge.slug] && <a href="#practice-check">Aplicar o que aprendi<ArrowRight size={16}/></a>}<button className={s.secondary} onClick={() => onFreeMode(draft.code)}>Praticar sem o guia<ArrowRight size={17}/></button>{next ? <Link href={link(`/estudante/pratica/${next.slug}`)}>Próximo desafio: {next.titulo}<ArrowRight size={16}/></Link> : challenge.linguagem === "csharp" ? <Link href={link("/estudante/trilhas/csharp")}>Continue na trilha C# &amp; .NET<ArrowRight size={16}/></Link> : <Link href={link(`/estudante/pratica?linguagem=${challenge.linguagem}#experimentos`)}>Revisar os fundamentos de {lang}<ArrowRight size={16}/></Link>}</div>}
         {(running || result) && <section className={s.console} aria-label="Resultado da execução"><div><strong>Resultado</strong>{result && <button onClick={() => setResult(null)}>Limpar saída</button>}</div><div role="status">{running ? <p>{challenge.linguagem === "python" ? "Preparando Python e executando… A primeira execução precisa de conexão." : "Executando seu programa…"}</p> : result && <>{result.output && <pre>{result.output}</pre>}{result.cancelled ? <p>Execução interrompida. Seu código está preservado.</p> : result.error ? <div className={s.error}><strong>Ainda não rodou</strong><p>{result.errorLine ? `Confira a linha ${result.errorLine}. ` : ""}{/indent|syntax/i.test(result.error) ? "Confira os recuos, as aspas e os sinais da etapa." : "Confira os nomes e valores da etapa."}</p><pre>{result.error}</pre></div> : <p>{missionPassed ? "Resultado validado." : "Executou, mas ainda não resolveu a missão. Compare a saída com o objetivo."}</p>}</>}</div></section>}
@@ -244,6 +291,7 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
               <strong>O que seu programa precisa fazer</strong>
               <p>{challenge.steps[draft.mission].instrucao}</p>
               <p className={s.mobileStory}>{story.scene}</p>
+              {firstLineNote && !missionPassed && <p>{current.why}</p>}
               <dl className={s.programPlan}>
                 <div><dt>Recebe</dt><dd>{story.input}</dd></div>
                 <div><dt>Faz</dt><dd>{story.action}</dd></div>
@@ -267,12 +315,13 @@ export default function GuidedPractice({ challenge, userId, onFreeMode, onComple
         {undoDraft && <div className={s.reset}><p>O código anterior está disponível até você sair desta página.</p><button onClick={() => { editedForAuto.current = false; activeRun.current?.abort(); activeRun.current = null; setRunning(false); update(undoDraft); setUndoDraft(null); setResult(null); }}>Recuperar código anterior ao reinício</button></div>}
         {/^(Não foi possível|Armazenamento indisponível)/.test(save) && <p role="alert" className={s.error}>{save}</p>}
       </section>
-    </div>
     </GuidedReplay>
     {completed && applicationRequired && <div className={s.application} data-learning-delivery>
       <BeginnerPractice challengeSlug={challenge.slug} userId={userId} guidedCode={draft.code} onValidatedChange={setApplicationValidated} onFreeMode={code => onFreeMode(code)}/>
       {applicationValidated ? <section className={s.deliveryNext} aria-label="Seu próximo passo"><strong>{challenge.slug === "primeiro-orcamento-js" ? "Você entregou seu primeiro orçamento." : "Você aplicou a ideia em outra situação."}</strong><p>{challenge.slug === "primeiro-orcamento-js" ? "Seu programa reúne dados, cálculo e decisão. Revise sua entrega ou continue aprendendo como reunir instruções em funções." : "O exemplo virou uma regra que funciona com outros dados. Agora siga para a próxima entrega."}</p>{next && <Link className={s.primary} href={link(`/estudante/pratica/${next.slug}`)}>{challenge.slug === "primeiro-orcamento-js" ? "Próximo tema" : "Próxima entrega"}: {next.titulo}<ArrowRight size={17}/></Link>}<Link href={link("/estudante/progresso")}>Ver o que já pratiquei<ArrowRight size={15}/></Link></section> : <p className={s.deliveryPending}>A próxima entrega aparece depois de testar sua aplicação. O mapa continua disponível para consultar e explorar.</p>}
     </div>}
     {completed && !embedded && !applicationRequired && practiceChecks[challenge.slug] && <PracticeCheck key={practiceChecks[challenge.slug].id} check={practiceChecks[challenge.slug]} userId={userId} onPractice={() => onFreeMode(draft.code)}/>}
+    </div>
+    </div>
   </section>;
 }

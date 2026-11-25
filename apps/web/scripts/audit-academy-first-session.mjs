@@ -58,6 +58,9 @@ try {
       await first.click();
       const editor = page.getByRole("textbox", { name: "Seu código", exact: true });
       await expect(editor).toHaveValue("");
+      const sceneArt = page.locator("[data-practice-scene] img");
+      await expect.poll(() => sceneArt.evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+      await expect(page.locator("[data-practice-scene]")).toContainText("Ficha preenchida");
       await expect(page.locator("[data-practice-navigation]")).toHaveCount(0);
       await expect(page.getByRole("region", { name: "Resultado da execução" })).toHaveCount(0);
       await page.evaluate(() => scrollTo(0, 0));

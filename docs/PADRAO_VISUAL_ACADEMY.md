@@ -38,6 +38,12 @@ o número de imagens em volta da mesma quantidade de texto.
 - IDE: entrar direto no editor guiado. Mostrar a tarefa atual, uma amostra curta e a explicação anterior à execução. Concentrar mapa, desfazer, reinício e editor com realce em uma única área de ajuda. Mostrar resultado quando houver execução e manter Modo livre ao alcance.
 - Aceite em telas de referência: começar em 390×664 e 1366×620 com a ação dentro da área útil. Conferir também 320 px e a altura curta de 429×464. O teste automatizado não substitui o teclado físico nem a tentativa de um aluno novo.
 
+### Cenas dentro dos exercícios de Praticar
+
+- Variáveis e Tipos abre com Orbi montando uma ficha de apresentação. Classificador de Nota abre com Orbi separando fichas em três caminhos, com a amostra “Nota 8 → Aprovado” no HTML. A região Resultado continua reservada ao programa que o aluno executar.
+- Em tela larga, a cena fica ao lado da primeira tarefa. No celular, a mesma cena divide uma faixa compacta com o nome e o exemplo da atividade. As capas editoriais por tema ocupam esse espaço nos demais exercícios.
+- Cenas autorais em WebP, 1200×400 px, geradas com a arte de Orbi como referência. `orbi-ficha-v1.webp` mostra uma recepção e uma ficha física com peças de madeira. `orbi-notas-v1.webp` mostra uma oficina escolar e três caminhos de classificação. Ambas ficam em `apps/web/public/images/laboratorio/`.
+
 - Código: recomendação com foto desde a entrada, dois atalhos visuais, catálogo
   sem os antigos blocos de método/roteiro antes das capas; filtros extras recolhidos.
 - Jogos: recomendação e seis capas com capturas reais dos jogos. Revisão vazia

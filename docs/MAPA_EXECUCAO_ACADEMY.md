@@ -18,6 +18,7 @@ o [registro de execução](EVOLUCAO_FORMACAO_ACADEMY.md) guarda as entregas.
 | B01.09.1 | Início compacto | Retomada, aulas restantes, XP e nível na primeira dobra em 390×664 e notebook de altura curta. Usar o catálogo disponível e o progresso da conta. |
 | B01.09.2 | Entrada de Praticar | Um começo sugerido com imagem. Busca e linguagem junto do catálogo. Dificuldade, tema e situação sob demanda. Jogos, inglês e revisão acessíveis pela navegação de formatos. |
 | B01.09.3 | IDE guiada e modo livre | Mostrar contexto, instrução atual e começo do editor na primeira dobra. Uma ação principal. Resultado aparece ao executar. Preservar teclado, rascunhos, modos e validações. |
+| B01.09.4 | Abrir exercícios com cena e exemplo | Em 429×464, ver uma cena reconhecível, o começo do editor e a próxima ação. Nas duas primeiras cenas com Orbi, usar um exemplo do próprio exercício. Manter as informações da trilha C# embutida. [Padrão das cenas](PADRAO_VISUAL_ACADEMY.md#cenas-dentro-dos-exercícios-de-praticar) |
 | B01.10 | Sessão com o Aluno 0 | Observar se o aluno encontra onde continuar, começa a escrever sem ajuda externa, interpreta um erro e retoma no próprio aparelho. Registrar tempo até a primeira ação, bloqueios e resultado. |
 | B01.11 | Diversificar as formas de prática | Em uma unidade de fundamentos, ligar escrita guiada, depuração de um exemplo e resolução independente ao mesmo objetivo. Levar a prática à aula e organizar as variações como próximas tarefas, com evidência de aplicação. |
 
@@ -33,6 +34,13 @@ unitários passaram. O escopo técnico usa a infraestrutura atual.
 **Publicação.** `d28c534` confirmado na `main`, com
 [CI e build aprovados](https://github.com/ViniciusVivet/Orbitamos/actions/runs/45499271305)
 e [deploy concluído](https://vercel.com/viniciusvivets-projects/orbitamos/E362vwKjLrkfJbL4j67Wnk8SX4C6).
+
+**B01.09.4 — cenas e exemplos.** Variáveis e Classificador conferidos em
+1366×620, 390×664, 429×464 e 320×640. Em 429×464, a cena, duas linhas do
+editor e o botão de avançar ficaram visíveis antes e depois de digitar a
+primeira linha. Conferido também o uso de capa editorial em Python. As telas
+inspecionadas passaram na auditoria automatizada de acessibilidade do guia.
+Capturas em `apps/web/test-results/practice-scene/`.
 
 **Referência pedagógica.** Trazer prática vinculada aos conteúdos e dar espaço
 para aplicação independente. Os [checkpoints da Alura](https://www.alura.com.br/carreiras),
